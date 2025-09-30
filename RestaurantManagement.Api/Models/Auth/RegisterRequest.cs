@@ -1,4 +1,4 @@
-namespace RestaurantManagement.Api.Models.Users
+namespace RestaurantManagement.Api.Models.Auth
 {
     public class RegisterRequest
     {

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Api.Data;
-using RestaurantManagement.Api.Services.Users;
+using RestaurantManagement.Api.Services.Auth;
 using Sentry;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,7 +31,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Register the User service
-builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 

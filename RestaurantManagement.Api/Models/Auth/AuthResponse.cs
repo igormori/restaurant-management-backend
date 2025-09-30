@@ -1,4 +1,4 @@
-namespace RestaurantManagement.Api.Models.Users
+namespace RestaurantManagement.Api.Models.Auth
 {
     public class AuthResponse
     {
@@ -8,5 +8,6 @@ namespace RestaurantManagement.Api.Models.Users
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;
         public string? Token { get; set; }
+        public string? RefreshToken { get; set; }
     }
 }

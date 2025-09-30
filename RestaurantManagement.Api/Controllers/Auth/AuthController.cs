@@ -1,16 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
-using RestaurantManagement.Api.Models.Users;
-using RestaurantManagement.Api.Services.Users;
+using RestaurantManagement.Api.Models.Auth;
+using RestaurantManagement.Api.Services.Auth;
 
-namespace RestaurantManagement.Api.Controllers.Users
+namespace RestaurantManagement.Api.Controllers.Auth
 {
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly IUserService _userService;
+        private readonly IAuthService _userService;
 
-        public AuthController(IUserService userService)
+        public AuthController(IAuthService userService)
         {
             _userService = userService;
         }

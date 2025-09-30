@@ -18,6 +18,9 @@ namespace RestaurantManagement.Api.Entities.Users
 
         public int FailedAttempts { get; set; } = 0;
 
+        public string? RefreshTokenHash { get; set; }
+        public DateTime? RefreshTokenExpiry { get; set; }
+
         public DateTime? LockedUntil { get; set; }
 
         public DateTime? LastLoginAt { get; set; }

@@ -73,6 +73,14 @@ namespace RestaurantManagement.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("phone_number");
 
+                    b.Property<DateTime?>("RefreshTokenExpiry")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("refresh_token_expiry");
+
+                    b.Property<string>("RefreshTokenHash")
+                        .HasColumnType("text")
+                        .HasColumnName("refresh_token_hash");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");

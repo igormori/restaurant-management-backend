@@ -1,12 +1,13 @@
-using RestaurantManagement.Api.Models.Users;
+using RestaurantManagement.Api.Models.Auth;
 using System.Threading.Tasks;
 
-namespace RestaurantManagement.Api.Services.Users
+namespace RestaurantManagement.Api.Services.Auth
 {
-    public interface IUserService
+    public interface IAuthService
     {
         Task<AuthResponse> RegisterAsync(RegisterRequest request);
 
         Task<AuthResponse> LoginAsync(LoginRequest request);
+
     }
 }

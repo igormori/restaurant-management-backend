@@ -1,27 +1,36 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Api.Data;
 using RestaurantManagement.Api.Entities.Users;
-using RestaurantManagement.Api.Models.Users;
-using RestaurantManagement.Api.Services.Users;
+using RestaurantManagement.Api.Models.Auth;
+using RestaurantManagement.Api.Services.Auth;
 using BCrypt.Net;
 using RestaurantManagement.Api.Utils.Exceptions;
 using System.Text;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 
 
-namespace RestaurantManagement.Api.Services.Users
+namespace RestaurantManagement.Api.Services.Auth
 {
-    public class UserService : IUserService
+    public class AuthService : IAuthService
     {
         private readonly RestaurantDbContext _context;
         private readonly IConfiguration _config;
 
-        public UserService(RestaurantDbContext context, IConfiguration config)
+        public AuthService(RestaurantDbContext context, IConfiguration config)
         {
             _context = context;
             _config = config;
+        }
+
+        private string GenerateRefreshToken()
+        {
+            var randomBytes = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomBytes);
+            return Convert.ToBase64String(randomBytes);
         }
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -67,24 +76,16 @@ namespace RestaurantManagement.Api.Services.Users
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
                 throw new BusinessException("Invalid email or password.", 401);
 
-            // Generate JWT
-            var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Email, user.Email),
-                    new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
-                }),
-                Expires = DateTime.UtcNow.AddDays(1),
-                Issuer = _config["Jwt:Issuer"],
-                Audience = _config["Jwt:Issuer"],
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            string jwt = tokenHandler.WriteToken(token);
+            // ✅ Generate JWT (short lived)
+            string jwt = GenerateJwt(user);
+
+            // ✅ Generate Refresh Token
+            var refreshToken = GenerateRefreshToken();
+            user.RefreshTokenHash = BCrypt.Net.BCrypt.HashPassword(refreshToken); // store hashed
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(30);
+
+            user.LastLoginAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
 
             return new AuthResponse
             {
@@ -92,8 +93,36 @@ namespace RestaurantManagement.Api.Services.Users
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Token = jwt
+                Token = jwt,
+                RefreshToken = refreshToken // ✅ return to client
             };
+        }
+
+        private string GenerateJwt(User user)
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
+            };
+
+            var jwtKey = _config["Jwt:Key"];
+            
+            if (string.IsNullOrEmpty(jwtKey))
+                throw new InvalidOperationException("JWT key is not configured.");
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(60),
+                signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }
