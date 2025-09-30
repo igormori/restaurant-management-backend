@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using RestaurantManagement.Api.Models.Users;
 using RestaurantManagement.Api.Services.Users;
+using Sentry;
 
 namespace RestaurantManagement.Api.Controllers.Users
 {
@@ -25,6 +26,8 @@ namespace RestaurantManagement.Api.Controllers.Users
             }
             catch (Exception ex)
             {
+                // ❌ Unexpected error → report to Sentry
+                SentrySdk.CaptureException(ex);
                 return BadRequest(new { error = ex.Message });
             }
         }

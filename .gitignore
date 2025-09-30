@@ -1,0 +1,66 @@
+# Build results
+bin/
+obj/
+out/
+Debug/
+Release/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# IDE settings
+.vscode/
+.idea/
+*.sw?
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Secrets
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+# EF Core
+Migrations/
+
+# Coverage / test results
+TestResults/
+*.coverage
+*.coveragexml
+
+# NuGet
+*.nupkg
+packages/
+.nuget/
+
+# Node (if Next.js frontend is inside repo)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Swagger/OpenAPI generated files (if used)
+swagger.json
+swagger.yaml
+openapi.json
+openapi.yaml
+
+# Rider
+*.idea/
+
+# JetBrains
+*.dotCover
+
+# ReSharper
+_ReSharper.Caches/
+
+# Others
+.env

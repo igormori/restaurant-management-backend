@@ -1,16 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Api.Data;
 using RestaurantManagement.Api.Services.Users;
+using Sentry;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-
-// ✅ Register the User service
-builder.Services.AddScoped<IUserService, UserService>();
 
 // EF Core + Npgsql + snake_case
 builder.Services.AddDbContext<RestaurantDbContext>(options =>
@@ -18,20 +13,30 @@ builder.Services.AddDbContext<RestaurantDbContext>(options =>
         .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
         .UseSnakeCaseNamingConvention());
 
-builder.Services.AddOpenApi();
+// Add Sentry
+builder.WebHost.UseSentry(o =>
+{
+    o.Dsn = builder.Configuration["Sentry:Dsn"]; 
+    o.Debug = true; 
+    o.TracesSampleRate = 1.0; 
+});
+
+// Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Register the User service
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
