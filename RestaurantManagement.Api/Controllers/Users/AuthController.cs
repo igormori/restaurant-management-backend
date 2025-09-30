@@ -21,5 +21,12 @@ namespace RestaurantManagement.Api.Controllers.Users
             var response = await _userService.RegisterAsync(request);
             return Ok(response);
         }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
+        {
+            var response = await _userService.LoginAsync(request);
+            return Ok(response);
+        }
     }
 }

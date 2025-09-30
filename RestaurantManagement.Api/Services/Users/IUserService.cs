@@ -6,5 +6,7 @@ namespace RestaurantManagement.Api.Services.Users
     public interface IUserService
     {
         Task<AuthResponse> RegisterAsync(RegisterRequest request);
+
+        Task<AuthResponse> LoginAsync(LoginRequest request);
     }
 }

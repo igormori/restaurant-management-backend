@@ -7,6 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+
+// JWT Auth
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "super_secret_dev_key";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "RestaurantApp";
+
 // EF Core + Npgsql + snake_case
 builder.Services.AddDbContext<RestaurantDbContext>(options =>
     options
@@ -40,6 +45,7 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<RestaurantManagement.Api.Middleware.ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
+app.UseAuthentication(); 
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
