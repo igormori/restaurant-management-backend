@@ -5,6 +5,7 @@ using RestaurantManagement.Api.Models.Users;
 using RestaurantManagement.Api.Services.Users;
 using System.Security.Cryptography;
 using System.Text;
+using RestaurantManagement.Api.Utils.Exceptions;
 
 
 namespace RestaurantManagement.Api.Services.Users
@@ -21,7 +22,7 @@ namespace RestaurantManagement.Api.Services.Users
 
             // Validate email
             if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-                throw new Exception("Email already registered");
+                throw new BusinessException("Email is already registered.", 400);
 
             // Hash password
             string passwordHash = HashPassword(request.Password);

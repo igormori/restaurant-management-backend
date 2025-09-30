@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using RestaurantManagement.Api.Models.Users;
 using RestaurantManagement.Api.Services.Users;
-using Sentry;
 
 namespace RestaurantManagement.Api.Controllers.Users
 {
@@ -19,17 +18,8 @@ namespace RestaurantManagement.Api.Controllers.Users
         [HttpPost("register")]
         public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
         {
-            try
-            {
-                var response = await _userService.RegisterAsync(request);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                // ❌ Unexpected error → report to Sentry
-                SentrySdk.CaptureException(ex);
-                return BadRequest(new { error = ex.Message });
-            }
+            var response = await _userService.RegisterAsync(request);
+            return Ok(response);
         }
     }
 }

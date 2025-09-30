@@ -36,6 +36,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Global Exception Handling
+app.UseMiddleware<RestaurantManagement.Api.Middleware.ExceptionHandlingMiddleware>();
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
