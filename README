@@ -1,0 +1,75 @@
+# 🍽 Restaurant Management API
+
+A **monolithic .NET 9 Web API** designed to manage restaurant operations, built with **Entity Framework Core** and **PostgreSQL**.  
+This backend will serve as the foundation for features like **order management, inventory tracking, payments, and reporting**.
+
+---
+
+## 📌 Features
+
+- 🔐 User authentication (email + password, OTP planned)  
+- 🗄 PostgreSQL database with Entity Framework Core  
+- 🏗 Monolithic architecture with clean project structure  
+- ⚡ Ready for expansion (orders, inventory, finance, AI modules in future)  
+- 🚀 Built with **.NET 9** for performance and stability  
+
+---
+
+## 🔧 Prerequisites
+
+Before running the project, make sure you have:
+
+- [.NET 9 SDK](https://dotnet.microsoft.com/)  
+- [PostgreSQL](https://www.postgresql.org/download/) (local instance)  
+- Entity Framework CLI tool:  
+
+```bash
+dotnet tool install --global dotnet-ef
+```
+
+
+## ⚙️ Database Setup
+
+1- **Create the database**  
+   Connect to PostgreSQL and run:
+   sql
+   CREATE DATABASE restaurant_db_development;
+
+2-	**Configure the connection string
+Update appsettings.Development.json with your PostgreSQL credentials:
+
+```bash
+"ConnectionStrings": {
+  "DefaultConnection": "Host=localhost;Port=5432;Database=restaurant_db_development;Username=postgres;Password=postgres"
+}
+```
+
+## 🏗 Entity Framework Core Commands
+- Add a new migration (when Entities change):
+
+    ```bash
+    dotnet ef migrations add <MigrationName>
+    ```
+
+- Apply migrations to the database:
+
+    ```bash
+    dotnet ef database update
+    ```
+
+## 📂 Project Structure
+1- Clone the repository
+
+```bash
+        RestaurantManagement.Api/
+├─ Controllers/       # API endpoints
+├─ Data/              # DbContext, migrations
+├─ Entities/          # Database entities
+├─ Models/            # Request/response DTOs
+├─ Services/          # Business logic
+├─ Repositories/      # Data access layer
+├─ Utils/             # Helpers (JWT, Email, etc.)
+├─ Properties/        # Launch settings
+├─ appsettings.json
+└─ Program.cs
+```
