@@ -28,5 +28,12 @@ namespace RestaurantManagement.Api.Controllers.Auth
             var response = await _userService.LoginAsync(request);
             return Ok(response);
         }
+
+        [HttpPost("refresh")]
+        public async Task<ActionResult<AuthResponse>> Refresh([FromBody] RefreshRequest request)
+        {
+            var response = await _userService.RefreshTokenAsync(request);
+            return Ok(response);
+        }
     }
 }
