@@ -163,12 +163,17 @@ namespace RestaurantManagement.Api.Services.Auth
 
         private string GenerateJwt(User user)
         {
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
             };
+
+            foreach (var role in user.Roles.Select(r => r.Role))
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var jwtKey = _jwtOptions.Key;
             if (string.IsNullOrEmpty(jwtKey))

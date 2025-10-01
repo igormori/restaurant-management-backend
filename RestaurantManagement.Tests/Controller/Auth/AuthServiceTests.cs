@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using RestaurantManagement.Api.Data;
 using RestaurantManagement.Api.Entities.Users;
 using RestaurantManagement.Api.Models.Auth;
+using RestaurantManagement.Api.Options;
 using RestaurantManagement.Api.Services.Auth;
 using RestaurantManagement.Api.Utils.Exceptions;
 using Xunit;
@@ -23,13 +25,30 @@ namespace RestaurantManagement.Tests.Controller.Auth
             var inMemorySettings = new Dictionary<string, string> {
                 {"Jwt:Key", "test_secret_key_12345678901234567890"},
                 {"Jwt:Issuer", "TestIssuer"},
-                {"Jwt:Audience", "TestAudience"}
+                {"Jwt:Audience", "TestAudience"},
+                {"Jwt:ExpireMinutes", "60"},
+                {"Security:MaxFailedLoginAttempts", "5"},
+                {"Security:LockoutDurationMinutes", "15"}
             };
             IConfiguration config = new ConfigurationBuilder()
                 .AddInMemoryCollection(inMemorySettings!)
                 .Build();
 
-            return new AuthService(context, config);
+            var securityOptions = Options.Create(new SecurityOptions
+            {
+                MaxFailedLoginAttempts = 5,
+                LockoutDurationMinutes = 15
+            });
+
+            var jwtOptions = Options.Create(new JwtOptions
+            {
+                Key = "test_secret_key_12345678901234567890",
+                Issuer = "TestIssuer",
+                Audience = "TestAudience",
+                ExpireMinutes = 60
+            });
+
+            return new AuthService(context, config, securityOptions, jwtOptions);
         }
 
         [Fact]
@@ -100,7 +119,7 @@ namespace RestaurantManagement.Tests.Controller.Auth
 
             var request = new LoginRequest
             {
-                Email = "test@example.com",
+                Email = "TEST@example.com",
                 Password = "Password123!"
             };
 
@@ -126,6 +145,39 @@ namespace RestaurantManagement.Tests.Controller.Auth
 
             // Act & Assert
             await Assert.ThrowsAsync<BusinessException>(() => service.LoginAsync(request));
+        }
+
+        [Fact]
+        public async Task LoginAsync_ShouldLockAccount_WhenThresholdExceeded()
+        {
+            // Arrange
+            var service = GetService(out var context);
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword("Password123!");
+            var user = new User
+            {
+                Email = "test@example.com",
+                PasswordHash = passwordHash,
+                FirstName = "John",
+                LastName = "Doe"
+            };
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            var invalidRequest = new LoginRequest
+            {
+                Email = "test@example.com",
+                Password = "WrongPass1!"
+            };
+
+            // trigger failed attempts up to threshold
+            for (var i = 0; i < 5; i++)
+            {
+                await Assert.ThrowsAsync<BusinessException>(() => service.LoginAsync(invalidRequest));
+            }
+
+            // Act & Assert: account should now be locked
+            var ex = await Assert.ThrowsAsync<BusinessException>(() => service.LoginAsync(invalidRequest));
+            Assert.Equal(423, ex.StatusCode);
         }
 
         [Fact]
