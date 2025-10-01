@@ -1,3 +1,6 @@
+using RestaurantManagement.Api.Entities.Organizations;
+using RestaurantManagement.Api.Entities.Locations;
+
 namespace RestaurantManagement.Api.Entities.Users
 {
     public class UserRole
@@ -12,5 +15,7 @@ namespace RestaurantManagement.Api.Entities.Users
 
         // Navigation back
         public User User { get; set; } = null!;
+        public Organization Organization { get; set; } = null!;
+        public Location? Location { get; set; }
     }
 }
