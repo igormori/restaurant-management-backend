@@ -9,9 +9,9 @@ using Xunit;
 
 namespace RestaurantManagement.Tests.Controller.Auth
 {
-    public class UserServiceTest
+    public class AuthServiceTest
     {
-        private UserService GetService(out RestaurantDbContext context)
+        private AuthService GetService(out RestaurantDbContext context)
         {
             // Setup in-memory database
             var options = new DbContextOptionsBuilder<RestaurantDbContext>()
@@ -29,7 +29,7 @@ namespace RestaurantManagement.Tests.Controller.Auth
                 .AddInMemoryCollection(inMemorySettings!)
                 .Build();
 
-            return new UserService(context, config);
+            return new AuthService(context, config);
         }
 
         [Fact]
@@ -126,6 +126,98 @@ namespace RestaurantManagement.Tests.Controller.Auth
 
             // Act & Assert
             await Assert.ThrowsAsync<BusinessException>(() => service.LoginAsync(request));
+        }
+
+        [Fact]
+        public async Task RefreshTokenAsync_ShouldReturnNewToken_WhenValidRefreshToken()
+        {
+            // Arrange
+            var service = GetService(out var context);
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword("Password123!");
+            var refreshToken = "refresh_token_value";
+            var refreshTokenHash = BCrypt.Net.BCrypt.HashPassword(refreshToken);
+            var user = new User
+            {
+                Email = "test@example.com",
+                PasswordHash = passwordHash,
+                FirstName = "John",
+                LastName = "Doe",
+                RefreshTokenHash = refreshTokenHash,
+                RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(10)
+            };
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            var request = new RefreshRequest
+            {
+                Email = "test@example.com",
+                RefreshToken = refreshToken
+            };
+
+            // Act
+            var result = await service.RefreshTokenAsync(request);
+
+            // Assert
+            Assert.NotNull(result.Token);
+            Assert.NotNull(result.RefreshToken);
+            Assert.Equal(user.Email, result.Email);
+        }
+
+        [Fact]
+        public async Task RefreshTokenAsync_ShouldThrow_WhenTokenExpired()
+        {
+            // Arrange
+            var service = GetService(out var context);
+            var refreshToken = "refresh_token_value";
+            var refreshTokenHash = BCrypt.Net.BCrypt.HashPassword(refreshToken);
+            var user = new User
+            {
+                Email = "test@example.com",
+                PasswordHash = "fake",
+                FirstName = "John",
+                LastName = "Doe",
+                RefreshTokenHash = refreshTokenHash,
+                RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(-1) // expired
+            };
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            var request = new RefreshRequest
+            {
+                Email = "test@example.com",
+                RefreshToken = refreshToken
+            };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<BusinessException>(() => service.RefreshTokenAsync(request));
+        }
+
+        [Fact]
+        public async Task RefreshTokenAsync_ShouldThrow_WhenTokenInvalid()
+        {
+            // Arrange
+            var service = GetService(out var context);
+            var refreshTokenHash = BCrypt.Net.BCrypt.HashPassword("correct_token");
+            var user = new User
+            {
+                Email = "test@example.com",
+                PasswordHash = "fake",
+                FirstName = "John",
+                LastName = "Doe",
+                RefreshTokenHash = refreshTokenHash,
+                RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(10)
+            };
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            var request = new RefreshRequest
+            {
+                Email = "test@example.com",
+                RefreshToken = "wrong_token"
+            };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<BusinessException>(() => service.RefreshTokenAsync(request));
         }
     }
 }

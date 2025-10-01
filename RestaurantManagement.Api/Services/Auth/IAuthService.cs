@@ -8,7 +8,9 @@ namespace RestaurantManagement.Api.Services.Auth
         Task<AuthResponse> RegisterAsync(RegisterRequest request);
 
         Task<AuthResponse> LoginAsync(LoginRequest request);
+
         Task<AuthResponse> RefreshTokenAsync(RefreshRequest request);
+        
 
     }
 }

@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using RestaurantManagement.Api.Data;
 using RestaurantManagement.Api.Entities.Users;
 using RestaurantManagement.Api.Models.Auth;
-using RestaurantManagement.Api.Services.Auth;
-using BCrypt.Net;
+using RestaurantManagement.Api.Options;
 using RestaurantManagement.Api.Utils.Exceptions;
 using System.Text;
 using System.Security.Claims;
@@ -16,46 +16,18 @@ namespace RestaurantManagement.Api.Services.Auth
     public class AuthService : IAuthService
     {
         private readonly RestaurantDbContext _context;
-        private readonly IConfiguration _config;
+        private readonly SecurityOptions _securityOptions;
+        private readonly JwtOptions _jwtOptions;
 
-        public AuthService(RestaurantDbContext context, IConfiguration config)
+        public AuthService(
+            RestaurantDbContext context,
+            IConfiguration config,
+            IOptions<SecurityOptions> securityOptions,
+            IOptions<JwtOptions> jwtOptions)
         {
             _context = context;
-            _config = config;
-        }
-
-        private string GenerateRefreshToken()
-        {
-            var randomBytes = new byte[64];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomBytes);
-            return Convert.ToBase64String(randomBytes);
-        }
-
-        private string GenerateJwt(User user)
-        {
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
-            };
-
-            var jwtKey = _config["Jwt:Key"];
-            if (string.IsNullOrEmpty(jwtKey))
-                throw new InvalidOperationException("JWT key is not configured.");
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(60), // short-lived
-                signingCredentials: creds);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            _securityOptions = securityOptions.Value;
+            _jwtOptions = jwtOptions.Value;
         }
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -92,17 +64,44 @@ namespace RestaurantManagement.Api.Services.Auth
 
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            var email = request.Email.Trim().ToLowerInvariant();
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
                 throw new BusinessException("Invalid email or password.", 401);
 
-            string jwt = GenerateJwt(user);
+            // 🔒 Check if locked
+            if (user.LockedUntil.HasValue && user.LockedUntil > DateTime.UtcNow)
+                throw new BusinessException($"Account locked until {user.LockedUntil.Value:u}", 423);
 
+            // 🔑 Verify password
+            if (!VerifyPassword(request.Password, user.PasswordHash))
+            {
+                user.FailedAttempts++;
+
+                if (user.FailedAttempts >= _securityOptions.MaxFailedLoginAttempts)
+                {
+                    user.LockedUntil = DateTime.UtcNow.AddMinutes(_securityOptions.LockoutDurationMinutes);
+                    user.FailedAttempts = 0;
+
+                    SentrySdk.CaptureMessage($"Account locked: {user.Email}");
+                }
+
+                await _context.SaveChangesAsync();
+                throw new BusinessException("Invalid email or password.", 401);
+            }
+
+            // ✅ Success → reset counters
+            user.FailedAttempts = 0;
+            user.LockedUntil = null;
+
+            var jwt = GenerateJwt(user);
             var refreshToken = GenerateRefreshToken();
-            user.RefreshTokenHash = BCrypt.Net.BCrypt.HashPassword(refreshToken);
-            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(30);
 
+            user.RefreshTokenHash = BCrypt.Net.BCrypt.HashPassword(refreshToken); ;
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(30);
             user.LastLoginAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
 
             return new AuthResponse
@@ -133,13 +132,10 @@ namespace RestaurantManagement.Api.Services.Auth
             var newRefreshToken = GenerateRefreshToken();
             user.RefreshTokenHash = BCrypt.Net.BCrypt.HashPassword(newRefreshToken);
 
-            var expireMinutesStr = _config["Jwt:ExpireMinutes"];
-            double expireMinutes = 60; // default to 60 minutes if not set
-            if (!string.IsNullOrEmpty(expireMinutesStr) && double.TryParse(expireMinutesStr, out var parsedMinutes))
-            {
-                expireMinutes = parsedMinutes;
-            }
-            
+            var expireMinutes = _jwtOptions.ExpireMinutes > 0
+                ? _jwtOptions.ExpireMinutes
+                : 60; // default fallback when configuration is missing or invalid
+
             user.RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(expireMinutes);
             user.UpdatedAt = DateTime.UtcNow;
 
@@ -155,6 +151,59 @@ namespace RestaurantManagement.Api.Services.Auth
                 Token = newJwt,
                 RefreshToken = newRefreshToken
             };
+        }
+
+        private string GenerateRefreshToken()
+        {
+            var randomBytes = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomBytes);
+            return Convert.ToBase64String(randomBytes);
+        }
+
+        private string GenerateJwt(User user)
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
+            };
+
+            var jwtKey = _jwtOptions.Key;
+            if (string.IsNullOrEmpty(jwtKey))
+                throw new InvalidOperationException("JWT key is not configured.");
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var expireMinutes = _jwtOptions.ExpireMinutes > 0
+                ? _jwtOptions.ExpireMinutes
+                : 60;
+
+            var token = new JwtSecurityToken(
+                issuer: _jwtOptions.Issuer,
+                audience: _jwtOptions.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(expireMinutes),
+                signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private bool VerifyPassword(string plainPassword, string hashedPassword)
+        {
+            if (string.IsNullOrWhiteSpace(plainPassword) || string.IsNullOrWhiteSpace(hashedPassword))
+                return false;
+
+            try
+            {
+                return BCrypt.Net.BCrypt.Verify(plainPassword, hashedPassword);
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

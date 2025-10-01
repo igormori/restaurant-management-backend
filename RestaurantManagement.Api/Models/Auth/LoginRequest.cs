@@ -1,8 +1,19 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace RestaurantManagement.Api.Models.Auth
 {
     public class LoginRequest
     {
-        public string Email { get; set; } = null!;
-        public string Password { get; set; } = null!;
+        private string _email = string.Empty;
+
+        [Required, EmailAddress, MaxLength(320)]
+        public string Email
+        {
+            get => _email;
+            set => _email = value?.Trim().ToLowerInvariant() ?? string.Empty;
+        }
+
+        [Required, MinLength(8), MaxLength(128), DataType(DataType.Password)]
+        public string Password { get; set; } = string.Empty;
     }
 }
