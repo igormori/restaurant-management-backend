@@ -6,6 +6,7 @@ namespace RestaurantManagement.Api.Entities.Locations
     {
         public Guid Id { get; set; }
         public Guid OrganizationId { get; set; }
+
         public string Name { get; set; } = null!;
         public string? Address { get; set; }
         public string? City { get; set; }
@@ -13,6 +14,7 @@ namespace RestaurantManagement.Api.Entities.Locations
         public string? PostalCode { get; set; }
         public string? Country { get; set; }
         public string? PhoneNumber { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

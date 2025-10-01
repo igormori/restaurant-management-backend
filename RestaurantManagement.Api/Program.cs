@@ -5,7 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Api.Data;
 using RestaurantManagement.Api.Services.Auth;
 using RestaurantManagement.Api.Options;
+using RestaurantManagement.Api.Services.Organizations;
 using Sentry;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 // ---------------------------------------------
 // Create WebApplication builder
@@ -15,6 +19,30 @@ var builder = WebApplication.CreateBuilder(args);
 // ---------------------------------------------
 // Add services to the container
 // ---------------------------------------------
+
+// ---------------------------------------------
+// JWT Authentication
+// ---------------------------------------------
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
 
 // Add controller support (API endpoints)
 builder.Services.AddControllers();
@@ -56,6 +84,7 @@ builder.Services.AddSwaggerGen();
 // Dependency Injection: Register application services
 // ---------------------------------------------
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 
 
 // ---------------------------------------------

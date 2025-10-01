@@ -143,6 +143,10 @@ namespace RestaurantManagement.Api.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<bool>("IsTrialActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_trial_active");
+
                     b.Property<int>("MaxLocations")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -160,6 +164,10 @@ namespace RestaurantManagement.Api.Migrations
                         .HasColumnType("character varying(30)")
                         .HasDefaultValue("FREE")
                         .HasColumnName("plan_type");
+
+                    b.Property<DateTime>("TrialEndDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("trial_end_date");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
