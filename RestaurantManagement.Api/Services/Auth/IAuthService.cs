@@ -9,6 +9,7 @@ namespace RestaurantManagement.Api.Services.Auth
         Task<AuthResponse> LoginAsync(LoginRequest request);
         Task<AuthResponse> RefreshTokenAsync(RefreshRequest request);
         Task<string> VerifyEmailAsync(VerifyEmailRequest request);
+        Task<string> ResendVerificationCodeAsync(ResendVerificationRequest request);
         
     }
 }

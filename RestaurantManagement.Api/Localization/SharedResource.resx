@@ -78,4 +78,15 @@
   <data name="InvalidOrExpiredCode" xml:space="preserve">
     <value>The verification code is invalid or has expired.</value>
   </data>
+  <data name="VerificationCodeResent" xml:space="preserve">
+    <value>A new verification code has been sent to your email.</value>
+  </data>
+  <data name="UserAlreadyVerified" xml:space="preserve">
+    <value>Your account is already verified.</value>
+  </data>
+  <data name="VerificationCodeRecentlySent" xml:space="preserve">
+    <value>A verification code was sent recently. Please wait a moment before requesting another.</value>
+  </data>
 </root>
+
+

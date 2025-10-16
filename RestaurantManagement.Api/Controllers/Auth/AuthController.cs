@@ -42,5 +42,12 @@ namespace RestaurantManagement.Api.Controllers.Auth
             var response = await _authService.VerifyEmailAsync(request);
             return Ok(response);
         }
+
+        [HttpPost("resend-verification")]
+        public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationRequest request)
+        {
+            var respoonse = await _authService.ResendVerificationCodeAsync(request);
+            return Ok(respoonse);
+        }
     }
 }

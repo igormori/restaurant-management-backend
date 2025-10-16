@@ -43,7 +43,7 @@
     <value>E-mail já cadastrado.</value>
   </data>
   <data name="UserNotFound" xml:space="preserve">
-    <value>Não encontramos o usuario.</value>
+    <value>Usuário não encontrado..</value>
   </data>
   <data name="UnauthorizedMessage" xml:space="preserve">
     <value>Usuàrio não autorizado!</value>
@@ -77,5 +77,14 @@
   </data>
   <data name="InvalidOrExpiredCode" xml:space="preserve">
     <value>O código de verificação é inválido ou expirou.</value>
+  </data>
+  <data name="VerificationCodeResent" xml:space="preserve">
+    <value>Um novo código de verificação foi enviado para o seu e-mail.</value>
+  </data>
+  <data name="UserAlreadyVerified" xml:space="preserve">
+    <value>Sua conta já foi verificada.</value>
+  </data>
+  <data name="VerificationCodeRecentlySent" xml:space="preserve">
+    <value>Um código de verificação foi enviado recentemente. Aguarde um momento antes de solicitar outro.</value>
   </data>
 </root>
