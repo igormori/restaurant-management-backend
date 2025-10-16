@@ -57,6 +57,7 @@ namespace RestaurantManagement.Api.Services.Auth
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 IsActive = true,
+                IsVerified = false,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -80,11 +81,23 @@ namespace RestaurantManagement.Api.Services.Auth
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
 
             if (user == null)
-                throw new BusinessException("Invalid email or password.", 401);
+                throw new BusinessException(_localizer["UserNotFound"].Value, 400);
+
+            if (user.IsVerified == false)
+                throw new BusinessException(_localizer["UserNotVerified"].Value, 401);
 
             // 🔒 Check if locked
             if (user.LockedUntil.HasValue && user.LockedUntil > DateTime.UtcNow)
-                throw new BusinessException($"Account locked until {user.LockedUntil.Value:u}", 423);
+            {
+                var lockUntilText = user.LockedUntil.Value
+                    .ToLocalTime()
+                    .ToString("f", CultureInfo.CurrentUICulture);
+
+                throw new BusinessException(
+                    string.Format(_localizer["AccountLockedUntil"].Value, lockUntilText),423
+                );
+
+            }
 
             // 🔑 Verify password
             if (!VerifyPassword(request.Password, user.PasswordHash))
@@ -96,11 +109,11 @@ namespace RestaurantManagement.Api.Services.Auth
                     user.LockedUntil = DateTime.UtcNow.AddMinutes(_securityOptions.LockoutDurationMinutes);
                     user.FailedAttempts = 0;
 
-                    SentrySdk.CaptureMessage($"Account locked: {user.Email}");
+                    SentrySdk.CaptureMessage($"{_localizer["AccountLocked"].Value}: {user.Email}");
                 }
 
                 await _db.SaveChangesAsync();
-                throw new BusinessException("Invalid email or password.", 401);
+                throw new BusinessException(_localizer["InvalidPassword"].Value, 401);
             }
 
             // ✅ Success → reset counters
@@ -131,13 +144,13 @@ namespace RestaurantManagement.Api.Services.Auth
         {
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
             if (user == null || user.RefreshTokenHash == null || user.RefreshTokenExpiry == null)
-                throw new BusinessException("Invalid or expired refresh token.", 401);
+                throw new BusinessException(_localizer["InvlideOrExpiredToken"].Value, 401);
 
             if (user.RefreshTokenExpiry < DateTime.UtcNow)
-                throw new BusinessException("Invalid or expired refresh token.", 401);
+                throw new BusinessException(_localizer["InvlideOrExpiredToken"].Value, 401);
 
             if (!BCrypt.Net.BCrypt.Verify(request.RefreshToken, user.RefreshTokenHash))
-                throw new BusinessException("Invalid refresh token.", 401);
+                throw new BusinessException(_localizer["InvalidRefreshToken"].Value, 401);
 
             string newJwt = GenerateJwt(user);
 

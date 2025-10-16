@@ -54,4 +54,22 @@
   <data name="TrialOrganizationsCannotCreateNew" xml:space="preserve">
     <value>Organizations under a trial plan cannot create additional organizations. Please upgrade your plan to add more.</value>
   </data>
+  <data name="InvalidPassword" xml:space="preserve">
+  <value>Invalid password. Please check your credentials.</value>
+  </data>
+  <data name="UserNotVerified" xml:space="preserve">
+    <value>Your account is not verified. Please verify your email before signing in.</value>
+  </data>
+  <data name="AccountLocked" xml:space="preserve">
+    <value>Your account has been locked due to multiple failed login attempts.</value>
+  </data>
+  <data name="AccountLockedUntil" xml:space="preserve">
+    <value>Your account is locked until {0}. Please try again later.</value>
+  </data>
+  <data name="InvalidOrExpiredToken" xml:space="preserve">
+    <value>The token is invalid or has expired. Please log in again.</value>
+  </data>
+  <data name="InvalidRefreshToken" xml:space="preserve">
+    <value>The refresh token is invalid or expired. Please request a new login session.</value>
+  </data>
 </root>

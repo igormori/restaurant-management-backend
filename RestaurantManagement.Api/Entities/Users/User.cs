@@ -9,6 +9,7 @@ namespace RestaurantManagement.Api.Entities.Users
         public string LastName { get; set; } = null!;
         public string? PhoneNumber { get; set; }
         public bool IsActive { get; set; } = true;
+        public bool IsVerified { get; set; } = true;
 
 
         // Security tracking

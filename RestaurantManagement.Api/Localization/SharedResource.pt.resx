@@ -54,4 +54,22 @@
   <data name="TrialOrganizationsCannotCreateNew" xml:space="preserve">
     <value>Organizações em período de teste não podem criar novas organizações. Atualize seu plano para adicionar mais.</value>
   </data>
+  <data name="InvalidPassword" xml:space="preserve">
+  <value>Senha inválida. Verifique suas credenciais.</value>
+  </data>
+  <data name="UserNotVerified" xml:space="preserve">
+    <value>Sua conta não está verificada. Verifique seu e-mail antes de entrar.</value>
+  </data>
+  <data name="AccountLocked" xml:space="preserve">
+    <value>Sua conta foi bloqueada devido a várias tentativas de login malsucedidas.</value>
+  </data>
+  <data name="AccountLockedUntil" xml:space="preserve">
+    <value>Sua conta está bloqueada até {0}. Tente novamente mais tarde.</value>
+  </data>
+  <data name="InvalidOrExpiredToken" xml:space="preserve">
+    <value>O token é inválido ou expirou. Faça login novamente.</value>
+  </data>
+  <data name="InvalidRefreshToken" xml:space="preserve">
+    <value>O token de atualização é inválido ou expirou. Solicite uma nova sessão de login.</value>
+  </data>
 </root>

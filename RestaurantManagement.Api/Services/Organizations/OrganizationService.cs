@@ -7,6 +7,7 @@ using RestaurantManagement.Api.Entities.Organizations;
 using RestaurantManagement.Api.Entities.Locations;
 using RestaurantManagement.Api.Entities.Users;
 using RestaurantManagement.Api.Models.Organizations;
+using RestaurantManagement.Api.Utils.Exceptions;
 
 namespace RestaurantManagement.Api.Services.Organizations
 {
@@ -47,7 +48,7 @@ namespace RestaurantManagement.Api.Services.Organizations
 
             if (hasTrialOrg)
             {
-               throw new InvalidOperationException(_localizer["TrialOrganizationsCannotCreateNew"].Value);
+                throw new BusinessException(_localizer["TrialOrganizationsCannotCreateNew"].Value, 400);
             }
 
             using var tx = await _db.Database.BeginTransactionAsync();
