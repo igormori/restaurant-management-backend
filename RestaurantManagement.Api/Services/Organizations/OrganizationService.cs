@@ -26,7 +26,30 @@ namespace RestaurantManagement.Api.Services.Organizations
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == ownerUserId);
             if (user == null)
                 throw new InvalidOperationException(_localizer["UserNotFound"].Value);
-                
+
+            var userRoles = await _db.UserRoles
+                .Include(r => r.Organization)
+                .ThenInclude(o => o.Settings)
+                .Where(usr => usr.UserId == user.Id)
+                .ToListAsync();
+
+            var userOrgs = await _db.UserRoles
+                .Where(r => r.UserId == user.Id)
+                .Include(r => r.Organization)
+                    .ThenInclude(o => o.Settings)
+                .Select(r => r.Organization)
+                .ToListAsync();
+
+            // 🧩 Check if any of the user's organizations are under trial
+            bool hasTrialOrg = userOrgs.Any(o => 
+                o.Settings != null && 
+                o.Settings.PlanType == "TRIAL");
+
+            if (hasTrialOrg)
+            {
+               throw new InvalidOperationException(_localizer["TrialOrganizationsCannotCreateNew"].Value);
+            }
+
             using var tx = await _db.Database.BeginTransactionAsync();
 
             // 1. Create Organization

@@ -51,4 +51,7 @@
   <data name="InvalidToken" xml:space="preserve">
     <value>Invalid token.</value>
   </data>
+  <data name="TrialOrganizationsCannotCreateNew" xml:space="preserve">
+    <value>Organizations under a trial plan cannot create additional organizations. Please upgrade your plan to add more.</value>
+  </data>
 </root>
