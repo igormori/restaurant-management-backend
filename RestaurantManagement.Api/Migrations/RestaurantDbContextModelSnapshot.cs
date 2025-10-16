@@ -304,6 +304,43 @@ namespace RestaurantManagement.Api.Migrations
                     b.ToTable("user_roles", (string)null);
                 });
 
+            modelBuilder.Entity("RestaurantManagement.Api.Entities.Users.UserVerificationCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_used");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_verification_codes");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_user_verification_codes_user_id");
+
+                    b.ToTable("user_verification_codes", (string)null);
+                });
+
             modelBuilder.Entity("RestaurantManagement.Api.Entities.Locations.Location", b =>
                 {
                     b.HasOne("RestaurantManagement.Api.Entities.Organizations.Organization", "Organization")
@@ -352,6 +389,18 @@ namespace RestaurantManagement.Api.Migrations
                     b.Navigation("Location");
 
                     b.Navigation("Organization");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RestaurantManagement.Api.Entities.Users.UserVerificationCode", b =>
+                {
+                    b.HasOne("RestaurantManagement.Api.Entities.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_verification_codes_users_user_id");
 
                     b.Navigation("User");
                 });

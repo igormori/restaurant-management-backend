@@ -46,7 +46,6 @@ namespace RestaurantManagement.Api.Services.Auth
                 throw new BusinessException(_localizer["EmailAlreadyRegistered"].Value, 400);
             }
 
-
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
             var user = new User
@@ -64,6 +63,20 @@ namespace RestaurantManagement.Api.Services.Auth
 
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
+
+            var verificationCode = new Random().Next(100000, 999999).ToString();
+
+            var verification = new UserVerificationCode
+            {
+                UserId = user.Id,
+                Code = verificationCode,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(15)
+            };
+            _db.UserVerificationCodes.Add(verification);
+            await _db.SaveChangesAsync();
+            
+            // TODO: Implement the email verificaiton
+            // await _emailService.SendVerificationEmailAsync(user.Email, code);
 
             return new AuthResponse
             {
@@ -96,7 +109,6 @@ namespace RestaurantManagement.Api.Services.Auth
                 throw new BusinessException(
                     string.Format(_localizer["AccountLockedUntil"].Value, lockUntilText),423
                 );
-
             }
 
             // 🔑 Verify password

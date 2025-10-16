@@ -12,6 +12,7 @@ namespace RestaurantManagement.Api.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<UserVerificationCode> UserVerificationCodes { get; set; }
         public DbSet<Organization> Organizations { get; set; }
         public DbSet<OrganizationSettings> OrganizationSettings { get; set; }
         public DbSet<Location> Locations { get; set; }
