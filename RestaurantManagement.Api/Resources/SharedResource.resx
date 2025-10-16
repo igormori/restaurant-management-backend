@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value>
+  </resheader>
+  <data name="OrganizationCreated" xml:space="preserve">
+    <value>Organization was created successfully.</value>
+  </data>
+  <data name="ValidationFailed" xml:space="preserve">
+    <value>Validation failed. Please check the input fields.</value>
+  </data>
+  <data name="TrialExpired" xml:space="preserve">
+    <value>Your trial period has expired. Please upgrade your plan.</value>
+  </data>
+  <data name="MaxLocationsTrial" xml:space="preserve">
+    <value>Trial plan allows only 1 location.</value>
+  </data>
+  <data name="RequiredAttribute_ValidationError" xml:space="preserve">
+  <value>The {0} field is required.</value>
+  </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>The field {0} must be a maximum of {1} characters.</value>
+  </data>
+  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+    <value>The field {0} must be at least {1} characters.</value>
+  </data>
+  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
+    <value>The {0} field is not a valid email address.</value>
+  </data>
+  <data name="PasswordComplexity_ValidationError" xml:space="preserve">
+    <value>Password must contain at least one uppercase letter, one number, and one special character.</value>
+  </data>
+  <data name="EmailAlreadyRegistered" xml:space="preserve">
+    <value>Email is already registered.</value>
+  </data>
+</root>

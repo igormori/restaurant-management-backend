@@ -1,15 +1,20 @@
 // ---------------------------------------------
 // Using directives
 // ---------------------------------------------
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
-using RestaurantManagement.Api.Data;
+using Microsoft.Extensions.Options;
+using System.Globalization;
+using System.Text;
+using Sentry;
+using RestaurantManagement.Api.Services.Organizations;
+using RestaurantManagement.Api.Utils.Localization;
 using RestaurantManagement.Api.Services.Auth;
 using RestaurantManagement.Api.Options;
-using RestaurantManagement.Api.Services.Organizations;
-using Sentry;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using RestaurantManagement.Api.Data;
+
 
 // ---------------------------------------------
 // Create WebApplication builder
@@ -20,9 +25,39 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 // ---------------------------------------------
 
+
+// ---------------------------------------------
+// Add Localization
+// ---------------------------------------------
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+Console.WriteLine("Culture: " + CultureInfo.CurrentUICulture);
+CultureInfo.CurrentCulture = new CultureInfo("pt");
+var supportedCultures = new[]
+{
+    new CultureInfo("en"),
+    new CultureInfo("pt"),
+    new CultureInfo("pt-BR"),
+    new CultureInfo("pt-PT")
+};
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture("en");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+
+    // Optional: normalize pt-BR and pt-PT to just "pt"
+    options.RequestCultureProviders.Insert(0, new CustomPortugueseCultureProvider());
+});
+
 // ---------------------------------------------
 // JWT Authentication
 // ---------------------------------------------
+
+var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>()
+    ?? throw new InvalidOperationException("Jwt section is missing");
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -37,15 +72,20 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
 
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidIssuer = jwtOptions.Issuer,
+        ValidAudience = jwtOptions.Audience,
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        Encoding.UTF8.GetBytes(jwtOptions.Key))
     };
 });
 
-// Add controller support (API endpoints)
-builder.Services.AddControllers();
+// Add controller support (API endpoints) + enable validation localization
+builder.Services.AddControllers()
+    .AddDataAnnotationsLocalization(options =>
+    {
+        options.DataAnnotationLocalizerProvider = (type, factory) =>
+            factory.Create(typeof(RestaurantManagement.Api.SharedResource));
+    });
 
 // ---------------------------------------------
 // Options variables Configuration
@@ -118,8 +158,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+//Localiation
+app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
+
+
 // Global Exception Handling Middleware
 app.UseMiddleware<RestaurantManagement.Api.Middleware.ExceptionHandlingMiddleware>();
+
 
 app.UseHttpsRedirection();
 app.UseCors("DefaultCorsPolicy");

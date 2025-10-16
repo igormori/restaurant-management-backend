@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value>
+  </resheader>
+  <data name="OrganizationCreated" xml:space="preserve">
+    <value>Organização criada com sucesso.</value>
+  </data>
+  <data name="ValidationFailed" xml:space="preserve">
+    <value>Falha na validação. Verifique os campos informados.</value>
+  </data>
+  <data name="TrialExpired" xml:space="preserve">
+    <value>Seu período de teste expirou. Por favor, atualize seu plano.</value>
+  </data>
+  <data name="MaxLocationsTrial" xml:space="preserve">
+    <value>O plano de teste permite apenas 1 local.</value>
+  </data>
+  <data name="RequiredAttribute_ValidationError" xml:space="preserve">
+    <value>O campo {0} é obrigatório.</value>
+  </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>O campo {0} deve ter no máximo {1} caracteres.</value>
+  </data>
+  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+    <value>O campo {0} deve ter pelo menos {1} caracteres.</value>
+  </data>
+  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
+    <value>O campo {0} não é um endereço de email válido.</value>
+  </data>
+  <data name="PasswordComplexity_ValidationError" xml:space="preserve">
+    <value>A senha deve conter pelo menos uma letra maiúscula, um número e um caractere especial.</value>
+  </data>
+  <data name="EmailAlreadyRegistered" xml:space="preserve">
+    <value>E-mail já cadastrado.</value>
+  </data>
+</root>

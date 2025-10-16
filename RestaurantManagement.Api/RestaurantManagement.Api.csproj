@@ -24,5 +24,6 @@
     <PackageReference Include="Sentry.AspNetCore" Version="5.15.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.5" />
   </ItemGroup>
+  
 
 </Project>

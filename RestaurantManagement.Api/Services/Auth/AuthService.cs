@@ -1,39 +1,50 @@
+using Microsoft.Extensions.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using RestaurantManagement.Api.Data;
-using RestaurantManagement.Api.Entities.Users;
-using RestaurantManagement.Api.Models.Auth;
-using RestaurantManagement.Api.Options;
-using RestaurantManagement.Api.Utils.Exceptions;
-using System.Text;
-using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
+using System.Security.Claims;
+using System.Globalization;
+using System.Text;
+using RestaurantManagement.Api.Utils.Exceptions;
+using RestaurantManagement.Api.Entities.Users;
+using RestaurantManagement.Api.Models.Auth;
+using RestaurantManagement.Api.Options;
+using RestaurantManagement.Api.Data;
 
 namespace RestaurantManagement.Api.Services.Auth
 {
     public class AuthService : IAuthService
     {
-        private readonly RestaurantDbContext _context;
+        private readonly RestaurantDbContext _db;
         private readonly SecurityOptions _securityOptions;
         private readonly JwtOptions _jwtOptions;
+        private readonly IStringLocalizer<SharedResource> _localizer;
+
+        private readonly ILogger<string> _logger;
 
         public AuthService(
-            RestaurantDbContext context,
+            RestaurantDbContext db,
             IConfiguration config,
             IOptions<SecurityOptions> securityOptions,
-            IOptions<JwtOptions> jwtOptions)
+            IOptions<JwtOptions> jwtOptions,
+            IStringLocalizer<SharedResource> localizer,
+            ILogger<string> logger)
         {
-            _context = context;
+            _db = db;
             _securityOptions = securityOptions.Value;
             _jwtOptions = jwtOptions.Value;
+            _localizer = localizer;
+            _logger = logger;
         }
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
         {
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-                throw new BusinessException("Email is already registered.", 400);
+            if (await _db.Users.AnyAsync(u => u.Email == request.Email))
+            {
+                throw new BusinessException(_localizer["EmailAlreadyRegistered"].Value, 400);
+            }
 
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
@@ -49,8 +60,8 @@ namespace RestaurantManagement.Api.Services.Auth
                 UpdatedAt = DateTime.UtcNow
             };
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            _db.Users.Add(user);
+            await _db.SaveChangesAsync();
 
             return new AuthResponse
             {
@@ -65,7 +76,7 @@ namespace RestaurantManagement.Api.Services.Auth
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
             var email = request.Email.Trim().ToLowerInvariant();
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
 
             if (user == null)
                 throw new BusinessException("Invalid email or password.", 401);
@@ -87,7 +98,7 @@ namespace RestaurantManagement.Api.Services.Auth
                     SentrySdk.CaptureMessage($"Account locked: {user.Email}");
                 }
 
-                await _context.SaveChangesAsync();
+                await _db.SaveChangesAsync();
                 throw new BusinessException("Invalid email or password.", 401);
             }
 
@@ -102,7 +113,7 @@ namespace RestaurantManagement.Api.Services.Auth
             user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(30);
             user.LastLoginAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            await _db.SaveChangesAsync();
 
             return new AuthResponse
             {
@@ -117,7 +128,7 @@ namespace RestaurantManagement.Api.Services.Auth
 
         public async Task<AuthResponse> RefreshTokenAsync(RefreshRequest request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
             if (user == null || user.RefreshTokenHash == null || user.RefreshTokenExpiry == null)
                 throw new BusinessException("Invalid or expired refresh token.", 401);
 
@@ -139,7 +150,7 @@ namespace RestaurantManagement.Api.Services.Auth
             user.RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(expireMinutes);
             user.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            await _db.SaveChangesAsync();
 
             return new AuthResponse
             {

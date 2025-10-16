@@ -11,6 +11,5 @@ namespace RestaurantManagement.Api.Services.Auth
 
         Task<AuthResponse> RefreshTokenAsync(RefreshRequest request);
         
-
     }
 }
