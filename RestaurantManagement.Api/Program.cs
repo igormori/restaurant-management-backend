@@ -29,7 +29,7 @@ var builder = WebApplication.CreateBuilder(args);
 // ---------------------------------------------
 // Add Localization
 // ---------------------------------------------
-builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
 
 Console.WriteLine("Culture: " + CultureInfo.CurrentUICulture);
 CultureInfo.CurrentCulture = new CultureInfo("pt");
