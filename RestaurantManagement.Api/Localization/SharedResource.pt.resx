@@ -72,4 +72,10 @@
   <data name="InvalidRefreshToken" xml:space="preserve">
     <value>O token de atualização é inválido ou expirou. Solicite uma nova sessão de login.</value>
   </data>
+    <data name="UserVerified" xml:space="preserve">
+    <value>Sua conta foi verificada com sucesso.</value>
+  </data>
+  <data name="InvalidOrExpiredCode" xml:space="preserve">
+    <value>O código de verificação é inválido ou expirou.</value>
+  </data>
 </root>

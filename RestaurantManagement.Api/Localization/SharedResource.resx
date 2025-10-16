@@ -72,4 +72,10 @@
   <data name="InvalidRefreshToken" xml:space="preserve">
     <value>The refresh token is invalid or expired. Please request a new login session.</value>
   </data>
+  <data name="UserVerified" xml:space="preserve">
+    <value>Your account has been verified successfully.</value>
+  </data>
+  <data name="InvalidOrExpiredCode" xml:space="preserve">
+    <value>The verification code is invalid or has expired.</value>
+  </data>
 </root>

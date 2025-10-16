@@ -35,5 +35,12 @@ namespace RestaurantManagement.Api.Controllers.Auth
             var response = await _authService.RefreshTokenAsync(request);
             return Ok(response);
         }
+
+        [HttpPost("verify")]
+        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
+        {
+            var response = await _authService.VerifyEmailAsync(request);
+            return Ok(response);
+        }
     }
 }

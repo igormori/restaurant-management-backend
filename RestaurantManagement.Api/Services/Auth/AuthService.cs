@@ -70,11 +70,11 @@ namespace RestaurantManagement.Api.Services.Auth
             {
                 UserId = user.Id,
                 Code = verificationCode,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(15)
+                ExpiresAt = DateTime.UtcNow.AddMinutes(60)
             };
             _db.UserVerificationCodes.Add(verification);
             await _db.SaveChangesAsync();
-            
+
             // TODO: Implement the email verificaiton
             // await _emailService.SendVerificationEmailAsync(user.Email, code);
 
@@ -188,6 +188,27 @@ namespace RestaurantManagement.Api.Services.Auth
                 Token = newJwt,
                 RefreshToken = newRefreshToken
             };
+        }
+
+        public async Task<string> VerifyEmailAsync(VerifyEmailRequest request)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (user == null) throw new BusinessException(_localizer["UserNotFound"].Value, 400);
+
+            var verification = await _db.UserVerificationCodes
+                .Where(v => v.UserId == user.Id && !v.IsUsed && v.ExpiresAt > DateTime.UtcNow)
+                .OrderByDescending(v => v.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (verification == null || verification.Code != request.Code)
+                throw new BusinessException(_localizer["InvalidOrExpiredCode"].Value, 401);
+
+            // ✅ Mark as verified
+            user.IsVerified = true;
+            verification.IsUsed = true;
+
+            await _db.SaveChangesAsync();
+            return _localizer["UserVerified"].Value;
         }
 
         private string GenerateRefreshToken()
