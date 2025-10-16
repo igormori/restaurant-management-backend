@@ -46,6 +46,7 @@ namespace RestaurantManagement.Api.Services.Auth
                 throw new BusinessException(_localizer["EmailAlreadyRegistered"].Value, 400);
             }
 
+
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
             var user = new User

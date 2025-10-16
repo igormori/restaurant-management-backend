@@ -3,6 +3,7 @@
 // ---------------------------------------------
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -14,6 +15,7 @@ using RestaurantManagement.Api.Utils.Localization;
 using RestaurantManagement.Api.Services.Auth;
 using RestaurantManagement.Api.Options;
 using RestaurantManagement.Api.Data;
+using RestaurantManagement.Api; 
 
 
 // ---------------------------------------------
@@ -31,8 +33,6 @@ var builder = WebApplication.CreateBuilder(args);
 // ---------------------------------------------
 builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
 
-Console.WriteLine("Culture: " + CultureInfo.CurrentUICulture);
-CultureInfo.CurrentCulture = new CultureInfo("pt");
 var supportedCultures = new[]
 {
     new CultureInfo("en"),
@@ -77,6 +77,44 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(
         Encoding.UTF8.GetBytes(jwtOptions.Key))
     };
+
+    // Handle 401/403 with localized JSON
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = async ctx =>
+        {
+            ctx.NoResult();
+            ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            ctx.Response.ContentType = "application/json";
+
+            var loc = ctx.HttpContext.RequestServices.GetRequiredService<IStringLocalizer<SharedResource>>();
+            var msg = loc["InvalidToken"].Value;
+            await ctx.Response.WriteAsJsonAsync(new { message = msg });
+        },
+        OnChallenge = async ctx =>
+        {
+            ctx.HandleResponse();
+            if (!ctx.Response.HasStarted)
+            {
+                ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                ctx.Response.ContentType = "application/json";
+
+                var loc = ctx.HttpContext.RequestServices.GetRequiredService<IStringLocalizer<SharedResource>>();
+                var msg = loc["UnauthorizedMessage"].Value;
+                await ctx.Response.WriteAsJsonAsync(new { message = msg });
+            }
+        },
+        OnForbidden = async ctx =>
+        {
+            ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
+            ctx.Response.ContentType = "application/json";
+
+            var loc = ctx.HttpContext.RequestServices.GetRequiredService<IStringLocalizer<SharedResource>>();
+            var msg = loc["AccessDenied"].Value;
+            await ctx.Response.WriteAsJsonAsync(new { message = msg });
+        }
+    };
+    
 });
 
 // Add controller support (API endpoints) + enable validation localization
@@ -160,12 +198,8 @@ if (app.Environment.IsDevelopment())
 
 //Localiation
 app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
-
-
 // Global Exception Handling Middleware
 app.UseMiddleware<RestaurantManagement.Api.Middleware.ExceptionHandlingMiddleware>();
-
-
 app.UseHttpsRedirection();
 app.UseCors("DefaultCorsPolicy");
 app.UseAuthentication();

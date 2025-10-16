@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Localization;
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Api.Data;
 using RestaurantManagement.Api.Entities.Organizations;
@@ -12,18 +13,20 @@ namespace RestaurantManagement.Api.Services.Organizations
     public class OrganizationService : IOrganizationService
     {
         private readonly RestaurantDbContext _db;
+        private readonly IStringLocalizer<SharedResource> _localizer;
 
-        public OrganizationService(RestaurantDbContext db)
+        public OrganizationService(RestaurantDbContext db, IStringLocalizer<SharedResource> localizer)
         {
             _db = db;
+            _localizer = localizer;
         }
 
-        public async Task<OrganizationResponse> CreateForUserAsync(Guid ownerUserId, CreateOrganizationRequest request)
+        public async Task<OrganizationResponse> CreateOrganizationAsync(Guid ownerUserId, CreateOrganizationRequest request)
         {
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == ownerUserId);
             if (user == null)
-                throw new InvalidOperationException("User not found.");
-
+                throw new InvalidOperationException(_localizer["UserNotFound"].Value);
+                
             using var tx = await _db.Database.BeginTransactionAsync();
 
             // 1. Create Organization

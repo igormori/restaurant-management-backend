@@ -12,6 +12,6 @@ namespace RestaurantManagement.Api.Services.Organizations
         /// <param name="ownerUserId">The user that will own the organization.</param>
         /// <param name="request">The organization details.</param>
         /// <returns>A response with the created organization.</returns>
-        Task<OrganizationResponse> CreateForUserAsync(Guid ownerUserId, CreateOrganizationRequest request);
+        Task<OrganizationResponse> CreateOrganizationAsync(Guid ownerUserId, CreateOrganizationRequest request);
     }
 }

@@ -42,4 +42,13 @@
   <data name="EmailAlreadyRegistered" xml:space="preserve">
     <value>Email is already registered.</value>
   </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>User not found!.</value>
+  </data>
+  <data name="UnauthorizedMessage" xml:space="preserve">
+    <value>Unautorized user.</value>
+  </data>
+  <data name="InvalidToken" xml:space="preserve">
+    <value>Invalid token.</value>
+  </data>
 </root>
