@@ -130,7 +130,7 @@ namespace RestaurantManagement.Api.Services.Organizations
             };
         }
         
-        public async Task<OrganizationResponse> EditOrganizationAsync(Guid organizationId, CreateOrganizationRequest request)
+        public async Task<OrganizationResponse> EditOrganizationAsync(Guid organizationId, EditOrganizationRequest request)
         {
 
             // 1. check if organiztion exists and get it

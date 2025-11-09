@@ -13,6 +13,6 @@ namespace RestaurantManagement.Api.Services.Organizations
         /// <param name="request">The organization details.</param>
         /// <returns>A response with the created organization.</returns>
         Task<OrganizationResponse> CreateOrganizationAsync(Guid ownerUserId, CreateOrganizationRequest request);
-        Task<OrganizationResponse> EditOrganizationAsync(Guid organizationId, CreateOrganizationRequest request);
+        Task<OrganizationResponse> EditOrganizationAsync(Guid organizationId, EditOrganizationRequest request);
     }
 }

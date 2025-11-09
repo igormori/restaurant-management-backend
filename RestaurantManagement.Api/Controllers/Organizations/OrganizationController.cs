@@ -42,7 +42,7 @@ namespace RestaurantManagement.Api.Controllers.Organizations
         // PUT api/organizations/edit/{organizationId}
         [HttpPut("edit/{organizationId:guid}")]
         [Authorize(Roles ="Owner,Admin")]
-        public async Task<ActionResult<OrganizationResponse>> Edit(Guid organizationId, [FromBody] CreateOrganizationRequest request)
+        public async Task<ActionResult<OrganizationResponse>> Edit(Guid organizationId, [FromBody] EditOrganizationRequest request)
         {
             var response = await _organizationService.EditOrganizationAsync(organizationId, request);
             return Ok(response);
