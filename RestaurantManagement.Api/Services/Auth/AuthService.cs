@@ -41,13 +41,16 @@ namespace RestaurantManagement.Api.Services.Auth
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
         {
+            // 1. Check if user already exits
             if (await _db.Users.AnyAsync(u => u.Email == request.Email))
-            {
                 throw new BusinessException(_localizer["EmailAlreadyRegistered"].Value, 400);
-            }
 
+            // 2. Hash password
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
+            using var tx = await _db.Database.BeginTransactionAsync();
+
+            // 3. Add new user
             var user = new User
             {
                 Email = request.Email,
@@ -60,10 +63,9 @@ namespace RestaurantManagement.Api.Services.Auth
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
-
             _db.Users.Add(user);
-            await _db.SaveChangesAsync();
 
+            // 4. Add the verification code
             var verificationCode = new Random().Next(100000, 999999).ToString();
 
             var verification = new UserVerificationCode
@@ -73,7 +75,9 @@ namespace RestaurantManagement.Api.Services.Auth
                 ExpiresAt = DateTime.UtcNow.AddMinutes(60)
             };
             _db.UserVerificationCodes.Add(verification);
+
             await _db.SaveChangesAsync();
+            await tx.CommitAsync();
 
             // TODO: Implement the email verificaiton
             // await _emailService.SendVerificationEmailAsync(user.Email, code);
@@ -91,7 +95,9 @@ namespace RestaurantManagement.Api.Services.Auth
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
             var email = request.Email.Trim().ToLowerInvariant();
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _db.Users
+                .Include(u => u.Roles)
+                .FirstOrDefaultAsync(u => u.Email == email);
 
             if (user == null)
                 throw new BusinessException(_localizer["UserNotFound"].Value, 400);

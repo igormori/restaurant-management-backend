@@ -10,7 +10,7 @@ using RestaurantManagement.Api.Services.Organizations;
 namespace RestaurantManagement.Api.Controllers.Organizations
 {
     [ApiController]
-    [Route("api/users/{userId:guid}/organizations")]
+    [Route("api/organizations")]
     public class OrganizationController : ControllerBase
     {
         private readonly IOrganizationService _organizationService;
@@ -22,13 +22,12 @@ namespace RestaurantManagement.Api.Controllers.Organizations
             _localizer = localizer;
         }
 
-        // POST api/users/{userId}/organizations/register
-        [HttpPost("register")]
+        // POST api/organizations/register/{userId}
+        [HttpPost("register/{userId:guid}")]
         [Authorize]
         public async Task<ActionResult<OrganizationResponse>> Register(Guid userId, [FromBody] CreateOrganizationRequest request)
         {
             // Check if logged user is the same as the passed id on the parametere.
-            // This might not need if the admin is creating it on the admin portal. 
             var subject = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (!Guid.TryParse(subject, out var currentUserId) || currentUserId != userId)
@@ -37,6 +36,15 @@ namespace RestaurantManagement.Api.Controllers.Organizations
             }
 
             var response = await _organizationService.CreateOrganizationAsync(userId, request);
+            return Ok(response);
+        }
+
+        // PUT api/organizations/edit/{organizationId}
+        [HttpPut("edit/{organizationId:guid}")]
+        [Authorize(Roles ="Owner,Admin")]
+        public async Task<ActionResult<OrganizationResponse>> Edit(Guid organizationId, [FromBody] CreateOrganizationRequest request)
+        {
+            var response = await _organizationService.EditOrganizationAsync(organizationId, request);
             return Ok(response);
         }
     }

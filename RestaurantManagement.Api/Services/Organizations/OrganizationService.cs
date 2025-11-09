@@ -42,8 +42,8 @@ namespace RestaurantManagement.Api.Services.Organizations
                 .ToListAsync();
 
             // 🧩 Check if any of the user's organizations are under trial
-            bool hasTrialOrg = userOrgs.Any(o => 
-                o.Settings != null && 
+            bool hasTrialOrg = userOrgs.Any(o =>
+                o.Settings != null &&
                 o.Settings.PlanType == "TRIAL");
 
             if (hasTrialOrg)
@@ -127,6 +127,47 @@ namespace RestaurantManagement.Api.Services.Organizations
                 MaxLocations = settings.MaxLocations,
                 TrialEndDate = settings.TrialEndDate,
                 IsTrialActive = settings.IsTrialActive
+            };
+        }
+        
+        public async Task<OrganizationResponse> EditOrganizationAsync(Guid organizationId, CreateOrganizationRequest request)
+        {
+
+            // 1. check if organiztion exists and get it
+            var organization = await _db.Organizations.FirstOrDefaultAsync(org => org.Id == organizationId);
+            if (organization == null)
+                throw new InvalidOperationException(_localizer["OrganizationNotFound"].Value);
+
+            // 2. Get the organiztion settings
+            var organizationSettings = await _db.OrganizationSettings.FirstOrDefaultAsync(orgS => orgS.OrganizationId == organizationId);
+            if (organizationSettings == null)
+                throw new InvalidOperationException(_localizer["OrganizationSettingsNotFound"].Value);
+
+            // 2. Edit Organization Information
+            organization.Name = request.Name;
+            organization.Description = request.Description;
+            organization.LogoUrl = request.LogoUrl;
+            organization.PrimaryColor = request.PrimaryColor;
+            organization.SecondaryColor = request.SecondaryColor;
+            organization.AccentColor = request.AccentColor;
+            organization.UpdatedAt = DateTime.UtcNow;
+
+            await _db.SaveChangesAsync();
+
+            // 4. Return sanitized response
+            return new OrganizationResponse
+            {
+                Id = organization.Id,
+                Name = organization.Name,
+                Description = organization.Description,
+                LogoUrl = organization.LogoUrl,
+                PrimaryColor = organization.PrimaryColor,
+                SecondaryColor = organization.SecondaryColor,
+                AccentColor = organization.AccentColor,
+                PlanType = organizationSettings.PlanType,
+                MaxLocations = organizationSettings.MaxLocations,
+                TrialEndDate = organizationSettings.TrialEndDate,
+                IsTrialActive = organizationSettings.IsTrialActive
             };
         }
     }

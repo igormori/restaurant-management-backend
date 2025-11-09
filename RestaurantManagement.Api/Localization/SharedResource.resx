@@ -87,6 +87,15 @@
   <data name="VerificationCodeRecentlySent" xml:space="preserve">
     <value>A verification code was sent recently. Please wait a moment before requesting another.</value>
   </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>You do not have permission to access this resource. Please contact your administrator if you believe this is an error.</value>
+  </data>
+  <data name="OrganizationNotFound" xml:space="preserve">
+    <value>Organization not found.</value>
+  </data>
+  <data name="OrganizationSettingsNotFound" xml:space="preserve">
+    <value>Organization settings not found.</value>
+  </data>
 </root>
 
 

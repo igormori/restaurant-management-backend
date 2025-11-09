@@ -57,6 +57,9 @@ Update appsettings.Development.json with your PostgreSQL credentials:
     dotnet ef database update
     ```
 
+
+LONG TIME WITHOUT SEING THE PROJECT? START HERE:
+
 ## 📂 Project Structure
 1- Clone the repository
 
@@ -65,11 +68,16 @@ Update appsettings.Development.json with your PostgreSQL credentials:
 ├─ Controllers/       # API endpoints
 ├─ Data/              # DbContext, migrations
 ├─ Entities/          # Database entities
+├─ Localization/      # Multilanguage resources
+├─ Middleware/        # HTTP response and sentry unhandlade setup
 ├─ Models/            # Request/response DTOs
-├─ Services/          # Business logic
-├─ Repositories/      # Data access layer
-├─ Utils/             # Helpers (JWT, Email, etc.)
+├─ Options/           # .ENV Variables
 ├─ Properties/        # Launch settings
+├─ Services/          # Business logic
+├─ Utils/             # Helpers (JWT, Email, etc.)
 ├─ appsettings.json
 └─ Program.cs
 ```
+
+
+

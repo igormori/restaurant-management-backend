@@ -5,7 +5,7 @@ namespace RestaurantManagement.Api.Models.Auth
     public class VerifyEmailRequest
     {
         private string _email = string.Empty;
-        public string _code { get; set; } = string.Empty;
+        public string? _code { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
         [EmailAddress(ErrorMessage = "EmailAddressAttribute_ValidationError")]
