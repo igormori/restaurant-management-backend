@@ -1,6 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Moq;
+using RestaurantManagement.Api;
 using RestaurantManagement.Api.Data;
 using RestaurantManagement.Api.Entities.Users;
 using RestaurantManagement.Api.Models.Auth;
@@ -15,14 +20,16 @@ namespace RestaurantManagement.Tests.Controller.Auth
     {
         private AuthService GetService(out RestaurantDbContext context)
         {
-            // Setup in-memory database
+            // 🧱 In-memory database
             var options = new DbContextOptionsBuilder<RestaurantDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                 .Options;
             context = new RestaurantDbContext(options);
 
-            // Fake config
-            var inMemorySettings = new Dictionary<string, string> {
+            // ⚙️ In-memory config
+            var inMemorySettings = new Dictionary<string, string>
+            {
                 {"Jwt:Key", "test_secret_key_12345678901234567890"},
                 {"Jwt:Issuer", "TestIssuer"},
                 {"Jwt:Audience", "TestAudience"},
@@ -48,13 +55,31 @@ namespace RestaurantManagement.Tests.Controller.Auth
                 ExpireMinutes = 60
             });
 
-            return new AuthService(context, config, securityOptions, jwtOptions);
+            // 🌐 Localizer mock (returns key as value)
+            var localizerMock = new Mock<IStringLocalizer<SharedResource>>();
+            localizerMock.Setup(l => l[It.IsAny<string>()])
+                .Returns((string key) => new LocalizedString(key, key));
+
+            // 🧾 Logger mock
+            var loggerMock = new Mock<ILogger<string>>();
+
+            return new AuthService(
+                context,
+                config,
+                securityOptions,
+                jwtOptions,
+                localizerMock.Object,
+                loggerMock.Object
+            );
         }
+
+        // ------------------------
+        // ✅ Registration
+        // ------------------------
 
         [Fact]
         public async Task RegisterAsync_ShouldCreateUser()
         {
-            // Arrange
             var service = GetService(out var context);
             var request = new RegisterRequest
             {
@@ -65,19 +90,16 @@ namespace RestaurantManagement.Tests.Controller.Auth
                 LastName = "Doe"
             };
 
-            // Act
             var result = await service.RegisterAsync(request);
 
-            // Assert
             Assert.NotNull(result);
             Assert.Equal("test@example.com", result.Email);
-            Assert.Single(context.Users); // user saved in DB
+            Assert.Single(context.Users);
         }
 
         [Fact]
         public async Task RegisterAsync_ShouldThrow_WhenEmailExists()
         {
-            // Arrange
             var service = GetService(out var context);
             context.Users.Add(new User
             {
@@ -97,14 +119,16 @@ namespace RestaurantManagement.Tests.Controller.Auth
                 LastName = "Doe"
             };
 
-            // Act & Assert
             await Assert.ThrowsAsync<BusinessException>(() => service.RegisterAsync(request));
         }
+
+        // ------------------------
+        // ✅ Login
+        // ------------------------
 
         [Fact]
         public async Task LoginAsync_ShouldReturnToken_WhenCredentialsValid()
         {
-            // Arrange
             var service = GetService(out var context);
             var passwordHash = BCrypt.Net.BCrypt.HashPassword("Password123!");
             var user = new User
@@ -112,7 +136,8 @@ namespace RestaurantManagement.Tests.Controller.Auth
                 Email = "test@example.com",
                 PasswordHash = passwordHash,
                 FirstName = "John",
-                LastName = "Doe"
+                LastName = "Doe",
+                IsVerified = true
             };
             context.Users.Add(user);
             await context.SaveChangesAsync();
@@ -123,10 +148,8 @@ namespace RestaurantManagement.Tests.Controller.Auth
                 Password = "Password123!"
             };
 
-            // Act
             var result = await service.LoginAsync(request);
 
-            // Assert
             Assert.NotNull(result.Token);
             Assert.NotNull(result.RefreshToken);
             Assert.Equal(user.Email, result.Email);
@@ -135,7 +158,6 @@ namespace RestaurantManagement.Tests.Controller.Auth
         [Fact]
         public async Task LoginAsync_ShouldThrow_WhenInvalidCredentials()
         {
-            // Arrange
             var service = GetService(out var context);
             var request = new LoginRequest
             {
@@ -143,14 +165,12 @@ namespace RestaurantManagement.Tests.Controller.Auth
                 Password = "badpassword"
             };
 
-            // Act & Assert
             await Assert.ThrowsAsync<BusinessException>(() => service.LoginAsync(request));
         }
 
         [Fact]
         public async Task LoginAsync_ShouldLockAccount_WhenThresholdExceeded()
         {
-            // Arrange
             var service = GetService(out var context);
             var passwordHash = BCrypt.Net.BCrypt.HashPassword("Password123!");
             var user = new User
@@ -158,7 +178,8 @@ namespace RestaurantManagement.Tests.Controller.Auth
                 Email = "test@example.com",
                 PasswordHash = passwordHash,
                 FirstName = "John",
-                LastName = "Doe"
+                LastName = "Doe",
+                IsVerified = true
             };
             context.Users.Add(user);
             await context.SaveChangesAsync();
@@ -169,21 +190,22 @@ namespace RestaurantManagement.Tests.Controller.Auth
                 Password = "WrongPass1!"
             };
 
-            // trigger failed attempts up to threshold
             for (var i = 0; i < 5; i++)
             {
                 await Assert.ThrowsAsync<BusinessException>(() => service.LoginAsync(invalidRequest));
             }
 
-            // Act & Assert: account should now be locked
             var ex = await Assert.ThrowsAsync<BusinessException>(() => service.LoginAsync(invalidRequest));
             Assert.Equal(423, ex.StatusCode);
         }
 
+        // ------------------------
+        // ✅ Refresh Token
+        // ------------------------
+
         [Fact]
         public async Task RefreshTokenAsync_ShouldReturnNewToken_WhenValidRefreshToken()
         {
-            // Arrange
             var service = GetService(out var context);
             var passwordHash = BCrypt.Net.BCrypt.HashPassword("Password123!");
             var refreshToken = "refresh_token_value";
@@ -206,10 +228,8 @@ namespace RestaurantManagement.Tests.Controller.Auth
                 RefreshToken = refreshToken
             };
 
-            // Act
             var result = await service.RefreshTokenAsync(request);
 
-            // Assert
             Assert.NotNull(result.Token);
             Assert.NotNull(result.RefreshToken);
             Assert.Equal(user.Email, result.Email);
@@ -218,7 +238,6 @@ namespace RestaurantManagement.Tests.Controller.Auth
         [Fact]
         public async Task RefreshTokenAsync_ShouldThrow_WhenTokenExpired()
         {
-            // Arrange
             var service = GetService(out var context);
             var refreshToken = "refresh_token_value";
             var refreshTokenHash = BCrypt.Net.BCrypt.HashPassword(refreshToken);
@@ -229,7 +248,7 @@ namespace RestaurantManagement.Tests.Controller.Auth
                 FirstName = "John",
                 LastName = "Doe",
                 RefreshTokenHash = refreshTokenHash,
-                RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(-1) // expired
+                RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(-1)
             };
             context.Users.Add(user);
             await context.SaveChangesAsync();
@@ -240,14 +259,12 @@ namespace RestaurantManagement.Tests.Controller.Auth
                 RefreshToken = refreshToken
             };
 
-            // Act & Assert
             await Assert.ThrowsAsync<BusinessException>(() => service.RefreshTokenAsync(request));
         }
 
         [Fact]
         public async Task RefreshTokenAsync_ShouldThrow_WhenTokenInvalid()
         {
-            // Arrange
             var service = GetService(out var context);
             var refreshTokenHash = BCrypt.Net.BCrypt.HashPassword("correct_token");
             var user = new User
@@ -268,8 +285,78 @@ namespace RestaurantManagement.Tests.Controller.Auth
                 RefreshToken = "wrong_token"
             };
 
-            // Act & Assert
             await Assert.ThrowsAsync<BusinessException>(() => service.RefreshTokenAsync(request));
+        }
+
+        // ------------------------
+        // ✅ Email Verification
+        // ------------------------
+
+        [Fact]
+        public async Task VerifyEmailAsync_ShouldVerifyUser_WhenCodeValid()
+        {
+            var service = GetService(out var context);
+            var user = new User
+            {
+                Email = "test@example.com",
+                PasswordHash = "fake",
+                FirstName = "John",
+                LastName = "Doe",
+                IsVerified = false
+            };
+            context.Users.Add(user);
+
+            var code = new UserVerificationCode
+            {
+                UserId = user.Id,
+                Code = "123456",
+                ExpiresAt = DateTime.UtcNow.AddMinutes(10),
+                CreatedAt = DateTime.UtcNow
+            };
+            context.UserVerificationCodes.Add(code);
+            await context.SaveChangesAsync();
+
+            var request = new VerifyEmailRequest
+            {
+                Email = "test@example.com",
+                Code = "123456"
+            };
+
+            var result = await service.VerifyEmailAsync(request);
+
+            Assert.Equal("UserVerified", result);
+            Assert.True(user.IsVerified);
+            Assert.True(code.IsUsed);
+        }
+
+        // ------------------------
+        // ✅ Resend Verification
+        // ------------------------
+
+        [Fact]
+        public async Task ResendVerificationCodeAsync_ShouldGenerateNewCode_WhenAllowed()
+        {
+            var service = GetService(out var context);
+            var user = new User
+            {
+                Email = "test@example.com",
+                PasswordHash = "fake",
+                FirstName = "John",
+                LastName = "Doe",
+                IsVerified = false
+            };
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            var request = new ResendVerificationRequest
+            {
+                Email = "test@example.com"
+            };
+
+            var result = await service.ResendVerificationCodeAsync(request);
+
+            Assert.Equal("VerificationCodeResent", result);
+            Assert.Single(context.UserVerificationCodes);
         }
     }
 }
