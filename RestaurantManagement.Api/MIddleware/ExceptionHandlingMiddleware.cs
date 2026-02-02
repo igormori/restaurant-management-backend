@@ -9,11 +9,13 @@ namespace RestaurantManagement.Api.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+        private readonly IHostEnvironment _env;
 
-        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger, IHostEnvironment env)
         {
             _next = next;
             _logger = logger;
+            _env = env;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -45,7 +47,7 @@ namespace RestaurantManagement.Api.Middleware
                 var errorResponse = new
                 {
                     error = "An unexpected error occurred.",
-                    detail = ex.Message // ⚠️ remove detail in production
+                    detail = _env.IsDevelopment() ? ex.Message : null
                 };
 
                 await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse));
