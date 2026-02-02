@@ -72,7 +72,7 @@ namespace RestaurantManagement.Api.Services.Auth
             {
                 UserId = user.Id,
                 Code = verificationCode,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(60)
+                ExpiresAt = DateTime.UtcNow.AddMinutes(_securityOptions.VerificationCodeExpiryMinutes)
             };
             _db.UserVerificationCodes.Add(verification);
 
@@ -142,7 +142,7 @@ namespace RestaurantManagement.Api.Services.Auth
             var refreshToken = GenerateRefreshToken();
 
             user.RefreshTokenHash = BCrypt.Net.BCrypt.HashPassword(refreshToken); ;
-            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(30);
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpireDays);
             user.LastLoginAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();
@@ -232,7 +232,7 @@ namespace RestaurantManagement.Api.Services.Auth
                 .OrderByDescending(v => v.CreatedAt)
                 .FirstOrDefaultAsync();
 
-            if (lastCode != null && (DateTime.UtcNow - lastCode.CreatedAt).TotalSeconds < 60)
+            if (lastCode != null && (DateTime.UtcNow - lastCode.CreatedAt).TotalSeconds < _securityOptions.ResendCooldownSeconds)
                 throw new BusinessException(_localizer["VerificationCodeRecentlySent"].Value, 429);
 
             // Invalidate previous unused codes
@@ -249,7 +249,7 @@ namespace RestaurantManagement.Api.Services.Auth
             {
                 UserId = user.Id,
                 Code = code,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(15)
+                ExpiresAt = DateTime.UtcNow.AddMinutes(_securityOptions.VerificationCodeExpiryMinutes)
             };
 
             _db.UserVerificationCodes.Add(verification);

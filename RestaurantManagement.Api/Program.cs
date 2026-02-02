@@ -168,15 +168,19 @@ builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 // ---------------------------------------------
 // Define a CORS policy
 // ---------------------------------------------
+builder.Services.Configure<CorsOptions>(builder.Configuration.GetSection("Cors"));
+
+// ---------------------------------------------
+// Define a CORS policy
+// ---------------------------------------------
 builder.Services.AddCors(options =>
 {
+    var corsOptions = builder.Configuration.GetSection("Cors").Get<CorsOptions>() 
+                      ?? new CorsOptions();
+
     options.AddPolicy("DefaultCorsPolicy", policy =>
     {
-        policy.WithOrigins(
-                "https://your-frontend-app.com",
-                "http://localhost:3000", 
-                "http://localhost:4200"   
-            )
+        policy.WithOrigins(corsOptions.AllowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
