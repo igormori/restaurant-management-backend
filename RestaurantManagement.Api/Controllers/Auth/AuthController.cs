@@ -8,18 +8,25 @@ namespace RestaurantManagement.Api.Controllers.Auth
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthService _authService;
+        private readonly IRegistrationService _registrationService;
+        private readonly ISessionService _sessionService;
+        private readonly IVerificationService _verificationService;
 
-        public AuthController(IAuthService authService)
+        public AuthController(
+            IRegistrationService registrationService,
+            ISessionService sessionService,
+            IVerificationService verificationService)
         {
-            _authService = authService;
+            _registrationService = registrationService;
+            _sessionService = sessionService;
+            _verificationService = verificationService;
         }
 
         // POST api/auth/register
         [HttpPost("register")]
         public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
         {
-            var response = await _authService.RegisterAsync(request);
+            var response = await _registrationService.RegisterAsync(request);
             return Ok(response);
         }
 
@@ -27,7 +34,7 @@ namespace RestaurantManagement.Api.Controllers.Auth
         [HttpPost("login")]
         public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
         {
-            var response = await _authService.LoginAsync(request);
+            var response = await _sessionService.LoginAsync(request);
             return Ok(response);
         }
 
@@ -35,7 +42,7 @@ namespace RestaurantManagement.Api.Controllers.Auth
         [HttpPost("refresh")]
         public async Task<ActionResult<AuthResponse>> Refresh([FromBody] RefreshRequest request)
         {
-            var response = await _authService.RefreshTokenAsync(request);
+            var response = await _sessionService.RefreshTokenAsync(request);
             return Ok(response);
         }
 
@@ -43,7 +50,7 @@ namespace RestaurantManagement.Api.Controllers.Auth
         [HttpPost("verify")]
         public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
         {
-            var response = await _authService.VerifyEmailAsync(request);
+            var response = await _verificationService.VerifyEmailAsync(request);
             return Ok(response);
         }
 
@@ -51,7 +58,7 @@ namespace RestaurantManagement.Api.Controllers.Auth
         [HttpPost("resend-verification")]
         public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationRequest request)
         {
-            var respoonse = await _authService.ResendVerificationCodeAsync(request);
+            var respoonse = await _verificationService.ResendVerificationCodeAsync(request);
             return Ok(respoonse);
         }
     }

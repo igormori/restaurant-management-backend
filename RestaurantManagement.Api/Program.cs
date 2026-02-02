@@ -161,7 +161,9 @@ builder.Services.AddSwaggerGen();
 // ---------------------------------------------
 // Dependency Injection: Register application services
 // ---------------------------------------------
-builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IRegistrationService, RegistrationService>();
+builder.Services.AddScoped<ISessionService, SessionService>();
+builder.Services.AddScoped<IVerificationService, VerificationService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 
 
