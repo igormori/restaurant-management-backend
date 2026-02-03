@@ -175,6 +175,7 @@ builder.Services.AddScoped<IVerificationService, VerificationService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<RestaurantManagement.Api.Services.Menus.IMenuService, RestaurantManagement.Api.Services.Menus.MenuService>();
 
 
 // ---------------------------------------------

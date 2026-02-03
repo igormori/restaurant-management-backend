@@ -108,6 +108,15 @@
   <data name="EmailSendingFailed" xml:space="preserve">
     <value>Failed to send verification email. Please try again later.</value>
   </data>
+  <data name="MenuDeletedSuccessfully" xml:space="preserve">
+    <value>Menu deleted successfully.</value>
+  </data>
+  <data name="MenuAttachedSuccessfully" xml:space="preserve">
+    <value>Menu attached to location successfully.</value>
+  </data>
+  <data name="MenuDetachedSuccessfully" xml:space="preserve">
+    <value>Menu detached from location successfully.</value>
+  </data>
 </root>
 
 

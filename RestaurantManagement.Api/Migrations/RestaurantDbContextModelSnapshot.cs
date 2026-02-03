@@ -96,6 +96,84 @@ namespace RestaurantManagement.Api.Migrations
                     b.ToTable("locations", (string)null);
                 });
 
+            modelBuilder.Entity("RestaurantManagement.Api.Entities.Menus.LocationMenu", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("location_id");
+
+                    b.Property<Guid>("MenuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("menu_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_location_menus");
+
+                    b.HasIndex("LocationId")
+                        .HasDatabaseName("ix_location_menus_location_id");
+
+                    b.HasIndex("MenuId")
+                        .HasDatabaseName("ix_location_menus_menu_id");
+
+                    b.ToTable("location_menus", (string)null);
+                });
+
+            modelBuilder.Entity("RestaurantManagement.Api.Entities.Menus.Menu", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organization_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_menus");
+
+                    b.HasIndex("OrganizationId")
+                        .HasDatabaseName("ix_menus_organization_id");
+
+                    b.ToTable("menus", (string)null);
+                });
+
             modelBuilder.Entity("RestaurantManagement.Api.Entities.Organizations.Organization", b =>
                 {
                     b.Property<Guid>("Id")
@@ -363,6 +441,39 @@ namespace RestaurantManagement.Api.Migrations
                     b.Navigation("Organization");
                 });
 
+            modelBuilder.Entity("RestaurantManagement.Api.Entities.Menus.LocationMenu", b =>
+                {
+                    b.HasOne("RestaurantManagement.Api.Entities.Locations.Location", "Location")
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_location_menus_locations_location_id");
+
+                    b.HasOne("RestaurantManagement.Api.Entities.Menus.Menu", "Menu")
+                        .WithMany("LocationMenus")
+                        .HasForeignKey("MenuId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_location_menus_menus_menu_id");
+
+                    b.Navigation("Location");
+
+                    b.Navigation("Menu");
+                });
+
+            modelBuilder.Entity("RestaurantManagement.Api.Entities.Menus.Menu", b =>
+                {
+                    b.HasOne("RestaurantManagement.Api.Entities.Organizations.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_menus_organizations_organization_id");
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("RestaurantManagement.Api.Entities.Organizations.OrganizationSettings", b =>
                 {
                     b.HasOne("RestaurantManagement.Api.Entities.Organizations.Organization", "Organization")
@@ -413,6 +524,11 @@ namespace RestaurantManagement.Api.Migrations
                         .HasConstraintName("fk_user_verification_codes_users_user_id");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RestaurantManagement.Api.Entities.Menus.Menu", b =>
+                {
+                    b.Navigation("LocationMenus");
                 });
 
             modelBuilder.Entity("RestaurantManagement.Api.Entities.Organizations.Organization", b =>
