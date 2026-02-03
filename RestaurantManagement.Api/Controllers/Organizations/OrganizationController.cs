@@ -22,17 +22,16 @@ namespace RestaurantManagement.Api.Controllers.Organizations
             _localizer = localizer;
         }
 
-        // POST api/organizations/register/{userId}
-        [HttpPost("register/{userId:guid}")]
+        // POST api/organizations/create
+        [HttpPost("create")]
         [Authorize]
-        public async Task<ActionResult<OrganizationResponse>> Register(Guid userId, [FromBody] CreateOrganizationRequest request)
+        public async Task<ActionResult<OrganizationResponse>> Create([FromBody] CreateOrganizationRequest request)
         {
-            // Check if logged user is the same as the passed id on the parametere.
             var subject = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (!Guid.TryParse(subject, out var currentUserId) || currentUserId != userId)
+            if (!Guid.TryParse(subject, out var userId))
             {
-                throw new InvalidOperationException(_localizer["UnauthorizedMessage"].Value);
+                 return Unauthorized();
             }
 
             var response = await _organizationService.CreateOrganizationAsync(userId, request);
@@ -45,6 +44,21 @@ namespace RestaurantManagement.Api.Controllers.Organizations
         public async Task<ActionResult<OrganizationResponse>> Edit(Guid organizationId, [FromBody] EditOrganizationRequest request)
         {
             var response = await _organizationService.EditOrganizationAsync(organizationId, request);
+            return Ok(response);
+        }
+
+        // GET api/organizations
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult<List<OrganizationResponse>>> GetAll()
+        {
+            var subject = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(subject, out var userId))
+            {
+                 return Unauthorized();
+            }
+
+            var response = await _organizationService.GetOrganizationsAsync(userId);
             return Ok(response);
         }
     }

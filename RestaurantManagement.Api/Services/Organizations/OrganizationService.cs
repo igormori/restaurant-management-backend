@@ -82,23 +82,6 @@ namespace RestaurantManagement.Api.Services.Organizations
             };
             _db.OrganizationSettings.Add(settings);
 
-            // 3. Create First Location
-            var location = new Location
-            {
-                Id = Guid.NewGuid(),
-                OrganizationId = org.Id,
-                Name = request.LocationName,
-                Address = request.Address,
-                City = request.City,
-                State = request.State,
-                PostalCode = request.PostalCode,
-                Country = request.Country,
-                PhoneNumber = request.PhoneNumber,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-            _db.Locations.Add(location);
-
             // 4. Assign User as Owner with Write permission
             var ownerRole = new UserRole
             {
@@ -169,6 +152,34 @@ namespace RestaurantManagement.Api.Services.Organizations
                 TrialEndDate = organizationSettings.TrialEndDate,
                 IsTrialActive = organizationSettings.IsTrialActive
             };
+        }
+        public async Task<List<OrganizationResponse>> GetOrganizationsAsync(Guid userId)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+                throw new InvalidOperationException(_localizer["UserNotFound"].Value);
+
+            var organizations = await _db.UserRoles
+                .Where(r => r.UserId == userId)
+                .Include(r => r.Organization)
+                    .ThenInclude(o => o.Settings)
+                .Select(r => new OrganizationResponse
+                {
+                    Id = r.Organization.Id,
+                    Name = r.Organization.Name,
+                    Description = r.Organization.Description,
+                    LogoUrl = r.Organization.LogoUrl,
+                    PrimaryColor = r.Organization.PrimaryColor,
+                    SecondaryColor = r.Organization.SecondaryColor,
+                    AccentColor = r.Organization.AccentColor,
+                    PlanType = r.Organization.Settings != null ? r.Organization.Settings.PlanType : "UNKNOWN",
+                    MaxLocations = r.Organization.Settings != null ? r.Organization.Settings.MaxLocations : 0,
+                    TrialEndDate = r.Organization.Settings != null ? r.Organization.Settings.TrialEndDate : (DateTime?)null,
+                    IsTrialActive = r.Organization.Settings != null ? r.Organization.Settings.IsTrialActive : false
+                })
+                .ToListAsync();
+
+            return organizations;
         }
     }
 }

@@ -59,7 +59,7 @@ namespace RestaurantManagement.Api.Models.Organizations
         }
 
         public int MaxLocations { get; set; } = 1;
-        public DateTime TrialEndDate { get; set; }
+        public DateTime? TrialEndDate { get; set; }
         public bool IsTrialActive { get; set; }
     }
 }

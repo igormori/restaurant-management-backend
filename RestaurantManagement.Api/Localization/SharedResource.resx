@@ -96,6 +96,18 @@
   <data name="OrganizationSettingsNotFound" xml:space="preserve">
     <value>Organization settings not found.</value>
   </data>
+  <data name="UserNotAdminOrOwner" xml:space="preserve">
+    <value>User does not have Admin or Owner permissions.</value>
+  </data>
+  <data name="LocationNotFound" xml:space="preserve">
+    <value>Location not found.</value>
+  </data>
+  <data name="UserNotMemberOfOrganization" xml:space="preserve">
+    <value>User is not a member of this organization.</value>
+  </data>
+  <data name="EmailSendingFailed" xml:space="preserve">
+    <value>Failed to send verification email. Please try again later.</value>
+  </data>
 </root>
 
 

@@ -8,12 +8,13 @@ namespace RestaurantManagement.Api.Entities.Locations
         public Guid OrganizationId { get; set; }
 
         public string Name { get; set; } = null!;
-        public string? Address { get; set; }
-        public string? City { get; set; }
-        public string? State { get; set; }
-        public string? PostalCode { get; set; }
-        public string? Country { get; set; }
-        public string? PhoneNumber { get; set; }
+        public string Address { get; set; } = null!;
+        public string City { get; set; } = null!;
+        public string State { get; set; } = null!;
+        public string PostalCode { get; set; } = null!;
+        public string Country { get; set; } = null!;
+        public string PhoneNumber { get; set; } = null!;
+        public LocationStatus Status { get; set; } = LocationStatus.Active;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Api.Entities.Users;
 using RestaurantManagement.Api.Entities.Organizations;
+using RestaurantManagement.Api.Entities.Menus;
 using RestaurantManagement.Api.Entities.Locations;
 
 namespace RestaurantManagement.Api.Data
@@ -16,6 +17,8 @@ namespace RestaurantManagement.Api.Data
         public DbSet<Organization> Organizations { get; set; }
         public DbSet<OrganizationSettings> OrganizationSettings { get; set; }
         public DbSet<Location> Locations { get; set; }
+        public DbSet<Menu> Menus { get; set; }
+        public DbSet<LocationMenu> LocationMenus { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

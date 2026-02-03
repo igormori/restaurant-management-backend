@@ -54,26 +54,5 @@ namespace RestaurantManagement.Api.Models.Organizations
             set => _accentColor = value?.Trim();
         }
 
-        // Location fields (for first location during trial)
-        [Required, MaxLength(150)]
-        public string LocationName { get; set; } = null!;
-
-        [MaxLength(255)]
-        public string? Address { get; set; }
-
-        [MaxLength(120)]
-        public string? City { get; set; }
-
-        [MaxLength(120)]
-        public string? State { get; set; }
-
-        [MaxLength(20)]
-        public string? PostalCode { get; set; }
-
-        [MaxLength(120)]
-        public string? Country { get; set; }
-
-        [MaxLength(30)]
-        public string? PhoneNumber { get; set; }
     }
 }

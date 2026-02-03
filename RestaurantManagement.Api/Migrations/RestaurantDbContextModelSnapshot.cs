@@ -30,16 +30,19 @@ namespace RestaurantManagement.Api.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("Address")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("address");
 
                     b.Property<string>("City")
+                        .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
                         .HasColumnName("city");
 
                     b.Property<string>("Country")
+                        .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
                         .HasColumnName("country");
@@ -59,19 +62,26 @@ namespace RestaurantManagement.Api.Migrations
                         .HasColumnName("organization_id");
 
                     b.Property<string>("PhoneNumber")
+                        .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)")
                         .HasColumnName("phone_number");
 
                     b.Property<string>("PostalCode")
+                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("postal_code");
 
                     b.Property<string>("State")
+                        .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
                         .HasColumnName("state");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")

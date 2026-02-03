@@ -14,5 +14,6 @@ namespace RestaurantManagement.Api.Services.Organizations
         /// <returns>A response with the created organization.</returns>
         Task<OrganizationResponse> CreateOrganizationAsync(Guid ownerUserId, CreateOrganizationRequest request);
         Task<OrganizationResponse> EditOrganizationAsync(Guid organizationId, EditOrganizationRequest request);
+        Task<List<OrganizationResponse>> GetOrganizationsAsync(Guid userId);
     }
 }

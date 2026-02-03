@@ -15,7 +15,9 @@ using RestaurantManagement.Api.Utils.Localization;
 using RestaurantManagement.Api.Services.Auth;
 using RestaurantManagement.Api.Options;
 using RestaurantManagement.Api.Data;
-using RestaurantManagement.Api; 
+using RestaurantManagement.Api;
+using RestaurantManagement.Api.Services.Locations;
+using RestaurantManagement.Api.Services.Email;
 
 
 // ---------------------------------------------
@@ -119,6 +121,10 @@ builder.Services.AddAuthentication(options =>
 
 // Add controller support (API endpoints) + enable validation localization
 builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    })
     .AddDataAnnotationsLocalization(options =>
     {
         options.DataAnnotationLocalizerProvider = (type, factory) =>
@@ -158,6 +164,8 @@ builder.WebHost.UseSentry(o =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
+
 // ---------------------------------------------
 // Dependency Injection: Register application services
 // ---------------------------------------------
@@ -165,6 +173,8 @@ builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IVerificationService, VerificationService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 
 // ---------------------------------------------

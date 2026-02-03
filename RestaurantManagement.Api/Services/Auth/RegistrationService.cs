@@ -6,6 +6,7 @@ using RestaurantManagement.Api.Entities.Users;
 using RestaurantManagement.Api.Models.Auth;
 using RestaurantManagement.Api.Options;
 using RestaurantManagement.Api.Utils.Exceptions;
+using RestaurantManagement.Api.Services.Email;
 
 namespace RestaurantManagement.Api.Services.Auth
 {
@@ -14,15 +15,18 @@ namespace RestaurantManagement.Api.Services.Auth
         private readonly RestaurantDbContext _db;
         private readonly SecurityOptions _securityOptions;
         private readonly IStringLocalizer<SharedResource> _localizer;
+        private readonly IEmailService _emailService;
 
         public RegistrationService(
             RestaurantDbContext db,
             IOptions<SecurityOptions> securityOptions,
-            IStringLocalizer<SharedResource> localizer)
+            IStringLocalizer<SharedResource> localizer,
+            IEmailService emailService)
         {
             _db = db;
             _securityOptions = securityOptions.Value;
             _localizer = localizer;
+            _emailService = emailService;
         }
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -65,8 +69,8 @@ namespace RestaurantManagement.Api.Services.Auth
             await _db.SaveChangesAsync();
             await tx.CommitAsync();
 
-            // TODO: Implement the email verificaiton
-            // await _emailService.SendVerificationEmailAsync(user.Email, code);
+            // Send verification email
+            await _emailService.SendVerificationEmailAsync(user.Email, verificationCode);
 
             return new AuthResponse
             {

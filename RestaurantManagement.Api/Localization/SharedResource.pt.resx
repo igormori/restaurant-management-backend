@@ -55,7 +55,7 @@
     <value>Organizações em período de teste não podem criar novas organizações. Atualize seu plano para adicionar mais.</value>
   </data>
   <data name="InvalidPassword" xml:space="preserve">
-  <value>Senha inválida. Verifique suas credenciais.</value>
+    <value>Senha inválida. Verifique suas credenciais.</value>
   </data>
   <data name="UserNotVerified" xml:space="preserve">
     <value>Sua conta não está verificada. Verifique seu e-mail antes de entrar.</value>
@@ -95,5 +95,17 @@
   </data>
   <data name="OrganizationSettingsNotFound" xml:space="preserve">
     <value>Configurações da organização não encontradas.</value>
+  </data>
+  <data name="UserNotAdminOrOwner" xml:space="preserve">
+    <value>Usuário não tem permissão de Administrador ou Proprietário.</value>
+  </data>
+  <data name="LocationNotFound" xml:space="preserve">
+    <value>Localização não encontrada.</value>
+  </data>
+  <data name="UserNotMemberOfOrganization" xml:space="preserve">
+    <value>Usuário não é membro desta organização.</value>
+  </data>
+  <data name="EmailSendingFailed" xml:space="preserve">
+    <value>Falha ao enviar e-mail de verificação. Tente novamente mais tarde.</value>
   </data>
 </root>
