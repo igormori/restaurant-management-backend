@@ -55,8 +55,7 @@ dotnet ef database update --project RestaurantManagement.Modules.Menu --startup-
 ### 3. Run the Application
 
 ```bash
-cd RestaurantManagement.Web
-dotnet run
+dotnet run --project src/RestaurantManagement.Web
 ```
 
 **Swagger UI:** http://localhost:5159/swagger

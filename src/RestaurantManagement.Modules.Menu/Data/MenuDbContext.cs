@@ -10,6 +10,7 @@ namespace RestaurantManagement.Modules.Menu.Data
 
         public DbSet<Entities.Menu> Menus { get; set; }
         public DbSet<LocationMenu> LocationMenus { get; set; }
+        public DbSet<MenuCategory> MenuCategories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
