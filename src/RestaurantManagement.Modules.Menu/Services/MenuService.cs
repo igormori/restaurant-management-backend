@@ -8,8 +8,8 @@ using Microsoft.Extensions.Localization;
 using RestaurantManagement.Modules.Menu.Data;
 using RestaurantManagement.Modules.Menu.Entities;
 using RestaurantManagement.Modules.Menu.Models;
-using RestaurantManagement.Modules.Organization.Data;
-using RestaurantManagement.Modules.Identity.Data;
+using RestaurantManagement.Shared.Services.Organization;
+using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
 namespace RestaurantManagement.Modules.Menu.Services
@@ -17,19 +17,19 @@ namespace RestaurantManagement.Modules.Menu.Services
     public class MenuService : IMenuService
     {
         private readonly MenuDbContext _menuDb;
-        private readonly OrganizationDbContext _orgDb;
-        private readonly IdentityDbContext _identityDb;
+        private readonly IOrganizationLookup _organizationLookup;
+        private readonly IUserRoleLookup _userRoleLookup;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public MenuService(
             MenuDbContext menuDb,
-            OrganizationDbContext orgDb,
-            IdentityDbContext identityDb,
+            IOrganizationLookup organizationLookup,
+            IUserRoleLookup userRoleLookup,
             IStringLocalizer<SharedResource> localizer)
         {
             _menuDb = menuDb;
-            _orgDb = orgDb;
-            _identityDb = identityDb;
+            _organizationLookup = organizationLookup;
+            _userRoleLookup = userRoleLookup;
             _localizer = localizer;
         }
 
@@ -39,8 +39,8 @@ namespace RestaurantManagement.Modules.Menu.Services
             await CheckUserPermission(userId, request.OrganizationId);
 
             // 2. Organization check (redundant but safe)
-            var organization = await _orgDb.Organizations.FindAsync(request.OrganizationId);
-            if (organization == null)
+            var organizationExists = await _organizationLookup.OrganizationExistsAsync(request.OrganizationId);
+            if (!organizationExists)
                 throw new BusinessException(_localizer["OrganizationNotFound"].Value, 404);
 
             // 3. Create Menu
@@ -64,10 +64,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (request.LocationIds != null && request.LocationIds.Any())
             {
                 // Verify locations belong to organization
-                var validLocations = await _orgDb.Locations
-                    .Where(l => request.LocationIds.Contains(l.Id) && l.OrganizationId == request.OrganizationId)
-                    .Select(l => l.Id)
-                    .ToListAsync();
+                var validLocations = await _organizationLookup.GetLocationIdsInOrganizationAsync(request.OrganizationId, request.LocationIds);
 
                 foreach (var locationId in validLocations)
                 {
@@ -127,7 +124,7 @@ namespace RestaurantManagement.Modules.Menu.Services
 
             await CheckUserPermission(userId, menu.OrganizationId);
 
-            var location = await _orgDb.Locations.FirstOrDefaultAsync(l => l.Id == locationId);
+            var location = await _organizationLookup.GetLocationAsync(locationId);
             if (location == null || location.OrganizationId != menu.OrganizationId)
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
@@ -189,7 +186,7 @@ namespace RestaurantManagement.Modules.Menu.Services
 
         public async Task<List<MenuResponse>> GetMenusByLocationAsync(Guid userId, Guid locationId)
         {
-            var location = await _orgDb.Locations.FindAsync(locationId);
+            var location = await _organizationLookup.GetLocationAsync(locationId);
             if (location == null)
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
@@ -215,10 +212,9 @@ namespace RestaurantManagement.Modules.Menu.Services
 
         private async Task CheckUserPermission(Guid userId, Guid organizationId)
         {
-            var userRole = await _identityDb.UserRoles
-                .FirstOrDefaultAsync(r => r.UserId == userId && r.OrganizationId == organizationId);
+            var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
 
-            if (userRole == null || (userRole.Role != "Owner" && userRole.Role != "Admin"))
+            if (role == null || (role != Roles.Owner && role != Roles.Admin))
             {
                 throw new BusinessException(_localizer["UnauthorizedMessage"].Value, 403);
             }

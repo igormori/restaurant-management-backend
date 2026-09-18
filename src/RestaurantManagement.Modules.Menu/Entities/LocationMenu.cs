@@ -1,16 +1,16 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using RestaurantManagement.Modules.Organization.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace RestaurantManagement.Modules.Menu.Entities
 {
+    [Index(nameof(LocationId))]
     public class LocationMenu
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-        
-        [ForeignKey("Location")]
+
         public Guid LocationId { get; set; }
-        
+
         [ForeignKey("Menu")]
         public Guid MenuId { get; set; }
 
@@ -18,7 +18,6 @@ namespace RestaurantManagement.Modules.Menu.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation
-        public Location Location { get; set; } = null!;
         public Menu Menu { get; set; } = null!;
     }
 }

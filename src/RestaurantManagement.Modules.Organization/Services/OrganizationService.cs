@@ -5,9 +5,8 @@ using Microsoft.Extensions.Localization;
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Modules.Organization.Entities;
-using RestaurantManagement.Modules.Identity.Data;
-using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Organization.Models;
+using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
 namespace RestaurantManagement.Modules.Organization.Services
@@ -15,30 +14,30 @@ namespace RestaurantManagement.Modules.Organization.Services
     public class OrganizationService : IOrganizationService
     {
         private readonly OrganizationDbContext _orgDb;
-        private readonly IdentityDbContext _identityDb;
+        private readonly IUserRoleLookup _userRoleLookup;
+        private readonly IUserRoleAssigner _userRoleAssigner;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public OrganizationService(
             OrganizationDbContext orgDb,
-            IdentityDbContext identityDb,
+            IUserRoleLookup userRoleLookup,
+            IUserRoleAssigner userRoleAssigner,
             IStringLocalizer<SharedResource> localizer)
         {
             _orgDb = orgDb;
-            _identityDb = identityDb;
+            _userRoleLookup = userRoleLookup;
+            _userRoleAssigner = userRoleAssigner;
             _localizer = localizer;
         }
 
         public async Task<OrganizationResponse> CreateOrganizationAsync(Guid ownerUserId, CreateOrganizationRequest request)
         {
-            var user = await _identityDb.Users.FirstOrDefaultAsync(u => u.Id == ownerUserId);
-            if (user == null)
+            var userExists = await _userRoleLookup.UserExistsAsync(ownerUserId);
+            if (!userExists)
                 throw new InvalidOperationException(_localizer["UserNotFound"].Value);
 
             // Get user's organization IDs from Identity module
-            var userOrgIds = await _identityDb.UserRoles
-                .Where(r => r.UserId == user.Id && r.OrganizationId != null)
-                .Select(r => r.OrganizationId!.Value)
-                .ToListAsync();
+            var userOrgIds = await _userRoleLookup.GetOrganizationIdsForUserAsync(ownerUserId);
 
             // Get organizations with settings from Organization module
             var userOrgs = await _orgDb.Organizations
@@ -106,22 +105,10 @@ namespace RestaurantManagement.Modules.Organization.Services
                 throw new Exception($"Failed to create organization: {innerMessage}", ex);
             }
 
-            // 3. Now create UserRole (after Organization is committed to DB)
-            var ownerRole = new UserRole
-            {
-                Id = Guid.NewGuid(),
-                UserId = ownerUserId,
-                OrganizationId = org.Id,
-                LocationId = null, // Org-wide
-                Role = "Owner",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-            _identityDb.UserRoles.Add(ownerRole);
-
+            // 3. Now assign the owner role (after Organization is committed to DB)
             try
             {
-                await _identityDb.SaveChangesAsync();
+                await _userRoleAssigner.AssignRoleAsync(ownerUserId, org.Id, Roles.Owner);
             }
             catch (Exception ex)
             {
@@ -190,15 +177,12 @@ namespace RestaurantManagement.Modules.Organization.Services
         }
         public async Task<List<OrganizationResponse>> GetOrganizationsAsync(Guid userId)
         {
-            var user = await _identityDb.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            if (user == null)
+            var userExists = await _userRoleLookup.UserExistsAsync(userId);
+            if (!userExists)
                 throw new InvalidOperationException(_localizer["UserNotFound"].Value);
 
             // Get organization IDs from Identity module
-            var orgIds = await _identityDb.UserRoles
-                .Where(r => r.UserId == userId && r.OrganizationId != null)
-                .Select(r => r.OrganizationId!.Value)
-                .ToListAsync();
+            var orgIds = await _userRoleLookup.GetOrganizationIdsForUserAsync(userId);
 
             // Get organizations with settings from Organization module
             var organizations = await _orgDb.Organizations

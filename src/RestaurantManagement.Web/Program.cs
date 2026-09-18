@@ -13,6 +13,8 @@ using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Middleware;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Services.Email;
+using RestaurantManagement.Shared.Services.Identity;
+using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Localization;
 
 // Modules
@@ -210,6 +212,11 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 // Menu Module Services
 builder.Services.AddScoped<RestaurantManagement.Modules.Menu.Services.IMenuService, RestaurantManagement.Modules.Menu.Services.MenuService>();
 builder.Services.AddScoped<RestaurantManagement.Modules.Menu.Services.IMenuCategoryService, RestaurantManagement.Modules.Menu.Services.MenuCategoryService>();
+
+// Cross-Module Contracts (Shared interface, implemented by the owning module)
+builder.Services.AddScoped<IOrganizationLookup, RestaurantManagement.Modules.Organization.Services.OrganizationLookup>();
+builder.Services.AddScoped<IUserRoleLookup, RestaurantManagement.Modules.Identity.Services.UserRoleLookup>();
+builder.Services.AddScoped<IUserRoleAssigner, RestaurantManagement.Modules.Identity.Services.UserRoleAssigner>();
 
 // ---------------------------------------------
 // CORS

@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RestaurantManagement.Shared\RestaurantManagement.Shared.csproj" />
-    <ProjectReference Include="..\RestaurantManagement.Modules.Identity\RestaurantManagement.Modules.Identity.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Localization;
 using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
-using RestaurantManagement.Modules.Identity.Data;
+using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
 namespace RestaurantManagement.Modules.Organization.Services
@@ -12,26 +12,25 @@ namespace RestaurantManagement.Modules.Organization.Services
     public class LocationService : ILocationService
     {
         private readonly OrganizationDbContext _orgDb;
-        private readonly IdentityDbContext _identityDb;
+        private readonly IUserRoleLookup _userRoleLookup;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public LocationService(
             OrganizationDbContext orgDb,
-            IdentityDbContext identityDb,
+            IUserRoleLookup userRoleLookup,
             IStringLocalizer<SharedResource> localizer)
         {
             _orgDb = orgDb;
-            _identityDb = identityDb;
+            _userRoleLookup = userRoleLookup;
             _localizer = localizer;
         }
 
         public async Task<LocationResponse> CreateLocationAsync(Guid userId, Guid organizationId, CreateLocationRequest request)
         {
             // 1. Verify User is Owner of the Organization
-            var userRole = await _identityDb.UserRoles
-                .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.OrganizationId == organizationId);
+            var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
 
-            if (userRole == null || userRole.Role != "Owner")
+            if (role != Roles.Owner)
                 throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
 
             // 2. Create Location
@@ -64,10 +63,9 @@ namespace RestaurantManagement.Modules.Organization.Services
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
             // Verify User is Owner of the Organization (derived from location)
-            var userRole = await _identityDb.UserRoles
-                .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.OrganizationId == location.OrganizationId);
+            var role = await _userRoleLookup.GetRoleAsync(userId, location.OrganizationId);
 
-            if (userRole == null || userRole.Role != "Owner")
+            if (role != Roles.Owner)
                 throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
 
             location.Name = request.Name;
@@ -92,10 +90,9 @@ namespace RestaurantManagement.Modules.Organization.Services
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
             // Verify User is Owner
-            var userRole = await _identityDb.UserRoles
-                .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.OrganizationId == location.OrganizationId);
+            var role = await _userRoleLookup.GetRoleAsync(userId, location.OrganizationId);
 
-            if (userRole == null || userRole.Role != "Owner")
+            if (role != Roles.Owner)
                 throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
 
             // Soft delete by setting status to Closed (or logic as discussed: status is status)
@@ -114,10 +111,9 @@ namespace RestaurantManagement.Modules.Organization.Services
         public async Task<List<LocationResponse>> GetLocationsByOrganizationAsync(Guid userId, Guid organizationId)
         {
             // Verify User belongs to Organization (any role)
-            var userRole = await _identityDb.UserRoles
-                .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.OrganizationId == organizationId);
+            var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
 
-            if (userRole == null)
+            if (role == null)
                 throw new BusinessException(_localizer["UserNotMemberOfOrganization"].Value, 403);
 
             var locations = await _orgDb.Locations

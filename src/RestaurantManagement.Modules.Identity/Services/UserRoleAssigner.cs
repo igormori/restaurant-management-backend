@@ -1,0 +1,33 @@
+using RestaurantManagement.Modules.Identity.Data;
+using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Shared.Services.Identity;
+
+namespace RestaurantManagement.Modules.Identity.Services
+{
+    public class UserRoleAssigner : IUserRoleAssigner
+    {
+        private readonly IdentityDbContext _db;
+
+        public UserRoleAssigner(IdentityDbContext db)
+        {
+            _db = db;
+        }
+
+        public async Task AssignRoleAsync(Guid userId, Guid organizationId, string role)
+        {
+            var userRole = new UserRole
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                OrganizationId = organizationId,
+                LocationId = null,
+                Role = role,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _db.UserRoles.Add(userRole);
+            await _db.SaveChangesAsync();
+        }
+    }
+}
