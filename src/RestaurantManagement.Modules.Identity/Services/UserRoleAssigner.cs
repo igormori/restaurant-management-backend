@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Shared.Services.Identity;
@@ -27,6 +28,17 @@ namespace RestaurantManagement.Modules.Identity.Services
             };
 
             _db.UserRoles.Add(userRole);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task RevokeRoleAsync(Guid userId, Guid organizationId, string role)
+        {
+            var userRole = await _db.UserRoles.FirstOrDefaultAsync(ur =>
+                ur.UserId == userId && ur.OrganizationId == organizationId && ur.Role == role);
+            if (userRole is null)
+                return;
+
+            _db.UserRoles.Remove(userRole);
             await _db.SaveChangesAsync();
         }
     }

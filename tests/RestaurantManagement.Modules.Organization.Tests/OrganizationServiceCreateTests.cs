@@ -171,14 +171,14 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
-        public async Task CreateOrganizationAsync_WhenCommitFailsAfterRoleAssignmentSucceeds_LogsDanglingRoleAndThrows()
+        public async Task CreateOrganizationAsync_WhenCommitFailsAfterRoleAssignmentSucceeds_RevokesRoleAndThrows()
         {
             // Arrange: role assignment itself succeeds (Identity has already recorded the
             // Owner role), but the organization database becomes unavailable right before
-            // the transaction commits. This is the accepted residual risk: the UserRole is
-            // left pointing at an organization that was never committed. The fix does not
-            // clean this up, so the only intended behaviour is that it is logged and the
-            // caller never receives a successful response.
+            // the transaction commits. The compensating action must revoke the Owner role
+            // from Identity so no dangling UserRole is left pointing at an organization
+            // that was never committed, and the caller must still receive the original
+            // failure.
             using var database = new OrganizationTestDatabase();
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId);
@@ -189,6 +189,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
                     database.CloseConnection();
                     return Task.CompletedTask;
                 });
+            userRoleAssigner.RevokeRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+                .Returns(Task.CompletedTask);
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
@@ -198,15 +200,64 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
 
             // Assert: the role assignment was made, but the caller still gets a failure,
-            // not a successful response, and the dangling-role risk is surfaced via logging.
+            // not a successful response, and the compensating revoke was issued for the
+            // same user/organization/role.
             await act.Should().ThrowAsync<Exception>();
 
             await userRoleAssigner.Received(1).AssignRoleAsync(userId, Arg.Any<Guid>(), Roles.Owner);
+            await userRoleAssigner.Received(1).RevokeRoleAsync(userId, Arg.Any<Guid>(), Roles.Owner);
 
             logger.Received().Log(
                 LogLevel.Error,
                 Arg.Any<EventId>(),
                 Arg.Is<object>(state => state.ToString()!.Contains("dangling UserRole")),
+                Arg.Any<Exception>(),
+                Arg.Any<Func<object, Exception?, string>>());
+        }
+
+        [Fact]
+        public async Task CreateOrganizationAsync_WhenCommitFailsAndRevokeAlsoFails_LogsSecondErrorAndThrowsOriginalException()
+        {
+            // Arrange: same commit-failure scenario as above, but the compensating
+            // RevokeRoleAsync call itself also fails (e.g. Identity's database is
+            // unreachable too). The caller must still see the original commit failure,
+            // not the revoke failure, with the revoke failure logged separately.
+            using var database = new OrganizationTestDatabase();
+            var userId = Guid.NewGuid();
+            var userRoleLookup = CreateUserRoleLookup(userId);
+            var userRoleAssigner = Substitute.For<IUserRoleAssigner>();
+            userRoleAssigner.AssignRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+                .Returns(callInfo =>
+                {
+                    database.CloseConnection();
+                    return Task.CompletedTask;
+                });
+            userRoleAssigner.RevokeRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+                .Returns(Task.FromException(new InvalidOperationException("Identity database unavailable")));
+            var logger = Substitute.For<ILogger<OrganizationService>>();
+
+            using var context = database.CreateContext();
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, TestLocalizer.Create(), logger);
+
+            // Act
+            var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
+
+            // Assert: the exception surfaced to the caller is the original commit failure,
+            // not the revoke failure, and the revoke failure is logged separately.
+            var thrown = await act.Should().ThrowAsync<Exception>();
+            thrown.Which.Message.Should().NotContain("Identity database unavailable");
+
+            logger.Received().Log(
+                LogLevel.Error,
+                Arg.Any<EventId>(),
+                Arg.Is<object>(state => state.ToString()!.Contains("dangling UserRole")),
+                Arg.Any<Exception>(),
+                Arg.Any<Func<object, Exception?, string>>());
+
+            logger.Received().Log(
+                LogLevel.Error,
+                Arg.Any<EventId>(),
+                Arg.Is<object>(state => state.ToString()!.Contains("Failed to revoke")),
                 Arg.Any<Exception>(),
                 Arg.Any<Func<object, Exception?, string>>());
         }

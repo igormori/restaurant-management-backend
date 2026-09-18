@@ -5,10 +5,6 @@ its own spec.
 
 
 ## Organization
-- Consistency: if owner-role assignment succeeds but the organization+settings
-  transaction then fails to commit, the Owner UserRole is left committed in Identity
-  pointing at an organization that was never committed (invisible/rolled back); this is
-  logged but not cleaned up
 - Consistency: location writes (create/edit/delete) require the Owner role, but editing
   the parent organization itself allows Owner or Admin
 - Cleanup: Entities/ Organization.cs has a stray leading space in its filename

@@ -133,8 +133,10 @@ namespace RestaurantManagement.Modules.Organization.Services
             {
                 // The owner role was already written to Identity's database, but the
                 // organization itself never committed: this UserRole now points at a
-                // non-existent organization and needs manual cleanup.
+                // non-existent organization. Compensate by revoking it as a best-effort
+                // cleanup, without masking the original commit failure.
                 _logger.LogError(ex, "Failed to commit organization {OrganizationId} after owner role was assigned to user {UserId}; a dangling UserRole for a non-existent organization may exist.", org.Id, ownerUserId);
+                await RevokeRoleBestEffortAsync(ownerUserId, org.Id, ex);
                 throw;
             }
 
@@ -153,6 +155,18 @@ namespace RestaurantManagement.Modules.Organization.Services
                 TrialEndDate = settings.TrialEndDate,
                 IsTrialActive = settings.IsTrialActive
             };
+        }
+
+        private async Task RevokeRoleBestEffortAsync(Guid ownerUserId, Guid organizationId, Exception causeException)
+        {
+            try
+            {
+                await _userRoleAssigner.RevokeRoleAsync(ownerUserId, organizationId, Roles.Owner);
+            }
+            catch (Exception revokeEx)
+            {
+                _logger.LogError(revokeEx, "Failed to revoke Owner role from user {UserId} for organization {OrganizationId} after commit failure: {CauseMessage}", ownerUserId, organizationId, causeException.Message);
+            }
         }
 
         private async Task RollbackAsync(IDbContextTransaction tx, Exception causeException)
