@@ -19,6 +19,11 @@ namespace RestaurantManagement.Modules.Identity.Services
 {
     public class SessionService : ISessionService
     {
+        // A valid bcrypt hash (at the production work factor) for a password nobody knows.
+        // Verifying against it when no user row exists keeps login's response time and code
+        // path the same whether or not the email is registered.
+        private const string DummyPasswordHash = "$2a$11$aanIzxoCRxQATB.lcuy8zOgcxV.Fq4zTZHoJMKJ1gLzIU4nEcpnF2";
+
         private readonly IdentityDbContext _db;
         private readonly SecurityOptions _securityOptions;
         private readonly JwtOptions _jwtOptions;
@@ -43,14 +48,8 @@ namespace RestaurantManagement.Modules.Identity.Services
                 .Include(u => u.Roles)
                 .FirstOrDefaultAsync(u => u.Email == email);
 
-            if (user == null)
-                throw new BusinessException(_localizer["UserNotFound"].Value, 400);
-
-            if (user.IsVerified == false)
-                throw new BusinessException(_localizer["UserNotVerified"].Value, 401);
-
-            // 🔒 Check if locked
-            if (user.LockedUntil.HasValue && user.LockedUntil > DateTime.UtcNow)
+            // 🔒 Locked accounts keep their distinct, pre-existing response.
+            if (user != null && user.LockedUntil.HasValue && user.LockedUntil > DateTime.UtcNow)
             {
                 var lockUntilText = user.LockedUntil.Value
                     .ToLocalTime()
@@ -61,8 +60,12 @@ namespace RestaurantManagement.Modules.Identity.Services
                 );
             }
 
-            // 🔑 Verify password
-            if (!VerifyPassword(request.Password, user.PasswordHash))
+            // 🔑 Always verify a password, even when no user row exists, so an unregistered
+            // email does equivalent work to a wrong password for a real account.
+            var passwordHash = user?.PasswordHash ?? DummyPasswordHash;
+            var isPasswordValid = VerifyPassword(request.Password, passwordHash);
+
+            if (user != null && !isPasswordValid)
             {
                 user.FailedAttempts++;
 
@@ -75,8 +78,12 @@ namespace RestaurantManagement.Modules.Identity.Services
                 }
 
                 await _db.SaveChangesAsync();
-                throw new BusinessException(_localizer["InvalidPassword"].Value, 401);
             }
+
+            // Unknown email, wrong password, and unverified account all collapse into the
+            // same response so none of them can be told apart from the outside.
+            if (user == null || !isPasswordValid || !user.IsVerified)
+                throw new BusinessException(_localizer["InvalidEmailOrPassword"].Value, 401);
 
             // ✅ Success → reset counters
             user.FailedAttempts = 0;
@@ -119,11 +126,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             var newRefreshToken = GenerateRefreshToken();
             user.RefreshTokenHash = BCrypt.Net.BCrypt.HashPassword(newRefreshToken);
 
-            var expireMinutes = _jwtOptions.ExpireMinutes > 0
-                ? _jwtOptions.ExpireMinutes
-                : 60; // default fallback when configuration is missing or invalid
-
-            user.RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(expireMinutes);
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpireDays);
             user.UpdatedAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();

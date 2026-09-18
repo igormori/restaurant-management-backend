@@ -134,7 +134,7 @@ namespace RestaurantManagement.Modules.Organization.Services
                 IsTrialActive = settings.IsTrialActive
             };
         }
-        
+
         public async Task<OrganizationResponse> EditOrganizationAsync(Guid organizationId, EditOrganizationRequest request)
         {
 

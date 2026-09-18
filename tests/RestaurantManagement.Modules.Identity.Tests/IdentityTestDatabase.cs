@@ -48,14 +48,18 @@ namespace RestaurantManagement.Modules.Identity.Tests
             int verificationCodeExpiryMinutes = 15,
             int resendCooldownSeconds = 60,
             int maxFailedLoginAttempts = 5,
-            int lockoutDurationMinutes = 15)
+            int lockoutDurationMinutes = 15,
+            int maxVerificationAttempts = 5,
+            int verificationLockoutDurationMinutes = 15)
         {
             return Options.Create(new SecurityOptions
             {
                 VerificationCodeExpiryMinutes = verificationCodeExpiryMinutes,
                 ResendCooldownSeconds = resendCooldownSeconds,
                 MaxFailedLoginAttempts = maxFailedLoginAttempts,
-                LockoutDurationMinutes = lockoutDurationMinutes
+                LockoutDurationMinutes = lockoutDurationMinutes,
+                MaxVerificationAttempts = maxVerificationAttempts,
+                VerificationLockoutDurationMinutes = verificationLockoutDurationMinutes
             });
         }
     }

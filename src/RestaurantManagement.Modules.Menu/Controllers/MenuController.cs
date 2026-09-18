@@ -94,7 +94,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         }
 
         [HttpGet("organization/{organizationId}")]
-        [Authorize(Roles = "Owner,Admin,Manager,Employee")] 
+        [Authorize(Roles = "Owner,Admin,Manager,Employee")]
         public async Task<ActionResult<List<MenuResponse>>> GetByOrganization(Guid organizationId)
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);

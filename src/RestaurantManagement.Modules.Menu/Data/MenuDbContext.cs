@@ -6,7 +6,7 @@ namespace RestaurantManagement.Modules.Menu.Data
     public class MenuDbContext : DbContext
     {
         public MenuDbContext(DbContextOptions<MenuDbContext> options)
-            : base(options) {}
+            : base(options) { }
 
         public DbSet<Entities.Menu> Menus { get; set; }
         public DbSet<LocationMenu> LocationMenus { get; set; }

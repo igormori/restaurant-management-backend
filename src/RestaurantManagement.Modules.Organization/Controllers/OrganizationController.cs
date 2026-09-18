@@ -32,7 +32,7 @@ namespace RestaurantManagement.Modules.Organization.Controllers
 
             if (!Guid.TryParse(subject, out var userId))
             {
-                 return Unauthorized();
+                return Unauthorized();
             }
 
             var response = await _organizationService.CreateOrganizationAsync(userId, request);
@@ -41,7 +41,7 @@ namespace RestaurantManagement.Modules.Organization.Controllers
 
         // PUT api/organizations/edit/{organizationId}
         [HttpPut("edit/{organizationId:guid}")]
-        [Authorize(Roles ="Owner,Admin")]
+        [Authorize(Roles = "Owner,Admin")]
         public async Task<ActionResult<OrganizationResponse>> Edit(Guid organizationId, [FromBody] EditOrganizationRequest request)
         {
             var response = await _organizationService.EditOrganizationAsync(organizationId, request);
@@ -56,7 +56,7 @@ namespace RestaurantManagement.Modules.Organization.Controllers
             var subject = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!Guid.TryParse(subject, out var userId))
             {
-                 return Unauthorized();
+                return Unauthorized();
             }
 
             var response = await _organizationService.GetOrganizationsAsync(userId);

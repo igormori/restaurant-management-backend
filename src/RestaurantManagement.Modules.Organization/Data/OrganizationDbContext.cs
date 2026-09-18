@@ -6,7 +6,7 @@ namespace RestaurantManagement.Modules.Organization.Data
     public class OrganizationDbContext : DbContext
     {
         public OrganizationDbContext(DbContextOptions<OrganizationDbContext> options)
-            : base(options) {}
+            : base(options) { }
 
         public DbSet<Entities.Organization> Organizations { get; set; }
         public DbSet<OrganizationSettings> OrganizationSettings { get; set; }

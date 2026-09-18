@@ -6,7 +6,7 @@ namespace RestaurantManagement.Modules.Menu.Entities
     {
         public Guid Id { get; set; }
         public Guid OrganizationId { get; set; }
-        
+
         [Required, MaxLength(100)]
         public string Name { get; set; } = string.Empty;
 

@@ -66,6 +66,9 @@
   <data name="AccountLockedUntil" xml:space="preserve">
     <value>Your account is locked until {0}. Please try again later.</value>
   </data>
+  <data name="VerificationLockedUntil" xml:space="preserve">
+    <value>Too many failed verification attempts. Please try again after {0}.</value>
+  </data>
   <data name="InvalidOrExpiredToken" xml:space="preserve">
     <value>The token is invalid or has expired. Please log in again.</value>
   </data>
@@ -86,6 +89,15 @@
   </data>
   <data name="VerificationCodeRecentlySent" xml:space="preserve">
     <value>A verification code was sent recently. Please wait a moment before requesting another.</value>
+  </data>
+  <data name="InvalidEmailOrPassword" xml:space="preserve">
+    <value>Invalid email or password.</value>
+  </data>
+  <data name="InvalidEmailOrCode" xml:space="preserve">
+    <value>Invalid email or verification code.</value>
+  </data>
+  <data name="VerificationResendAcknowledged" xml:space="preserve">
+    <value>If an account exists and needs verification, a new code has been sent.</value>
   </data>
   <data name="AccessDenied" xml:space="preserve">
     <value>You do not have permission to access this resource. Please contact your administrator if you believe this is an error.</value>

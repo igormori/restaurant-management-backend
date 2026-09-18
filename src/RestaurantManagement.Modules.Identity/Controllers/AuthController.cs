@@ -48,7 +48,7 @@ namespace RestaurantManagement.Modules.Identity.Controllers
 
         // POST api/auth/verify
         [HttpPost("verify")]
-        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
+        public async Task<ActionResult<MessageResponse>> VerifyEmail([FromBody] VerifyEmailRequest request)
         {
             var response = await _verificationService.VerifyEmailAsync(request);
             return Ok(response);
@@ -56,7 +56,7 @@ namespace RestaurantManagement.Modules.Identity.Controllers
 
         // POST api/auth/resend-verification
         [HttpPost("resend-verification")]
-        public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationRequest request)
+        public async Task<ActionResult<MessageResponse>> ResendVerification([FromBody] ResendVerificationRequest request)
         {
             var respoonse = await _verificationService.ResendVerificationCodeAsync(request);
             return Ok(respoonse);

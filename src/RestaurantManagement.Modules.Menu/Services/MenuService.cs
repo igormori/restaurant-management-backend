@@ -58,7 +58,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             using var transaction = await _menuDb.Database.BeginTransactionAsync();
 
             _menuDb.Menus.Add(menu);
-            await _menuDb.SaveChangesAsync(); 
+            await _menuDb.SaveChangesAsync();
 
             // 4. If locations are provided, attach the menu
             if (request.LocationIds != null && request.LocationIds.Any())
@@ -78,7 +78,7 @@ namespace RestaurantManagement.Modules.Menu.Services
                     };
                     _menuDb.LocationMenus.Add(locationMenu);
                 }
-                
+
                 await _menuDb.SaveChangesAsync();
             }
 

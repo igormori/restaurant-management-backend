@@ -56,6 +56,6 @@ namespace RestaurantManagement.Shared.Middleware
                 await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse));
             }
         }
-        
+
     }
 }

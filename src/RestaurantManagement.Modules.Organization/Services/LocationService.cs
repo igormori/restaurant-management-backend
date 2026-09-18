@@ -101,7 +101,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             // Better: Just set status to Closed.
             // Wait, "Delete" usually implies "Gone". But requirement says "If user closes... don't delete data".
             // So "Delete" endpoint creates a "Closed" state.
-            
+
             location.Status = LocationStatus.Closed;
             location.UpdatedAt = DateTime.UtcNow;
 

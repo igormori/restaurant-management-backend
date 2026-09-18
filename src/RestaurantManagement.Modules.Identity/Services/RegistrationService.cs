@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using System.Security.Cryptography;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
@@ -72,8 +73,15 @@ namespace RestaurantManagement.Modules.Identity.Services
             };
             _db.UserVerificationCodes.Add(verification);
 
-            await _db.SaveChangesAsync();
-            await tx.CommitAsync();
+            try
+            {
+                await _db.SaveChangesAsync();
+                await tx.CommitAsync();
+            }
+            catch (DbUpdateException ex) when (IsDuplicateEmailViolation(ex))
+            {
+                throw new BusinessException(_localizer["EmailAlreadyRegistered"].Value, 400);
+            }
 
             // Send verification email; a failure here must not fail registration, since the
             // account already exists unverified and the user can request a resend.
@@ -94,6 +102,16 @@ namespace RestaurantManagement.Modules.Identity.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName
             };
+        }
+
+        // Guards against the race the AnyAsync pre-check cannot close: only the unique
+        // violation on the email uniqueness index is a duplicate email, everything else
+        // is a genuine failure that must propagate.
+        private static bool IsDuplicateEmailViolation(DbUpdateException ex)
+        {
+            return ex.InnerException is PostgresException postgresException
+                && postgresException.SqlState == PostgresErrorCodes.UniqueViolation
+                && postgresException.ConstraintName == IdentityDbContext.UniqueEmailIndexName;
         }
     }
 }

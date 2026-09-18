@@ -4,7 +4,7 @@ namespace RestaurantManagement.Modules.Identity.Services
 {
     public interface IVerificationService
     {
-        Task<string> VerifyEmailAsync(VerifyEmailRequest request);
-        Task<string> ResendVerificationCodeAsync(ResendVerificationRequest request);
+        Task<MessageResponse> VerifyEmailAsync(VerifyEmailRequest request);
+        Task<MessageResponse> ResendVerificationCodeAsync(ResendVerificationRequest request);
     }
 }
