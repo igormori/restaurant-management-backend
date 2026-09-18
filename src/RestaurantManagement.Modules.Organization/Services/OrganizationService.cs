@@ -2,7 +2,9 @@ using RestaurantManagement.Shared;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
@@ -17,17 +19,20 @@ namespace RestaurantManagement.Modules.Organization.Services
         private readonly IUserRoleLookup _userRoleLookup;
         private readonly IUserRoleAssigner _userRoleAssigner;
         private readonly IStringLocalizer<SharedResource> _localizer;
+        private readonly ILogger<OrganizationService> _logger;
 
         public OrganizationService(
             OrganizationDbContext orgDb,
             IUserRoleLookup userRoleLookup,
             IUserRoleAssigner userRoleAssigner,
-            IStringLocalizer<SharedResource> localizer)
+            IStringLocalizer<SharedResource> localizer,
+            ILogger<OrganizationService> logger)
         {
             _orgDb = orgDb;
             _userRoleLookup = userRoleLookup;
             _userRoleAssigner = userRoleAssigner;
             _localizer = localizer;
+            _logger = logger;
         }
 
         public async Task<OrganizationResponse> CreateOrganizationAsync(Guid ownerUserId, CreateOrganizationRequest request)
@@ -94,28 +99,43 @@ namespace RestaurantManagement.Modules.Organization.Services
 
             try
             {
-                // Save Organization and Settings first
+                // Save Organization and Settings, but do not commit yet: the organization
+                // must not become visible to any query until the creating user is
+                // confirmed as Owner.
                 await _orgDb.SaveChangesAsync();
-                await tx.CommitAsync();
             }
             catch (Exception ex)
             {
-                await tx.RollbackAsync();
+                await RollbackAsync(tx, ex);
                 var innerMessage = ex.InnerException?.Message ?? ex.Message;
                 throw new Exception($"Failed to create organization: {innerMessage}", ex);
             }
 
-            // 3. Now assign the owner role (after Organization is committed to DB)
+            // 3. Assign the owner role while still inside the transaction, so a failure
+            // here rolls back the organization instead of leaving it orphaned.
             try
             {
                 await _userRoleAssigner.AssignRoleAsync(ownerUserId, org.Id, Roles.Owner);
             }
             catch (Exception ex)
             {
-                // If UserRole creation fails, we should ideally rollback the organization
-                // but since we already committed, we'll just throw the error
-                var innerMessage = ex.InnerException?.Message ?? ex.Message;
-                throw new Exception($"Organization created but failed to assign owner role: {innerMessage}", ex);
+                _logger.LogError(ex, "Failed to assign Owner role to user {UserId} for organization {OrganizationId}; rolling back organization creation.", ownerUserId, org.Id);
+                await RollbackAsync(tx, ex);
+                throw;
+            }
+
+            // 4. Commit only after the Owner role is confirmed.
+            try
+            {
+                await tx.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                // The owner role was already written to Identity's database, but the
+                // organization itself never committed: this UserRole now points at a
+                // non-existent organization and needs manual cleanup.
+                _logger.LogError(ex, "Failed to commit organization {OrganizationId} after owner role was assigned to user {UserId}; a dangling UserRole for a non-existent organization may exist.", org.Id, ownerUserId);
+                throw;
             }
 
             // 5. Return sanitized response
@@ -133,6 +153,18 @@ namespace RestaurantManagement.Modules.Organization.Services
                 TrialEndDate = settings.TrialEndDate,
                 IsTrialActive = settings.IsTrialActive
             };
+        }
+
+        private async Task RollbackAsync(IDbContextTransaction tx, Exception causeException)
+        {
+            try
+            {
+                await tx.RollbackAsync();
+            }
+            catch (Exception rollbackEx)
+            {
+                _logger.LogError(rollbackEx, "Failed to roll back organization creation after error: {CauseMessage}", causeException.Message);
+            }
         }
 
         public async Task<OrganizationResponse> EditOrganizationAsync(Guid organizationId, EditOrganizationRequest request)
