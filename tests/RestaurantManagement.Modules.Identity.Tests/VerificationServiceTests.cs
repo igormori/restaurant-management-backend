@@ -147,7 +147,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
             thrown.Which.StatusCode.Should().Be(404);
-            await emailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>());
+            await emailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
         }
 
         [Fact]
@@ -169,7 +169,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
             thrown.Which.StatusCode.Should().Be(400);
-            await emailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>());
+            await emailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
         }
 
         [Fact]
@@ -204,7 +204,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             using var verifyContext = database.CreateContext();
             var codeCount = await verifyContext.UserVerificationCodes.CountAsync(v => v.UserId == user.Id);
             codeCount.Should().Be(1);
-            await emailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>());
+            await emailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
         }
 
         [Fact]
@@ -240,7 +240,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
-        public async Task ResendVerificationCodeAsync_OutsideCooldown_InvalidatesPreviousCodesAndSendsNewOne()
+        public async Task ResendVerificationCodeAsync_OutsideCooldown_SendsVerificationEmailWithFirstNameAndConfiguredExpiry()
         {
             // Arrange
             using var database = new IdentityTestDatabase();
@@ -282,7 +282,34 @@ namespace RestaurantManagement.Modules.Identity.Tests
             newCode.Should().NotBeNull();
             newCode!.Code.Should().NotBe("111111").And.NotBe("222222");
 
-            await emailService.Received(1).SendVerificationEmailAsync("user@test.com", newCode.Code);
+            await emailService.Received(1).SendVerificationEmailAsync(user.Email, user.FirstName, newCode.Code, 15);
+        }
+
+        [Fact]
+        public async Task ResendVerificationCodeAsync_EmailSendingFails_ThrowsBusinessException()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            var user = new User { Email = "user@test.com", PasswordHash = "hash", FirstName = "A", LastName = "B", IsVerified = false };
+            seedContext.Users.Add(user);
+            await seedContext.SaveChangesAsync();
+
+            using var context = database.CreateContext();
+            var emailService = Substitute.For<IEmailService>();
+            emailService.SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>())
+                .Returns(Task.FromException(new Exception("SMTP unavailable")));
+            var sut = CreateSut(context, emailService);
+
+            // Act
+            var act = () => sut.ResendVerificationCodeAsync(new ResendVerificationRequest { Email = "user@test.com" });
+
+            // Assert
+            var thrown = await act.Should().ThrowAsync<BusinessException>();
+            thrown.Which.StatusCode.Should().Be(500);
+
+            using var verifyContext = database.CreateContext();
+            (await verifyContext.UserVerificationCodes.AnyAsync(v => v.UserId == user.Id)).Should().BeTrue();
         }
     }
 }

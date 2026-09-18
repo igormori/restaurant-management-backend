@@ -48,11 +48,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
             thrown.Which.StatusCode.Should().Be(400);
-            await emailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>());
+            await emailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
         }
 
         [Fact]
-        public async Task RegisterAsync_ValidRequest_CreatesUnverifiedUserAndSendsVerificationEmail()
+        public async Task RegisterAsync_ValidRequest_SendsVerificationEmailWithFirstNameAndConfiguredExpiry()
         {
             // Arrange
             using var database = new IdentityTestDatabase();
@@ -84,7 +84,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var code = await verifyContext.UserVerificationCodes.SingleAsync(v => v.UserId == user.Id);
             code.ExpiresAt.Should().BeCloseTo(beforeRegistration.AddMinutes(15), TimeSpan.FromSeconds(5));
 
-            await emailService.Received(1).SendVerificationEmailAsync(user.Email, code.Code);
+            await emailService.Received(1).SendVerificationEmailAsync(user.Email, "New", code.Code, 15);
         }
 
         [Fact]
@@ -93,7 +93,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Arrange
             using var database = new IdentityTestDatabase();
             var emailService = Substitute.For<IEmailService>();
-            emailService.SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>())
+            emailService.SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>())
                 .Returns(Task.FromException(new Exception("SMTP unavailable")));
             var logger = Substitute.For<ILogger<RegistrationService>>();
 

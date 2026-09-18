@@ -1,0 +1,20 @@
+name: Build and test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - run: dotnet restore RestaurantManagement.sln
+      - run: dotnet build RestaurantManagement.sln --no-restore
+      - run: dotnet test RestaurantManagement.sln --no-build --verbosity normal

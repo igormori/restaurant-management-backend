@@ -101,7 +101,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             // Send email
             try
             {
-                await _emailService.SendVerificationEmailAsync(user.Email, code);
+                await _emailService.SendVerificationEmailAsync(user.Email, user.FirstName, code, _securityOptions.VerificationCodeExpiryMinutes);
             }
             catch (Exception)
             {

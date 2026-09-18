@@ -79,7 +79,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             // account already exists unverified and the user can request a resend.
             try
             {
-                await _emailService.SendVerificationEmailAsync(user.Email, verificationCode);
+                await _emailService.SendVerificationEmailAsync(user.Email, user.FirstName, verificationCode, _securityOptions.VerificationCodeExpiryMinutes);
             }
             catch (Exception ex)
             {

@@ -79,20 +79,9 @@ namespace RestaurantManagement.Shared.Services.Email
             }
         }
 
-        public async Task SendVerificationEmailAsync(string to, string code)
+        public async Task SendVerificationEmailAsync(string to, string firstName, string code, int expiryMinutes)
         {
-            var subject = "Verify your email";
-            var body = $@"
-                <html>
-                <body>
-                    <h2>Verify your account</h2>
-                    <p>Your verification code is:</p>
-                    <h1>{code}</h1>
-                    <p>Please enter this code in the app to verify your email.</p>
-                </body>
-                </html>";
-
-            await SendEmailAsync(to, subject, body);
+            await SendEmailAsync(to, VerificationEmailTemplate.Subject, VerificationEmailTemplate.Build(to, firstName, code, expiryMinutes));
         }
     }
 }
