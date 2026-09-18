@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
@@ -49,6 +50,7 @@ namespace RestaurantManagement.Modules.Identity.Services
 
             // ✅ Mark as verified
             user.IsVerified = true;
+            user.UpdatedAt = DateTime.UtcNow;
             verification.IsUsed = true;
 
             await _db.SaveChangesAsync();
@@ -73,15 +75,18 @@ namespace RestaurantManagement.Modules.Identity.Services
             if (lastCode != null && (DateTime.UtcNow - lastCode.CreatedAt).TotalSeconds < _securityOptions.ResendCooldownSeconds)
                 throw new BusinessException(_localizer["VerificationCodeRecentlySent"].Value, 429);
 
-            // Invalidate previous unused codes
-            if (lastCode != null && !lastCode.IsUsed)
+            // Invalidate all previously issued, unused codes
+            var unusedCodes = await _db.UserVerificationCodes
+                .Where(v => v.UserId == user.Id && !v.IsUsed)
+                .ToListAsync();
+
+            foreach (var unusedCode in unusedCodes)
             {
-                lastCode.IsUsed = true;
-                _db.UserVerificationCodes.Update(lastCode);
+                unusedCode.IsUsed = true;
             }
 
             // Generate new code
-            var code = new Random().Next(100000, 999999).ToString();
+            var code = RandomNumberGenerator.GetInt32(100_000, 1_000_000).ToString();
 
             var verification = new UserVerificationCode
             {
@@ -94,11 +99,11 @@ namespace RestaurantManagement.Modules.Identity.Services
             await _db.SaveChangesAsync();
 
             // Send email
-            try 
+            try
             {
-               await _emailService.SendVerificationEmailAsync(user.Email, code);
+                await _emailService.SendVerificationEmailAsync(user.Email, code);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 // Decide if we fail the whole request or just log. 
                 // fail the request because the user will not receive the code

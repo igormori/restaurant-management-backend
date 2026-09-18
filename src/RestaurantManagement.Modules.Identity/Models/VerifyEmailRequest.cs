@@ -5,7 +5,7 @@ namespace RestaurantManagement.Modules.Identity.Models
     public class VerifyEmailRequest
     {
         private string _email = string.Empty;
-        public string? _code { get; set; } = string.Empty;
+        private string _code = string.Empty;
 
         [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
         [EmailAddress(ErrorMessage = "EmailAddressAttribute_ValidationError")]
@@ -18,10 +18,10 @@ namespace RestaurantManagement.Modules.Identity.Models
 
         [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
         [MaxLength(6, ErrorMessage = "MaxLengthAttribute_ValidationError")]
-        public string? Code
+        public string Code
         {
             get => _code;
-            set => _code = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+            set => _code = value?.Trim() ?? string.Empty;
         }
     }
 }

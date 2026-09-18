@@ -41,12 +41,12 @@ namespace RestaurantManagement.Shared.Services.Email
                 message.Body = builder.ToMessageBody();
 
                 using var client = new SmtpClient();
-                
+
                 // For development, we might not have a real SMTP server.
                 // We'll log the email content if SMTP is not configured or in Dev (optional logic)
                 // But generally, we try to connect.
-                
-                if (_env.IsDevelopment() && string.IsNullOrEmpty(_emailOptions.SmtpHost)) 
+
+                if (_env.IsDevelopment() && string.IsNullOrEmpty(_emailOptions.SmtpHost))
                 {
                     _logger.LogWarning($"[DEV MODE] Email to {to}");
                     _logger.LogWarning($"[Subject]: {subject}");
@@ -55,7 +55,7 @@ namespace RestaurantManagement.Shared.Services.Email
                 }
 
                 _logger.LogInformation("Connecting to SMTP server {Host}:{Port}...", _emailOptions.SmtpHost, _emailOptions.SmtpPort);
-                await client.ConnectAsync(_emailOptions.SmtpHost, _emailOptions.SmtpPort, 
+                await client.ConnectAsync(_emailOptions.SmtpHost, _emailOptions.SmtpPort,
                     _emailOptions.EnableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None);
 
                 if (!string.IsNullOrEmpty(_emailOptions.SmtpUser))
@@ -75,7 +75,7 @@ namespace RestaurantManagement.Shared.Services.Email
                 // In production, we might want to throw or handle queueing
                 // For now, allow failure but log error.
                 // Re-throwing might be safer to ensure API knows it failed.
-                 throw;
+                throw;
             }
         }
 
@@ -83,19 +83,6 @@ namespace RestaurantManagement.Shared.Services.Email
         {
             var subject = "Verify your email";
             var body = $@"
-                <html>
-                <body>
-                    <h2>Welcome!</h2>
-                    <p>Your verification code is: <strong>{code}</strong></p>
-                    <p>This code expires in {_emailOptions.SmtpPort} minutes.</p> 
-                    <p>Wait, mixing options.. expires in configured minutes.</p>
-                </body>
-                </html>";
-            
-            // Note: expiration minute logic was in SecurityOptions, which we don't inject here yet.
-            // Simplified body:
-            
-            body = $@"
                 <html>
                 <body>
                     <h2>Verify your account</h2>

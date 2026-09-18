@@ -5,7 +5,6 @@ namespace RestaurantManagement.Modules.Identity.Models
     public class ResendVerificationRequest
     {
         private string _email = string.Empty;
-        public string _code { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
         [EmailAddress(ErrorMessage = "EmailAddressAttribute_ValidationError")]

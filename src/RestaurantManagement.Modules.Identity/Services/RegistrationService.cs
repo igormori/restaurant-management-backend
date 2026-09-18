@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
@@ -17,17 +19,20 @@ namespace RestaurantManagement.Modules.Identity.Services
         private readonly SecurityOptions _securityOptions;
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly IEmailService _emailService;
+        private readonly ILogger<RegistrationService> _logger;
 
         public RegistrationService(
             IdentityDbContext db,
             IOptions<SecurityOptions> securityOptions,
             IStringLocalizer<SharedResource> localizer,
-            IEmailService emailService)
+            IEmailService emailService,
+            ILogger<RegistrationService> logger)
         {
             _db = db;
             _securityOptions = securityOptions.Value;
             _localizer = localizer;
             _emailService = emailService;
+            _logger = logger;
         }
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -57,7 +62,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             _db.Users.Add(user);
 
             // 4. Add the verification code
-            var verificationCode = new Random().Next(100000, 999999).ToString();
+            var verificationCode = RandomNumberGenerator.GetInt32(100_000, 1_000_000).ToString();
 
             var verification = new UserVerificationCode
             {
@@ -70,8 +75,16 @@ namespace RestaurantManagement.Modules.Identity.Services
             await _db.SaveChangesAsync();
             await tx.CommitAsync();
 
-            // Send verification email
-            await _emailService.SendVerificationEmailAsync(user.Email, verificationCode);
+            // Send verification email; a failure here must not fail registration, since the
+            // account already exists unverified and the user can request a resend.
+            try
+            {
+                await _emailService.SendVerificationEmailAsync(user.Email, verificationCode);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send verification email to {Email}", user.Email);
+            }
 
             return new AuthResponse
             {

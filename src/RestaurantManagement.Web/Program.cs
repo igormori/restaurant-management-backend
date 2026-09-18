@@ -126,7 +126,7 @@ builder.Services.AddControllers()
 // ---------------------------------------------
 // Options Configuration
 // ---------------------------------------------
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Security"));
+builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection("Security"));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<CorsOptions>(builder.Configuration.GetSection("Cors"));
@@ -223,7 +223,7 @@ builder.Services.AddScoped<IUserRoleAssigner, RestaurantManagement.Modules.Ident
 // ---------------------------------------------
 builder.Services.AddCors(options =>
 {
-    var corsOptions = builder.Configuration.GetSection("Cors").Get<CorsOptions>() 
+    var corsOptions = builder.Configuration.GetSection("Cors").Get<CorsOptions>()
                       ?? new CorsOptions();
 
     options.AddPolicy("DefaultCorsPolicy", policy =>
