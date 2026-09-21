@@ -181,7 +181,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             }
         }
 
-        public async Task<OrganizationResponse> EditOrganizationAsync(Guid organizationId, EditOrganizationRequest request)
+        public async Task<OrganizationResponse> EditOrganizationAsync(Guid userId, Guid organizationId, EditOrganizationRequest request)
         {
 
             // 1. check if organiztion exists and get it
@@ -193,6 +193,11 @@ namespace RestaurantManagement.Modules.Organization.Services
             var organizationSettings = await _orgDb.OrganizationSettings.FirstOrDefaultAsync(orgS => orgS.OrganizationId == organizationId);
             if (organizationSettings == null)
                 throw new InvalidOperationException(_localizer["OrganizationSettingsNotFound"].Value);
+
+            // 3. Only Owner or Admin of this organization may edit it
+            var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
+            if (role != Roles.Owner && role != Roles.Admin)
+                throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
 
             // 2. Edit Organization Information
             organization.Name = request.Name;

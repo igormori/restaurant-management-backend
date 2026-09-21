@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestaurantManagement.Shared
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestaurantManagement.Modules.Organization.Tests", "tests\RestaurantManagement.Modules.Organization.Tests\RestaurantManagement.Modules.Organization.Tests.csproj", "{F2E0484D-0714-4943-A0AF-C334E8DF24CC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestaurantManagement.Modules.Menu.Tests", "tests\RestaurantManagement.Modules.Menu.Tests\RestaurantManagement.Modules.Menu.Tests.csproj", "{B0496869-D570-408F-8C32-1BC58C7159B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -129,6 +131,18 @@ Global
 		{F2E0484D-0714-4943-A0AF-C334E8DF24CC}.Release|x64.Build.0 = Release|Any CPU
 		{F2E0484D-0714-4943-A0AF-C334E8DF24CC}.Release|x86.ActiveCfg = Release|Any CPU
 		{F2E0484D-0714-4943-A0AF-C334E8DF24CC}.Release|x86.Build.0 = Release|Any CPU
+		{B0496869-D570-408F-8C32-1BC58C7159B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0496869-D570-408F-8C32-1BC58C7159B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0496869-D570-408F-8C32-1BC58C7159B2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B0496869-D570-408F-8C32-1BC58C7159B2}.Debug|x64.Build.0 = Debug|Any CPU
+		{B0496869-D570-408F-8C32-1BC58C7159B2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B0496869-D570-408F-8C32-1BC58C7159B2}.Debug|x86.Build.0 = Debug|Any CPU
+		{B0496869-D570-408F-8C32-1BC58C7159B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0496869-D570-408F-8C32-1BC58C7159B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0496869-D570-408F-8C32-1BC58C7159B2}.Release|x64.ActiveCfg = Release|Any CPU
+		{B0496869-D570-408F-8C32-1BC58C7159B2}.Release|x64.Build.0 = Release|Any CPU
+		{B0496869-D570-408F-8C32-1BC58C7159B2}.Release|x86.ActiveCfg = Release|Any CPU
+		{B0496869-D570-408F-8C32-1BC58C7159B2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -142,5 +156,6 @@ Global
 		{95B97057-185A-42BC-A478-2D0BB3F24F72} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{078AFE58-1460-409F-996D-2C6E5393F0FA} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{F2E0484D-0714-4943-A0AF-C334E8DF24CC} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{B0496869-D570-408F-8C32-1BC58C7159B2} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

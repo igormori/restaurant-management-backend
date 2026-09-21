@@ -27,10 +27,10 @@ namespace RestaurantManagement.Modules.Organization.Services
 
         public async Task<LocationResponse> CreateLocationAsync(Guid userId, Guid organizationId, CreateLocationRequest request)
         {
-            // 1. Verify User is Owner of the Organization
+            // 1. Verify User is Owner or Admin of the Organization
             var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
 
-            if (role != Roles.Owner)
+            if (role != Roles.Owner && role != Roles.Admin)
                 throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
 
             // 2. Create Location
@@ -62,10 +62,10 @@ namespace RestaurantManagement.Modules.Organization.Services
             if (location == null)
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
-            // Verify User is Owner of the Organization (derived from location)
+            // Verify User is Owner or Admin of the Organization (derived from location)
             var role = await _userRoleLookup.GetRoleAsync(userId, location.OrganizationId);
 
-            if (role != Roles.Owner)
+            if (role != Roles.Owner && role != Roles.Admin)
                 throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
 
             location.Name = request.Name;
@@ -89,10 +89,10 @@ namespace RestaurantManagement.Modules.Organization.Services
             if (location == null)
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
-            // Verify User is Owner
+            // Verify User is Owner or Admin
             var role = await _userRoleLookup.GetRoleAsync(userId, location.OrganizationId);
 
-            if (role != Roles.Owner)
+            if (role != Roles.Owner && role != Roles.Admin)
                 throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
 
             // Soft delete by setting status to Closed (or logic as discussed: status is status)

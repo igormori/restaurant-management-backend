@@ -41,10 +41,17 @@ namespace RestaurantManagement.Modules.Organization.Controllers
 
         // PUT api/organizations/edit/{organizationId}
         [HttpPut("edit/{organizationId:guid}")]
-        [Authorize(Roles = "Owner,Admin")]
+        [Authorize]
         public async Task<ActionResult<OrganizationResponse>> Edit(Guid organizationId, [FromBody] EditOrganizationRequest request)
         {
-            var response = await _organizationService.EditOrganizationAsync(organizationId, request);
+            var subject = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!Guid.TryParse(subject, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var response = await _organizationService.EditOrganizationAsync(userId, organizationId, request);
             return Ok(response);
         }
 
