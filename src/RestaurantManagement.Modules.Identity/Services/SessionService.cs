@@ -80,9 +80,9 @@ namespace RestaurantManagement.Modules.Identity.Services
                 await _db.SaveChangesAsync();
             }
 
-            // Unknown email, wrong password, and unverified account all collapse into the
+            // Unknown email, wrong password, unverified and deactivated accounts all collapse into the
             // same response so none of them can be told apart from the outside.
-            if (user == null || !isPasswordValid || !user.IsVerified)
+            if (user == null || !isPasswordValid || !user.IsVerified || !user.IsActive)
                 throw new BusinessException(_localizer["InvalidEmailOrPassword"].Value, 401);
 
             // ✅ Success → reset counters
@@ -111,8 +111,14 @@ namespace RestaurantManagement.Modules.Identity.Services
 
         public async Task<AuthResponse> RefreshTokenAsync(RefreshRequest request)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var user = await _db.Users
+                .Include(u => u.Roles)
+                .FirstOrDefaultAsync(u => u.Email == request.Email);
             if (user == null || user.RefreshTokenHash == null || user.RefreshTokenExpiry == null)
+                throw new BusinessException(_localizer["InvlideOrExpiredToken"].Value, 401);
+
+            // Same gates as login, so a refresh token can't outlive deactivation, unverified or locked state.
+            if (!user.IsActive || !user.IsVerified || (user.LockedUntil.HasValue && user.LockedUntil > DateTime.UtcNow))
                 throw new BusinessException(_localizer["InvlideOrExpiredToken"].Value, 401);
 
             if (user.RefreshTokenExpiry < DateTime.UtcNow)

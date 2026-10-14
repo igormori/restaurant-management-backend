@@ -40,45 +40,62 @@ Feature name: lowercase `verb-noun`, e.g. `create-menu-item`.
 3. Write the spec using the template below.
 4. You cannot ask the user questions mid-task. When something is genuinely ambiguous, make a
    reasonable assumption, mark it clearly, and list it under Open questions.
-5. Report back: the file path you chose (and why, if it was not obvious), your assumptions,
-   and the open questions.
+5. Report back in under 100 words: the file path (and why, if it was not obvious), the open
+   questions, and any split you propose.
+
+## Length budget (hard limits)
+The spec is the contract a developer reviews in two minutes and an agent builds against.
+Highlights only: every line must change what gets built or tested.
+
+- Whole file: 60 lines and 350 words maximum outside the Data table.
+- One line per bullet. No paragraphs except the Summary.
+- Table cells: 10 words maximum.
+- If the spec would exceed the budget, the feature is too big: write the first slice and
+  propose the split in your report, not in the spec.
+
+Never do these:
+- Say the same thing twice. Acceptance criteria are the testable form of the Rules; nothing
+  else repeats them.
+- Explain the codebase, existing contracts, or how other modules do it. That is the planner's job.
+- Write notes, rationale, or background paragraphs. Put an assumption in Open questions, one line.
+- List every possible exclusion. Out of scope holds only the things someone would plausibly
+  expect this feature to do.
 
 ## Template
 ```markdown
 # <Feature name>
 
-## Problem
-Two or three sentences: who needs this and why.
+## Summary
+One or two sentences: who needs this, what it lets them do, and why.
 
-## Scope
-- Module(s) affected:
-- Roles allowed:
-
-## Behaviour
-Numbered list of what the feature must do, in plain language.
+## Rules
+- Roles: who can and who cannot.
+- Tenancy: what happens with data from another organization.
+- <Behaviour rule, one line each. Maximum 8 rules in total.>
 
 ## Data
-Each field: name, type, required or optional, validation rules.
+Only fields the caller sends or receives that are new or changed. `No change.` if none.
+| Field | Type | Required | Validation |
+|---|---|---|---|
 
 ## Acceptance criteria
-Testable bullets, failure cases first, then the happy path. Each one must be
-verifiable by a single test. Include the expected outcome, e.g.:
+Maximum 10, failure cases first, then the happy path. One line each, one test each:
 - Creating with an empty name is rejected
 - A user from another organization cannot create items for this organization
 - A valid request creates the item and returns it
 
 ## Out of scope
-Explicit list of what this feature does NOT include.
+Maximum 5 bullets, one line each.
 
 ## Open questions
-Anything you assumed. Empty list if none.
+Maximum 3, one line each: `<question>? Assumed: <what the spec does>.`
+`None.` if none.
 ```
 
 ## Rules
-- One page maximum. Small features only. If the request would need more than roughly
-  10 acceptance criteria, say so and propose how to split it into separate specs.
-- Always cover multi-tenancy: what happens when data belongs to another organization.
-- Always cover permissions: which roles can and cannot do this.
-- Always cover validation and failure cases before the happy path.
+- Always cover permissions, multi-tenancy, and validation, failure cases before the happy path.
 - Out of scope is required, never empty. It is what stops implementation from sprawling.
-- No solution design: no table schemas, endpoint routes, class names, or libraries.
+- No solution design: no table schemas, endpoint routes, status codes, class or contract
+  names, or libraries. Say "rejected", not "returns 403".
+- More than 3 open questions means the request is unclear: write what you can and list the
+  rest in your report.

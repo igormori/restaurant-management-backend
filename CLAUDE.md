@@ -62,6 +62,14 @@ Rules:
 - Constructor injection into `private readonly` fields
 - Models are classes with `{ get; set; }` properties, matching the existing Models folders
 
+## SOLID
+All generated code must follow SOLID:
+- **Single responsibility**: one reason to change per class (already enforced above — split classes doing two jobs)
+- **Open/closed**: prefer adding a new implementation over editing a class to branch on type; use interfaces/polymorphism instead of switch/if chains on a type code
+- **Liskov substitution**: an interface implementation must be usable anywhere the interface is expected, with no surprising behavior or narrowed preconditions
+- **Interface segregation**: keep interfaces (e.g. cross-module contracts in Shared) small and focused; don't force implementers to satisfy methods they don't need
+- **Dependency inversion**: services depend on abstractions (interfaces), not concrete implementations, for anything injected via constructor — this is already the pattern for cross-module contracts and should extend to services generally
+
 ## Testing standards
 - xUnit, FluentAssertions, NSubstitute for mocks
 - Integration tests: WebApplicationFactory + Testcontainers for a real database
