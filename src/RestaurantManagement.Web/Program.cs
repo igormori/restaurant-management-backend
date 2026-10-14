@@ -16,6 +16,7 @@ using RestaurantManagement.Shared.Services.Email;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Localization;
+using RestaurantManagement.Web.RateLimiting;
 
 // Modules
 using RestaurantManagement.Modules.Identity.Data;
@@ -130,6 +131,7 @@ builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection("Se
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<CorsOptions>(builder.Configuration.GetSection("Cors"));
+builder.Services.AddAuthRateLimiting(builder.Configuration);
 
 // ---------------------------------------------
 // Database Contexts (Per Module)

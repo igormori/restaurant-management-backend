@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NSubstitute;
@@ -13,8 +14,22 @@ public class AuthApiFactory : WebApplicationFactory<Program>
     public ISessionService SessionService { get; } = Substitute.For<ISessionService>();
     public IVerificationService VerificationService { get; } = Substitute.For<IVerificationService>();
 
+    private const string HighLimit = "100000";
+
+    private static readonly Dictionary<string, string?> HighLimitSettings = new()
+    {
+        ["AuthRateLimit:Login:PermitLimit"] = HighLimit,
+        ["AuthRateLimit:Register:PermitLimit"] = HighLimit,
+        ["AuthRateLimit:ResendVerification:PermitLimit"] = HighLimit,
+        ["AuthRateLimit:Verify:PermitLimit"] = HighLimit,
+        ["AuthRateLimit:Refresh:PermitLimit"] = HighLimit,
+    };
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.ConfigureAppConfiguration((_, configuration) =>
+            configuration.AddInMemoryCollection(HighLimitSettings));
+
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<IRegistrationService>();
