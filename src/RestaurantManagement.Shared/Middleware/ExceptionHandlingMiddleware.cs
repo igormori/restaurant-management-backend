@@ -35,7 +35,7 @@ namespace RestaurantManagement.Shared.Middleware
                 context.Response.StatusCode = bex.StatusCode;
                 context.Response.ContentType = "application/json";
 
-                var errorResponse = new { error = bex.Message };
+                var errorResponse = new { message = bex.Message };
                 await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse));
             }
             catch (Exception ex)
@@ -49,7 +49,7 @@ namespace RestaurantManagement.Shared.Middleware
 
                 var errorResponse = new
                 {
-                    error = "An unexpected error occurred.",
+                    message = "An unexpected error occurred.",
                     detail = _env.IsDevelopment() ? ex.Message : null
                 };
 

@@ -65,8 +65,8 @@ namespace RestaurantManagement.Modules.Identity.Controllers
         [EnableRateLimiting(AuthRateLimitPolicies.ResendVerification)]
         public async Task<ActionResult<MessageResponse>> ResendVerification([FromBody] ResendVerificationRequest request)
         {
-            var respoonse = await _verificationService.ResendVerificationCodeAsync(request);
-            return Ok(respoonse);
+            var response = await _verificationService.ResendVerificationCodeAsync(request);
+            return Ok(response);
         }
     }
 }
