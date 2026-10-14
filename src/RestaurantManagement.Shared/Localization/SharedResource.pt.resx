@@ -129,4 +129,7 @@
   <data name="MenuDetachedSuccessfully" xml:space="preserve">
     <value>Menu desvinculado do local com sucesso.</value>
   </data>
+  <data name="TooManyRequests" xml:space="preserve">
+    <value>Demasiados pedidos. Tente novamente mais tarde.</value>
+  </data>
 </root>

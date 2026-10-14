@@ -129,6 +129,9 @@
   <data name="MenuDetachedSuccessfully" xml:space="preserve">
     <value>Menu detached from location successfully.</value>
   </data>
+  <data name="TooManyRequests" xml:space="preserve">
+    <value>Too many requests. Please try again later.</value>
+  </data>
 </root>
 
 

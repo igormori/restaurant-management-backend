@@ -250,10 +250,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseForwardedHeaders();
 app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors("DefaultCorsPolicy");
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
