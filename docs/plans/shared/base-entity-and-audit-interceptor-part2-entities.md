@@ -128,3 +128,9 @@ Security coverage: no new endpoint or role. Cross-tenant write is MenuAuditTests
 - Until the three AddAuditFields migrations exist, existing Identity tests that run MigrateAsync fail with PendingModelChangesWarning (8 tests). They go green with the Identity migration.
 - Gate 1 decision: the user accepted MenuAuditTests as passing regression guards.
 - Orphan location_menus (menu missing): no test. `location_menus.menu_id` has a required foreign key to `menus` (`fk_location_menus_menus_menu_id`, ON DELETE CASCADE) in `20260917231406_InitialCreate` and the Menu snapshot, so an orphan cannot exist in real data and the organization_id backfill join always finds a menu.
+
+## Tasks
+1. [x] Open a tenant scope for the new organization in OrganizationService — Organization scenarios 1–6
+2. [ ] Organization AddAuditFields migration — migration scenarios 7, 10
+3. [ ] Identity AddAuditFields migration — migration scenarios 8, 11
+4. [ ] Menu AddAuditFields migration with backfills — migration scenarios 1–6, 9

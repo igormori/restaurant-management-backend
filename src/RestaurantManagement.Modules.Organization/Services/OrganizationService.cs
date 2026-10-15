@@ -87,6 +87,10 @@ namespace RestaurantManagement.Modules.Organization.Services
             };
             _orgDb.Organizations.Add(org);
 
+            // The new organization does not exist in the user's token yet, so the audit
+            // interceptor and the role assignment must see it through the scope.
+            using var tenantScope = _tenantScope.Begin(org.Id);
+
             // 2. Create Trial Settings
             var settings = new OrganizationSettings
             {
