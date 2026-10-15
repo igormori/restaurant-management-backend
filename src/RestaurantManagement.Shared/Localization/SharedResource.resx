@@ -129,6 +129,12 @@
   <data name="TooManyRequests" xml:space="preserve">
     <value>Too many requests. Please try again later.</value>
   </data>
+  <data name="TenantMismatch" xml:space="preserve">
+    <value>The record belongs to a different organization.</value>
+  </data>
+  <data name="OrganizationRequired" xml:space="preserve">
+    <value>An organization is required to save this record.</value>
+  </data>
 </root>
 
 
