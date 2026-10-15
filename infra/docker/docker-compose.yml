@@ -40,6 +40,9 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${POSTGRES_DB:-restaurant_db-development};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
+      # Mailtrap sandbox credentials from infra/docker/.env (see .env.example)
+      Email__SmtpUser: ${SMTP_USER:-}
+      Email__SmtpPass: ${SMTP_PASS:-}
     ports:
       - "5080:8080"
     depends_on:

@@ -194,15 +194,11 @@ namespace RestaurantManagement.Modules.Identity.Services
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var expireMinutes = _jwtOptions.ExpireMinutes > 0
-                ? _jwtOptions.ExpireMinutes
-                : 60;
-
             var token = new JwtSecurityToken(
                 issuer: _jwtOptions.Issuer,
                 audience: _jwtOptions.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expireMinutes),
+                expires: DateTime.UtcNow.AddMinutes(_jwtOptions.ExpireMinutes),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

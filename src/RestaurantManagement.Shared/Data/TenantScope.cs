@@ -2,27 +2,51 @@ namespace RestaurantManagement.Shared.Data
 {
     public sealed class TenantScope : ITenantScope
     {
-        private readonly AsyncLocal<Guid?> _organizationId = new();
+        private readonly AsyncLocal<ScopeFrame?> _current = new();
 
-        public Guid? OrganizationId => _organizationId.Value;
+        public Guid? OrganizationId => FirstOpen(_current.Value)?.OrganizationId;
 
         public IDisposable Begin(Guid organizationId)
         {
-            var previousOrganizationId = _organizationId.Value;
-            _organizationId.Value = organizationId;
-            return new ScopeRestorer(() => _organizationId.Value = previousOrganizationId);
+            var frame = new ScopeFrame(this, organizationId, _current.Value);
+            _current.Value = frame;
+            return frame;
         }
 
-        private sealed class ScopeRestorer : IDisposable
+        private static ScopeFrame? FirstOpen(ScopeFrame? frame)
         {
-            private readonly Action _restore;
+            while (frame is not null && frame.IsDisposed)
+                frame = frame.Parent;
 
-            public ScopeRestorer(Action restore)
+            return frame;
+        }
+
+        // Frames form a stack so that disposing twice, or disposing an outer scope before an inner one,
+        // never brings back an organization whose scope already ended.
+        private sealed class ScopeFrame : IDisposable
+        {
+            private readonly TenantScope _owner;
+
+            public ScopeFrame(TenantScope owner, Guid organizationId, ScopeFrame? parent)
             {
-                _restore = restore;
+                _owner = owner;
+                OrganizationId = organizationId;
+                Parent = parent;
             }
 
-            public void Dispose() => _restore();
+            public Guid OrganizationId { get; }
+            public ScopeFrame? Parent { get; }
+            public bool IsDisposed { get; private set; }
+
+            public void Dispose()
+            {
+                if (IsDisposed)
+                    return;
+
+                IsDisposed = true;
+                if (_owner._current.Value == this)
+                    _owner._current.Value = FirstOpen(Parent);
+            }
         }
     }
 }

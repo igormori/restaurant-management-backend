@@ -38,6 +38,9 @@ Connect from the host (IDE, `dotnet ef`, `dotnet run`):
 ## Configuration
 - Credentials are local-only defaults; override with `POSTGRES_USER`, `POSTGRES_PASSWORD`,
   `POSTGRES_DB` environment variables (or a `.env` file next to the compose file; never commit it)
+- Email: copy `docker/.env.example` to `docker/.env` and fill `SMTP_USER`/`SMTP_PASS` (Mailtrap
+  sandbox). Without them sending fails with "5.7.1 Authentication required"; read the
+  verification code from `user_verification_codes` instead
 - App settings come from `appsettings.json` baked into the image; override any key with an
   environment variable using `__` for nesting, e.g. `Jwt__Key`, `Sentry__Dsn`
 - Never commit real secrets (connection strings, JWT key, Sentry DSN) to these files

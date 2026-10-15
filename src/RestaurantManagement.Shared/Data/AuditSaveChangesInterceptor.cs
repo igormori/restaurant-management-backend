@@ -60,7 +60,9 @@ namespace RestaurantManagement.Shared.Data
                 if (entry.State == EntityState.Added)
                     StampAdded(entry, now, userId, organizationId);
                 else if (entry.State == EntityState.Modified)
-                    StampModified(entry, now, userId);
+                    StampModified(entry, now, userId, organizationId);
+                else if (entry.State == EntityState.Deleted && entry.Entity is TenantEntity)
+                    RequireOwnOrganization(entry, organizationId);
             }
         }
 
@@ -79,10 +81,14 @@ namespace RestaurantManagement.Shared.Data
             entity.UpdatedByUserId = userId;
         }
 
-        private void StampModified(EntityEntry<BaseEntity> entry, DateTime now, Guid? userId)
+        private void StampModified(EntityEntry<BaseEntity> entry, DateTime now, Guid? userId, Guid? organizationId)
         {
             if (entry.Entity is TenantEntity)
-                RejectOrganizationChange(entry);
+                RequireOwnOrganization(entry, organizationId);
+
+            // Entities attached with Update() mark every property modified, which would overwrite the creation audit.
+            entry.Property(e => e.CreatedAt).IsModified = false;
+            entry.Property(e => e.CreatedByUserId).IsModified = false;
 
             entry.Entity.UpdatedAt = now;
             entry.Entity.UpdatedByUserId = userId;
@@ -99,10 +105,15 @@ namespace RestaurantManagement.Shared.Data
             entity.OrganizationId = organizationId.Value;
         }
 
-        private void RejectOrganizationChange(EntityEntry<BaseEntity> entry)
+        // Both values are checked: an entity attached with Update() has no real original value,
+        // so OriginalValue equals CurrentValue and a change alone would go unnoticed.
+        private void RequireOwnOrganization(EntityEntry<BaseEntity> entry, Guid? organizationId)
         {
+            if (organizationId is null)
+                throw Forbidden(OrganizationRequiredKey);
+
             var property = entry.Property(nameof(TenantEntity.OrganizationId));
-            if (!Equals(property.OriginalValue, property.CurrentValue))
+            if (!Equals(property.OriginalValue, organizationId.Value) || !Equals(property.CurrentValue, organizationId.Value))
                 throw Forbidden(TenantMismatchKey);
         }
 
