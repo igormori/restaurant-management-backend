@@ -28,6 +28,7 @@ namespace RestaurantManagement.Modules.Identity.Controllers
 
         // POST api/auth/register
         [HttpPost("register")]
+        [AllowAnonymous]
         [EnableRateLimiting(AuthRateLimitPolicies.Register)]
         public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
         {
@@ -37,6 +38,7 @@ namespace RestaurantManagement.Modules.Identity.Controllers
 
         // POST api/auth/login
         [HttpPost("login")]
+        [AllowAnonymous]
         [EnableRateLimiting(AuthRateLimitPolicies.Login)]
         public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
         {
@@ -46,6 +48,7 @@ namespace RestaurantManagement.Modules.Identity.Controllers
 
         // POST api/auth/refresh
         [HttpPost("refresh")]
+        [AllowAnonymous]
         [EnableRateLimiting(AuthRateLimitPolicies.Refresh)]
         public async Task<ActionResult<AuthResponse>> Refresh()
         {
@@ -69,6 +72,7 @@ namespace RestaurantManagement.Modules.Identity.Controllers
 
         // POST api/auth/logout
         [HttpPost("logout")]
+        [AllowAnonymous]
         [EnableRateLimiting(AuthRateLimitPolicies.Refresh)]
         public async Task<IActionResult> Logout()
         {
@@ -99,6 +103,7 @@ namespace RestaurantManagement.Modules.Identity.Controllers
 
         // POST api/auth/verify
         [HttpPost("verify")]
+        [AllowAnonymous]
         [EnableRateLimiting(AuthRateLimitPolicies.Verify)]
         public async Task<ActionResult<MessageResponse>> VerifyEmail([FromBody] VerifyEmailRequest request)
         {
@@ -108,6 +113,7 @@ namespace RestaurantManagement.Modules.Identity.Controllers
 
         // POST api/auth/resend-verification
         [HttpPost("resend-verification")]
+        [AllowAnonymous]
         [EnableRateLimiting(AuthRateLimitPolicies.ResendVerification)]
         public async Task<ActionResult<MessageResponse>> ResendVerification([FromBody] ResendVerificationRequest request)
         {

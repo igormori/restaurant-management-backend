@@ -89,21 +89,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
             OrganizationClaimOf(response.Auth.Token).ShouldBeNull();
         }
 
-        // Scenario 31
-        [Fact]
-        public async Task LoginAsync_UserWithOnlyRolesWithoutOrganization_TokenHasNoOrganizationClaim()
-        {
-            // Arrange
-            using var database = new IdentityTestDatabase();
-            await SeedUserAsync(database, new UserRole { Role = StaffRole, OrganizationId = null });
-
-            // Act
-            var response = await LoginAsync(database);
-
-            // Assert
-            OrganizationClaimOf(response.Auth.Token).ShouldBeNull();
-        }
-
         // Scenario 32
         [Fact]
         public async Task LoginAsync_UserWithOneRoleInOneOrganization_TokenCarriesThatOrganizationId()

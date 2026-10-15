@@ -123,13 +123,13 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
-        public async Task EditOrganizationAsync_WhenUserHasStaffRoleForOrganization_ThrowsForbidden()
+        public async Task EditOrganizationAsync_WhenUserHasWaiterRoleForOrganization_ThrowsForbidden()
         {
             // Arrange
             using var database = new OrganizationTestDatabase();
             var organizationId = await SeedOrganizationAsync(database);
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Staff);
+            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Waiter);
             var userRoleAssigner = Substitute.For<IUserRoleAssigner>();
             var logger = Substitute.For<ILogger<OrganizationService>>();
 

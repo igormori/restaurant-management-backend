@@ -7,7 +7,7 @@ namespace RestaurantManagement.Modules.Identity.Entities
 
         // Cross-module references: Use IDs only to avoid circular dependencies
         // Organization and Location entities live in Organization module
-        public Guid? OrganizationId { get; set; }
+        public Guid OrganizationId { get; set; }
         public Guid? LocationId { get; set; }
 
         public string Role { get; set; } = null!;

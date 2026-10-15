@@ -6,6 +6,7 @@ namespace RestaurantManagement.Modules.Identity.Data
     public class IdentityDbContext : DbContext
     {
         public const string UniqueEmailIndexName = "ix_users_email_normalized";
+        public const string UniqueUserRoleIndexName = "ix_user_roles_user_id_organization_id_location_id_role";
 
         public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
             : base(options) { }
@@ -32,11 +33,27 @@ namespace RestaurantManagement.Modules.Identity.Data
                     .HasDatabaseName(UniqueEmailIndexName);
             });
 
-            modelBuilder.Entity<UserRole>()
-                .HasOne(r => r.User)
-                .WithMany(u => u.Roles)
-                .HasForeignKey(r => r.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<UserRole>(entity =>
+            {
+                entity.HasOne(r => r.User)
+                    .WithMany(u => u.Roles)
+                    .HasForeignKey(r => r.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Nulls-not-distinct so two "all locations" (null) rows count as duplicates.
+                entity.HasIndex(r => new { r.UserId, r.OrganizationId, r.LocationId, r.Role })
+                    .IsUnique()
+                    .AreNullsDistinct(false)
+                    .HasDatabaseName(UniqueUserRoleIndexName);
+
+                // The check below is raw SQL, so the column name is fixed to match it in every provider.
+                entity.Property(r => r.OrganizationId).HasColumnName("organization_id");
+
+                // An unset Guid is all zeros, so reject it: a role must belong to a real organization.
+                entity.ToTable(t => t.HasCheckConstraint(
+                    "ck_user_roles_organization_id_not_empty",
+                    "organization_id <> '00000000-0000-0000-0000-000000000000'"));
+            });
 
             // Codes are owned by the user and useless without them, so they go with the user.
             modelBuilder.Entity<UserVerificationCode>()

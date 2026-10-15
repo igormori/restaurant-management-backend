@@ -14,8 +14,8 @@ Items marked **[confirm]** are not settled yet; treat them as open, not as rules
 - **Core value:** money the owner can see. Detect ingredient waste (purchases vs. sales),
   forecast demand, recommend promotions for ingredients about to spoil, and read purchase
   invoices from a photo or file to fill the stock automatically.
-- **Customers:** small and medium restaurants, starting in Brazil. Prices are shown in
-  BRL (Brazilian real), USD (US dollar) or CAD (Canadian dollar).
+- **Customers:** small and medium restaurants in Brazil, Canada and the USA (United States of
+  America) from launch.
 - **Pilot:** a family-owned Italian restaurant group in Curitiba with two locations.
 
 ## 2. Glossary
@@ -66,6 +66,9 @@ Later: own point of sale with payments by PIX (Brazilian instant payment), card 
 ## 5. Standing business rules
 - An organization never sees or changes another organization's data.
 - Nothing in use is deleted: locations are closed and users are deactivated, so history is kept.
-- Currency: **[confirm]** whether it is set per organization or per location, and whether one
-  organization can mix currencies.
+- Each organization sells in one currency, chosen when it is created: BRL (Brazilian real),
+  USD (US dollar) or CAD (Canadian dollar). No country default.
+- Each location has its own time zone (Canada and the USA span several), used for its business
+  day. No country default.
+- Not launched yet: there is no real customer data.
 - Units of measure for ingredients (grams, millilitres, units): **[confirm]** the full list.

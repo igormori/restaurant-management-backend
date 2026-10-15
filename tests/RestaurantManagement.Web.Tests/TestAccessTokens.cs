@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Options;
 
 namespace RestaurantManagement.Web.Tests;
@@ -15,14 +16,23 @@ namespace RestaurantManagement.Web.Tests;
 public static class TestAccessTokens
 {
     public static string Create(IServiceProvider services, Guid userId, string role)
+        => Create(services, userId, organizationId: null, role);
+
+    /// <summary>
+    /// Signs a pass with any number of role claims and, when given, the selected organization
+    /// claim. No organization mimics a user of several organizations who has not selected one.
+    /// </summary>
+    public static string Create(IServiceProvider services, Guid userId, Guid? organizationId, params string[] roles)
     {
         var jwt = services.GetRequiredService<IOptions<JwtOptions>>().Value;
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-            new Claim(ClaimTypes.Role, role)
+            new(ClaimTypes.NameIdentifier, userId.ToString()),
+            new(JwtRegisteredClaimNames.Sub, userId.ToString())
         };
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+        if (organizationId.HasValue)
+            claims.Add(new Claim(AppClaimTypes.OrganizationId, organizationId.Value.ToString()));
         var credentials = new SigningCredentials(
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key)), SecurityAlgorithms.HmacSha256);
         var token = new JwtSecurityToken(jwt.Issuer, jwt.Audience, claims,

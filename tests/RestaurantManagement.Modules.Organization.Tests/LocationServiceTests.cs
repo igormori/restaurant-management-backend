@@ -126,16 +126,16 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
-        public async Task CreateLocationAsync_WhenUserHasStaffRoleOrNoRole_ThrowsForbidden()
+        public async Task CreateLocationAsync_WhenUserHasWaiterRoleOrNoRole_ThrowsForbidden()
         {
             // Arrange
             using var database = new OrganizationTestDatabase();
             var organizationId = await SeedOrganizationAsync(database);
 
-            var staffUserId = Guid.NewGuid();
-            var staffUserRoleLookup = CreateUserRoleLookup(staffUserId, organizationId, Roles.Staff);
-            using var staffContext = database.CreateContext();
-            var staffSut = new LocationService(staffContext, staffUserRoleLookup, TestLocalizer.Create());
+            var waiterUserId = Guid.NewGuid();
+            var waiterUserRoleLookup = CreateUserRoleLookup(waiterUserId, organizationId, Roles.Waiter);
+            using var waiterContext = database.CreateContext();
+            var waiterSut = new LocationService(waiterContext, waiterUserRoleLookup, TestLocalizer.Create());
 
             var noRoleUserId = Guid.NewGuid();
             var noRoleUserRoleLookup = CreateUserRoleLookup(noRoleUserId, organizationId, role: null);
@@ -143,11 +143,11 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var noRoleSut = new LocationService(noRoleContext, noRoleUserRoleLookup, TestLocalizer.Create());
 
             // Act
-            var staffAct = () => staffSut.CreateLocationAsync(staffUserId, organizationId, ValidCreateRequest);
+            var waiterAct = () => waiterSut.CreateLocationAsync(waiterUserId, organizationId, ValidCreateRequest);
             var noRoleAct = () => noRoleSut.CreateLocationAsync(noRoleUserId, organizationId, ValidCreateRequest);
 
             // Assert
-            await staffAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
+            await waiterAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
             await noRoleAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
         }
 
@@ -194,17 +194,17 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
-        public async Task EditLocationAsync_WhenUserHasStaffRoleOrNoRole_ThrowsForbidden()
+        public async Task EditLocationAsync_WhenUserHasWaiterRoleOrNoRole_ThrowsForbidden()
         {
             // Arrange
             using var database = new OrganizationTestDatabase();
             var organizationId = await SeedOrganizationAsync(database);
             var locationId = await SeedLocationAsync(database, organizationId);
 
-            var staffUserId = Guid.NewGuid();
-            var staffUserRoleLookup = CreateUserRoleLookup(staffUserId, organizationId, Roles.Staff);
-            using var staffContext = database.CreateContext();
-            var staffSut = new LocationService(staffContext, staffUserRoleLookup, TestLocalizer.Create());
+            var waiterUserId = Guid.NewGuid();
+            var waiterUserRoleLookup = CreateUserRoleLookup(waiterUserId, organizationId, Roles.Waiter);
+            using var waiterContext = database.CreateContext();
+            var waiterSut = new LocationService(waiterContext, waiterUserRoleLookup, TestLocalizer.Create());
 
             var noRoleUserId = Guid.NewGuid();
             var noRoleUserRoleLookup = CreateUserRoleLookup(noRoleUserId, organizationId, role: null);
@@ -212,11 +212,11 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var noRoleSut = new LocationService(noRoleContext, noRoleUserRoleLookup, TestLocalizer.Create());
 
             // Act
-            var staffAct = () => staffSut.EditLocationAsync(staffUserId, locationId, ValidEditRequest);
+            var waiterAct = () => waiterSut.EditLocationAsync(waiterUserId, locationId, ValidEditRequest);
             var noRoleAct = () => noRoleSut.EditLocationAsync(noRoleUserId, locationId, ValidEditRequest);
 
             // Assert
-            await staffAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
+            await waiterAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
             await noRoleAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
         }
 
@@ -265,17 +265,17 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
-        public async Task DeleteLocationAsync_WhenUserHasStaffRoleOrNoRole_ThrowsForbidden()
+        public async Task DeleteLocationAsync_WhenUserHasWaiterRoleOrNoRole_ThrowsForbidden()
         {
             // Arrange
             using var database = new OrganizationTestDatabase();
             var organizationId = await SeedOrganizationAsync(database);
             var locationId = await SeedLocationAsync(database, organizationId);
 
-            var staffUserId = Guid.NewGuid();
-            var staffUserRoleLookup = CreateUserRoleLookup(staffUserId, organizationId, Roles.Staff);
-            using var staffContext = database.CreateContext();
-            var staffSut = new LocationService(staffContext, staffUserRoleLookup, TestLocalizer.Create());
+            var waiterUserId = Guid.NewGuid();
+            var waiterUserRoleLookup = CreateUserRoleLookup(waiterUserId, organizationId, Roles.Waiter);
+            using var waiterContext = database.CreateContext();
+            var waiterSut = new LocationService(waiterContext, waiterUserRoleLookup, TestLocalizer.Create());
 
             var noRoleUserId = Guid.NewGuid();
             var noRoleUserRoleLookup = CreateUserRoleLookup(noRoleUserId, organizationId, role: null);
@@ -283,11 +283,11 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var noRoleSut = new LocationService(noRoleContext, noRoleUserRoleLookup, TestLocalizer.Create());
 
             // Act
-            var staffAct = () => staffSut.DeleteLocationAsync(staffUserId, locationId);
+            var waiterAct = () => waiterSut.DeleteLocationAsync(waiterUserId, locationId);
             var noRoleAct = () => noRoleSut.DeleteLocationAsync(noRoleUserId, locationId);
 
             // Assert
-            await staffAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
+            await waiterAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
             await noRoleAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
         }
     }

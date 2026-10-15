@@ -29,8 +29,8 @@ namespace RestaurantManagement.Modules.Identity.Services
         public async Task<List<Guid>> GetOrganizationIdsForUserAsync(Guid userId)
         {
             return await _db.UserRoles
-                .Where(r => r.UserId == userId && r.OrganizationId != null)
-                .Select(r => r.OrganizationId!.Value)
+                .Where(r => r.UserId == userId)
+                .Select(r => r.OrganizationId)
                 .ToListAsync();
         }
     }

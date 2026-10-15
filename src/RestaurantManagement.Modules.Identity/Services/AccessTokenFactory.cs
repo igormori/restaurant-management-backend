@@ -42,8 +42,7 @@ namespace RestaurantManagement.Modules.Identity.Services
                 claims.Add(new Claim(AppClaimTypes.OrganizationId, selectedOrganizationId.Value.ToString()));
 
             var organizationIds = user.Roles
-                .Where(r => r.OrganizationId.HasValue)
-                .Select(r => r.OrganizationId!.Value)
+                .Select(r => r.OrganizationId)
                 .Distinct()
                 .ToList();
 

@@ -116,6 +116,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddPermissionPolicies();
+
 // ---------------------------------------------
 // Controllers
 // ---------------------------------------------
