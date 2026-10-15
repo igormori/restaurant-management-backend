@@ -67,6 +67,30 @@ namespace RestaurantManagement.Modules.Identity.Controllers
             return RespondWithCookie(result);
         }
 
+        // POST api/auth/logout
+        [HttpPost("logout")]
+        [EnableRateLimiting(AuthRateLimitPolicies.Refresh)]
+        public async Task<IActionResult> Logout()
+        {
+            await _sessionService.LogoutAsync(RefreshTokenCookie.Read(Request));
+            RefreshTokenCookie.Clear(Response);
+            return NoContent();
+        }
+
+        // POST api/auth/logout-all
+        [HttpPost("logout-all")]
+        [Authorize]
+        public async Task<IActionResult> LogoutAll()
+        {
+            var subject = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(subject, out var userId))
+                return Unauthorized();
+
+            await _sessionService.LogoutAllAsync(userId);
+            RefreshTokenCookie.Clear(Response);
+            return NoContent();
+        }
+
         private ActionResult<AuthResponse> RespondWithCookie(SessionResult result)
         {
             RefreshTokenCookie.Write(Response, result.RefreshToken, result.RefreshTokenExpiresAt);

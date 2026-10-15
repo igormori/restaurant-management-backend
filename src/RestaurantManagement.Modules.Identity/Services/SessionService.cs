@@ -52,13 +52,17 @@ namespace RestaurantManagement.Modules.Identity.Services
             _accessTokens = new AccessTokenFactory(jwtOptions.Value);
         }
 
-        // Stub (tester): T4.
-        public Task LogoutAsync(string? refreshToken)
-            => throw new NotImplementedException();
+        public async Task LogoutAsync(string? refreshToken)
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                return;
 
-        // Stub (tester): T4.
-        public Task LogoutAllAsync(Guid userId)
-            => throw new NotImplementedException();
+            // Unknown or already revoked tokens are not an error: logout answers the same either way.
+            await _refreshTokens.RevokeAsync(refreshToken);
+        }
+
+        public async Task LogoutAllAsync(Guid userId)
+            => await _refreshTokens.RevokeAllForUserAsync(userId);
 
         public async Task<SessionResult> LoginAsync(LoginRequest request, ClientInfo client)
         {

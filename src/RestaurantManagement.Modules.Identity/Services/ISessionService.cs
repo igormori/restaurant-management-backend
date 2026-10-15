@@ -8,7 +8,6 @@ namespace RestaurantManagement.Modules.Identity.Services
         Task<SessionResult> RefreshTokenAsync(string? refreshToken);
         Task<SessionResult> SelectOrganizationAsync(Guid userId, SelectOrganizationRequest request, string? refreshToken, ClientInfo client);
 
-        // Stubs (tester): T4.
         Task LogoutAsync(string? refreshToken);
         Task LogoutAllAsync(Guid userId);
     }
