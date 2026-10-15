@@ -1,6 +1,6 @@
 # Plan: Hash verification codes
 
-**Spec:** docs/specs/identity/2026-10-15-hash-verification-codes.md   **Date:** 2026-10-15   **Status:** In progress
+**Spec:** docs/specs/identity/2026-10-15-hash-verification-codes.md   **Date:** 2026-10-15   **Status:** Done
 **Risk:** High — renames a column on a table with data, runs a backfill, and changes how a security check works
 
 ## Summary
@@ -23,10 +23,10 @@
 | T4 | — | — | Hand-written `migrationBuilder.Sql` backfill on a table with data. It marks all existing codes used and blanks their readable values |
 
 ## Overall Definition of Done
-- [ ] All tasks done, tests passing
-- [ ] All spec Outcomes met
-- [ ] Full test suite green after the last batch
-- [ ] No out-of-scope changes; findings in the backlog
+- [x] All tasks done, tests passing
+- [x] All spec Outcomes met
+- [x] Full test suite green after the last batch
+- [x] No out-of-scope changes; findings in the backlog
 
 ## Checklist
 - [x] T1 — Verification hash key configuration and startup check
