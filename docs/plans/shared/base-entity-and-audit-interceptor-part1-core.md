@@ -131,7 +131,7 @@ Fixed values: Org A `a1a1a1a1-...-0001`, Org B `b2b2b2b2-...-0002`, Org C `c3c3c
 2. [x] AuditSaveChangesInterceptor — scenarios 1–22
 3. [x] ClaimsCurrentUser — scenarios 35–41
 4. [x] SessionService org claim — scenarios 29–34
-5. Program.cs wiring (lifetimes, interceptor on all DbContexts) — scenarios 42–46
+5. [x] Program.cs wiring (lifetimes, interceptor on all DbContexts) — scenarios 42–46
 
 ## Flags
 - A2 (decided): explicit scope overrides the claim; only a differing entity org is rejected. Begin is only for organization creation; /review checks every call.

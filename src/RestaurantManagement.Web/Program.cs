@@ -10,12 +10,15 @@ using Sentry;
 
 // Shared
 using RestaurantManagement.Shared;
+using RestaurantManagement.Shared.Auth;
+using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Middleware;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Services.Email;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Localization;
+using RestaurantManagement.Web.Auth;
 using RestaurantManagement.Web.Hosting;
 using RestaurantManagement.Web.RateLimiting;
 
@@ -147,14 +150,23 @@ builder.Services.AddAuthRateLimiting(builder.Configuration);
 // ---------------------------------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContext<IdentityDbContext>(options =>
-    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<ITenantScope, TenantScope>();
+builder.Services.AddScoped<ICurrentUser, ClaimsCurrentUser>();
+builder.Services.AddScoped<AuditSaveChangesInterceptor>();
 
-builder.Services.AddDbContext<MenuDbContext>(options =>
-    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
+builder.Services.AddDbContext<IdentityDbContext>((serviceProvider, options) =>
+    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
+        .AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>()));
 
-builder.Services.AddDbContext<OrganizationDbContext>(options =>
-    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
+builder.Services.AddDbContext<MenuDbContext>((serviceProvider, options) =>
+    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
+        .AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>()));
+
+builder.Services.AddDbContext<OrganizationDbContext>((serviceProvider, options) =>
+    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
+        .AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>()));
 
 // ---------------------------------------------
 // Sentry for error tracking
