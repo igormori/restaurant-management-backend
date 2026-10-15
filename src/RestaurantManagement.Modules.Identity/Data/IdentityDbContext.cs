@@ -6,6 +6,7 @@ namespace RestaurantManagement.Modules.Identity.Data
     public class IdentityDbContext : DbContext
     {
         public const string UniqueEmailIndexName = "ix_users_email_normalized";
+        public const string UniqueUserRoleIndexName = "ix_user_roles_user_id_organization_id_location_id_role";
 
         public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
             : base(options) { }
