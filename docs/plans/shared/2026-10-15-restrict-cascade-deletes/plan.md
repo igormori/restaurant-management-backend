@@ -1,6 +1,6 @@
 # Plan: Restrict Cascade Deletes
 
-**Spec:** docs/specs/shared/2026-10-15-restrict-cascade-deletes.md   **Date:** 2026-10-15   **Status:** Draft
+**Spec:** docs/specs/shared/2026-10-15-restrict-cascade-deletes.md   **Date:** 2026-10-15   **Status:** In progress
 **Risk:** High — changes foreign key delete rules on tables that already hold data (no rows touched, no backfill)
 
 ## Summary
@@ -28,5 +28,5 @@ No endpoint, role, auth or tenant query changes, so no cross-tenant or role reje
 - [ ] Commit bodies list every link changed and every link kept as cascade, with the reason (Outcome 4)
 
 ## Checklist
-- [ ] T1 — Restrict organization deletes
+- [x] T1 — Restrict organization deletes (47c679a)
 - [ ] T2 — Review Identity delete rules
