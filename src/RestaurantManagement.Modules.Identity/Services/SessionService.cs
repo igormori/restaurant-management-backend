@@ -11,6 +11,7 @@ using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Shared;
+using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
@@ -175,6 +176,16 @@ namespace RestaurantManagement.Modules.Identity.Services
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
+
+            var organizationIds = user.Roles
+                .Where(r => r.OrganizationId.HasValue)
+                .Select(r => r.OrganizationId!.Value)
+                .Distinct()
+                .ToList();
+
+            // Users in several organizations must pick one, so only a single org is claimed automatically.
+            if (organizationIds.Count == 1)
+                claims.Add(new Claim(AppClaimTypes.OrganizationId, organizationIds[0].ToString()));
 
             var jwtKey = _jwtOptions.Key;
             if (string.IsNullOrEmpty(jwtKey))
