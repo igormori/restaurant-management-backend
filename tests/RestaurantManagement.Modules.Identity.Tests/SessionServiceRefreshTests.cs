@@ -1,6 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using FluentAssertions;
+using NSubstitute;
+using Sentry;
 using Microsoft.Extensions.Options;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
@@ -33,7 +35,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 RefreshTokenExpireDays = 30
             });
 
-            return new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create());
+            return new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create(), Substitute.For<IHub>());
         }
 
         private static async Task SeedUserAsync(

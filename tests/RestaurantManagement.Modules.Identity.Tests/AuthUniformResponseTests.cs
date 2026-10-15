@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using Sentry;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
@@ -37,7 +38,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         private static SessionService CreateSessionService(IdentityDbContext context)
         {
-            return new SessionService(context, TestSecurityOptions.Create(), CreateJwtOptions(), TestLocalizer.Create());
+            return new SessionService(context, TestSecurityOptions.Create(), CreateJwtOptions(), TestLocalizer.Create(), Substitute.For<IHub>());
         }
 
         private static VerificationService CreateVerificationService(IdentityDbContext context)

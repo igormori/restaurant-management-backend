@@ -1,4 +1,8 @@
+using System.IdentityModel.Tokens.Jwt;
 using FluentAssertions;
+using NSubstitute;
+using NSubstitute.Core;
+using Sentry;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using RestaurantManagement.Modules.Identity.Data;
@@ -30,13 +34,22 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private static SessionService CreateSut(
             IdentityDbContext context,
             int maxFailedLoginAttempts = 5,
-            int lockoutDurationMinutes = 15)
+            int lockoutDurationMinutes = 15,
+            IHub? hub = null)
         {
             var securityOptions = TestSecurityOptions.Create(
                 maxFailedLoginAttempts: maxFailedLoginAttempts,
                 lockoutDurationMinutes: lockoutDurationMinutes);
 
-            return new SessionService(context, securityOptions, CreateJwtOptions(), TestLocalizer.Create());
+            return new SessionService(context, securityOptions, CreateJwtOptions(), TestLocalizer.Create(), hub ?? Substitute.For<IHub>());
+        }
+
+        private static List<SentryEvent> CapturedEvents(IHub hub)
+        {
+            return hub.ReceivedCalls()
+                .Where(call => call.GetMethodInfo().Name == nameof(IHub.CaptureEvent))
+                .Select(call => (SentryEvent)call.GetArguments()[0]!)
+                .ToList();
         }
 
         [Fact]
@@ -117,8 +130,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
             unverifiedThrown.Which.Message.Should().Be(wrongPasswordThrown.Which.Message);
         }
 
+        // Scenario 10
         [Fact]
-        public async Task LoginAsync_LockedAccount_Throws423WithUnlockTime()
+        public async Task LoginAsync_LockedAccountCorrectPassword_Throws401MatchingWrongPassword()
         {
             // Arrange
             using var database = new IdentityTestDatabase();
@@ -132,18 +146,142 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 IsVerified = true,
                 LockedUntil = DateTime.UtcNow.AddMinutes(15)
             });
+            seedContext.Users.Add(new User
+            {
+                Email = "verified@test.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "A",
+                LastName = "B",
+                IsVerified = true
+            });
+            await seedContext.SaveChangesAsync();
+
+            using var lockedContext = database.CreateContext();
+            var lockedSut = CreateSut(lockedContext);
+
+            using var wrongPasswordContext = database.CreateContext();
+            var wrongPasswordSut = CreateSut(wrongPasswordContext);
+
+            // Act: correct password supplied, but the account is locked
+            var lockedAct = () => lockedSut.LoginAsync(new LoginRequest { Email = "locked@test.com", Password = Password });
+            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" });
+
+            // Assert
+            var lockedThrown = await lockedAct.Should().ThrowAsync<BusinessException>();
+            var wrongPasswordThrown = await wrongPasswordAct.Should().ThrowAsync<BusinessException>();
+
+            lockedThrown.Which.StatusCode.Should().Be(401);
+            lockedThrown.Which.Message.Should().Be("InvalidEmailOrPassword");
+            lockedThrown.Which.StatusCode.Should().Be(wrongPasswordThrown.Which.StatusCode);
+            lockedThrown.Which.Message.Should().Be(wrongPasswordThrown.Which.Message);
+        }
+
+        // Scenario 11
+        [Fact]
+        public async Task LoginAsync_LockedAccountWrongPassword_Throws401WithoutCountingAttemptOrExtendingLock()
+        {
+            // Arrange
+            var lockedUntil = DateTime.UtcNow.AddMinutes(10);
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            seedContext.Users.Add(new User
+            {
+                Email = "locked@test.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "A",
+                LastName = "B",
+                IsVerified = true,
+                FailedAttempts = 0,
+                LockedUntil = lockedUntil
+            });
             await seedContext.SaveChangesAsync();
 
             using var context = database.CreateContext();
-            var sut = CreateSut(context);
+            var sut = CreateSut(context, maxFailedLoginAttempts: 1);
 
-            // Act: correct password supplied, but the account is locked
-            var act = () => sut.LoginAsync(new LoginRequest { Email = "locked@test.com", Password = Password });
+            // Act
+            var act = () => sut.LoginAsync(new LoginRequest { Email = "locked@test.com", Password = "WrongPassword1!" });
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(423);
-            thrown.Which.Message.Should().NotBe("InvalidEmailOrPassword");
+            thrown.Which.StatusCode.Should().Be(401);
+
+            using var assertContext = database.CreateContext();
+            var user = await assertContext.Users.SingleAsync(u => u.Email == "locked@test.com");
+            user.FailedAttempts.Should().Be(0);
+            user.LockedUntil.Should().BeCloseTo(lockedUntil, TimeSpan.FromSeconds(1));
+        }
+
+        // Scenario 12
+        [Fact]
+        public async Task LoginAsync_FailedAttemptsReachLimit_SentryMessageHasUserIdAndNoEmail()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            var user = new User
+            {
+                Email = "marina.souza@test.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "Marina",
+                LastName = "Souza",
+                IsVerified = true
+            };
+            seedContext.Users.Add(user);
+            await seedContext.SaveChangesAsync();
+
+            var hub = Substitute.For<IHub>();
+            hub.IsEnabled.Returns(true);
+            using var context = database.CreateContext();
+            var sut = CreateSut(context, maxFailedLoginAttempts: 1, hub: hub);
+
+            // Act
+            var act = () => sut.LoginAsync(new LoginRequest { Email = "marina.souza@test.com", Password = "WrongPassword1!" });
+            await act.Should().ThrowAsync<BusinessException>();
+
+            // Assert
+            var lockoutMessage = CapturedEvents(hub).Should().ContainSingle().Subject.Message?.Formatted;
+            lockoutMessage.Should().Contain(user.Id.ToString());
+            lockoutMessage.Should().NotContain("marina.souza@test.com");
+        }
+
+        // Scenario 13
+        [Fact]
+        public async Task LoginAsync_JwtExpireMinutesLeftAtDefault_TokenExpiresIn15Minutes()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            seedContext.Users.Add(new User
+            {
+                Email = "verified@test.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "A",
+                LastName = "B",
+                IsVerified = true
+            });
+            await seedContext.SaveChangesAsync();
+
+            var defaultExpiryJwtOptions = Options.Create(new JwtOptions
+            {
+                Key = "test-signing-key-at-least-32-characters-long",
+                Issuer = "RestaurantManagementTests",
+                Audience = "RestaurantManagementTests"
+            });
+            using var context = database.CreateContext();
+            var sut = new SessionService(
+                context,
+                TestSecurityOptions.Create(),
+                defaultExpiryJwtOptions,
+                TestLocalizer.Create(),
+                Substitute.For<IHub>());
+
+            // Act
+            var response = await sut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = Password });
+
+            // Assert
+            var token = new JwtSecurityTokenHandler().ReadJwtToken(response.Token);
+            token.ValidTo.Should().BeCloseTo(DateTime.UtcNow.AddMinutes(15), TimeSpan.FromMinutes(1));
         }
 
         [Fact]

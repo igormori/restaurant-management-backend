@@ -71,11 +71,18 @@ All generated code must follow SOLID:
 - **Dependency inversion**: services depend on abstractions (interfaces), not concrete implementations, for anything injected via constructor — this is already the pattern for cross-module contracts and should extend to services generally
 
 ## Testing standards
-- xUnit, FluentAssertions, NSubstitute for mocks
-- Integration tests: WebApplicationFactory + Testcontainers for a real database
+- xUnit, Shouldly for assertions, NSubstitute for mocks
+- New tests use Shouldly, never FluentAssertions. Existing FluentAssertions tests stay as they
+  are; don't migrate them unless asked
 - Test projects mirror src: `tests/<ProjectName>.Tests`
-- Arrange / Act / Assert, one behavior per test
-- Test names: `Method_Scenario_ExpectedResult`
+  - Module unit tests: `tests/RestaurantManagement.Modules.<Module>.Tests` (SQLite in-memory)
+  - Shared project tests: `tests/RestaurantManagement.Shared.Tests`
+  - Integration tests: `tests/RestaurantManagement.Web.Tests` (WebApplicationFactory + Testcontainers PostgreSQL)
+  - Never create a new test project without flagging it first
+- Test names: `Method_Scenario_ExpectedResult`,
+  e.g. `DetectWaste_PurchasesExceedUsageBy25Percent_ReturnsVarianceAlert`
+- Every test has explicit `// Arrange`, `// Act`, `// Assert` comments; one behavior per test
+- Realistic restaurant values (grams, dish names, prices in BRL), never `foo`/`bar`/`123`
 - Cover the failure cases first, then the happy path
 - Bug fixes start with a failing test that reproduces the bug
 
@@ -87,5 +94,18 @@ All generated code must follow SOLID:
 - Remove only the unused code your own change created
 
 ## Workflow
-- Specs: docs/specs/<feature>.md
-- Plans: docs/plans/<feature>.md
+Test-first. Every step ending in ⏸ stops for the user's approval; never skip ahead.
+
+1. Spec (`/spec`): the user writes `docs/specs/<module>/<feature>.md`. Ask about anything
+   ambiguous before continuing.
+2. Structure plan (`/plan`) ⏸: `docs/plans/<module>/<feature>.md` with New files and
+   Modified files tables, signatures, and the patterns followed.
+3. Scenarios + tests (`/test`) ⏸: create stubs that throw `NotImplementedException`, add the
+   scenario table to the plan, write one test per scenario, and show them failing.
+4. Implement (`/implement`): commit the approved stubs and tests, then one task at a time,
+   each making named scenarios pass, with the full suite green and a commit per task.
+5. Summary ⏸: files changed, deviations from the approved structure, what the tests don't cover.
+   Then `/review`.
+
+After the tests are approved in step 3, test files are read-only: never edit, delete, skip or
+weaken a test. If a test looks wrong, stop and say why.

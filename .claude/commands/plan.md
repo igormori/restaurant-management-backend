@@ -1,9 +1,9 @@
 ---
-description: Plan the implementation of a spec
+description: Propose the file structure for a spec (step 2)
 argument-hint: <module>/<feature>
 ---
 
-Use the planner subagent to plan the implementation of docs/specs/$ARGUMENTS.md
+Use the planner subagent to write the structure plan for docs/specs/$ARGUMENTS.md
 
-When it returns, show me the main design decisions and risks, then stop.
-Do not implement anything.
+When it returns, show me the New files and Modified files tables, the signatures, and the
+flags, then stop and wait for my approval. Do not create any files besides the plan.

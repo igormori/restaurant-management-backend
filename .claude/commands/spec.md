@@ -1,9 +1,14 @@
 ---
-description: Write a feature spec
-argument-hint: <module>/<feature> — <short description>
+description: Review the spec I wrote and ask about anything ambiguous (step 1)
+argument-hint: <module>/<feature>
 ---
 
-Use the spec-writer subagent to write a spec for: $ARGUMENTS
+Read the spec at docs/specs/$ARGUMENTS.md. I wrote it; do not rewrite it.
+If it does not exist, say so and stop.
 
-When it returns, show me the file path, its assumptions and open questions, then stop.
-Do not plan or implement anything.
+Read the owning module's CLAUDE.md and enough of the module to ground your questions.
+Then ask me about anything ambiguous, missing, or contradictory: roles, organization and
+location scoping, validation, units, edge cases. Number the questions and, for each, say what
+you would assume if I don't answer.
+
+Stop after the questions. Do not plan or write code. Edit the spec only if I tell you to.

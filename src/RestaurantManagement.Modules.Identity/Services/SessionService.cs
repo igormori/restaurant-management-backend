@@ -33,7 +33,8 @@ namespace RestaurantManagement.Modules.Identity.Services
             IdentityDbContext db,
             IOptions<SecurityOptions> securityOptions,
             IOptions<JwtOptions> jwtOptions,
-            IStringLocalizer<SharedResource> localizer)
+            IStringLocalizer<SharedResource> localizer,
+            IHub hub)
         {
             _db = db;
             _securityOptions = securityOptions.Value;

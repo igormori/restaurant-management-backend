@@ -47,10 +47,19 @@ Scope:
 - Flag unrelated formatting churn.
 
 Tests:
-- Every acceptance criterion has a test.
+- Every row in the plan's Scenarios table has a test carrying its `// Scenario N` comment, and
+  every acceptance criterion in the spec is covered by at least one scenario.
+- Approved tests were not changed: `git diff <baseline commit>..HEAD -- tests/` is empty, where
+  the baseline is the `Add failing tests for ...` commit. Any change there is Critical.
+- No production code hardcodes expected values or branches on test-only conditions.
 - Tests assert the spec's behaviour, not whatever the code currently does. Call out a test that
   would still pass if the fix were reverted.
+- New tests use Shouldly, Arrange / Act / Assert comments, and realistic restaurant values.
 - No test asserts on implementation details that make refactoring painful.
+
+Structure:
+- Files match the plan's New files and Modified files tables. Anything else is a finding unless
+  the implementer's report explains it.
 
 ## Report format
 ```
