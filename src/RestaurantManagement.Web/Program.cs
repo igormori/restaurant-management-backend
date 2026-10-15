@@ -227,6 +227,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IVerificationService, VerificationService>();
+builder.Services.AddSingleton<IVerificationCodeHasher, VerificationCodeHasher>();
 
 // Organization Module Services
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
