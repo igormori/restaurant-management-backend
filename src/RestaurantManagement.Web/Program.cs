@@ -16,6 +16,7 @@ using RestaurantManagement.Shared.Services.Email;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Localization;
+using RestaurantManagement.Web.Hosting;
 using RestaurantManagement.Web.RateLimiting;
 
 // Modules
@@ -153,12 +154,7 @@ builder.Services.AddDbContext<OrganizationDbContext>(options =>
 // ---------------------------------------------
 // Sentry for error tracking
 // ---------------------------------------------
-builder.WebHost.UseSentry(o =>
-{
-    o.Dsn = builder.Configuration["Sentry:Dsn"];
-    o.Debug = true;
-    o.TracesSampleRate = 1.0;
-});
+builder.AddSentryTracking();
 
 // ---------------------------------------------
 // Swagger/OpenAPI

@@ -113,6 +113,6 @@ Not covered by a test (and why): MailKit advisory (checked by `dotnet list packa
 ## Tasks
 1. [x] JWT options validation, 15-minute default lifetime, ValidateOnStart wiring — scenarios 1–9, 13–16, 23
 2. [x] Locked account returns the generic 401; lockout Sentry message uses user ID; remove AccountLockedUntil resx; Identity CLAUDE.md — scenarios 10–12
-3. [ ] Sentry hosting extension (Debug only in Development, validated TracesSampleRate) — scenarios 17–22
+3. [x] Sentry hosting extension (Debug only in Development, validated TracesSampleRate) — scenarios 17–22
 4. [ ] HTTPS-only Kestrel listener outside Development, `Https` appsettings section — scenarios 24–30
 5. [ ] MailKit upgrade to latest version without advisory — no scenario (checked with `dotnet list package --vulnerable`)
