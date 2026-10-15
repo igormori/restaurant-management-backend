@@ -35,6 +35,6 @@ everywhere", and finally drop the old single-token columns from `users`.
 ## Checklist
 - [x] T1 — Refresh token table and entity
 - [x] T2 — Refresh token service: issue, rotate, reuse detection, revoke
-- [ ] T3 — Sign-in, refresh and organization selection use per-device tokens in a cookie
+- [x] T3 — Sign-in, refresh and organization selection use per-device tokens in a cookie
 - [ ] T4 — Logout (this device) and sign out everywhere endpoints
 - [ ] T5 — Drop the old single-token columns from users

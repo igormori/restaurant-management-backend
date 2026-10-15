@@ -8,7 +8,6 @@ namespace RestaurantManagement.Modules.Identity.Models
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;
         public string? Token { get; set; }
-        public string? RefreshToken { get; set; }
         public List<OrganizationChoice>? Organizations { get; set; }
     }
 }

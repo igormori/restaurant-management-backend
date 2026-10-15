@@ -40,17 +40,17 @@ namespace RestaurantManagement.Modules.Identity.Controllers
         [EnableRateLimiting(AuthRateLimitPolicies.Login)]
         public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
         {
-            var response = await _sessionService.LoginAsync(request);
-            return Ok(response);
+            var result = await _sessionService.LoginAsync(request, RefreshTokenCookie.ClientOf(HttpContext));
+            return RespondWithCookie(result);
         }
 
         // POST api/auth/refresh
         [HttpPost("refresh")]
         [EnableRateLimiting(AuthRateLimitPolicies.Refresh)]
-        public async Task<ActionResult<AuthResponse>> Refresh([FromBody] RefreshRequest request)
+        public async Task<ActionResult<AuthResponse>> Refresh()
         {
-            var response = await _sessionService.RefreshTokenAsync(request);
-            return Ok(response);
+            var result = await _sessionService.RefreshTokenAsync(RefreshTokenCookie.Read(Request));
+            return RespondWithCookie(result);
         }
 
         // POST api/auth/select-organization
@@ -62,8 +62,15 @@ namespace RestaurantManagement.Modules.Identity.Controllers
             if (!Guid.TryParse(subject, out var userId))
                 return Unauthorized();
 
-            var response = await _sessionService.SelectOrganizationAsync(userId, request);
-            return Ok(response);
+            var result = await _sessionService.SelectOrganizationAsync(
+                userId, request, RefreshTokenCookie.Read(Request), RefreshTokenCookie.ClientOf(HttpContext));
+            return RespondWithCookie(result);
+        }
+
+        private ActionResult<AuthResponse> RespondWithCookie(SessionResult result)
+        {
+            RefreshTokenCookie.Write(Response, result.RefreshToken, result.RefreshTokenExpiresAt);
+            return Ok(result.Auth);
         }
 
         // POST api/auth/verify
