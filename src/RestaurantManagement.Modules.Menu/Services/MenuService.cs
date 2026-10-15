@@ -220,11 +220,16 @@ namespace RestaurantManagement.Modules.Menu.Services
             }
         }
 
+        private static readonly string[] ReadRoles =
+        {
+            Roles.Owner, Roles.Admin, Roles.Manager, Roles.Cashier, Roles.Waiter, Roles.Kitchen
+        };
+
         private async Task CheckReadPermission(Guid userId, Guid organizationId)
         {
             var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
 
-            if (role == null || (role != Roles.Owner && role != Roles.Admin && role != Roles.Staff))
+            if (role == null || !ReadRoles.Contains(role))
             {
                 throw new BusinessException(_localizer["UnauthorizedMessage"].Value, 403);
             }

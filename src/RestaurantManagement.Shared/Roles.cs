@@ -8,6 +8,5 @@ namespace RestaurantManagement.Shared
         public const string Cashier = "Cashier";
         public const string Waiter = "Waiter";
         public const string Kitchen = "Kitchen";
-        public const string Staff = "Staff";
     }
 }
