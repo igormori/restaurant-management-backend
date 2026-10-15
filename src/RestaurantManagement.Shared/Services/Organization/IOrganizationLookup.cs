@@ -5,5 +5,6 @@ namespace RestaurantManagement.Shared.Services.Organization
         Task<bool> OrganizationExistsAsync(Guid organizationId);
         Task<List<Guid>> GetLocationIdsInOrganizationAsync(Guid organizationId, IReadOnlyCollection<Guid> locationIds);
         Task<LocationSummaryDto?> GetLocationAsync(Guid locationId);
+        Task<List<OrganizationSummaryDto>> GetOrganizationsAsync(IReadOnlyCollection<Guid> organizationIds);
     }
 }

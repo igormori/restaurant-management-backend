@@ -16,6 +16,10 @@ namespace RestaurantManagement.Modules.Organization.Data
         {
             // Apply any entity configurations from this assembly
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrganizationDbContext).Assembly);
+            modelBuilder.Entity<Entities.Organization>()
+                .Property(o => o.IsActive)
+                .HasDefaultValue(true);
+
             base.OnModelCreating(modelBuilder);
         }
     }

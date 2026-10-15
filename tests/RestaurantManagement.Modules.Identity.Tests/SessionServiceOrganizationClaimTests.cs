@@ -34,7 +34,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 RefreshTokenExpireDays = 30
             });
 
-            return new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create(), Substitute.For<IHub>());
+            return new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create(), Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>());
         }
 
         private static async Task SeedUserAsync(IdentityTestDatabase database, params UserRole[] roles)

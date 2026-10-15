@@ -38,7 +38,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         private static SessionService CreateSessionService(IdentityDbContext context)
         {
-            return new SessionService(context, TestSecurityOptions.Create(), CreateJwtOptions(), TestLocalizer.Create(), Substitute.For<IHub>());
+            return new SessionService(context, TestSecurityOptions.Create(), CreateJwtOptions(), TestLocalizer.Create(), Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>());
         }
 
         private static VerificationService CreateVerificationService(IdentityDbContext context)

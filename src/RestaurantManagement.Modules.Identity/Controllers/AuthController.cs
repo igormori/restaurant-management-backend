@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using RestaurantManagement.Modules.Identity.Models;
@@ -48,6 +50,19 @@ namespace RestaurantManagement.Modules.Identity.Controllers
         public async Task<ActionResult<AuthResponse>> Refresh([FromBody] RefreshRequest request)
         {
             var response = await _sessionService.RefreshTokenAsync(request);
+            return Ok(response);
+        }
+
+        // POST api/auth/select-organization
+        [HttpPost("select-organization")]
+        [Authorize]
+        public async Task<ActionResult<AuthResponse>> SelectOrganization([FromBody] SelectOrganizationRequest request)
+        {
+            var subject = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(subject, out var userId))
+                return Unauthorized();
+
+            var response = await _sessionService.SelectOrganizationAsync(userId, request);
             return Ok(response);
         }
 

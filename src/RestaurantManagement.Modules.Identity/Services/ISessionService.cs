@@ -6,5 +6,6 @@ namespace RestaurantManagement.Modules.Identity.Services
     {
         Task<AuthResponse> LoginAsync(LoginRequest request);
         Task<AuthResponse> RefreshTokenAsync(RefreshRequest request);
+        Task<AuthResponse> SelectOrganizationAsync(Guid userId, SelectOrganizationRequest request);
     }
 }

@@ -108,6 +108,12 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
+
                     b.Property<string>("LogoUrl")
                         .HasColumnType("text")
                         .HasColumnName("logo_url");

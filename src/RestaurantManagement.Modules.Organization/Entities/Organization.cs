@@ -11,6 +11,7 @@ namespace RestaurantManagement.Modules.Organization.Entities
         public string? PrimaryColor { get; set; }
         public string? SecondaryColor { get; set; }
         public string? AccentColor { get; set; }
+        public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

@@ -24,6 +24,7 @@ namespace RestaurantManagement.Modules.Identity.Entities
         // Refresh token storage
         public string? RefreshTokenHash { get; set; }
         public DateTime? RefreshTokenExpiry { get; set; }
+        public Guid? SelectedOrganizationId { get; set; }
 
         // Navigation property
         public ICollection<UserRole> Roles { get; set; } = new List<UserRole>();

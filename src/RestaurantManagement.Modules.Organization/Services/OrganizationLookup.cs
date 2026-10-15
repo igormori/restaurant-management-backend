@@ -26,6 +26,14 @@ namespace RestaurantManagement.Modules.Organization.Services
                 .ToListAsync();
         }
 
+        public async Task<List<OrganizationSummaryDto>> GetOrganizationsAsync(IReadOnlyCollection<Guid> organizationIds)
+        {
+            return await _orgDb.Organizations
+                .Where(o => organizationIds.Contains(o.Id))
+                .Select(o => new OrganizationSummaryDto { Id = o.Id, Name = o.Name, IsActive = o.IsActive })
+                .ToListAsync();
+        }
+
         public async Task<LocationSummaryDto?> GetLocationAsync(Guid locationId)
         {
             var location = await _orgDb.Locations.FirstOrDefaultAsync(l => l.Id == locationId);

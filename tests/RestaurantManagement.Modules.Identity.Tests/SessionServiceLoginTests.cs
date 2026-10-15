@@ -41,7 +41,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 maxFailedLoginAttempts: maxFailedLoginAttempts,
                 lockoutDurationMinutes: lockoutDurationMinutes);
 
-            return new SessionService(context, securityOptions, CreateJwtOptions(), TestLocalizer.Create(), hub ?? Substitute.For<IHub>());
+            return new SessionService(context, securityOptions, CreateJwtOptions(), TestLocalizer.Create(), hub ?? Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>());
         }
 
         private static List<SentryEvent> CapturedEvents(IHub hub)
@@ -274,7 +274,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 TestSecurityOptions.Create(),
                 defaultExpiryJwtOptions,
                 TestLocalizer.Create(),
-                Substitute.For<IHub>());
+                Substitute.For<IHub>(),
+                Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>());
 
             // Act
             var response = await sut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = Password });
