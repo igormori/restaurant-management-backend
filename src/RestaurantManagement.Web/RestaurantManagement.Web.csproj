@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Sentry.AspNetCore" Version="5.15.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RestaurantManagement.Shared\RestaurantManagement.Shared.csproj" />
+    <ProjectReference Include="..\RestaurantManagement.Modules.Identity\RestaurantManagement.Modules.Identity.csproj" />
+    <ProjectReference Include="..\RestaurantManagement.Modules.Menu\RestaurantManagement.Modules.Menu.csproj" />
+    <ProjectReference Include="..\RestaurantManagement.Modules.Organization\RestaurantManagement.Modules.Organization.csproj" />
+  </ItemGroup>
+
+</Project>

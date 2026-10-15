@@ -28,9 +28,6 @@ appsettings.Development.json
 appsettings.Local.json
 secrets.json
 
-# EF Core
-Migrations/
-
 # Coverage / test results
 TestResults/
 *.coverage
