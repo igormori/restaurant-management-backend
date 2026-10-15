@@ -30,6 +30,11 @@ using RestaurantManagement.Modules.Organization.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------------------------------------------
+// Azure Key Vault (before any configuration is read)
+// ---------------------------------------------
+builder.AddKeyVaultSecrets();
+
+// ---------------------------------------------
 // Add Localization
 // ---------------------------------------------
 builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
