@@ -1,24 +1,28 @@
 ---
-description: Implement against the approved failing tests, then review (steps 4–5, Gate 2)
-argument-hint: <module>/<feature> [branch or ticket ID]
+description: Implement an approved plan batch by batch, then review the branch (steps 4–5)
+argument-hint: <module>/<spec-name> [branch or ticket]
 ---
 
-The first argument is `<module>/<feature>` (plan at docs/plans/<module>/<feature>.md); an
-optional second argument is the branch name or ticket ID. Arguments: $ARGUMENTS
+Plan folder: docs/plans/$ARGUMENTS/ (the first word of the arguments is the plan; an optional
+second word is the branch name or ticket).
 
-Check before starting:
-- docs/plans/<module>/<feature>.md exists and has a `## Scenarios` table.
-If not, stop and tell me to run `/feature` or `/test` first.
+If no plan was given, ask me for it and stop.
 
-1. Use the implementer subagent to implement it, passing both arguments.
-   If it stops early, show me why and stop.
-2. Use the pr-reviewer subagent to review the branch against main.
+1. Check `scenarios.md` exists in the plan folder. If not, stop: tests come first (`/test`).
+2. Run `git status`. The only uncommitted changes allowed are this feature's spec, plan folder,
+   stubs and tests. If anything else is uncommitted (for example `.claude/`, `CLAUDE.md` or other
+   work), stop and list it: I commit or stash it myself before implementing.
+3. Create or switch to the branch (`<type>/<spec-name>`, or the branch or ticket I gave).
+4. For each batch in `plan.md`, in order, use a **new** implementer subagent with only the plan
+   folder and the batch ID. Wait for it to finish before starting the next batch.
+   If it reports "stopped" or any [Blocking] item, stop the whole flow and show me its message.
+5. When every batch is done, use the pr-reviewer subagent on the branch.
+6. If the verdict is "Fix first", send the review to a new implementer subagent once to fix
+   the Fix first items, then run the pr-reviewer once more. Do not loop again.
 
-⏸ Gate 2. Show me, in this order:
-- Branch, and each commit with the scenarios it covers
-- Deviations from the approved structure, and why
-- What the tests do not cover
-- The pr-reviewer's verdict, Critical and Warnings
-- Final test results
+Show me, exactly as returned and with nothing added before or after:
+- each implementer's final message, in batch order
+- the pr-reviewer's final message
 
-Then stop and wait. Do not push or open a pull request.
+No file lists, no paths beyond those in the messages, no summary. Then stop and wait (Gate 3).
+Never push or merge; I do that after reading review.md.

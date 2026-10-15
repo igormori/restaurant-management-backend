@@ -208,7 +208,7 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                     b.HasOne("RestaurantManagement.Modules.Identity.Entities.User", "User")
                         .WithMany("Roles")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_user_roles_users_user_id");
 

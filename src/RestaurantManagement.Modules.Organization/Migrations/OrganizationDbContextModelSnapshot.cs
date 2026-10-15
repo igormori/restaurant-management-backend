@@ -216,7 +216,7 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                     b.HasOne("RestaurantManagement.Modules.Organization.Entities.Organization", "Organization")
                         .WithMany("Locations")
                         .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_locations_organizations_organization_id");
 
@@ -228,7 +228,7 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                     b.HasOne("RestaurantManagement.Modules.Organization.Entities.Organization", "Organization")
                         .WithOne("Settings")
                         .HasForeignKey("RestaurantManagement.Modules.Organization.Entities.OrganizationSettings", "OrganizationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_organization_settings_organizations_organization_id");
 

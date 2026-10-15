@@ -31,6 +31,19 @@ namespace RestaurantManagement.Modules.Identity.Data
                     .HasDatabaseName(UniqueEmailIndexName);
             });
 
+            modelBuilder.Entity<UserRole>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Roles)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Codes are owned by the user and useless without them, so they go with the user.
+            modelBuilder.Entity<UserVerificationCode>()
+                .HasOne(c => c.User)
+                .WithMany()
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             base.OnModelCreating(modelBuilder);
         }
     }

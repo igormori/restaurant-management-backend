@@ -1,17 +1,18 @@
 ---
-description: Write and review only the stubs, scenarios and failing tests (step 3, Gate 1)
-argument-hint: <module>/<feature>
+description: Write the scenarios, stubs and failing tests for an approved plan (step 3)
+argument-hint: <module>/<spec-name>
 ---
 
-Check that docs/plans/$ARGUMENTS.md exists. If it does not, stop and say so.
+Use the tester subagent to write the tests for the plan in docs/plans/$ARGUMENTS/
 
-1. Use the tester subagent to scaffold the stubs and write the scenarios and tests for
-   docs/plans/$ARGUMENTS.md
-2. Use the test-reviewer subagent to review them. If the verdict is "Fix first", send its
-   Fix first findings to the tester and review again, once.
+If no argument was given, ask me for the plan and stop.
 
-⏸ Gate 1. Show me only: the Scenarios table, the test-reviewer's verdict, "Read closely before
-approving" and "Questions for you". Then stop and wait.
+When the tester finishes, use the test-reviewer subagent to check its work. Always send the
+full report back to the tester, whatever the verdict. On "Fix first", the tester fixes the
+findings once. In both cases, the tester returns its final message with the reviewer's
+"Read closely" section.
 
-If I add, remove or change scenarios, send the changes to the tester so it updates the table
-and the tests together, then show me the table again.
+Show me the tester's final message exactly as returned. Add nothing before or after it:
+no file lists, no paths, no summary of the scenarios or tests. Then stop and wait (Gate 2).
+
+If I give changes, send them to the tester. Do not implement features.
