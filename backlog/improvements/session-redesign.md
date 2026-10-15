@@ -1,14 +1,14 @@
-# Session redesign: logout, revocation, multiple devices
+# Session redesign: access pass revocation
 
-## Problem
-- No logout: a stolen refresh token stays valid for 30 days.
-- Refresh token reuse is not detected: if an attacker refreshes first, nothing is revoked.
-- One refresh token per user: logging in on a second device logs out the first.
+**Found during:** docs/specs/identity/2026-10-15-refresh-tokens-own-table.md
+**Date:** 2026-10-15
+
+## Description
 - Access tokens can't be revoked: password or role changes take effect only when the token expires.
-- Refresh tokens are hashed with BCrypt, so they can't be looked up directly (the client must also send the email).
 
-## Fix (one spec, one migration)
-- New `RefreshTokens` table: token hash (SHA-256), user ID, device/user agent, created, expires, revoked, replaced-by.
-- `POST /api/auth/logout` revokes the current refresh token.
-- Reuse of a revoked token revokes all of that user's tokens.
-- `TokenVersion` on `User`, added to the JWT; increase it on password change, deactivation or role change; reject JWTs with an old version.
+## Why it matters
+A deactivated user or one whose role was removed keeps access until the access token expires.
+
+## Notes
+Already done by docs/specs/identity/2026-10-15-refresh-tokens-own-table.md: separate refresh token table, logout, reuse detection with family revocation, several devices per user, direct lookup by fingerprint.
+Remaining idea: `TokenVersion` on `User`, added to the JWT; increase it on password change, deactivation or role change; reject JWTs with an old version.

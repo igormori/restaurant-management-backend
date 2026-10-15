@@ -41,7 +41,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 maxFailedLoginAttempts: maxFailedLoginAttempts,
                 lockoutDurationMinutes: lockoutDurationMinutes);
 
-            return new SessionService(context, securityOptions, CreateJwtOptions(), TestLocalizer.Create(), hub ?? Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>());
+            var jwtOptions = CreateJwtOptions();
+            return new SessionService(context, securityOptions, jwtOptions, TestLocalizer.Create(), hub ?? Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>(), new RefreshTokenService(context, jwtOptions));
         }
 
         private static List<SentryEvent> CapturedEvents(IHub hub)
@@ -75,8 +76,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var wrongPasswordSut = CreateSut(wrongPasswordContext);
 
             // Act
-            var unknownEmailAct = () => unknownEmailSut.LoginAsync(new LoginRequest { Email = "nobody@test.com", Password = Password });
-            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" });
+            var unknownEmailAct = () => unknownEmailSut.LoginAsync(new LoginRequest { Email = "nobody@test.com", Password = Password }, TestClients.KitchenTablet);
+            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
 
             // Assert
             var unknownEmailThrown = await unknownEmailAct.Should().ThrowAsync<BusinessException>();
@@ -118,8 +119,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var unverifiedSut = CreateSut(unverifiedContext);
 
             // Act
-            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" });
-            var unverifiedAct = () => unverifiedSut.LoginAsync(new LoginRequest { Email = "unverified@test.com", Password = Password });
+            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
+            var unverifiedAct = () => unverifiedSut.LoginAsync(new LoginRequest { Email = "unverified@test.com", Password = Password }, TestClients.KitchenTablet);
 
             // Assert
             var wrongPasswordThrown = await wrongPasswordAct.Should().ThrowAsync<BusinessException>();
@@ -163,8 +164,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var wrongPasswordSut = CreateSut(wrongPasswordContext);
 
             // Act: correct password supplied, but the account is locked
-            var lockedAct = () => lockedSut.LoginAsync(new LoginRequest { Email = "locked@test.com", Password = Password });
-            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" });
+            var lockedAct = () => lockedSut.LoginAsync(new LoginRequest { Email = "locked@test.com", Password = Password }, TestClients.KitchenTablet);
+            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
 
             // Assert
             var lockedThrown = await lockedAct.Should().ThrowAsync<BusinessException>();
@@ -200,7 +201,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context, maxFailedLoginAttempts: 1);
 
             // Act
-            var act = () => sut.LoginAsync(new LoginRequest { Email = "locked@test.com", Password = "WrongPassword1!" });
+            var act = () => sut.LoginAsync(new LoginRequest { Email = "locked@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
@@ -236,7 +237,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context, maxFailedLoginAttempts: 1, hub: hub);
 
             // Act
-            var act = () => sut.LoginAsync(new LoginRequest { Email = "marina.souza@test.com", Password = "WrongPassword1!" });
+            var act = () => sut.LoginAsync(new LoginRequest { Email = "marina.souza@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
             await act.Should().ThrowAsync<BusinessException>();
 
             // Assert
@@ -275,13 +276,14 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 defaultExpiryJwtOptions,
                 TestLocalizer.Create(),
                 Substitute.For<IHub>(),
-                Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>());
+                Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>(),
+                new RefreshTokenService(context, defaultExpiryJwtOptions));
 
             // Act
-            var response = await sut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = Password });
+            var response = await sut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = Password }, TestClients.KitchenTablet);
 
             // Assert
-            var token = new JwtSecurityTokenHandler().ReadJwtToken(response.Token);
+            var token = new JwtSecurityTokenHandler().ReadJwtToken(response.Auth.Token);
             token.ValidTo.Should().BeCloseTo(DateTime.UtcNow.AddMinutes(15), TimeSpan.FromMinutes(1));
         }
 
@@ -305,44 +307,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context);
 
             // Act
-            var response = await sut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = Password });
+            var response = await sut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = Password }, TestClients.KitchenTablet);
 
             // Assert
-            response.Token.Should().NotBeNullOrEmpty();
+            response.Auth.Token.Should().NotBeNullOrEmpty();
             response.RefreshToken.Should().NotBeNullOrEmpty();
-        }
-
-        [Fact]
-        public async Task RefreshTokenAsync_ValidRefreshToken_RenewsExpiryByRefreshTokenExpireDays()
-        {
-            // Arrange
-            const string refreshToken = "valid-refresh-token";
-            using var database = new IdentityTestDatabase();
-            using var seedContext = database.CreateContext();
-            seedContext.Users.Add(new User
-            {
-                Email = "verified@test.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
-                FirstName = "A",
-                LastName = "B",
-                IsVerified = true,
-                RefreshTokenHash = BCrypt.Net.BCrypt.HashPassword(refreshToken),
-                RefreshTokenExpiry = DateTime.UtcNow.AddDays(1)
-            });
-            await seedContext.SaveChangesAsync();
-
-            using var context = database.CreateContext();
-            var sut = CreateSut(context);
-
-            // Act
-            await sut.RefreshTokenAsync(new RefreshRequest { Email = "verified@test.com", RefreshToken = refreshToken });
-
-            // Assert
-            using var assertContext = database.CreateContext();
-            var user = await assertContext.Users.SingleAsync(u => u.Email == "verified@test.com");
-
-            var expectedExpiry = DateTime.UtcNow.AddDays(30);
-            user.RefreshTokenExpiry.Should().BeCloseTo(expectedExpiry, TimeSpan.FromMinutes(1));
         }
     }
 }

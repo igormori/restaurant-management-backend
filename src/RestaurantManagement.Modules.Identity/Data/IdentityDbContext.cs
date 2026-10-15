@@ -13,6 +13,7 @@ namespace RestaurantManagement.Modules.Identity.Data
         public DbSet<User> Users { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<UserVerificationCode> UserVerificationCodes { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -43,6 +44,21 @@ namespace RestaurantManagement.Modules.Identity.Data
                 .WithMany()
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // One row per device session; tokens go with the user. OrganizationId has no foreign key
+            // because it belongs to another module.
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.HasOne(t => t.User)
+                    .WithMany()
+                    .HasForeignKey(t => t.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(t => t.TokenHash).IsUnique();
+                entity.HasIndex(t => t.UserId);
+                entity.HasIndex(t => t.FamilyId);
+                entity.Property(t => t.DeviceDescription).HasMaxLength(RefreshToken.DeviceDescriptionMaxLength);
+                entity.Property(t => t.IpAddress).HasMaxLength(RefreshToken.IpAddressMaxLength);
+            });
 
             base.OnModelCreating(modelBuilder);
         }

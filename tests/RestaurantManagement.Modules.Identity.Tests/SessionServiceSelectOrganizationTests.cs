@@ -1,6 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
@@ -52,16 +52,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         private static SessionService CreateSut(IdentityDbContext context, IOrganizationLookup lookup)
         {
-            var jwtOptions = Options.Create(new JwtOptions
-            {
-                Key = "test-signing-key-at-least-32-characters-long",
-                Issuer = "RestaurantManagementTests",
-                Audience = "RestaurantManagementTests",
-                ExpireMinutes = 60,
-                RefreshTokenExpireDays = 30
-            });
-
-            return new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create(), Substitute.For<IHub>(), lookup);
+            var jwtOptions = TestJwtOptions.Create();
+            return new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create(), Substitute.For<IHub>(), lookup, new RefreshTokenService(context, jwtOptions));
         }
 
         private static async Task<Guid> SeedUserAsync(
@@ -97,22 +89,22 @@ namespace RestaurantManagement.Modules.Identity.Tests
             new UserRole { Role = StaffRole, OrganizationId = TrattoriaId }
         };
 
-        private static async Task<AuthResponse> LoginAsync(IdentityTestDatabase database, IOrganizationLookup lookup)
+        private static async Task<SessionResult> LoginAsync(IdentityTestDatabase database, IOrganizationLookup lookup, ClientInfo? client = null)
         {
             using var context = database.CreateContext();
-            return await CreateSut(context, lookup).LoginAsync(new LoginRequest { Email = UserEmail, Password = Password });
+            return await CreateSut(context, lookup).LoginAsync(new LoginRequest { Email = UserEmail, Password = Password }, client ?? TestClients.KitchenTablet);
         }
 
-        private static async Task<AuthResponse> SelectAsync(IdentityTestDatabase database, IOrganizationLookup lookup, Guid userId, Guid organizationId)
+        private static async Task<SessionResult> SelectAsync(IdentityTestDatabase database, IOrganizationLookup lookup, Guid userId, Guid organizationId, string? refreshToken = null, ClientInfo? client = null)
         {
             using var context = database.CreateContext();
-            return await CreateSut(context, lookup).SelectOrganizationAsync(userId, new SelectOrganizationRequest { OrganizationId = organizationId });
+            return await CreateSut(context, lookup).SelectOrganizationAsync(userId, new SelectOrganizationRequest { OrganizationId = organizationId }, refreshToken, client ?? TestClients.KitchenTablet);
         }
 
-        private static async Task<AuthResponse> RefreshAsync(IdentityTestDatabase database, IOrganizationLookup lookup, string refreshToken)
+        private static async Task<SessionResult> RefreshAsync(IdentityTestDatabase database, IOrganizationLookup lookup, string refreshToken)
         {
             using var context = database.CreateContext();
-            return await CreateSut(context, lookup).RefreshTokenAsync(new RefreshRequest { Email = UserEmail, RefreshToken = refreshToken });
+            return await CreateSut(context, lookup).RefreshTokenAsync(refreshToken);
         }
 
         private static string? OrganizationClaimOf(string? token)
@@ -323,7 +315,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await SelectAsync(database, lookup, userId, TrattoriaId);
 
             // Assert
-            OrganizationClaimOf(response.Token).ShouldBe(TrattoriaId.ToString());
+            OrganizationClaimOf(response.Auth.Token).ShouldBe(TrattoriaId.ToString());
         }
 
         // Scenario 12
@@ -339,7 +331,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await SelectAsync(database, lookup, userId, TrattoriaId);
 
             // Assert
-            RoleClaimsOf(response.Token).ShouldBe(new[] { StaffRole });
+            RoleClaimsOf(response.Auth.Token).ShouldBe(new[] { StaffRole });
         }
 
         // Scenario 13
@@ -360,7 +352,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await SelectAsync(database, lookup, userId, CantinaId);
 
             // Assert
-            RoleClaimsOf(response.Token).OrderBy(r => r).ToList().ShouldBe(new[] { AdminRole, OwnerRole });
+            RoleClaimsOf(response.Auth.Token).OrderBy(r => r).ToList().ShouldBe(new[] { AdminRole, OwnerRole });
         }
 
         // Scenario 14
@@ -376,7 +368,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await SelectAsync(database, lookup, userId, CantinaId);
 
             // Assert
-            OrganizationClaimOf(response.Token).ShouldBe(CantinaId.ToString());
+            OrganizationClaimOf(response.Auth.Token).ShouldBe(CantinaId.ToString());
         }
 
         // Scenario 15
@@ -390,10 +382,10 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var selected = await SelectAsync(database, lookup, userId, CantinaId);
 
             // Act
-            var refreshed = await RefreshAsync(database, lookup, selected.RefreshToken!);
+            var refreshed = await RefreshAsync(database, lookup, selected.RefreshToken);
 
             // Assert
-            OrganizationClaimOf(refreshed.Token).ShouldBe(CantinaId.ToString());
+            OrganizationClaimOf(refreshed.Auth.Token).ShouldBe(CantinaId.ToString());
         }
 
         // Scenario 16
@@ -405,10 +397,10 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var userId = await SeedUserAsync(database, RolesInBothOrganizations());
             var lookup = CreateLookup(Cantina(), Trattoria());
             var loginResponse = await LoginAsync(database, lookup);
-            await SelectAsync(database, lookup, userId, CantinaId);
+            await SelectAsync(database, lookup, userId, CantinaId, loginResponse.RefreshToken);
 
             // Act
-            var act = () => RefreshAsync(database, lookup, loginResponse.RefreshToken!);
+            var act = () => RefreshAsync(database, lookup, loginResponse.RefreshToken);
 
             // Assert
             var thrown = await Should.ThrowAsync<BusinessException>(act);
@@ -423,15 +415,15 @@ namespace RestaurantManagement.Modules.Identity.Tests
             using var database = new IdentityTestDatabase();
             var userId = await SeedUserAsync(database, RolesInBothOrganizations());
             var lookup = CreateLookup(Cantina(), Trattoria());
-            await SelectAsync(database, lookup, userId, CantinaId);
-            var switched = await SelectAsync(database, lookup, userId, TrattoriaId);
+            var first = await SelectAsync(database, lookup, userId, CantinaId);
+            var switched = await SelectAsync(database, lookup, userId, TrattoriaId, first.RefreshToken);
 
             // Act
-            var refreshed = await RefreshAsync(database, lookup, switched.RefreshToken!);
+            var refreshed = await RefreshAsync(database, lookup, switched.RefreshToken);
 
             // Assert
-            OrganizationClaimOf(switched.Token).ShouldBe(TrattoriaId.ToString());
-            OrganizationClaimOf(refreshed.Token).ShouldBe(TrattoriaId.ToString());
+            OrganizationClaimOf(switched.Auth.Token).ShouldBe(TrattoriaId.ToString());
+            OrganizationClaimOf(refreshed.Auth.Token).ShouldBe(TrattoriaId.ToString());
         }
 
         // Scenario 18
@@ -445,11 +437,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var selected = await SelectAsync(database, lookup, userId, TrattoriaId);
 
             // Act
-            var refreshed = await RefreshAsync(database, lookup, selected.RefreshToken!);
+            var refreshed = await RefreshAsync(database, lookup, selected.RefreshToken);
 
             // Assert
-            OrganizationClaimOf(refreshed.Token).ShouldBe(TrattoriaId.ToString());
-            RoleClaimsOf(refreshed.Token).ShouldBe(new[] { StaffRole });
+            OrganizationClaimOf(refreshed.Auth.Token).ShouldBe(TrattoriaId.ToString());
+            RoleClaimsOf(refreshed.Auth.Token).ShouldBe(new[] { StaffRole });
         }
 
         // Scenario 19
@@ -469,7 +461,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             }
 
             // Act
-            var act = () => RefreshAsync(database, lookup, selected.RefreshToken!);
+            var act = () => RefreshAsync(database, lookup, selected.RefreshToken);
 
             // Assert
             var thrown = await Should.ThrowAsync<BusinessException>(act);
@@ -489,9 +481,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database, lookup);
 
             // Assert
-            OrganizationClaimOf(response.Token).ShouldBeNull();
-            response.Organizations.ShouldNotBeNull();
-            response.Organizations.Select(o => (o.Id, o.Name)).OrderBy(o => o.Name).ToList()
+            OrganizationClaimOf(response.Auth.Token).ShouldBeNull();
+            response.Auth.Organizations.ShouldNotBeNull();
+            response.Auth.Organizations.Select(o => (o.Id, o.Name)).OrderBy(o => o.Name).ToList()
                 .ShouldBe(new[] { (CantinaId, CantinaName), (TrattoriaId, TrattoriaName) });
         }
 
@@ -508,8 +500,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database, lookup);
 
             // Assert
-            response.Organizations.ShouldNotBeNull();
-            response.Organizations.Select(o => o.Id).ShouldBe(new[] { CantinaId });
+            response.Auth.Organizations.ShouldNotBeNull();
+            response.Auth.Organizations.Select(o => o.Id).ShouldBe(new[] { CantinaId });
         }
 
         // Scenario 22
@@ -527,8 +519,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database, lookup);
 
             // Assert
-            response.Organizations.ShouldNotBeNull();
-            response.Organizations.Select(o => o.Id).OrderBy(id => id).ToList()
+            response.Auth.Organizations.ShouldNotBeNull();
+            response.Auth.Organizations.Select(o => o.Id).OrderBy(id => id).ToList()
                 .ShouldBe(new[] { CantinaId, TrattoriaId }.OrderBy(id => id).ToList());
         }
 
@@ -545,9 +537,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database, lookup);
 
             // Assert
-            OrganizationClaimOf(response.Token).ShouldBeNull();
-            response.Organizations.ShouldNotBeNull();
-            response.Organizations.ShouldBeEmpty();
+            OrganizationClaimOf(response.Auth.Token).ShouldBeNull();
+            response.Auth.Organizations.ShouldNotBeNull();
+            response.Auth.Organizations.ShouldBeEmpty();
         }
 
         // Scenario 24
@@ -564,7 +556,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database, lookup);
 
             // Assert
-            OrganizationClaimOf(response.Token).ShouldBeNull();
+            OrganizationClaimOf(response.Auth.Token).ShouldBeNull();
         }
 
         // Scenario 25
@@ -579,10 +571,141 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var loginResponse = await LoginAsync(database, lookup);
 
             // Act
-            var refreshed = await RefreshAsync(database, lookup, loginResponse.RefreshToken!);
+            var refreshed = await RefreshAsync(database, lookup, loginResponse.RefreshToken);
 
             // Assert
-            OrganizationClaimOf(refreshed.Token).ShouldBeNull();
+            OrganizationClaimOf(refreshed.Auth.Token).ShouldBeNull();
+        }
+
+        private static async Task<List<RefreshToken>> ReadTokensAsync(IdentityTestDatabase database)
+        {
+            using var context = database.CreateContext();
+            return await context.Set<RefreshToken>().AsNoTracking().ToListAsync();
+        }
+
+        // refresh-tokens-own-table Scenario 42
+        [Fact]
+        public async Task SelectOrganizationAsync_WithValidCookie_RotatesIntoSameFamilyWithChosenOrganization()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            var userId = await SeedUserAsync(database, RolesInBothOrganizations());
+            var lookup = CreateLookup(Cantina(), Trattoria());
+            var loginResponse = await LoginAsync(database, lookup);
+            var loginFamilyId = (await ReadTokensAsync(database)).Single().FamilyId;
+
+            // Act
+            var selected = await SelectAsync(database, lookup, userId, TrattoriaId, loginResponse.RefreshToken);
+
+            // Assert
+            selected.RefreshToken.ShouldNotBe(loginResponse.RefreshToken);
+            var tokens = await ReadTokensAsync(database);
+            tokens.Count.ShouldBe(2);
+            tokens.ShouldAllBe(t => t.FamilyId == loginFamilyId);
+            var active = tokens.Single(t => t.RevokedAt == null);
+            active.OrganizationId.ShouldBe(TrattoriaId);
+        }
+
+        // refresh-tokens-own-table Scenario 43
+        [Fact]
+        public async Task SelectOrganizationAsync_WithoutCookie_StartsNewFamilyWithChosenOrganizationAndDevice()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            var userId = await SeedUserAsync(database, RolesInBothOrganizations());
+            var lookup = CreateLookup(Cantina(), Trattoria());
+
+            // Act
+            var selected = await SelectAsync(database, lookup, userId, CantinaId, refreshToken: null, client: TestClients.ManagerLaptop);
+
+            // Assert
+            selected.RefreshToken.ShouldNotBeNullOrWhiteSpace();
+            var token = (await ReadTokensAsync(database)).ShouldHaveSingleItem();
+            token.UserId.ShouldBe(userId);
+            token.OrganizationId.ShouldBe(CantinaId);
+            token.RevokedAt.ShouldBeNull();
+            token.DeviceDescription.ShouldBe(TestClients.ManagerLaptop.DeviceDescription);
+            token.IpAddress.ShouldBe(TestClients.ManagerLaptop.IpAddress);
+        }
+
+        // refresh-tokens-own-table Scenario 44
+        [Fact]
+        public async Task SelectOrganizationAsync_WithExpiredCookie_StartsNewFamilyAndLeavesExpiredTokenUnchanged()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            var userId = await SeedUserAsync(database, RolesInBothOrganizations());
+            var lookup = CreateLookup(Cantina(), Trattoria());
+            var loginResponse = await LoginAsync(database, lookup);
+            Guid expiredFamilyId;
+            using (var context = database.CreateContext())
+            {
+                var loginToken = await context.Set<RefreshToken>().SingleAsync();
+                loginToken.ExpiresAt = DateTime.UtcNow.AddMinutes(-1);
+                expiredFamilyId = loginToken.FamilyId;
+                await context.SaveChangesAsync();
+            }
+
+            // Act
+            await SelectAsync(database, lookup, userId, CantinaId, loginResponse.RefreshToken);
+
+            // Assert
+            var tokens = await ReadTokensAsync(database);
+            tokens.Count.ShouldBe(2);
+            tokens.Single(t => t.FamilyId == expiredFamilyId).RevokedAt.ShouldBeNull();
+            tokens.Single(t => t.FamilyId != expiredFamilyId).OrganizationId.ShouldBe(CantinaId);
+        }
+
+        // refresh-tokens-own-table Scenario 45
+        [Fact]
+        public async Task RefreshTokenAsync_LaptopSelectedTrattoria_TabletStillRefreshesIntoCantina()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            var userId = await SeedUserAsync(database, RolesInBothOrganizations());
+            var lookup = CreateLookup(Cantina(), Trattoria());
+            var tabletLogin = await LoginAsync(database, lookup, TestClients.KitchenTablet);
+            var tablet = await SelectAsync(database, lookup, userId, CantinaId, tabletLogin.RefreshToken, TestClients.KitchenTablet);
+            var laptopLogin = await LoginAsync(database, lookup, TestClients.ManagerLaptop);
+            await SelectAsync(database, lookup, userId, TrattoriaId, laptopLogin.RefreshToken, TestClients.ManagerLaptop);
+
+            // Act
+            var refreshed = await RefreshAsync(database, lookup, tablet.RefreshToken);
+
+            // Assert
+            OrganizationClaimOf(refreshed.Auth.Token).ShouldBe(CantinaId.ToString());
+            RoleClaimsOf(refreshed.Auth.Token).ShouldBe(new[] { OwnerRole });
+        }
+
+        // refresh-tokens-own-table Scenario 70
+        [Fact]
+        public async Task SelectOrganizationAsync_CookieOfAnotherUser_LeavesTheirTokenUntouchedAndStartsCallerFamily()
+        {
+            // Arrange: Paolo's cookie is sent with Maria's access pass
+            using var database = new IdentityTestDatabase();
+            var mariaId = await SeedUserAsync(database, RolesInBothOrganizations());
+            var paoloId = await SeedUserAsync(database, new[] { new UserRole { Role = OwnerRole, OrganizationId = DeletedOrganizationId } }, email: OtherUserEmail);
+            IssuedRefreshToken paoloToken;
+            using (var context = database.CreateContext())
+            {
+                paoloToken = await new RefreshTokenService(context, TestJwtOptions.Create())
+                    .IssueAsync(paoloId, DeletedOrganizationId, TestClients.ManagerLaptop.DeviceDescription, TestClients.ManagerLaptop.IpAddress);
+            }
+            var lookup = CreateLookup(Cantina(), Trattoria());
+
+            // Act
+            var selected = await SelectAsync(database, lookup, mariaId, CantinaId, paoloToken.Token);
+
+            // Assert
+            selected.RefreshToken.ShouldNotBe(paoloToken.Token);
+            var tokens = await ReadTokensAsync(database);
+            var paolos = tokens.Single(t => t.UserId == paoloId);
+            paolos.RevokedAt.ShouldBeNull();
+            paolos.ReplacedByTokenId.ShouldBeNull();
+            paolos.OrganizationId.ShouldBe(DeletedOrganizationId);
+            var marias = tokens.Single(t => t.UserId == mariaId);
+            marias.FamilyId.ShouldNotBe(paoloToken.FamilyId);
+            marias.OrganizationId.ShouldBe(CantinaId);
         }
     }
 }

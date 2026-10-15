@@ -226,6 +226,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 // Identity Module Services
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
+builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 builder.Services.AddScoped<IVerificationService, VerificationService>();
 builder.Services.AddSingleton<IVerificationCodeHasher, VerificationCodeHasher>();
 
@@ -254,7 +255,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(corsOptions.AllowedOrigins)
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 

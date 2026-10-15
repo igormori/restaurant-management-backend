@@ -21,9 +21,6 @@ namespace RestaurantManagement.Modules.Identity.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        // Refresh token storage
-        public string? RefreshTokenHash { get; set; }
-        public DateTime? RefreshTokenExpiry { get; set; }
         public Guid? SelectedOrganizationId { get; set; }
 
         // Navigation property

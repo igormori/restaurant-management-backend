@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using RestaurantManagement.Modules.Identity.Data;
+using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Modules.Identity.Services;
 using RestaurantManagement.Shared.Options;
 
@@ -77,5 +78,42 @@ namespace RestaurantManagement.Modules.Identity.Tests
         {
             return new VerificationCodeHasher(Options.Create(new VerificationCodeOptions { HashKey = hashKey }));
         }
+    }
+
+    /// <summary>
+    /// JWT (JSON Web Token) settings shared by the session and refresh token tests:
+    /// access passes last 60 minutes, refresh tokens 30 days.
+    /// </summary>
+    public static class TestJwtOptions
+    {
+        public const int RefreshTokenExpireDays = 30;
+
+        public static IOptions<JwtOptions> Create()
+        {
+            return Options.Create(new JwtOptions
+            {
+                Key = "test-signing-key-at-least-32-characters-long",
+                Issuer = "RestaurantManagementTests",
+                Audience = "RestaurantManagementTests",
+                ExpireMinutes = 60,
+                RefreshTokenExpireDays = RefreshTokenExpireDays
+            });
+        }
+    }
+
+    /// <summary>Devices a sign-in can come from: the kitchen tablet and the manager's laptop.</summary>
+    public static class TestClients
+    {
+        public static readonly ClientInfo KitchenTablet = new()
+        {
+            DeviceDescription = "Mozilla/5.0 (iPad; CPU OS 17_4 like Mac OS X) Safari/604.1",
+            IpAddress = "203.0.113.10"
+        };
+
+        public static readonly ClientInfo ManagerLaptop = new()
+        {
+            DeviceDescription = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) Chrome/124.0",
+            IpAddress = "198.51.100.24"
+        };
     }
 }

@@ -24,7 +24,7 @@ One file per item, filed by type.
 ## Improvements
 | Item | Size | File |
 |---|---|---|
-| Session redesign: logout, revocation, multiple devices | Large | [session-redesign.md](improvements/session-redesign.md) |
+| Session redesign: access pass revocation | Medium | [session-redesign.md](improvements/session-redesign.md) |
 | Reject breached passwords | Small | [breached-passwords.md](improvements/breached-passwords.md) |
 
 ## Tech debt
