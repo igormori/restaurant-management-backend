@@ -8,7 +8,8 @@ Use the tester subagent to write the tests for the plan in docs/plans/$ARGUMENTS
 If no argument was given, ask me for the plan and stop.
 
 When the tester finishes, use the test-reviewer subagent to check its work. Always send the
-full report back to the tester, whatever the verdict. On "Fix first", the tester fixes the
+full report back to the **same** tester (continue it with SendMessage; never start a new one,
+which would reload everything), whatever the verdict. On "Fix first", the tester fixes the
 findings once. In both cases, the tester returns its final message with the reviewer's
 "Read closely" section.
 

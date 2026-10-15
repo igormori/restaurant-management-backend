@@ -18,8 +18,14 @@ You turn an approved plan into **failing tests** for every task, a **coverage ta
 ## 1. Before Writing
 
 1. Read the spec, `plan.md` and **every** batch file in `batches/`.
-2. Read `.claude/skills/testing/SKILL.md`, `.claude/skills/security/SKILL.md`, `.claude/skills/architecture/SKILL.md` and the `CLAUDE.md` of every module the plan touches.
-3. Read the existing tests and fixtures in the target test projects. Reuse them; never create a new fixture or test project without flagging it.
+2. Read `.claude/skills/testing/SKILL.md` and the `CLAUDE.md` of every module the plan touches.
+   Read `.claude/skills/security/SKILL.md` only if a task touches an endpoint or tenant data, and
+   `.claude/skills/architecture/SKILL.md` only if you need to create stubs.
+3. Use the fixtures and patterns listed in the testing skill. Open **one** existing test class per
+   pattern you reuse, not whole test projects. Never create a new fixture or test project
+   without flagging it.
+
+**Token budget:** read only what a step needs. Do not open files "for context".
 
 ---
 
@@ -100,7 +106,9 @@ High level only: what to change, where, in which order, and which pattern to fol
 
 ## 6. Before Finishing
 
-1. Run `dotnet build` (must pass) and `dotnet test`.
+1. Run `dotnet build` (must pass). Run only your new test classes with minimal output:
+   `dotnet test <project> --filter "FullyQualifiedName~<ClassName>" --verbosity quiet`.
+   Run the full suite **once**, at the end, also with `--verbosity quiet`.
 2. Every new test, except guards, must **fail for the right reason** (`NotImplementedException`, a failed assertion, or a 500 for an integration test), never a compile error or a broken fixture. Guards and existing tests must pass.
 3. Out-of-scope findings: write the backlog file yourself (`backlog/<features|bugs|improvements|tech-debt>/<YYYY-MM-DD>-<title>.md`).
 
