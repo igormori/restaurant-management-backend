@@ -58,7 +58,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 LockedUntil = lockedUntil
             };
             if (role != null)
-                user.Roles.Add(new UserRole { Role = role, OrganizationId = organizationId });
+                user.Roles.Add(new UserRole { Role = role, OrganizationId = organizationId ?? CantinaId });
 
             seedContext.Users.Add(user);
             await seedContext.SaveChangesAsync();
