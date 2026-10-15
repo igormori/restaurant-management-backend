@@ -1,13 +1,12 @@
 ---
-description: Write and review only the structure plan for a spec (step 2)
-argument-hint: <module>/<feature>
+description: Write the plan for an approved spec (step 2): plan.md plus batch files
+argument-hint: <module>/<spec-name>
 ---
 
-1. Use the planner subagent to write the structure plan for docs/specs/$ARGUMENTS.md
-2. Use the plan-reviewer subagent to review docs/plans/$ARGUMENTS.md
+Use the planner subagent to write the plan for docs/specs/$ARGUMENTS.md
 
-Show me the Risk line, the New files and Modified files tables, the Signatures, the Flags, and
-the reviewer's verdict with its Watch out and Questions. Then stop and wait.
+Show me the planner's final message exactly as returned. Add nothing before or after it,
+and do not summarize or rebuild anything from the plan files. Then stop and wait.
 
-If I give changes, send them to the planner, then review again. Do not create any files
-besides the plan.
+If I give changes, send them to the planner. The planner may create only its plan folder
+(plan.md and batches/) and backlog files.

@@ -21,11 +21,11 @@
 No endpoint, role, auth or tenant query changes, so no cross-tenant or role rejection tests apply.
 
 ## Overall Definition of Done
-- [ ] All tasks done, tests passing
-- [ ] All spec Outcomes met
-- [ ] Full test suite green after the last batch
-- [ ] No out-of-scope changes; findings in the backlog
-- [ ] Commit bodies list every link changed and every link kept as cascade, with the reason (Outcome 4)
+- [x] All tasks done, tests passing
+- [x] All spec Outcomes met
+- [x] Full test suite green after the last batch
+- [x] No out-of-scope changes; findings in the backlog
+- [x] Commit bodies list every link changed and every link kept as cascade, with the reason (Outcome 4)
 
 ## Checklist
 - [x] T1 — Restrict organization deletes (47c679a)
