@@ -141,6 +141,10 @@ builder.Services.AddOptions<JwtOptions>()
     .Bind(builder.Configuration.GetSection("Jwt"))
     .ValidateOnStart();
 builder.Services.AddSingleton<IValidateOptions<JwtOptions>, JwtOptionsValidator>();
+builder.Services.AddOptions<VerificationCodeOptions>()
+    .Bind(builder.Configuration.GetSection("VerificationCode"))
+    .ValidateOnStart();
+builder.Services.AddSingleton<IValidateOptions<VerificationCodeOptions>, VerificationCodeOptionsValidator>();
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<CorsOptions>(builder.Configuration.GetSection("Cors"));
 builder.Services.AddAuthRateLimiting(builder.Configuration);

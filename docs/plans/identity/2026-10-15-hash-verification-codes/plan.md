@@ -1,6 +1,6 @@
 # Plan: Hash verification codes
 
-**Spec:** docs/specs/identity/2026-10-15-hash-verification-codes.md   **Date:** 2026-10-15   **Status:** Draft
+**Spec:** docs/specs/identity/2026-10-15-hash-verification-codes.md   **Date:** 2026-10-15   **Status:** In progress
 **Risk:** High — renames a column on a table with data, runs a backfill, and changes how a security check works
 
 ## Summary
@@ -29,7 +29,7 @@
 - [ ] No out-of-scope changes; findings in the backlog
 
 ## Checklist
-- [ ] T1 — Verification hash key configuration and startup check
+- [x] T1 — Verification hash key configuration and startup check
 - [ ] T2 — Verification code hasher
 - [ ] T3 — Store and check codes as fingerprints
 - [ ] T4 — Retire existing readable codes (migration backfill)

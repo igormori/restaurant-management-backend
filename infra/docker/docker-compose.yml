@@ -28,6 +28,8 @@ services:
       target: migrator
     environment:
       ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${POSTGRES_DB:-restaurant_db-development};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
+      # The bundles boot the Web host, so startup validation needs the key here too
+      VerificationCode__HashKey: ${VERIFICATION_CODE_HASH_KEY:-}
     depends_on:
       db:
         condition: service_healthy
@@ -43,6 +45,8 @@ services:
       # Mailtrap sandbox credentials from infra/docker/.env (see .env.example)
       Email__SmtpUser: ${SMTP_USER:-}
       Email__SmtpPass: ${SMTP_PASS:-}
+      # Verification code secret from infra/docker/.env (see .env.example)
+      VerificationCode__HashKey: ${VERIFICATION_CODE_HASH_KEY:-}
     ports:
       - "5080:8080"
     depends_on:
