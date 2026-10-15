@@ -128,6 +128,10 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_user_id");
+
                     b.Property<Guid?>("LocationId")
                         .HasColumnType("uuid")
                         .HasColumnName("location_id");
@@ -144,6 +148,10 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by_user_id");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
