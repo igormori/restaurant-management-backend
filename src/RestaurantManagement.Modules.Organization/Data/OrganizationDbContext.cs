@@ -20,6 +20,18 @@ namespace RestaurantManagement.Modules.Organization.Data
                 .Property(o => o.IsActive)
                 .HasDefaultValue(true);
 
+            modelBuilder.Entity<Location>()
+                .HasOne(l => l.Organization)
+                .WithMany(o => o.Locations)
+                .HasForeignKey(l => l.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OrganizationSettings>()
+                .HasOne(s => s.Organization)
+                .WithOne(o => o.Settings)
+                .HasForeignKey<OrganizationSettings>(s => s.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             base.OnModelCreating(modelBuilder);
         }
     }
