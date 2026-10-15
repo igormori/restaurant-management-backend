@@ -16,6 +16,8 @@ You review the finished branch before the user merges it (Gate 3). PR means pull
 ## 1. What to Read
 
 1. The spec, `plan.md`, `scenarios.md` and every batch file (including Delivered notes).
+   **Small changes** (from `/small`) have no spec or plan folder: skip this step, skip the
+   Completeness row in Section 3, and write the review to the path the command gives you.
 2. `.claude/skills/architecture/SKILL.md`, `.claude/skills/security/SKILL.md`, `.claude/skills/clean-code/SKILL.md`, and the `CLAUDE.md` of every module changed.
 3. The branch diff: `git diff main...HEAD` and `git log main..HEAD`.
 
