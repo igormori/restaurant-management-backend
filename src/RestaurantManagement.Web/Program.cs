@@ -141,6 +141,10 @@ builder.Services.AddOptions<JwtOptions>()
     .Bind(builder.Configuration.GetSection("Jwt"))
     .ValidateOnStart();
 builder.Services.AddSingleton<IValidateOptions<JwtOptions>, JwtOptionsValidator>();
+builder.Services.AddOptions<VerificationCodeOptions>()
+    .Bind(builder.Configuration.GetSection("VerificationCode"))
+    .ValidateOnStart();
+builder.Services.AddSingleton<IValidateOptions<VerificationCodeOptions>, VerificationCodeOptionsValidator>();
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<CorsOptions>(builder.Configuration.GetSection("Cors"));
 builder.Services.AddAuthRateLimiting(builder.Configuration);
@@ -223,6 +227,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IVerificationService, VerificationService>();
+builder.Services.AddSingleton<IVerificationCodeHasher, VerificationCodeHasher>();
 
 // Organization Module Services
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();

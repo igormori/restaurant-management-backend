@@ -39,15 +39,18 @@ Connect from the host (IDE, `dotnet ef`, `dotnet run`):
 - Credentials are local-only defaults; override with `POSTGRES_USER`, `POSTGRES_PASSWORD`,
   `POSTGRES_DB` environment variables (or a `.env` file next to the compose file; never commit it)
 - Email: copy `docker/.env.example` to `docker/.env` and fill `SMTP_USER`/`SMTP_PASS` (Mailtrap
-  sandbox). Without them sending fails with "5.7.1 Authentication required"; read the
-  verification code from `user_verification_codes` instead
+  sandbox). Without them sending fails with "5.7.1 Authentication required"
+- Verification code secret: set `VERIFICATION_CODE_HASH_KEY` in `docker/.env` (at least 32 bytes,
+  required; `migrate` and `api` refuse to start without it). Outside Docker use user-secrets
+  (`VerificationCode:HashKey`); deployed, the Key Vault secret `VerificationCode--HashKey`.
+  Codes are stored only as fingerprints, so they cannot be read from the database
 - App settings come from `appsettings.json` baked into the image; override any key with an
   environment variable using `__` for nesting, e.g. `Jwt__Key`, `Sentry__Dsn`
 - Never commit real secrets (connection strings, JWT key, Sentry DSN) to these files
 
 ## Troubleshooting
 - `migrate` exits 1: `docker compose logs migrate`. The bundles boot the Web host, so startup
-  validation (Jwt, AuthRateLimit) runs; the image copies `appsettings.json` for this reason
+  validation (Jwt, AuthRateLimit, VerificationCode) runs; the image copies `appsettings.json` for this reason
 - api not reachable: `docker compose ps -a` to check that `migrate` exited 0 and `api` is up
 - Port already allocated: another process uses 5434 or 5080; change the host side of `ports`
 

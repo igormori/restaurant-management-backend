@@ -16,8 +16,11 @@ public class AuthApiFactory : WebApplicationFactory<Program>
 
     private const string HighLimit = "100000";
 
+    public const string TestVerificationCodeHashKey = "cantina-web-test-verification-hash-key-0123456789";
+
     private static readonly Dictionary<string, string?> HighLimitSettings = new()
     {
+        ["VerificationCode:HashKey"] = TestVerificationCodeHashKey,
         ["AuthRateLimit:Login:PermitLimit"] = HighLimit,
         ["AuthRateLimit:Register:PermitLimit"] = HighLimit,
         ["AuthRateLimit:ResendVerification:PermitLimit"] = HighLimit,

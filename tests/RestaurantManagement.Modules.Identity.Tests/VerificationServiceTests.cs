@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using Shouldly;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
@@ -14,6 +15,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 {
     public class VerificationServiceTests
     {
+        private static readonly IVerificationCodeHasher Hasher = TestVerificationCodeHasher.Create();
+
         private static VerificationService CreateSut(
             IdentityDbContext context,
             IEmailService emailService,
@@ -29,7 +32,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 maxVerificationAttempts: maxVerificationAttempts,
                 verificationLockoutDurationMinutes: verificationLockoutDurationMinutes);
 
-            return new VerificationService(context, securityOptions, TestLocalizer.Create(), emailService, logger);
+            return new VerificationService(context, securityOptions, TestLocalizer.Create(), emailService, logger, Hasher);
         }
 
         [Fact]
@@ -43,7 +46,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
+                CodeHash = Hasher.ComputeHash(user.Id, "123456"),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
             });
@@ -64,6 +67,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             reloaded.IsVerified.Should().BeFalse();
         }
 
+        // Hash verification codes: Scenario 23
         [Fact]
         public async Task VerifyEmailAsync_CodeExpired_ThrowsBusinessException()
         {
@@ -75,7 +79,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
+                CodeHash = Hasher.ComputeHash(user.Id, "123456"),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(-1),
                 IsUsed = false
             });
@@ -92,6 +96,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             thrown.Which.StatusCode.Should().Be(401);
         }
 
+        // Hash verification codes: Scenario 24
         [Fact]
         public async Task VerifyEmailAsync_CodeAlreadyUsed_ThrowsBusinessException()
         {
@@ -103,7 +108,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
+                CodeHash = Hasher.ComputeHash(user.Id, "123456"),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = true
             });
@@ -120,6 +125,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             thrown.Which.StatusCode.Should().Be(401);
         }
 
+        // Hash verification codes: Scenario 25
         [Fact]
         public async Task VerifyEmailAsync_CodeBelongsToDifferentAccount_ThrowsBusinessException()
         {
@@ -132,7 +138,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = other.Id,
-                Code = "123456",
+                CodeHash = Hasher.ComputeHash(other.Id, "123456"),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
             });
@@ -164,7 +170,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
+                CodeHash = Hasher.ComputeHash(user.Id, "123456"),
                 ExpiresAt = DateTime.UtcNow.AddSeconds(2),
                 IsUsed = false
             });
@@ -193,7 +199,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
+                CodeHash = Hasher.ComputeHash(user.Id, "123456"),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
             });
@@ -273,6 +279,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await emailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
         }
 
+        // Hash verification codes: Scenario 32
         [Fact]
         public async Task ResendVerificationCodeAsync_WithinCooldown_ReturnsAcknowledgementWithoutSendingEmail()
         {
@@ -284,7 +291,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false,
                 CreatedAt = DateTime.UtcNow
@@ -334,6 +340,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await verifiedEmailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
         }
 
+        // Hash verification codes: Scenario 33
         [Fact]
         public async Task VerifyEmailAsync_UnknownEmailAndInvalidCode_ReturnSameStatusAndMessage()
         {
@@ -345,7 +352,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
             });
@@ -380,7 +386,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false,
                 CreatedAt = DateTime.UtcNow.AddSeconds(-61)
@@ -399,6 +404,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await emailService.Received(1).SendVerificationEmailAsync(user.Email, user.FirstName, Arg.Any<string>(), Arg.Any<int>());
         }
 
+        // Hash verification codes: Scenario 26
         [Fact]
         public async Task VerifyEmailAsync_WithCodeInvalidatedByResend_ThrowsBusinessException()
         {
@@ -410,7 +416,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "111111",
+                CodeHash = Hasher.ComputeHash(user.Id, "111111"),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false,
                 CreatedAt = DateTime.UtcNow.AddMinutes(-5)
@@ -438,6 +444,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             reloaded.IsVerified.Should().BeFalse();
         }
 
+        // Hash verification codes: Scenario 29
         [Fact]
         public async Task VerifyEmailAsync_ValidCode_MarksUserVerifiedAndCodeUsed()
         {
@@ -449,7 +456,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
+                CodeHash = Hasher.ComputeHash(user.Id, "123456"),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
             });
@@ -472,31 +479,30 @@ namespace RestaurantManagement.Modules.Identity.Tests
             reloadedCode.IsUsed.Should().BeTrue();
         }
 
+        // Hash verification codes: Scenario 34
         [Fact]
-        public async Task ResendVerificationCodeAsync_OutsideCooldown_SendsVerificationEmailWithFirstNameAndConfiguredExpiry()
+        public async Task ResendVerificationCodeAsync_OutsideCooldown_MarksEarlierCodesUsedAndEmailsNewCode()
         {
             // Arrange
             using var database = new IdentityTestDatabase();
             using var seedContext = database.CreateContext();
             var user = new User { Email = "user@test.com", PasswordHash = "hash", FirstName = "A", LastName = "B", IsVerified = false };
             seedContext.Users.Add(user);
-            seedContext.UserVerificationCodes.AddRange(
-                new UserVerificationCode
-                {
-                    UserId = user.Id,
-                    Code = "111111",
-                    ExpiresAt = DateTime.UtcNow.AddMinutes(15),
-                    IsUsed = false,
-                    CreatedAt = DateTime.UtcNow.AddMinutes(-5)
-                },
-                new UserVerificationCode
-                {
-                    UserId = user.Id,
-                    Code = "222222",
-                    ExpiresAt = DateTime.UtcNow.AddMinutes(15),
-                    IsUsed = false,
-                    CreatedAt = DateTime.UtcNow.AddMinutes(-5)
-                });
+            var firstCode = new UserVerificationCode
+            {
+                UserId = user.Id,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+                IsUsed = false,
+                CreatedAt = DateTime.UtcNow.AddMinutes(-5)
+            };
+            var secondCode = new UserVerificationCode
+            {
+                UserId = user.Id,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+                IsUsed = false,
+                CreatedAt = DateTime.UtcNow.AddMinutes(-5)
+            };
+            seedContext.UserVerificationCodes.AddRange(firstCode, secondCode);
             await seedContext.SaveChangesAsync();
 
             using var context = database.CreateContext();
@@ -511,13 +517,10 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             using var verifyContext = database.CreateContext();
             var codes = await verifyContext.UserVerificationCodes.Where(v => v.UserId == user.Id).ToListAsync();
-            codes.Where(c => c.Code == "111111" || c.Code == "222222").Should().OnlyContain(c => c.IsUsed);
+            codes.Where(c => c.Id == firstCode.Id || c.Id == secondCode.Id).Should().HaveCount(2).And.OnlyContain(c => c.IsUsed);
+            codes.Should().ContainSingle(c => !c.IsUsed && c.Id != firstCode.Id && c.Id != secondCode.Id);
 
-            var newCode = codes.SingleOrDefault(c => !c.IsUsed);
-            newCode.Should().NotBeNull();
-            newCode!.Code.Should().NotBe("111111").And.NotBe("222222");
-
-            await emailService.Received(1).SendVerificationEmailAsync(user.Email, user.FirstName, newCode.Code, 15);
+            await emailService.Received(1).SendVerificationEmailAsync(user.Email, user.FirstName, Arg.Any<string>(), 15);
         }
 
         [Fact]
@@ -547,6 +550,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             (await verifyContext.UserVerificationCodes.AnyAsync(v => v.UserId == user.Id)).Should().BeTrue();
         }
 
+        // Hash verification codes: Scenario 20
         [Fact]
         public async Task VerifyEmailAsync_IncorrectCode_IncrementsVerificationFailedAttempts()
         {
@@ -558,7 +562,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
+                CodeHash = Hasher.ComputeHash(user.Id, "123456"),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
             });
@@ -579,6 +583,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             reloaded.VerificationFailedAttempts.Should().Be(1);
         }
 
+        // Hash verification codes: Scenario 22
         [Fact]
         public async Task VerifyEmailAsync_FinalFailedAttemptReachesMax_InvalidatesCodeAndSetsLockout()
         {
@@ -598,7 +603,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
+                CodeHash = Hasher.ComputeHash(user.Id, "123456"),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
             });
@@ -623,6 +628,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             reloadedUser.VerificationLockedUntil!.Value.Should().BeAfter(DateTime.UtcNow);
         }
 
+        // Hash verification codes: Scenario 21
         [Fact]
         public async Task VerifyEmailAsync_AccountLockedWithCorrectCode_ThrowsAndLeavesUserUnverified()
         {
@@ -642,7 +648,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
+                CodeHash = Hasher.ComputeHash(user.Id, "123456"),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
             });
@@ -663,6 +669,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             reloaded.IsVerified.Should().BeFalse();
         }
 
+        // Hash verification codes: Scenario 35
         [Fact]
         public async Task ResendVerificationCodeAsync_AccountLocked_ThrowsAndSendsNoEmail()
         {
@@ -682,7 +689,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false,
                 CreatedAt = DateTime.UtcNow.AddMinutes(-5)
@@ -706,6 +712,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             codeCount.Should().Be(1);
         }
 
+        // Hash verification codes: Scenario 31
         [Fact]
         public async Task VerifyEmailAsync_LockoutExpired_EvaluatesCodeAndVerifiesUser()
         {
@@ -725,7 +732,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
+                CodeHash = Hasher.ComputeHash(user.Id, "123456"),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
             });
@@ -762,7 +769,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
+                CodeHash = Hasher.ComputeHash(user.Id, "123456"),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
             });
@@ -799,7 +806,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
+                CodeHash = Hasher.ComputeHash(user.Id, "123456"),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
             });
@@ -837,7 +844,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "111111",
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false,
                 CreatedAt = DateTime.UtcNow.AddMinutes(-5)
@@ -871,7 +877,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
+                CodeHash = Hasher.ComputeHash(user.Id, "123456"),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
             });
@@ -910,7 +916,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "111111",
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = true,
                 CreatedAt = DateTime.UtcNow.AddMinutes(-20)
@@ -930,6 +935,73 @@ namespace RestaurantManagement.Modules.Identity.Tests
             using var verifyContext = database.CreateContext();
             var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
             reloaded.VerificationFailedAttempts.Should().Be(0);
+        }
+
+        // Hash verification codes: Scenario 28
+        [Fact]
+        public async Task ResendVerificationCodeAsync_OutsideCooldown_StoresFingerprintOfEmailedCodeNotTheCode()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            var user = new User { Email = "maria.souza@cantina.com.br", PasswordHash = "hash", FirstName = "Maria", LastName = "Souza", IsVerified = false };
+            seedContext.Users.Add(user);
+            await seedContext.SaveChangesAsync();
+
+            using var context = database.CreateContext();
+            var emailService = Substitute.For<IEmailService>();
+            string? emailedCode = null;
+            emailService.SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Do<string>(code => emailedCode = code), Arg.Any<int>()).Returns(Task.CompletedTask);
+            var sut = CreateSut(context, emailService);
+
+            // Act
+            await sut.ResendVerificationCodeAsync(new ResendVerificationRequest { Email = "maria.souza@cantina.com.br" });
+
+            // Assert
+            using var verifyContext = database.CreateContext();
+            var stored = await verifyContext.UserVerificationCodes.SingleAsync(v => v.UserId == user.Id && !v.IsUsed);
+            emailedCode.ShouldNotBeNull();
+            stored.CodeHash.ShouldNotContain(emailedCode);
+            Hasher.IsMatch(user.Id, emailedCode, stored.CodeHash).ShouldBeTrue();
+        }
+
+        // Hash verification codes: Scenario 30
+        [Fact]
+        public async Task VerifyEmailAsync_NewestCodeAfterResend_MarksUserVerified()
+        {
+            // Arrange: an earlier code exists, then a resend emails a newer one
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            var user = new User { Email = "maria.souza@cantina.com.br", PasswordHash = "hash", FirstName = "Maria", LastName = "Souza", IsVerified = false };
+            seedContext.Users.Add(user);
+            seedContext.UserVerificationCodes.Add(new UserVerificationCode
+            {
+                UserId = user.Id,
+                CodeHash = Hasher.ComputeHash(user.Id, "111111"),
+                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+                IsUsed = false,
+                CreatedAt = DateTime.UtcNow.AddMinutes(-5)
+            });
+            await seedContext.SaveChangesAsync();
+
+            var emailService = Substitute.For<IEmailService>();
+            string? emailedCode = null;
+            emailService.SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Do<string>(code => emailedCode = code), Arg.Any<int>()).Returns(Task.CompletedTask);
+            using (var resendContext = database.CreateContext())
+            {
+                await CreateSut(resendContext, emailService).ResendVerificationCodeAsync(new ResendVerificationRequest { Email = "maria.souza@cantina.com.br" });
+            }
+
+            using var context = database.CreateContext();
+            var sut = CreateSut(context, Substitute.For<IEmailService>());
+
+            // Act
+            await sut.VerifyEmailAsync(new VerifyEmailRequest { Email = "maria.souza@cantina.com.br", Code = emailedCode! });
+
+            // Assert
+            using var verifyContext = database.CreateContext();
+            var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "maria.souza@cantina.com.br");
+            reloaded.IsVerified.ShouldBeTrue();
         }
     }
 }

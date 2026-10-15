@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 using RestaurantManagement.Modules.Identity.Data;
+using RestaurantManagement.Modules.Identity.Entities;
 using Shouldly;
 using Xunit;
 
@@ -85,7 +86,25 @@ public class IdentityDeleteRulesTests : IClassFixture<AuditFieldsPostgresFixture
             VALUES ({id}, {userId}, {CantinaId}, null, {role}, {CreationTime}, {CreationTime}, {MariaId}, null)
             """);
 
-    private static async Task InsertCodeAsync(DbContext context, Guid id, Guid userId, string code, bool isUsed)
+    /// <summary>
+    /// Inserts a code through EF Core without a code value, so it works whatever the code
+    /// column is called (code before the hashing change, code_hash after it).
+    /// </summary>
+    private static async Task InsertCodeAsync(IdentityDbContext context, Guid id, Guid userId, bool isUsed)
+    {
+        context.UserVerificationCodes.Add(new UserVerificationCode
+        {
+            Id = id,
+            UserId = userId,
+            ExpiresAt = CodeExpiry,
+            IsUsed = isUsed,
+            CreatedAt = CreationTime
+        });
+        await context.SaveChangesAsync();
+    }
+
+    /// <summary>Inserts a readable code on a schema from before the hashing change (column code).</summary>
+    private static async Task InsertReadableCodeAsync(DbContext context, Guid id, Guid userId, string code, bool isUsed)
         => await context.Database.ExecuteSqlAsync($"""
             INSERT INTO user_verification_codes (id, user_id, code, expires_at, is_used, created_at)
             VALUES ({id}, {userId}, {code}, {CodeExpiry}, {isUsed}, {CreationTime})
@@ -134,8 +153,8 @@ public class IdentityDeleteRulesTests : IClassFixture<AuditFieldsPostgresFixture
         // Arrange
         await using var context = await CreateFullyMigratedContextAsync();
         await InsertUserAsync(context, MariaId, "maria.souza@cantina.com.br", "Maria", isActive: true);
-        await InsertCodeAsync(context, MariaFirstCodeId, MariaId, "482913", isUsed: true);
-        await InsertCodeAsync(context, MariaSecondCodeId, MariaId, "730586", isUsed: false);
+        await InsertCodeAsync(context, MariaFirstCodeId, MariaId, isUsed: true);
+        await InsertCodeAsync(context, MariaSecondCodeId, MariaId, isUsed: false);
 
         // Act
         var deleted = await context.Database.ExecuteSqlAsync($"DELETE FROM users WHERE id = {MariaId}");
@@ -153,8 +172,8 @@ public class IdentityDeleteRulesTests : IClassFixture<AuditFieldsPostgresFixture
         await using var context = await CreateFullyMigratedContextAsync();
         await InsertUserAsync(context, MariaId, "maria.souza@cantina.com.br", "Maria", isActive: true);
         await InsertUserAsync(context, JoaoId, "joao.lima@cantina.com.br", "João", isActive: true);
-        await InsertCodeAsync(context, MariaFirstCodeId, MariaId, "482913", isUsed: false);
-        await InsertCodeAsync(context, JoaoCodeId, JoaoId, "915274", isUsed: false);
+        await InsertCodeAsync(context, MariaFirstCodeId, MariaId, isUsed: false);
+        await InsertCodeAsync(context, JoaoCodeId, JoaoId, isUsed: false);
 
         // Act
         await context.Database.ExecuteSqlAsync($"DELETE FROM users WHERE id = {MariaId}");
@@ -193,8 +212,8 @@ public class IdentityDeleteRulesTests : IClassFixture<AuditFieldsPostgresFixture
         await InsertUserAsync(context, JoaoId, "joao.lima@cantina.com.br", "João", isActive: false);
         await InsertRoleAsync(context, MariaOwnerRoleId, MariaId, "Owner");
         await InsertRoleAsync(context, JoaoStaffRoleId, JoaoId, "Staff");
-        await InsertCodeAsync(context, MariaFirstCodeId, MariaId, "482913", isUsed: true);
-        await InsertCodeAsync(context, JoaoCodeId, JoaoId, "915274", isUsed: false);
+        await InsertReadableCodeAsync(context, MariaFirstCodeId, MariaId, "482913", isUsed: true);
+        await InsertReadableCodeAsync(context, JoaoCodeId, JoaoId, "915274", isUsed: false);
         var usersBefore = await ReadScalarAsync(context, UserRowsSql);
         var rolesBefore = await ReadScalarAsync(context, RoleRowsSql);
         var codesBefore = await ReadScalarAsync(context, CodeRowsSql);

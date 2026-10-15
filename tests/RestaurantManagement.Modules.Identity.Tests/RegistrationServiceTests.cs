@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using Shouldly;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Modules.Identity.Services;
@@ -39,7 +40,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var logger = Substitute.For<ILogger<RegistrationService>>();
 
             using var context = database.CreateContext();
-            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger);
+            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create());
 
             var request = new RegisterRequest
             {
@@ -68,7 +69,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var securityOptions = TestSecurityOptions.Create(verificationCodeExpiryMinutes: 15);
 
             using var context = database.CreateContext();
-            var sut = new RegistrationService(context, securityOptions, TestLocalizer.Create(), emailService, logger);
+            var sut = new RegistrationService(context, securityOptions, TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create());
 
             var request = new RegisterRequest
             {
@@ -91,7 +92,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var code = await verifyContext.UserVerificationCodes.SingleAsync(v => v.UserId == user.Id);
             code.ExpiresAt.Should().BeCloseTo(beforeRegistration.AddMinutes(15), TimeSpan.FromSeconds(5));
 
-            await emailService.Received(1).SendVerificationEmailAsync(user.Email, "New", code.Code, 15);
+            await emailService.Received(1).SendVerificationEmailAsync(user.Email, "New", Arg.Any<string>(), 15);
         }
 
         [Fact]
@@ -105,7 +106,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var logger = Substitute.For<ILogger<RegistrationService>>();
 
             using var context = database.CreateContext();
-            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger);
+            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create());
 
             var request = new RegisterRequest
             {
@@ -148,7 +149,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var logger = Substitute.For<ILogger<RegistrationService>>();
 
             using var context = _postgresFixture.CreateContext();
-            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger);
+            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create());
 
             var request = new RegisterRequest
             {
@@ -188,7 +189,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var logger = Substitute.For<ILogger<RegistrationService>>();
 
             using var context = _postgresFixture.CreateContext();
-            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger);
+            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create());
 
             var request = new RegisterRequest
             {
@@ -205,6 +206,41 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var thrown = await act.Should().ThrowAsync<BusinessException>();
             thrown.Which.StatusCode.Should().Be(400);
             thrown.Which.Message.Should().Be("EmailAlreadyRegistered");
+        }
+
+        // Hash verification codes: Scenario 27
+        [Fact]
+        public async Task RegisterAsync_ValidRequest_StoresFingerprintOfEmailedCodeNotTheCode()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            var emailService = Substitute.For<IEmailService>();
+            string? emailedCode = null;
+            emailService.SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Do<string>(code => emailedCode = code), Arg.Any<int>()).Returns(Task.CompletedTask);
+            var logger = Substitute.For<ILogger<RegistrationService>>();
+            var hasher = TestVerificationCodeHasher.Create();
+
+            using var context = database.CreateContext();
+            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, hasher);
+
+            var request = new RegisterRequest
+            {
+                Email = "joao.pereira@cantina.com.br",
+                Password = "Password1!",
+                FirstName = "João",
+                LastName = "Pereira"
+            };
+
+            // Act
+            await sut.RegisterAsync(request);
+
+            // Assert
+            using var verifyContext = database.CreateContext();
+            var user = await verifyContext.Users.SingleAsync(u => u.Email == "joao.pereira@cantina.com.br");
+            var stored = await verifyContext.UserVerificationCodes.SingleAsync(v => v.UserId == user.Id);
+            emailedCode.ShouldNotBeNull();
+            stored.CodeHash.ShouldNotContain(emailedCode);
+            hasher.IsMatch(user.Id, emailedCode, stored.CodeHash).ShouldBeTrue();
         }
     }
 }

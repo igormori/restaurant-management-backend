@@ -21,19 +21,22 @@ namespace RestaurantManagement.Modules.Identity.Services
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly IEmailService _emailService;
         private readonly ILogger<RegistrationService> _logger;
+        private readonly IVerificationCodeHasher _hasher;
 
         public RegistrationService(
             IdentityDbContext db,
             IOptions<SecurityOptions> securityOptions,
             IStringLocalizer<SharedResource> localizer,
             IEmailService emailService,
-            ILogger<RegistrationService> logger)
+            ILogger<RegistrationService> logger,
+            IVerificationCodeHasher hasher)
         {
             _db = db;
             _securityOptions = securityOptions.Value;
             _localizer = localizer;
             _emailService = emailService;
             _logger = logger;
+            _hasher = hasher;
         }
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -68,7 +71,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             var verification = new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = verificationCode,
+                CodeHash = _hasher.ComputeHash(user.Id, verificationCode),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(_securityOptions.VerificationCodeExpiryMinutes)
             };
             _db.UserVerificationCodes.Add(verification);

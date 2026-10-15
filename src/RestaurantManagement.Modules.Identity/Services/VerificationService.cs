@@ -21,19 +21,22 @@ namespace RestaurantManagement.Modules.Identity.Services
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly IEmailService _emailService;
         private readonly ILogger<VerificationService> _logger;
+        private readonly IVerificationCodeHasher _hasher;
 
         public VerificationService(
             IdentityDbContext db,
             IOptions<SecurityOptions> securityOptions,
             IStringLocalizer<SharedResource> localizer,
             IEmailService emailService,
-            ILogger<VerificationService> logger)
+            ILogger<VerificationService> logger,
+            IVerificationCodeHasher hasher)
         {
             _db = db;
             _securityOptions = securityOptions.Value;
             _localizer = localizer;
             _emailService = emailService;
             _logger = logger;
+            _hasher = hasher;
         }
 
         public async Task<MessageResponse> VerifyEmailAsync(VerifyEmailRequest request)
@@ -52,7 +55,7 @@ namespace RestaurantManagement.Modules.Identity.Services
                 .OrderByDescending(v => v.CreatedAt)
                 .FirstOrDefaultAsync();
 
-            if (user == null || verification == null || verification.Code != request.Code)
+            if (user == null || verification == null || !_hasher.IsMatch(user.Id, request.Code, verification.CodeHash))
             {
                 if (user != null)
                     await RegisterFailedVerificationAttemptAsync(user); // always throws: 401, or 423 when the lockout trips
@@ -116,7 +119,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             var verification = new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = code,
+                CodeHash = _hasher.ComputeHash(user.Id, code),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(_securityOptions.VerificationCodeExpiryMinutes)
             };
 

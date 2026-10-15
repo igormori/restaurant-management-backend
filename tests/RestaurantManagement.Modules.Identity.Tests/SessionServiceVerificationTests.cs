@@ -85,7 +85,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = user.Id,
-                Code = "123456",
+                CodeHash = TestVerificationCodeHasher.Create().ComputeHash(user.Id, "123456"),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
             });
@@ -98,7 +98,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
                     TestSecurityOptions.Create(),
                     TestLocalizer.Create(),
                     Substitute.For<IEmailService>(),
-                    Substitute.For<ILogger<VerificationService>>());
+                    Substitute.For<ILogger<VerificationService>>(),
+                    TestVerificationCodeHasher.Create());
 
                 await verificationService.VerifyEmailAsync(new VerifyEmailRequest { Email = "toverify@test.com", Code = "123456" });
             }

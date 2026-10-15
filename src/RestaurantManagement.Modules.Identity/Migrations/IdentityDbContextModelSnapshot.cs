@@ -173,10 +173,10 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("Code")
+                    b.Property<string>("CodeHash")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("code");
+                        .HasColumnName("code_hash");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")

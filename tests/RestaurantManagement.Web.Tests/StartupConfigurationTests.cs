@@ -4,8 +4,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using RestaurantManagement.Modules.Identity.Services;
 using RestaurantManagement.Shared.Options;
 using Sentry.AspNetCore;
+using Shouldly;
 
 namespace RestaurantManagement.Web.Tests;
 
@@ -197,5 +199,77 @@ public class StartupConfigurationTests : IDisposable
 
         // Assert
         jwtOptions.ExpireMinutes.Should().Be(15);
+    }
+
+    // Hash verification codes: Scenario 4
+    [Fact]
+    public void Startup_VerificationHashKeyEmpty_FailsNamingHashKey()
+    {
+        // Arrange
+        var factory = CreateFactory(Environments.Development, new() { ["VerificationCode:HashKey"] = string.Empty });
+
+        // Act
+        var thrown = Should.Throw<Exception>(() => factory.CreateClient());
+
+        // Assert
+        thrown.ToString().ShouldContain("VerificationCode:HashKey");
+    }
+
+    // Hash verification codes: Scenario 5
+    [Fact]
+    public void Startup_VerificationHashKeyEmptyInProduction_FailsNamingHashKey()
+    {
+        // Arrange
+        var factory = CreateFactory(Environments.Production, With(ValidProductionSettings(), "VerificationCode:HashKey", string.Empty));
+
+        // Act
+        var thrown = Should.Throw<Exception>(() => factory.CreateClient());
+
+        // Assert
+        thrown.ToString().ShouldContain("VerificationCode:HashKey");
+    }
+
+    // Hash verification codes: Scenario 6
+    [Fact]
+    public void Startup_VerificationHashKeyOf31Bytes_FailsNamingHashKey()
+    {
+        // Arrange
+        var factory = CreateFactory(Environments.Development, new() { ["VerificationCode:HashKey"] = new string('k', 31) });
+
+        // Act
+        var thrown = Should.Throw<Exception>(() => factory.CreateClient());
+
+        // Assert
+        thrown.ToString().ShouldContain("VerificationCode:HashKey");
+    }
+
+    // Hash verification codes: Scenario 10
+    [Fact]
+    public void Startup_ValidVerificationHashKey_BindsHashKeyFromConfiguration()
+    {
+        // Arrange
+        const string configuredKey = "q8Jf3mZ0vT1bW6yR9pL2sK7xN4cH5dA0eG3uV8iO1tM=";
+        var factory = CreateFactory(Environments.Development, new() { ["VerificationCode:HashKey"] = configuredKey });
+
+        // Act
+        var options = factory.Services.GetRequiredService<IOptions<VerificationCodeOptions>>().Value;
+
+        // Assert
+        options.HashKey.ShouldBe(configuredKey);
+    }
+
+    // Hash verification codes: Scenario 19
+    [Fact]
+    public void Startup_DefaultConfiguration_RegistersVerificationCodeHasher()
+    {
+        // Arrange
+        var factory = CreateFactory(Environments.Development, new());
+        using var scope = factory.Services.CreateScope();
+
+        // Act
+        var hasher = scope.ServiceProvider.GetService<IVerificationCodeHasher>();
+
+        // Assert
+        hasher.ShouldNotBeNull();
     }
 }

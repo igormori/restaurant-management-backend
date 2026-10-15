@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using RestaurantManagement.Modules.Identity.Data;
+using RestaurantManagement.Modules.Identity.Services;
 using RestaurantManagement.Shared.Options;
 
 namespace RestaurantManagement.Modules.Identity.Tests
@@ -61,6 +62,20 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 MaxVerificationAttempts = maxVerificationAttempts,
                 VerificationLockoutDurationMinutes = verificationLockoutDurationMinutes
             });
+        }
+    }
+
+    /// <summary>
+    /// Builds the real verification code hasher with a fixed test key, so tests can seed
+    /// stored fingerprints and check what the services saved.
+    /// </summary>
+    public static class TestVerificationCodeHasher
+    {
+        public const string HashKey = "cantina-test-verification-hash-key-0123456789";
+
+        public static IVerificationCodeHasher Create(string hashKey = HashKey)
+        {
+            return new VerificationCodeHasher(Options.Create(new VerificationCodeOptions { HashKey = hashKey }));
         }
     }
 }
