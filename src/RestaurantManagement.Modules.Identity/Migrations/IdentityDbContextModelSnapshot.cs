@@ -228,7 +228,10 @@ namespace RestaurantManagement.Modules.Identity.Migrations
 
                     NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("UserId", "OrganizationId", "LocationId", "Role"), false);
 
-                    b.ToTable("user_roles", (string)null);
+                    b.ToTable("user_roles", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_user_roles_organization_id_not_empty", "organization_id <> '00000000-0000-0000-0000-000000000000'");
+                        });
                 });
 
             modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.UserVerificationCode", b =>

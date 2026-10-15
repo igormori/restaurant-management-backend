@@ -20,7 +20,6 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                 table: "user_roles",
                 type: "uuid",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"),
                 oldClrType: typeof(Guid),
                 oldType: "uuid",
                 oldNullable: true);
@@ -31,6 +30,11 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                 columns: new[] { "user_id", "organization_id", "location_id", "role" },
                 unique: true)
                 .Annotation("Npgsql:NullsDistinct", false);
+
+            migrationBuilder.AddCheckConstraint(
+                name: "ck_user_roles_organization_id_not_empty",
+                table: "user_roles",
+                sql: "organization_id <> '00000000-0000-0000-0000-000000000000'");
         }
 
         /// <inheritdoc />
@@ -38,6 +42,10 @@ namespace RestaurantManagement.Modules.Identity.Migrations
         {
             migrationBuilder.DropIndex(
                 name: "ix_user_roles_user_id_organization_id_location_id_role",
+                table: "user_roles");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "ck_user_roles_organization_id_not_empty",
                 table: "user_roles");
 
             migrationBuilder.AlterColumn<Guid>(

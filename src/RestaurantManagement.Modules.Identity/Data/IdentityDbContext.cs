@@ -45,6 +45,14 @@ namespace RestaurantManagement.Modules.Identity.Data
                     .IsUnique()
                     .AreNullsDistinct(false)
                     .HasDatabaseName(UniqueUserRoleIndexName);
+
+                // The check below is raw SQL, so the column name is fixed to match it in every provider.
+                entity.Property(r => r.OrganizationId).HasColumnName("organization_id");
+
+                // An unset Guid is all zeros, so reject it: a role must belong to a real organization.
+                entity.ToTable(t => t.HasCheckConstraint(
+                    "ck_user_roles_organization_id_not_empty",
+                    "organization_id <> '00000000-0000-0000-0000-000000000000'"));
             });
 
             // Codes are owned by the user and useless without them, so they go with the user.
