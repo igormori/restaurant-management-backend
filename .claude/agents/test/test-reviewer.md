@@ -20,12 +20,15 @@ and the spec `plan.md` references. If `scenarios.md` is missing, stop and say so
 ## What to read (and nothing else)
 1. The spec, `plan.md`, `scenarios.md` and every batch file, in full.
 2. `.claude/skills/testing/SKILL.md` and `.claude/skills/security/SKILL.md`.
-3. The test files listed in `scenarios.md`, and the stubs listed in each task's Implementation guide.
+3. The stubs listed in each task's Implementation guide. For test files, first list the test
+   names (`grep -n "public .*async Task\|public void" <file>`); open a test body only to check a
+   specific scenario. Never print whole test files.
 4. Do not explore the codebase beyond this.
 
 ## Process
-1. Run `dotnet build RestaurantManagement.sln`, then `dotnet test` for the affected test
-   projects only (`--filter` by the new test class names). Report real output, never assume.
+1. Run the new test classes **only** through the summary script; never call `dotnet test` directly:
+   `.claude/scripts/test-summary.sh <test-project> "FullyQualifiedName~<ClassName>"`.
+   Run tests at most twice. Report real output, never assume.
 2. Check every new test fails, and fails for the right reason: `NotImplementedException`, or a
    500 for an integration test. A compile error, a setup error, or a passing test is Fix first.
    Exception: tests marked `Guard` in `scenarios.md` must pass, and must not be forced to fail

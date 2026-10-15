@@ -25,7 +25,8 @@ You turn an approved plan into **failing tests** for every task, a **coverage ta
    pattern you reuse, not whole test projects. Never create a new fixture or test project
    without flagging it.
 
-**Token budget:** read only what a step needs. Do not open files "for context".
+**Token budget:** read only what a step needs. Do not open files "for context". Never print a
+whole file or a full test log into your context; read only the lines you need.
 
 ---
 
@@ -41,6 +42,17 @@ For every task, cover each spec Outcome and the task's DoD with these scenario t
 | Security | Required by the security skill when a task touches an endpoint or tenant data: cross-tenant (returns not found) and one rejection per disallowed role |
 | Guard | Behaviour that is already correct and must not break (passes before and after) |
 
+- **Scenario budget by plan size:** S at most 12, M at most 25, L at most 40. When the spec comes
+  from a ticket with its own scenarios, those are mandatory and come first.
+- **Extras need a reason:** security (required by the security skill), a real edge case, or an
+  existing test that a signature change forces you to update. No padding.
+- **One test for variants of the same rule:** use a parameterized test (`[Theory]` with
+  `[InlineData]`, one test run with several input cases) instead of near-identical tests, for
+  example one test for every "refused with the same 401" case.
+- **Test each behaviour at one level only:** unit test the rule in the module; in Web.Tests test
+  only what is HTTP-specific (status codes, cookies, auth, headers, real database behaviour).
+- **Existing tests that break:** update only what the plan's changes force, and list them in a
+  short "Existing tests updated" section of `scenarios.md`, not as new scenarios.
 - Failure cases first, then happy path (testing skill).
 - One behaviour per test. No scenario without a test, no test without a scenario.
 - **Regression guards:** a scenario whose behaviour is already correct today (it must stay that way after the change) gets a test that passes now. Mark it `Guard` in the Type column. Never make a guard fail artificially, for example by checking that a migration name or class exists.
@@ -106,9 +118,11 @@ High level only: what to change, where, in which order, and which pattern to fol
 
 ## 6. Before Finishing
 
-1. Run `dotnet build` (must pass). Run only your new test classes with minimal output:
-   `dotnet test <project> --filter "FullyQualifiedName~<ClassName>" --verbosity quiet`.
-   Run the full suite **once**, at the end, also with `--verbosity quiet`.
+1. Run tests **only** through the summary script; never call `dotnet test` directly:
+   `.claude/scripts/test-summary.sh <test-project> "FullyQualifiedName~<ClassName>"` for your new classes,
+   and `.claude/scripts/test-summary.sh all` **once**, at the end.
+   **Run limit:** at most 6 test runs in total. If tests still do not fail for the right reason
+   after that, stop and report which ones under [Blocking]. Never loop.
 2. Every new test, except guards, must **fail for the right reason** (`NotImplementedException`, a failed assertion, or a 500 for an integration test), never a compile error or a broken fixture. Guards and existing tests must pass.
 3. Out-of-scope findings: write the backlog file yourself (`backlog/<features|bugs|improvements|tech-debt>/<YYYY-MM-DD>-<title>.md`).
 
@@ -142,6 +156,7 @@ Paths relative to the repository root. Omit empty sections. Each [Blocking] ques
 ## 8. Final Check
 
 - [ ] Every task and spec Outcome has scenarios; every scenario has exactly one test
+- [ ] Scenario count within budget (S 12 · M 25 · L 40); variants parameterized; one level per behaviour
 - [ ] Happy, edge, failure and security cases covered where they apply
 - [ ] Tests in the right project, named `Method_Scenario_ExpectedResult`, Arrange/Act/Assert, realistic values
 - [ ] Stubs compile and contain no logic

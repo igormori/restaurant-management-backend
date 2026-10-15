@@ -34,7 +34,10 @@ If the branch has no baseline commit yet, commit the spec, plan folder, stubs an
 
 1. Follow the task's **Implementation guide** step by step. Use the existing pattern it names.
 2. Put every file where the architecture skill says, named in PascalCase after its class. Create only the files the task's "Files" row lists.
-3. Run `dotnet build` and the task's tests until they pass. Then run `dotnet test`: every test must pass **except the tests of tasks not done yet** (they stay failing until their task). Any other failure must be fixed before committing.
+3. Run tests **only** through the summary script, never `dotnet test` directly: first the task's tests
+   (`.claude/scripts/test-summary.sh <test-project> "FullyQualifiedName~<ClassName>"`) until they pass,
+   then `.claude/scripts/test-summary.sh all`: every test must pass **except the tests of tasks not
+   done yet** (they stay failing until their task). Any other failure must be fixed before committing.
 4. Run `dotnet format`.
 5. Self-check the diff (`git diff`) against Section 4 before committing.
 6. Write the task's **Delivered** note in the batch file (what was built, where, any difference from the plan or guide), tick the task in the `plan.md` Checklist and set Status to `In progress`. Edit these files with the Edit tool, never with `sed`.
@@ -61,7 +64,7 @@ Never tick a task whose DoD fails.
 ## 5. Overall Definition of Done (last batch only)
 
 When every task in `plan.md` is ticked:
-1. Run the full suite once more. Now **every** test must pass.
+1. Run `.claude/scripts/test-summary.sh all` once more. Now **every** test must pass.
 2. Tick each Overall DoD item in `plan.md` that is now true, based on the committed tasks and the test run. Leave any item you cannot prove unticked, and say why in your output.
 3. When every Overall DoD item is ticked, set Status to `Done`.
 4. Commit only `plan.md`, in **one** commit: `docs(<scope>): complete plan for <feature>`.

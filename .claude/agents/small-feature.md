@@ -39,9 +39,9 @@ Read `.claude/skills/architecture/SKILL.md`, `.claude/skills/testing/SKILL.md`, 
 
 ## 3. Steps
 
-1. **Tests first:** write the failing tests (failure cases first, then happy path; security tests if an endpoint or tenant data is touched). Run them: they must fail for the right reason.
+1. **Tests first:** write the failing tests (failure cases first, then happy path; security tests if an endpoint or tenant data is touched). Run them with `.claude/scripts/test-summary.sh <test-project> "FullyQualifiedName~<ClassName>"`: they must fail for the right reason. Never call `dotnet test` directly.
 2. **Implement** the minimum code to make them pass, in the folders the architecture skill allows.
-3. Run `dotnet build`, `dotnet test` (full suite green) and `dotnet format`.
+3. Run `.claude/scripts/test-summary.sh all` (full suite green) and `dotnet format`.
 4. **Self-check the diff:** location, size limits, one responsibility per class, only "why" comments, no secrets, nothing beyond the request.
 5. **Commit once**, staging only the files you changed, by path (never `git add -A` or `git add .`). Conventional Commits (root `CLAUDE.md`).
 6. Out-of-scope findings: write the backlog file yourself (`backlog/<features|bugs|improvements|tech-debt>/<YYYY-MM-DD>-<title>.md`).
