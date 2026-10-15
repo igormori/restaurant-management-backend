@@ -12,6 +12,7 @@ namespace RestaurantManagement.Shared.Auth
         public const string MenuManage = "menu.manage";
         public const string ReportsView = "reports.view";
 
-        public static IReadOnlyCollection<string> All => throw new NotImplementedException();
+        public static IReadOnlyList<string> All { get; } = Array.AsReadOnly(
+            new[] { MembersManage, LocationsManage, SettingsManage, MenuManage, ReportsView });
     }
 }

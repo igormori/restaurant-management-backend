@@ -1,6 +1,6 @@
 # Plan: Tighten user roles and add permissions in code
 
-**Spec:** docs/specs/identity/2026-10-15-tighten-user-roles-and-permissions.md   **Date:** 2026-10-15   **Status:** Draft
+**Spec:** docs/specs/identity/2026-10-15-tighten-user-roles-and-permissions.md   **Date:** 2026-10-15   **Status:** In progress
 **Risk:** High — schema change on `user_roles`, new default authorization for every endpoint, new Shared contract, Staff role removed
 
 ## Summary
@@ -39,7 +39,7 @@ No raw SQL in production code. No new library or test project.
 - [ ] No out-of-scope changes; findings in the backlog
 
 ## Checklist
-- [ ] T1 — New roles, permission list and role-to-permission map
+- [x] T1 — New roles, permission list and role-to-permission map
 - [ ] T2 — Role assignment needs an organization; no duplicates
 - [ ] T3 — Permission policies and private-by-default endpoints
 - [ ] T4 — Remove the Staff role
