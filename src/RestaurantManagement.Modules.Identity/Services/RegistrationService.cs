@@ -36,6 +36,19 @@ namespace RestaurantManagement.Modules.Identity.Services
             _logger = logger;
         }
 
+        // Stub for T3: hasher-aware constructor. When implementing, merge it with the constructor
+        // above into a single constructor that stores and uses the hasher.
+        public RegistrationService(
+            IdentityDbContext db,
+            IOptions<SecurityOptions> securityOptions,
+            IStringLocalizer<SharedResource> localizer,
+            IEmailService emailService,
+            ILogger<RegistrationService> logger,
+            IVerificationCodeHasher verificationCodeHasher)
+            : this(db, securityOptions, localizer, emailService, logger)
+        {
+        }
+
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
         {
             // 1. Check if user already exits

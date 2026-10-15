@@ -38,8 +38,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             using var context1 = _postgresFixture.CreateContext();
             using var context2 = _postgresFixture.CreateContext();
-            var sut1 = new RegistrationService(context1, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger);
-            var sut2 = new RegistrationService(context2, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger);
+            var sut1 = new RegistrationService(context1, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create());
+            var sut2 = new RegistrationService(context2, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create());
 
             var request1 = new RegisterRequest { Email = email, Password = "Password1!", FirstName = "First", LastName = "Attempt" };
             var request2 = new RegisterRequest { Email = email, Password = "Password1!", FirstName = "Second", LastName = "Attempt" };

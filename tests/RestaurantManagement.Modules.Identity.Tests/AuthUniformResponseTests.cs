@@ -48,7 +48,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 TestSecurityOptions.Create(),
                 TestLocalizer.Create(),
                 Substitute.For<IEmailService>(),
-                Substitute.For<ILogger<VerificationService>>());
+                Substitute.For<ILogger<VerificationService>>(),
+                TestVerificationCodeHasher.Create());
         }
 
         [Fact]
@@ -77,7 +78,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
             seedContext.UserVerificationCodes.Add(new UserVerificationCode
             {
                 UserId = unverifiedUser.Id,
-                Code = "123456",
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
             });
