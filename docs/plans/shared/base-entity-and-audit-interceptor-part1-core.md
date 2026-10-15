@@ -128,8 +128,8 @@ Fixed values: Org A `a1a1a1a1-...-0001`, Org B `b2b2b2b2-...-0002`, Org C `c3c3c
 
 ## Tasks
 1. [x] TenantScope (AsyncLocal) — scenarios 23–28
-2. AuditSaveChangesInterceptor — scenarios 1–22
-3. ClaimsCurrentUser — scenarios 35–41
+2. [x] AuditSaveChangesInterceptor — scenarios 1–22
+3. [x] ClaimsCurrentUser — scenarios 35–41
 4. SessionService org claim — scenarios 29–34
 5. Program.cs wiring (lifetimes, interceptor on all DbContexts) — scenarios 42–46
 
