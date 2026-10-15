@@ -43,7 +43,8 @@ uncommitted work.
 2. Run `dotnet build` and `dotnet test`. The new tests must fail with `NotImplementedException`
    (or the 500 it causes) and every other test must pass. If not, stop and report it.
 3. Commit the approved baseline: the plan, the stubs and the tests, with the message
-   `Add failing tests for <feature> (scenarios 1–N)`. From now on, test files are read-only.
+   `test(<module>): add failing tests for <feature>` and the body `Scenarios: 1–N`.
+   From now on, test files are read-only.
 4. Break the work into small tasks, each making a specific set of scenarios pass. Write them into
    the plan under `## Tasks`, one line each: `1. <task> — scenarios 1–3`. Commit nothing yet;
    the plan change goes in with the first task.
@@ -52,9 +53,9 @@ uncommitted work.
    - Run the FULL `dotnet test`. Everything that passed before must still pass.
    - Mark the task done in the plan: `1. [x] <task> — scenarios 1–3`.
    - Run `git diff --name-only` and confirm no file under `tests/` changed.
-   - `git add` only the files this task touched, then commit with a message naming the
-     scenarios: `Implement waste detection (scenarios 1–3)`, prefixed with the ticket ID when
-     the branch has one.
+   - `git add` only the files this task touched, then commit following the Commits section of
+     CLAUDE.md, e.g. `feat(inventory): flag purchases that exceed usage by 25%` with the body
+     `Scenarios: 1–3`, plus `Refs: <ticket ID>` when the branch has one.
 6. Generate migrations with the exact `dotnet ef migrations add` command from CLAUDE.md, in the
    task that needs them. Never hand-edit a generated migration.
 7. When every scenario passes, report the code review summary (format below).
