@@ -33,7 +33,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         private static SessionService CreateSut(IdentityDbContext context)
         {
-            return new SessionService(context, TestSecurityOptions.Create(), CreateJwtOptions(), TestLocalizer.Create(), Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>());
+            var jwtOptions = CreateJwtOptions();
+            return new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create(), Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>(), new RefreshTokenService(context, jwtOptions));
         }
 
         [Fact]
@@ -56,15 +57,15 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context);
 
             // Act
-            var act = () => sut.LoginAsync(new LoginRequest { Email = "unverified@test.com", Password = Password });
+            var act = () => sut.LoginAsync(new LoginRequest { Email = "unverified@test.com", Password = Password }, TestClients.KitchenTablet);
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
             thrown.Which.StatusCode.Should().Be(401);
 
+            // refresh-tokens-own-table Scenario 41: a refused sign-in stores no refresh token
             using var verifyContext = database.CreateContext();
-            var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "unverified@test.com");
-            reloaded.RefreshTokenHash.Should().BeNull();
+            (await verifyContext.Set<RefreshToken>().CountAsync()).Should().Be(0);
         }
 
         [Fact]
@@ -108,10 +109,10 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context);
 
             // Act
-            var response = await sut.LoginAsync(new LoginRequest { Email = "toverify@test.com", Password = Password });
+            var response = await sut.LoginAsync(new LoginRequest { Email = "toverify@test.com", Password = Password }, TestClients.KitchenTablet);
 
             // Assert
-            response.Token.Should().NotBeNullOrEmpty();
+            response.Auth.Token.Should().NotBeNullOrEmpty();
             response.RefreshToken.Should().NotBeNullOrEmpty();
         }
     }

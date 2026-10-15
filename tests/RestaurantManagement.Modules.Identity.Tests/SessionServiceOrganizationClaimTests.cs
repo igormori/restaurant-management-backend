@@ -1,12 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.Extensions.Options;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Modules.Identity.Services;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Options;
 using Sentry;
 using Shouldly;
 
@@ -25,16 +23,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         private static SessionService CreateSut(IdentityDbContext context)
         {
-            var jwtOptions = Options.Create(new JwtOptions
-            {
-                Key = "test-signing-key-at-least-32-characters-long",
-                Issuer = "RestaurantManagementTests",
-                Audience = "RestaurantManagementTests",
-                ExpireMinutes = 60,
-                RefreshTokenExpireDays = 30
-            });
-
-            return new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create(), Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>());
+            var jwtOptions = TestJwtOptions.Create();
+            return new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create(), Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>(), new RefreshTokenService(context, jwtOptions));
         }
 
         private static async Task SeedUserAsync(IdentityTestDatabase database, params UserRole[] roles)
@@ -55,13 +45,13 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await seedContext.SaveChangesAsync();
         }
 
-        private static async Task<AuthResponse> LoginAsync(IdentityTestDatabase database)
+        private static async Task<SessionResult> LoginAsync(IdentityTestDatabase database)
         {
             using var context = database.CreateContext();
-            return await CreateSut(context).LoginAsync(new LoginRequest { Email = UserEmail, Password = Password });
+            return await CreateSut(context).LoginAsync(new LoginRequest { Email = UserEmail, Password = Password }, TestClients.KitchenTablet);
         }
 
-        private static string? OrganizationClaimOf(string token)
+        private static string? OrganizationClaimOf(string? token)
         {
             return new JwtSecurityTokenHandler().ReadJwtToken(token).Claims
                 .SingleOrDefault(c => c.Type == AppClaimTypes.OrganizationId)?.Value;
@@ -81,7 +71,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database);
 
             // Assert
-            OrganizationClaimOf(response.Token).ShouldBeNull();
+            OrganizationClaimOf(response.Auth.Token).ShouldBeNull();
         }
 
         // Scenario 30
@@ -96,7 +86,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database);
 
             // Assert
-            OrganizationClaimOf(response.Token).ShouldBeNull();
+            OrganizationClaimOf(response.Auth.Token).ShouldBeNull();
         }
 
         // Scenario 31
@@ -111,7 +101,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database);
 
             // Assert
-            OrganizationClaimOf(response.Token).ShouldBeNull();
+            OrganizationClaimOf(response.Auth.Token).ShouldBeNull();
         }
 
         // Scenario 32
@@ -126,7 +116,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database);
 
             // Assert
-            OrganizationClaimOf(response.Token).ShouldBe(CantinaOrganizationId.ToString());
+            OrganizationClaimOf(response.Auth.Token).ShouldBe(CantinaOrganizationId.ToString());
         }
 
         // Scenario 33
@@ -143,7 +133,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database);
 
             // Assert
-            OrganizationClaimOf(response.Token).ShouldBe(CantinaOrganizationId.ToString());
+            OrganizationClaimOf(response.Auth.Token).ShouldBe(CantinaOrganizationId.ToString());
         }
 
         // Scenario 34
@@ -158,10 +148,10 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(refreshContext);
 
             // Act
-            var refreshed = await sut.RefreshTokenAsync(new RefreshRequest { Email = UserEmail, RefreshToken = loginResponse.RefreshToken });
+            var refreshed = await sut.RefreshTokenAsync(loginResponse.RefreshToken);
 
             // Assert
-            OrganizationClaimOf(refreshed.Token).ShouldBe(CantinaOrganizationId.ToString());
+            OrganizationClaimOf(refreshed.Auth.Token).ShouldBe(CantinaOrganizationId.ToString());
         }
     }
 }

@@ -28,8 +28,13 @@ public class AuthRateLimitingTests : IDisposable
 
     public AuthRateLimitingTests()
     {
-        _factory.SessionService.LoginAsync(Arg.Any<LoginRequest>())
-            .Returns(new AuthResponse { Email = "user@example.com", FirstName = "A", LastName = "B" });
+        _factory.SessionService.LoginAsync(Arg.Any<LoginRequest>(), Arg.Any<ClientInfo>())
+            .Returns(new SessionResult
+            {
+                Auth = new AuthResponse { Email = "user@example.com", FirstName = "A", LastName = "B" },
+                RefreshToken = "cmF0ZS1saW1pdC10ZXN0LXJlZnJlc2gtdG9rZW4=",
+                RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(30)
+            });
         _factory.RegistrationService.RegisterAsync(Arg.Any<RegisterRequest>())
             .Returns(new AuthResponse { Email = "user@example.com", FirstName = "A", LastName = "B" });
     }
@@ -187,7 +192,7 @@ public class AuthRateLimitingTests : IDisposable
 
         await PostLoginAsync(client, IpA);
 
-        await _factory.SessionService.DidNotReceive().LoginAsync(Arg.Any<LoginRequest>());
+        await _factory.SessionService.DidNotReceive().LoginAsync(Arg.Any<LoginRequest>(), Arg.Any<ClientInfo>());
     }
 
     [Fact]

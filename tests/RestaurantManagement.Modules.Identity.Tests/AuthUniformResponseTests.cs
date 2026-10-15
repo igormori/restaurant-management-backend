@@ -38,7 +38,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         private static SessionService CreateSessionService(IdentityDbContext context)
         {
-            return new SessionService(context, TestSecurityOptions.Create(), CreateJwtOptions(), TestLocalizer.Create(), Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>());
+            var jwtOptions = CreateJwtOptions();
+            return new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create(), Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>(), new RefreshTokenService(context, jwtOptions));
         }
 
         private static VerificationService CreateVerificationService(IdentityDbContext context)
@@ -86,15 +87,15 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Act: login's three folded cases
             using var loginUnknownContext = database.CreateContext();
             var loginUnknownAct = () => CreateSessionService(loginUnknownContext)
-                .LoginAsync(new LoginRequest { Email = "nobody@test.com", Password = Password });
+                .LoginAsync(new LoginRequest { Email = "nobody@test.com", Password = Password }, TestClients.KitchenTablet);
 
             using var loginWrongPasswordContext = database.CreateContext();
             var loginWrongPasswordAct = () => CreateSessionService(loginWrongPasswordContext)
-                .LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" });
+                .LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
 
             using var loginUnverifiedContext = database.CreateContext();
             var loginUnverifiedAct = () => CreateSessionService(loginUnverifiedContext)
-                .LoginAsync(new LoginRequest { Email = "unverified@test.com", Password = Password });
+                .LoginAsync(new LoginRequest { Email = "unverified@test.com", Password = Password }, TestClients.KitchenTablet);
 
             var loginUnknownThrown = await loginUnknownAct.Should().ThrowAsync<BusinessException>();
             var loginWrongPasswordThrown = await loginWrongPasswordAct.Should().ThrowAsync<BusinessException>();

@@ -55,6 +55,39 @@ namespace RestaurantManagement.Modules.Identity.Services
             _organizationLookup = organizationLookup;
         }
 
+        // Stub (tester): T3 makes this the only constructor and uses the refresh token service.
+        public SessionService(
+            IdentityDbContext db,
+            IOptions<SecurityOptions> securityOptions,
+            IOptions<JwtOptions> jwtOptions,
+            IStringLocalizer<SharedResource> localizer,
+            IHub hub,
+            IOrganizationLookup organizationLookup,
+            IRefreshTokenService refreshTokenService)
+            : this(db, securityOptions, jwtOptions, localizer, hub, organizationLookup)
+        {
+        }
+
+        // Stub (tester): T3.
+        public Task<SessionResult> LoginAsync(LoginRequest request, ClientInfo client)
+            => throw new NotImplementedException();
+
+        // Stub (tester): T3.
+        public Task<SessionResult> RefreshTokenAsync(string? refreshToken)
+            => throw new NotImplementedException();
+
+        // Stub (tester): T3.
+        public Task<SessionResult> SelectOrganizationAsync(Guid userId, SelectOrganizationRequest request, string? refreshToken, ClientInfo client)
+            => throw new NotImplementedException();
+
+        // Stub (tester): T4.
+        public Task LogoutAsync(string? refreshToken)
+            => throw new NotImplementedException();
+
+        // Stub (tester): T4.
+        public Task LogoutAllAsync(Guid userId)
+            => throw new NotImplementedException();
+
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
             var email = request.Email.Trim().ToLowerInvariant();
