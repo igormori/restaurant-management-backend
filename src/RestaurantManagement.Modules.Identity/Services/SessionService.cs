@@ -3,7 +3,6 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Sentry;
-using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -28,6 +27,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         private readonly SecurityOptions _securityOptions;
         private readonly JwtOptions _jwtOptions;
         private readonly IStringLocalizer<SharedResource> _localizer;
+        private readonly IHub _hub;
 
         public SessionService(
             IdentityDbContext db,
@@ -40,6 +40,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             _securityOptions = securityOptions.Value;
             _jwtOptions = jwtOptions.Value;
             _localizer = localizer;
+            _hub = hub;
         }
 
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
@@ -49,24 +50,15 @@ namespace RestaurantManagement.Modules.Identity.Services
                 .Include(u => u.Roles)
                 .FirstOrDefaultAsync(u => u.Email == email);
 
-            // 🔒 Locked accounts keep their distinct, pre-existing response.
-            if (user != null && user.LockedUntil.HasValue && user.LockedUntil > DateTime.UtcNow)
-            {
-                var lockUntilText = user.LockedUntil.Value
-                    .ToLocalTime()
-                    .ToString("f", CultureInfo.CurrentUICulture);
-
-                throw new BusinessException(
-                    string.Format(_localizer["AccountLockedUntil"].Value, lockUntilText), 423
-                );
-            }
-
             // 🔑 Always verify a password, even when no user row exists, so an unregistered
             // email does equivalent work to a wrong password for a real account.
             var passwordHash = user?.PasswordHash ?? DummyPasswordHash;
             var isPasswordValid = VerifyPassword(request.Password, passwordHash);
 
-            if (user != null && !isPasswordValid)
+            // A locked account is not told it is locked, and attempts while locked do not extend the lock.
+            var isLocked = user != null && user.LockedUntil.HasValue && user.LockedUntil > DateTime.UtcNow;
+
+            if (user != null && !isLocked && !isPasswordValid)
             {
                 user.FailedAttempts++;
 
@@ -75,15 +67,15 @@ namespace RestaurantManagement.Modules.Identity.Services
                     user.LockedUntil = DateTime.UtcNow.AddMinutes(_securityOptions.LockoutDurationMinutes);
                     user.FailedAttempts = 0;
 
-                    SentrySdk.CaptureMessage($"{_localizer["AccountLocked"].Value}: {user.Email}");
+                    ReportLockout(user);
                 }
 
                 await _db.SaveChangesAsync();
             }
 
-            // Unknown email, wrong password, unverified and deactivated accounts all collapse into the
+            // Unknown email, wrong password, locked, unverified and deactivated accounts all collapse into the
             // same response so none of them can be told apart from the outside.
-            if (user == null || !isPasswordValid || !user.IsVerified || !user.IsActive)
+            if (user == null || isLocked || !isPasswordValid || !user.IsVerified || !user.IsActive)
                 throw new BusinessException(_localizer["InvalidEmailOrPassword"].Value, 401);
 
             // ✅ Success → reset counters
@@ -108,6 +100,16 @@ namespace RestaurantManagement.Modules.Identity.Services
                 Token = jwt,
                 RefreshToken = refreshToken
             };
+        }
+
+        // The user ID, never the email, so personal data stays out of Sentry.
+        private void ReportLockout(User user)
+        {
+            _hub.CaptureEvent(new SentryEvent
+            {
+                Level = SentryLevel.Info,
+                Message = new SentryMessage { Formatted = $"{_localizer["AccountLocked"].Value}: {user.Id}" }
+            });
         }
 
         public async Task<AuthResponse> RefreshTokenAsync(RefreshRequest request)

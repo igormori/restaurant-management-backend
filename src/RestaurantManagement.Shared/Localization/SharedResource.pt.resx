@@ -63,9 +63,6 @@
   <data name="AccountLocked" xml:space="preserve">
     <value>Sua conta foi bloqueada devido a várias tentativas de login malsucedidas.</value>
   </data>
-  <data name="AccountLockedUntil" xml:space="preserve">
-    <value>Sua conta está bloqueada até {0}. Tente novamente mais tarde.</value>
-  </data>
   <data name="VerificationLockedUntil" xml:space="preserve">
     <value>Muitas tentativas de verificação malsucedidas. Tente novamente após {0}.</value>
   </data>
