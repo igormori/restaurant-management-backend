@@ -1,6 +1,6 @@
 # Plan: Refresh tokens in their own table
 
-**Spec:** docs/specs/identity/2026-10-15-refresh-tokens-own-table.md   **Date:** 2026-10-15   **Status:** In progress
+**Spec:** docs/specs/identity/2026-10-15-refresh-tokens-own-table.md   **Date:** 2026-10-15   **Status:** Done
 **Risk:** High — new table plus dropping two columns from `users` (which has data), auth flow and API (Application Programming Interface) contract change, new public endpoint, CORS (Cross-Origin Resource Sharing) change
 
 ## Summary
@@ -27,10 +27,10 @@ everywhere", and finally drop the old single-token columns from `users`.
 | T5 | — | — | Migration drops `users.refresh_token_hash` and `users.refresh_token_expiry` (data loss by design: every user signs in again) |
 
 ## Overall Definition of Done
-- [ ] All tasks done, tests passing
-- [ ] All spec Outcomes met
-- [ ] Full test suite green after the last batch
-- [ ] No out-of-scope changes; findings in the backlog
+- [x] All tasks done, tests passing
+- [x] All spec Outcomes met
+- [x] Full test suite green after the last batch
+- [x] No out-of-scope changes; findings in the backlog
 
 ## Checklist
 - [x] T1 — Refresh token table and entity
