@@ -37,4 +37,4 @@ everywhere", and finally drop the old single-token columns from `users`.
 - [x] T2 — Refresh token service: issue, rotate, reuse detection, revoke
 - [x] T3 — Sign-in, refresh and organization selection use per-device tokens in a cookie
 - [x] T4 — Logout (this device) and sign out everywhere endpoints
-- [ ] T5 — Drop the old single-token columns from users
+- [x] T5 — Drop the old single-token columns from users
