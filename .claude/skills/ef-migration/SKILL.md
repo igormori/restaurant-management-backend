@@ -38,9 +38,11 @@ Open the generated file under `src/RestaurantManagement.Modules.<Module>/Migrati
   on a table that already has rows.
 - Column names follow the existing snake_case convention.
 
-Never hand-edit a generated migration. If it is wrong, remove it, fix the model, and generate again.
+Never hand-edit a generated migration, with one exception: adding a `migrationBuilder.Sql`
+data backfill, which must be flagged in the plan (it makes the feature High risk). For
+anything else that is wrong, remove the migration, fix the model, and generate again.
 
-## Apply it
+## Apply it (asks the user for approval)
 
 ```bash
 dotnet ef database update \

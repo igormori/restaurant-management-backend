@@ -1,15 +1,24 @@
 ---
-description: Implement a feature against its approved failing tests (steps 4 and 5)
+description: Implement against the approved failing tests, then review (steps 4–5, Gate 2)
 argument-hint: <module>/<feature> [branch or ticket ID]
 ---
 
-Only run this after I approved the scenarios and tests in docs/plans/<module>/<feature>.md.
+The first argument is `<module>/<feature>` (plan at docs/plans/<module>/<feature>.md); an
+optional second argument is the branch name or ticket ID. Arguments: $ARGUMENTS
 
-Use the implementer subagent to implement: $ARGUMENTS
-The first argument is `<module>/<feature>` (plan at docs/plans/<module>/<feature>.md);
-an optional second argument is the branch name or ticket ID.
+Check before starting:
+- docs/plans/<module>/<feature>.md exists and has a `## Scenarios` table.
+If not, stop and tell me to run `/feature` or `/test` first.
 
-When it returns, show me the code review summary: the branch, each commit with the scenarios
-it covers, the files changed, any deviation from the approved structure and why, what the
-tests do not cover, and the final test results. Then stop and wait for me.
-Do not push or open a pull request.
+1. Use the implementer subagent to implement it, passing both arguments.
+   If it stops early, show me why and stop.
+2. Use the pr-reviewer subagent to review the branch against main.
+
+⏸ Gate 2. Show me, in this order:
+- Branch, and each commit with the scenarios it covers
+- Deviations from the approved structure, and why
+- What the tests do not cover
+- The pr-reviewer's verdict, Critical and Warnings
+- Final test results
+
+Then stop and wait. Do not push or open a pull request.

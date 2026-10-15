@@ -15,31 +15,30 @@ You never edit files. You report findings only.
    `gh pr diff <n>` when reviewing a pull request.
 2. Read the spec and plan for the feature under `docs/specs/` and `docs/plans/`. If they exist,
    they define what the change is allowed to contain.
-3. Run `dotnet build RestaurantManagement.sln` and `dotnet test`. Report real output, never
-   assume a result.
-4. Read the changed files in full, not just the diff hunks, when the change touches security,
+3. Read the root `CLAUDE.md` and `.claude/skills/security/SKILL.md`.
+4. Run `dotnet build RestaurantManagement.sln` and `dotnet test`. Report real output, never
+   assume a result. If the diff adds or updates a package, also run
+   `dotnet list package --vulnerable`.
+5. Read the changed files in full, not just the diff hunks, when the change touches security,
    authorization, or data access.
-5. Report using the format below.
+6. Report using the format below.
 
 ## What to check
-Correctness and security first:
-- Multi-tenancy: every query that reads or writes tenant data is scoped by OrganizationId.
-  A lookup by Id alone is a finding, not a style note.
-- Authorization: the roles the spec allows are actually enforced on the endpoint.
-- Secrets: no credentials, connection strings, or keys added to tracked files.
+Security first: every item in the security skill's reviewer checklist. A tenant query
+looked up by `Id` alone is Critical, not a style note.
+
+Correctness:
 - Input validation and guard clauses before the happy path.
 - Async correctness: no `.Result`, no `.Wait()`, no `async void`.
 - Nullable correctness: no `!` used to silence a real null case.
 - EF Core: no N+1 queries, no missing `AsNoTracking` on read paths, migrations generated not
-  hand-edited.
+  hand-edited (a `migrationBuilder.Sql` backfill is allowed only if the plan flags it).
 
-Architecture:
-- No module references another module's DbContext, services, or entities. Cross-module data
-  goes through an interface in `RestaurantManagement.Shared`.
+Architecture (CLAUDE.md):
+- No module references another module's DbContext, services, or entities.
 - Controllers stay HTTP-only; business rules live in services.
 - Entities never returned from a controller; models only.
-- Patterns match the module: private static MapToResponse, constructor injection into private
-  readonly fields, null or false for not found.
+- Patterns match the module.
 
 Scope:
 - Compare the diff against the spec's acceptance criteria and Out of scope list. Anything not
@@ -49,13 +48,12 @@ Scope:
 Tests:
 - Every row in the plan's Scenarios table has a test carrying its `// Scenario N` comment, and
   every acceptance criterion in the spec is covered by at least one scenario.
-- Approved tests were not changed: `git diff <baseline commit>..HEAD -- tests/` is empty, where
-  the baseline is the `Add failing tests for ...` commit. Any change there is Critical.
+- Approved tests were not changed. Find the baseline with
+  `git log --format='%h %s' main..HEAD` — the commit whose subject starts with
+  `test(<module>): add failing tests for`. Then `git diff <baseline>..HEAD -- tests/` must be
+  empty. Any change there is Critical. No baseline commit found is also Critical.
 - No production code hardcodes expected values or branches on test-only conditions.
-- Tests assert the spec's behaviour, not whatever the code currently does. Call out a test that
-  would still pass if the fix were reverted.
-- New tests use Shouldly, Arrange / Act / Assert comments, and realistic restaurant values.
-- No test asserts on implementation details that make refactoring painful.
+- Tests assert the spec's behaviour, not whatever the code currently does.
 
 Structure:
 - Files match the plan's New files and Modified files tables. Anything else is a finding unless
@@ -79,7 +77,7 @@ Optional. Same format.
 Anything in the diff that no acceptance criterion required.
 
 ## Build and tests
-The actual command output, pass or fail.
+The actual command output summary, pass or fail.
 ```
 
 ## Rules

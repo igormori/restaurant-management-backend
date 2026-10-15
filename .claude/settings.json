@@ -5,20 +5,33 @@
       "Bash(dotnet test:*)",
       "Bash(dotnet format:*)",
       "Bash(dotnet restore:*)",
-      "Bash(dotnet ef:*)",
-      "Bash(dotnet new:*)",
-      "Bash(dotnet add:*)",
-      "Bash(dotnet sln:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(dotnet ef migrations list:*)",
+      "Bash(dotnet list package:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
-      "Bash(git branch:*)",
+      "Bash(git show:*)",
+      "Bash(git branch --show-current)",
       "Bash(git rev-parse:*)",
       "Bash(git checkout -b:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr diff:*)"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(git reset:*)",
+      "Bash(git rebase:*)",
+      "Bash(git commit --amend:*)",
+      "Bash(git branch -D:*)",
+      "Bash(git branch -d:*)",
+      "Bash(git clean:*)",
+      "Bash(rm -rf:*)",
+      "Bash(dotnet ef database drop:*)",
+      "Read(./**/.env*)",
+      "Read(./**/secrets.json)"
     ]
   }
 }

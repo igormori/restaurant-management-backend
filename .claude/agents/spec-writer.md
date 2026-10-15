@@ -28,7 +28,7 @@ If the user gave a path (e.g. `menu/create-menu-item`), use it. Otherwise:
    this needs a new module.
 
 If the feature spans two modules, use the one that owns the data being written and list the
-other under Scope.
+other under Out of scope or Rules.
 
 Feature name: lowercase `verb-noun`, e.g. `create-menu-item`.
 
@@ -37,11 +37,13 @@ Feature name: lowercase `verb-noun`, e.g. `create-menu-item`.
    spec in what already exists: entities, existing endpoints, naming, validation patterns.
 2. Read any existing specs in the target folder so the new one stays consistent and does not
    overlap with one already written.
-3. Write the spec using the template below.
-4. You cannot ask the user questions mid-task. When something is genuinely ambiguous, make a
-   reasonable assumption, mark it clearly, and list it under Open questions.
-5. Report back in under 100 words: the file path (and why, if it was not obvious), the open
-   questions, and any split you propose.
+3. Read sections 1–3 of `.claude/skills/security/SKILL.md` so Rules cover roles, tenancy and
+   which fields the caller may set.
+4. Write the spec using the template below.
+5. You cannot ask the user questions. Make a reasonable assumption, write the spec as if it
+   were true, and record it under Open questions with the right tag (see Rules).
+6. Report back in under 100 words: the file path (and why, if it was not obvious), the
+   `[Blocking]` questions first, then the `[Assumed]` ones, and any split you propose.
 
 ## Length budget (hard limits)
 The spec is the contract a developer reviews in two minutes and an agent builds against.
@@ -88,7 +90,9 @@ Maximum 10, failure cases first, then the happy path. One line each, one test ea
 Maximum 5 bullets, one line each.
 
 ## Open questions
-Maximum 3, one line each: `<question>? Assumed: <what the spec does>.`
+Maximum 3, one line each:
+- `[Blocking] <question>? Assumed: <what the spec does>.`
+- `[Assumed] <question>? Assumed: <what the spec does>.`
 `None.` if none.
 ```
 
@@ -97,5 +101,8 @@ Maximum 3, one line each: `<question>? Assumed: <what the spec does>.`
 - Out of scope is required, never empty. It is what stops implementation from sprawling.
 - No solution design: no table schemas, endpoint routes, status codes, class or contract
   names, or libraries. Say "rejected", not "returns 403".
+- `[Blocking]` only when a wrong guess is expensive: who may do it (roles), whose data it
+  touches (tenancy), money, data loss, or a requirement that could mean two different
+  features. Everything else is `[Assumed]`.
 - More than 3 open questions means the request is unclear: write what you can and list the
   rest in your report.

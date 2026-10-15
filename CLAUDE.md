@@ -15,14 +15,16 @@
 - Web is the host: it registers the modules; each module owns its own controllers
 - Multi-tenant: data belongs to an organization; always scope queries by OrganizationId
 - Roles: Owner, Admin, Staff
+- Security rules: `.claude/skills/security/SKILL.md`. Every agent that plans, writes, tests or
+  reviews code reads it first
 
 ## Commands
 - Build: `dotnet build RestaurantManagement.sln`
 - Test: `dotnet test`
 - Format: `dotnet format`
 - Run: `dotnet run --project src/RestaurantManagement.Web` (Swagger at /swagger)
-- New migration:
-  `dotnet ef migrations add <Name> --project src/RestaurantManagement.Modules.<Module> --startup-project src/RestaurantManagement.Web --context <Module>DbContext`
+- Migrations: follow `.claude/skills/ef-migration/SKILL.md`
+- Vulnerable packages: `dotnet list package --vulnerable`
 - Build and tests must pass before a task is done
 - Never commit secrets (connection strings, JWT key)
 
@@ -40,7 +42,7 @@ Scenarios: 1–3
 
 - Types: `feat`, `fix`, `test`, `refactor`, `perf`, `docs`, `ci`, `build`, `chore`, `revert`
 - Scope: the module or area, lowercase: `identity`, `menu`, `organization`, `shared`, `web`,
-  `deps`, `infra`, `claude`
+  `deps`, `infra`, `claude`. A new module adds its scope here and to the hook
 - Summary: lowercase, imperative, no trailing period, 72 characters max for the whole line;
   says what changed and its effect, e.g.
   `fix(identity): return a generic 401 for locked accounts`
@@ -83,14 +85,9 @@ Rules:
 - Async all the way; never `.Result` or `.Wait()`
 - Constructor injection into `private readonly` fields
 - Models are classes with `{ get; set; }` properties, matching the existing Models folders
-
-## SOLID
-All generated code must follow SOLID:
-- **Single responsibility**: one reason to change per class (already enforced above — split classes doing two jobs)
-- **Open/closed**: prefer adding a new implementation over editing a class to branch on type; use interfaces/polymorphism instead of switch/if chains on a type code
-- **Liskov substitution**: an interface implementation must be usable anywhere the interface is expected, with no surprising behavior or narrowed preconditions
-- **Interface segregation**: keep interfaces (e.g. cross-module contracts in Shared) small and focused; don't force implementers to satisfy methods they don't need
-- **Dependency inversion**: services depend on abstractions (interfaces), not concrete implementations, for anything injected via constructor — this is already the pattern for cross-module contracts and should extend to services generally
+- SOLID (Single responsibility, Open/closed, Liskov substitution, Interface segregation,
+  Dependency inversion): services depend on interfaces; cross-module contracts stay small
+- Prefer polymorphism over switch/if chains on a type code
 
 ## Testing standards
 - xUnit, Shouldly for assertions, NSubstitute for mocks
@@ -105,12 +102,14 @@ All generated code must follow SOLID:
   e.g. `DetectWaste_PurchasesExceedUsageBy25Percent_ReturnsVarianceAlert`
 - Every test has explicit `// Arrange`, `// Act`, `// Assert` comments; one behavior per test
 - Realistic restaurant values (grams, dish names, prices in BRL), never `foo`/`bar`/`123`
+- No logic in tests: no loops or conditionals deciding what to assert
 - Cover the failure cases first, then the happy path
 - Bug fixes start with a failing test that reproduces the bug
 
 ## How to work
-- State assumptions. If something is ambiguous, ask in chat; in a subagent or CI run,
-  list open questions in your output instead of guessing silently
+- Assume, don't ask, unless a wrong guess is expensive. Record every assumption in your
+  output. Ask (or mark `[Blocking]` in a subagent) only for roles, tenancy, money, data loss,
+  or a requirement that could mean two different features
 - Minimum code that solves the request: no speculative features, abstractions, or config
 - Small slices: one spec is one behaviour, reviewable in about 5 minutes. Split when a plan has
   more than 10 files or more than 3 open decisions. Ship shared infrastructure and data
@@ -119,19 +118,27 @@ All generated code must follow SOLID:
 - Remove only the unused code your own change created
 
 ## Workflow
-Test-first. Every step ending in ⏸ stops for the user's approval; never skip ahead.
+Test-first, with two human gates (⏸). Reviewer agents run automatically between steps and only
+stop the flow when something is wrong.
 
-1. Spec (`/spec`): the user gives the requirements; the spec-writer writes the spec in the
-   owning module as `docs/specs/<module>/<feature>.md`. Ask about anything
-   ambiguous before continuing.
-2. Structure plan (`/plan`) ⏸: `docs/plans/<module>/<feature>.md` with New files and
-   Modified files tables, signatures, and the patterns followed.
-3. Scenarios + tests (`/test`) ⏸: create stubs that throw `NotImplementedException`, add the
-   scenario table to the plan, write one test per scenario, and show them failing.
-4. Implement (`/implement`): commit the approved stubs and tests, then one task at a time,
-   each making named scenarios pass, with the full suite green and a commit per task.
-5. Summary ⏸: files changed, deviations from the approved structure, what the tests don't cover.
-   Then `/review`.
+- `/feature <requirement>` runs steps 1–3 and stops at Gate 1.
+- `/implement <module>/<feature> [branch or ticket]` runs steps 4–5 and stops at Gate 2.
+- Single steps when needed: `/spec`, `/plan`, `/test`, `/review`, `/fixbug`.
 
-After the tests are approved in step 3, test files are read-only: never edit, delete, skip or
-weaken a test. If a test looks wrong, stop and say why.
+1. Spec: spec-writer writes `docs/specs/<module>/<feature>.md`. Stops only if it has
+   `[Blocking]` questions.
+2. Plan: planner writes `docs/plans/<module>/<feature>.md`; plan-reviewer checks it.
+   Stops only on "Fix first" or High risk.
+3. Tests: tester writes stubs, the `## Scenarios` table and failing tests; test-reviewer checks
+   them, and the tester fixes its findings once.
+   ⏸ Gate 1: the user approves the Scenarios table.
+4. Implement: implementer commits the baseline (spec, plan, stubs, tests), then one task per
+   commit with the full suite green.
+5. Review: pr-reviewer reviews the branch.
+   ⏸ Gate 2: the user reads the summary and review, then pushes and merges.
+
+High risk (always stops after the plan): new Shared contract, auth or role changes, new module,
+migration on a table that has data or with a backfill, new NuGet package.
+
+After Gate 1, test files are read-only: never edit, delete, skip or weaken a test. If a test
+looks wrong, stop and say why.
