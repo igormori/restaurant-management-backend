@@ -31,5 +31,5 @@
 ## Checklist
 - [x] T1 — Verification hash key configuration and startup check
 - [x] T2 — Verification code hasher
-- [ ] T3 — Store and check codes as fingerprints
+- [x] T3 — Store and check codes as fingerprints
 - [ ] T4 — Retire existing readable codes (migration backfill)

@@ -23,6 +23,7 @@ newer resend.
 Registration swallows email-send failures and returns 200 with an unverified account.
 Resend throws BusinessException(500) on the same failure. The asymmetry is deliberate.
 Verification codes are generated with RandomNumberGenerator, never new Random().
+Codes are stored only as keyed fingerprints (CodeHash); the readable code goes only to the email.
 SendVerificationEmailAsync(to, firstName, code, expiryMinutes) takes three adjacent
 string parameters with no compiler protection against swapping them.
 UniqueEmailIndexTests run against a real Postgres via Testcontainers (IdentityPostgresFixture)
