@@ -1,6 +1,6 @@
 # Plan: Tighten user roles and add permissions in code
 
-**Spec:** docs/specs/identity/2026-10-15-tighten-user-roles-and-permissions.md   **Date:** 2026-10-15   **Status:** In progress
+**Spec:** docs/specs/identity/2026-10-15-tighten-user-roles-and-permissions.md   **Date:** 2026-10-15   **Status:** Done
 **Risk:** High — schema change on `user_roles`, new default authorization for every endpoint, new Shared contract, Staff role removed
 
 ## Summary
@@ -33,10 +33,10 @@ Terms used below:
 No raw SQL in production code. No new library or test project.
 
 ## Overall Definition of Done
-- [ ] All tasks done, tests passing
-- [ ] All spec Outcomes met
-- [ ] Full test suite green after the last batch
-- [ ] No out-of-scope changes; findings in the backlog
+- [x] All tasks done, tests passing
+- [x] All spec Outcomes met
+- [x] Full test suite green after the last batch
+- [x] No out-of-scope changes; findings in the backlog
 
 ## Checklist
 - [x] T1 — New roles, permission list and role-to-permission map
