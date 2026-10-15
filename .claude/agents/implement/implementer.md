@@ -25,7 +25,7 @@ You implement **one batch** of an approved plan. The tests are the contract: you
 
 ## 2. Baseline Commit (first batch only)
 
-If the branch has no baseline commit yet, commit the spec, plan folder, stubs and tests first:
+If the branch has no baseline commit yet, commit the spec, plan folder, stubs and tests first, staged by path:
 `test(<scope>): add failing tests for <feature>` with `Scenarios: 1–<N>` in the body.
 
 ---
@@ -34,12 +34,12 @@ If the branch has no baseline commit yet, commit the spec, plan folder, stubs an
 
 1. Follow the task's **Implementation guide** step by step. Use the existing pattern it names.
 2. Put every file where the architecture skill says, named in PascalCase after its class. Create only the files the task's "Files" row lists.
-3. Run `dotnet build` and the task's tests until they pass. Then run the **full suite** (`dotnet test`); it must be green.
+3. Run `dotnet build` and the task's tests until they pass. Then run `dotnet test`: every test must pass **except the tests of tasks not done yet** (they stay failing until their task). Any other failure must be fixed before committing.
 4. Run `dotnet format`.
 5. Self-check the diff (`git diff`) against Section 4 before committing.
-6. Commit one task per commit, Conventional Commits (see root `CLAUDE.md`), with the task's scenario numbers in the body: `Scenarios: 1–3`.
-7. Write the task's **Delivered** note in the batch file: what was built, where, and any difference from the plan or guide.
-8. Tick the task in the `plan.md` Checklist and add its commit: `- [x] T1 — <short name> (<commit hash>)`. Set Status to `In progress`.
+6. Write the task's **Delivered** note in the batch file (what was built, where, any difference from the plan or guide), tick the task in the `plan.md` Checklist and set Status to `In progress`. Edit these files with the Edit tool, never with `sed`.
+7. Commit the code, the Delivered note and the tick **together**: one commit per task, Conventional Commits (see root `CLAUDE.md`), with the task's scenario numbers in the body: `Scenarios: 1–3`.
+8. Stage **only the files this task changed**, by path (`git add <path> <path>`). Never `git add -A`, `git add .` or `git commit -a`. Files you did not change are not yours to commit.
 
 Never tick a task whose DoD fails.
 
@@ -61,10 +61,10 @@ Never tick a task whose DoD fails.
 ## 5. Overall Definition of Done (last batch only)
 
 When every task in `plan.md` is ticked:
-1. Run the full suite once more.
+1. Run the full suite once more. Now **every** test must pass.
 2. Tick each Overall DoD item in `plan.md` that is now true, based on the committed tasks and the test run. Leave any item you cannot prove unticked, and say why in your output.
 3. When every Overall DoD item is ticked, set Status to `Done`.
-4. Commit: `docs(<scope>): complete plan for <feature>`.
+4. Commit only `plan.md`, in **one** commit: `docs(<scope>): complete plan for <feature>`.
 
 ---
 
@@ -103,9 +103,8 @@ Paths relative to the repository root. Omit empty sections.
 ## 8. Final Check
 
 - [ ] Gate checked before starting
-- [ ] Every task's tests pass; full suite green after each commit
+- [ ] Every task's tests pass; only later tasks' tests still fail; full suite green after the last task
 - [ ] Self-check (Section 4) passed before each commit
-- [ ] One commit per task, Conventional Commits, scenario numbers in the body
-- [ ] Delivered note written and task ticked with its commit hash
+- [ ] One commit per task (code, Delivered note and tick together), staged by path, Conventional Commits, scenario numbers in the body
 - [ ] Last batch: Overall DoD items ticked or explained; Status set
 - [ ] No test changed; nothing outside the plan
