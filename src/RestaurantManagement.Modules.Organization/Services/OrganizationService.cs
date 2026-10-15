@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
+using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
@@ -18,6 +19,7 @@ namespace RestaurantManagement.Modules.Organization.Services
         private readonly OrganizationDbContext _orgDb;
         private readonly IUserRoleLookup _userRoleLookup;
         private readonly IUserRoleAssigner _userRoleAssigner;
+        private readonly ITenantScope _tenantScope;
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly ILogger<OrganizationService> _logger;
 
@@ -25,12 +27,14 @@ namespace RestaurantManagement.Modules.Organization.Services
             OrganizationDbContext orgDb,
             IUserRoleLookup userRoleLookup,
             IUserRoleAssigner userRoleAssigner,
+            ITenantScope tenantScope,
             IStringLocalizer<SharedResource> localizer,
             ILogger<OrganizationService> logger)
         {
             _orgDb = orgDb;
             _userRoleLookup = userRoleLookup;
             _userRoleAssigner = userRoleAssigner;
+            _tenantScope = tenantScope;
             _localizer = localizer;
             _logger = logger;
         }
@@ -82,6 +86,10 @@ namespace RestaurantManagement.Modules.Organization.Services
                 UpdatedAt = DateTime.UtcNow
             };
             _orgDb.Organizations.Add(org);
+
+            // The new organization does not exist in the user's token yet, so the audit
+            // interceptor and the role assignment must see it through the scope.
+            using var tenantScope = _tenantScope.Begin(org.Id);
 
             // 2. Create Trial Settings
             var settings = new OrganizationSettings

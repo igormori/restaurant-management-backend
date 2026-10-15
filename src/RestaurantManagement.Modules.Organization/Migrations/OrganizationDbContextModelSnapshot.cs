@@ -48,6 +48,10 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_user_id");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text")
@@ -80,6 +84,10 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by_user_id");
+
                     b.HasKey("Id")
                         .HasName("pk_locations");
 
@@ -103,6 +111,10 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_user_id");
 
                     b.Property<string>("Description")
                         .HasColumnType("text")
@@ -135,6 +147,10 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by_user_id");
+
                     b.HasKey("Id")
                         .HasName("pk_organizations");
 
@@ -151,6 +167,10 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_user_id");
 
                     b.Property<bool>("IsTrialActive")
                         .HasColumnType("boolean")
@@ -176,6 +196,10 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by_user_id");
 
                     b.HasKey("Id")
                         .HasName("pk_organization_settings");

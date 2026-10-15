@@ -1,22 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using RestaurantManagement.Shared.Data;
 
 namespace RestaurantManagement.Modules.Menu.Entities
 {
     [Table("menu_categories")]
-    public class MenuCategory
+    public class MenuCategory : TenantEntity
     {
-        [Key]
-        [Column("id")]
-        public Guid Id { get; set; }
-
         [Required]
         [Column("menu_id")]
         public Guid MenuId { get; set; }
-
-        [Required]
-        [Column("organization_id")]
-        public Guid OrganizationId { get; set; }
 
         [Column("location_id")]
         public Guid? LocationId { get; set; }
@@ -31,9 +24,6 @@ namespace RestaurantManagement.Modules.Menu.Entities
 
         [Column("sort_order")]
         public int SortOrder { get; set; } = 0;
-
-        [Column("created_at")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
         [ForeignKey("MenuId")]

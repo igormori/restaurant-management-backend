@@ -1,0 +1,39 @@
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace RestaurantManagement.Modules.Identity.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddAuditFields : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<Guid>(
+                name: "created_by_user_id",
+                table: "user_roles",
+                type: "uuid",
+                nullable: true);
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "updated_by_user_id",
+                table: "user_roles",
+                type: "uuid",
+                nullable: true);
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "created_by_user_id",
+                table: "user_roles");
+
+            migrationBuilder.DropColumn(
+                name: "updated_by_user_id",
+                table: "user_roles");
+        }
+    }
+}
