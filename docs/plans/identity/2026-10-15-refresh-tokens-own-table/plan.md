@@ -1,6 +1,6 @@
 # Plan: Refresh tokens in their own table
 
-**Spec:** docs/specs/identity/2026-10-15-refresh-tokens-own-table.md   **Date:** 2026-10-15   **Status:** Draft
+**Spec:** docs/specs/identity/2026-10-15-refresh-tokens-own-table.md   **Date:** 2026-10-15   **Status:** In progress
 **Risk:** High — new table plus dropping two columns from `users` (which has data), auth flow and API (Application Programming Interface) contract change, new public endpoint, CORS (Cross-Origin Resource Sharing) change
 
 ## Summary
@@ -33,7 +33,7 @@ everywhere", and finally drop the old single-token columns from `users`.
 - [ ] No out-of-scope changes; findings in the backlog
 
 ## Checklist
-- [ ] T1 — Refresh token table and entity
+- [x] T1 — Refresh token table and entity
 - [ ] T2 — Refresh token service: issue, rotate, reuse detection, revoke
 - [ ] T3 — Sign-in, refresh and organization selection use per-device tokens in a cookie
 - [ ] T4 — Logout (this device) and sign out everywhere endpoints
