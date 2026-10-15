@@ -16,6 +16,7 @@ import sys
 
 # ---------------- CONFIG ----------------
 MAX_LINES = 200  # production .cs files (generated migrations excluded)
+PROGRAM_MAX_LINES = 300  # Program.cs (composition root)
 
 MODULE_FOLDERS = "Controllers|Services|Data|Entities|Models"
 PASCAL = r"[A-Z][A-Za-z0-9]*"
@@ -100,9 +101,10 @@ def main() -> None:
     # 2. Line limit for production C# files
     if rel.endswith(".cs") and not any(re.search(p, rel) for p in LINE_LIMIT_EXEMPT):
         lines = new_content.count("\n") + 1
-        if lines > MAX_LINES:
+        limit = PROGRAM_MAX_LINES if os.path.basename(rel) == "Program.cs" else MAX_LINES
+        if lines > limit:
             block(
-                f"{rel} would have {lines} lines (limit {MAX_LINES}). The class likely does more "
+                f"{rel} would have {lines} lines (limit {limit}). The class likely does more "
                 "than one job: split it by responsibility (clean-code skill)."
             )
 
