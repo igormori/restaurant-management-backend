@@ -126,6 +126,13 @@ Fixed values: Org A `a1a1a1a1-...-0001`, Org B `b2b2b2b2-...-0002`, Org C `c3c3c
 | 45 | ICurrentUser registered | Web host built | Resolve ICurrentUser in a scope | ClaimsCurrentUser |
 | 46 | Tenant scope is a singleton | Web host built | Resolve ITenantScope from two scopes | Same instance |
 
+## Tasks
+1. [x] TenantScope (AsyncLocal) — scenarios 23–28
+2. AuditSaveChangesInterceptor — scenarios 1–22
+3. ClaimsCurrentUser — scenarios 35–41
+4. SessionService org claim — scenarios 29–34
+5. Program.cs wiring (lifetimes, interceptor on all DbContexts) — scenarios 42–46
+
 ## Flags
 - A2 (decided): explicit scope overrides the claim; only a differing entity org is rejected. Begin is only for organization creation; /review checks every call.
 - A3: claim auto-set for exactly one org; GenerateJwt is shared, so refresh reissues it too.
