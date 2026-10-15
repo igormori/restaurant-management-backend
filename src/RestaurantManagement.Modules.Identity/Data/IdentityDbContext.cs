@@ -33,11 +33,19 @@ namespace RestaurantManagement.Modules.Identity.Data
                     .HasDatabaseName(UniqueEmailIndexName);
             });
 
-            modelBuilder.Entity<UserRole>()
-                .HasOne(r => r.User)
-                .WithMany(u => u.Roles)
-                .HasForeignKey(r => r.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<UserRole>(entity =>
+            {
+                entity.HasOne(r => r.User)
+                    .WithMany(u => u.Roles)
+                    .HasForeignKey(r => r.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Nulls-not-distinct so two "all locations" (null) rows count as duplicates.
+                entity.HasIndex(r => new { r.UserId, r.OrganizationId, r.LocationId, r.Role })
+                    .IsUnique()
+                    .AreNullsDistinct(false)
+                    .HasDatabaseName(UniqueUserRoleIndexName);
+            });
 
             // Codes are owned by the user and useless without them, so they go with the user.
             modelBuilder.Entity<UserVerificationCode>()

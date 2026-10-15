@@ -40,6 +40,6 @@ No raw SQL in production code. No new library or test project.
 
 ## Checklist
 - [x] T1 — New roles, permission list and role-to-permission map
-- [ ] T2 — Role assignment needs an organization; no duplicates
+- [x] T2 — Role assignment needs an organization; no duplicates
 - [ ] T3 — Permission policies and private-by-default endpoints
 - [ ] T4 — Remove the Staff role

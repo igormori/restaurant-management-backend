@@ -198,7 +198,7 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("location_id");
 
-                    b.Property<Guid?>("OrganizationId")
+                    b.Property<Guid>("OrganizationId")
                         .HasColumnType("uuid")
                         .HasColumnName("organization_id");
 
@@ -222,8 +222,11 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                     b.HasKey("Id")
                         .HasName("pk_user_roles");
 
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_user_roles_user_id");
+                    b.HasIndex("UserId", "OrganizationId", "LocationId", "Role")
+                        .IsUnique()
+                        .HasDatabaseName("ix_user_roles_user_id_organization_id_location_id_role");
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("UserId", "OrganizationId", "LocationId", "Role"), false);
 
                     b.ToTable("user_roles", (string)null);
                 });

@@ -17,8 +17,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         public async Task<List<OrganizationChoice>> GetActiveChoicesAsync(User user)
         {
             var organizationIds = user.Roles
-                .Where(r => r.OrganizationId.HasValue)
-                .Select(r => r.OrganizationId!.Value)
+                .Select(r => r.OrganizationId)
                 .Distinct()
                 .ToList();
             if (organizationIds.Count == 0)
