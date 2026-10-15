@@ -82,7 +82,8 @@ public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixtur
     private static async Task<string> ReadIsNullableAsync(DbContext context, string table, string column)
     {
         var connection = context.Database.GetDbConnection();
-        await connection.OpenAsync();
+        if (connection.State == System.Data.ConnectionState.Closed)
+            await connection.OpenAsync();
         await using var command = connection.CreateCommand();
         command.CommandText = "SELECT is_nullable FROM information_schema.columns WHERE table_name = @t AND column_name = @c";
         command.Parameters.Add(new NpgsqlParameter("t", table));
