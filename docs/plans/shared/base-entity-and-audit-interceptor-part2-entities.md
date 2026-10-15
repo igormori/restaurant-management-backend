@@ -131,6 +131,6 @@ Security coverage: no new endpoint or role. Cross-tenant write is MenuAuditTests
 
 ## Tasks
 1. [x] Open a tenant scope for the new organization in OrganizationService — Organization scenarios 1–6
-2. [ ] Organization AddAuditFields migration — migration scenarios 7, 10
+2. [x] Organization AddAuditFields migration — migration scenarios 7, 10
 3. [ ] Identity AddAuditFields migration — migration scenarios 8, 11
 4. [ ] Menu AddAuditFields migration with backfills — migration scenarios 1–6, 9
