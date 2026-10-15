@@ -10,12 +10,16 @@ using Sentry;
 
 // Shared
 using RestaurantManagement.Shared;
+using RestaurantManagement.Shared.Auth;
+using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Middleware;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Services.Email;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Localization;
+using RestaurantManagement.Web.Auth;
+using RestaurantManagement.Web.Hosting;
 using RestaurantManagement.Web.RateLimiting;
 
 // Modules
@@ -27,6 +31,11 @@ using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Modules.Organization.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ---------------------------------------------
+// Azure Key Vault (before any configuration is read)
+// ---------------------------------------------
+builder.AddKeyVaultSecrets();
 
 // ---------------------------------------------
 // Add Localization
@@ -128,7 +137,10 @@ builder.Services.AddControllers()
 // Options Configuration
 // ---------------------------------------------
 builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection("Security"));
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+builder.Services.AddOptions<JwtOptions>()
+    .Bind(builder.Configuration.GetSection("Jwt"))
+    .ValidateOnStart();
+builder.Services.AddSingleton<IValidateOptions<JwtOptions>, JwtOptionsValidator>();
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<CorsOptions>(builder.Configuration.GetSection("Cors"));
 builder.Services.AddAuthRateLimiting(builder.Configuration);
@@ -138,24 +150,28 @@ builder.Services.AddAuthRateLimiting(builder.Configuration);
 // ---------------------------------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContext<IdentityDbContext>(options =>
-    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<ITenantScope, TenantScope>();
+builder.Services.AddScoped<ICurrentUser, ClaimsCurrentUser>();
+builder.Services.AddScoped<AuditSaveChangesInterceptor>();
 
-builder.Services.AddDbContext<MenuDbContext>(options =>
-    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
+builder.Services.AddDbContext<IdentityDbContext>((serviceProvider, options) =>
+    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
+        .AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>()));
 
-builder.Services.AddDbContext<OrganizationDbContext>(options =>
-    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
+builder.Services.AddDbContext<MenuDbContext>((serviceProvider, options) =>
+    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
+        .AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>()));
+
+builder.Services.AddDbContext<OrganizationDbContext>((serviceProvider, options) =>
+    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
+        .AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>()));
 
 // ---------------------------------------------
 // Sentry for error tracking
 // ---------------------------------------------
-builder.WebHost.UseSentry(o =>
-{
-    o.Dsn = builder.Configuration["Sentry:Dsn"];
-    o.Debug = true;
-    o.TracesSampleRate = 1.0;
-});
+builder.AddSentryTracking();
 
 // ---------------------------------------------
 // Swagger/OpenAPI
@@ -173,11 +189,12 @@ builder.Services.AddSwaggerGen(c =>
     // Add JWT Authentication to Swagger
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        Description = "Paste the access token from /api/auth/login (without the 'Bearer' prefix).",
         Name = "Authorization",
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
     });
 
     c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
@@ -247,7 +264,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    // Keep the token across page reloads so developers don't re-authorize every time
+    app.UseSwaggerUI(options => options.ConfigObject.PersistAuthorization = true);
 }
 
 app.UseForwardedHeaders();

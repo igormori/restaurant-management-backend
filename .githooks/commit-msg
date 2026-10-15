@@ -1,0 +1,24 @@
+#!/bin/sh
+# Rejects commit messages that don't follow Conventional Commits (see CLAUDE.md, Commits).
+
+MAX_SUBJECT_LENGTH=72
+TYPES='feat|fix|test|refactor|perf|docs|ci|build|chore|revert'
+
+subject=$(head -n 1 "$1")
+
+# Git-generated messages are allowed through unchanged.
+case "$subject" in
+  "Merge "*|"Revert \""*|"fixup! "*|"squash! "*|"amend! "*) exit 0 ;;
+esac
+
+if ! printf '%s' "$subject" | grep -Eq "^($TYPES)(\([a-z0-9-]+\))?!?: [a-z0-9].*[^.]$"; then
+  echo "commit-msg: subject must be '<type>(<scope>): <lowercase summary>' with no trailing period" >&2
+  echo "  types: $TYPES" >&2
+  echo "  got:   $subject" >&2
+  exit 1
+fi
+
+if [ "${#subject}" -gt "$MAX_SUBJECT_LENGTH" ]; then
+  echo "commit-msg: subject is ${#subject} characters, max is $MAX_SUBJECT_LENGTH" >&2
+  exit 1
+fi

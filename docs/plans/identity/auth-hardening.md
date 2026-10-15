@@ -109,3 +109,10 @@ Tests use FluentAssertions (user decision). Test files: Shared.Tests/JwtOptionsV
 | 30 | Default HTTPS port 8443 | Production, certificate, Https:Port unset | Start, read server addresses | Single address `https://...:8443` |
 
 Not covered by a test (and why): MailKit advisory (checked by `dotnet list package --vulnerable`, not behaviour); `AccountLockedUntil` resx removal; PlaceholderKey equals the appsettings.json string (would already pass); locked account with expired `LockedUntil` logging in, Development Sentry default (Debug true, 1.0), and valid rate 1.0 (all pass against current code, so they cannot fail first).
+
+## Tasks
+1. [x] JWT options validation, 15-minute default lifetime, ValidateOnStart wiring — scenarios 1–9, 13–16, 23
+2. [x] Locked account returns the generic 401; lockout Sentry message uses user ID; remove AccountLockedUntil resx; Identity CLAUDE.md — scenarios 10–12
+3. [x] Sentry hosting extension (Debug only in Development, validated TracesSampleRate) — scenarios 17–22
+4. [x] HTTPS-only Kestrel listener outside Development, `Https` appsettings section — scenarios 24–30 (Program.cs call NOT wired: blocked, see implementer report)
+5. [x] MailKit upgrade to latest version without advisory — no scenario (checked with `dotnet list package --vulnerable`)

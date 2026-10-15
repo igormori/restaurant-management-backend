@@ -63,9 +63,6 @@
   <data name="AccountLocked" xml:space="preserve">
     <value>Sua conta foi bloqueada devido a várias tentativas de login malsucedidas.</value>
   </data>
-  <data name="AccountLockedUntil" xml:space="preserve">
-    <value>Sua conta está bloqueada até {0}. Tente novamente mais tarde.</value>
-  </data>
   <data name="VerificationLockedUntil" xml:space="preserve">
     <value>Muitas tentativas de verificação malsucedidas. Tente novamente após {0}.</value>
   </data>
@@ -131,5 +128,11 @@
   </data>
   <data name="TooManyRequests" xml:space="preserve">
     <value>Demasiados pedidos. Tente novamente mais tarde.</value>
+  </data>
+  <data name="TenantMismatch" xml:space="preserve">
+    <value>O registro pertence a outra organização.</value>
+  </data>
+  <data name="OrganizationRequired" xml:space="preserve">
+    <value>Uma organização é necessária para salvar este registro.</value>
   </data>
 </root>

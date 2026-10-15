@@ -1,0 +1,53 @@
+# Local development stack. From the repo root:
+#   docker compose -f infra/docker/docker-compose.yml up --build
+# Credentials below are local-only defaults; override them with environment variables.
+
+name: restaurant-management
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-restaurant_db-development}
+    # 5434 on the host avoids clashing with a locally installed PostgreSQL on 5432
+    ports:
+      - "5434:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 2s
+      retries: 30
+
+  migrate:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+      target: migrator
+    environment:
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${POSTGRES_DB:-restaurant_db-development};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+      target: api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${POSTGRES_DB:-restaurant_db-development};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
+      # Mailtrap sandbox credentials from infra/docker/.env (see .env.example)
+      Email__SmtpUser: ${SMTP_USER:-}
+      Email__SmtpPass: ${SMTP_PASS:-}
+    ports:
+      - "5080:8080"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  db-data:

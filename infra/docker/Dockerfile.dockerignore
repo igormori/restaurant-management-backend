@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/.DS_Store
+.git/
+.claude/
+docs/
+tests/
+**/appsettings.Development.json
+**/appsettings.Local.json
