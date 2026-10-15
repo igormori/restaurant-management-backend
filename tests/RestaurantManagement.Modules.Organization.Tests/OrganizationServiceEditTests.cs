@@ -5,6 +5,7 @@ using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Modules.Organization.Services;
 using RestaurantManagement.Shared;
+using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Xunit;
@@ -67,7 +68,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, TestLocalizer.Create(), logger);
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
 
             // Act
             var act = () => sut.EditOrganizationAsync(userId, organizationId, ValidRequest);
@@ -88,7 +89,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, TestLocalizer.Create(), logger);
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
 
             // Act
             var response = await sut.EditOrganizationAsync(userId, organizationId, ValidRequest);
@@ -111,7 +112,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, TestLocalizer.Create(), logger);
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
 
             // Act
             var response = await sut.EditOrganizationAsync(userId, organizationId, ValidRequest);
@@ -133,7 +134,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, TestLocalizer.Create(), logger);
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
 
             // Act
             var act = () => sut.EditOrganizationAsync(userId, organizationId, ValidRequest);

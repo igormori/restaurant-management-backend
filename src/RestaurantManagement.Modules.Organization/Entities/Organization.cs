@@ -1,10 +1,10 @@
+using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Modules.Organization.Entities;
 
 namespace RestaurantManagement.Modules.Organization.Entities
 {
-    public class Organization
+    public class Organization : BaseEntity
     {
-        public Guid Id { get; set; }
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
         public string? LogoUrl { get; set; }
@@ -12,8 +12,6 @@ namespace RestaurantManagement.Modules.Organization.Entities
         public string? SecondaryColor { get; set; }
         public string? AccentColor { get; set; }
         public bool IsActive { get; set; } = true;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation Properties
         public OrganizationSettings? Settings { get; set; }

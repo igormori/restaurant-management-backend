@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using RestaurantManagement.Modules.Organization.Data;
 
 namespace RestaurantManagement.Modules.Organization.Tests
@@ -26,6 +27,16 @@ namespace RestaurantManagement.Modules.Organization.Tests
         {
             var options = new DbContextOptionsBuilder<OrganizationDbContext>()
                 .UseSqlite(_connection)
+                .Options;
+
+            return new OrganizationDbContext(options);
+        }
+
+        public OrganizationDbContext CreateContext(IInterceptor interceptor)
+        {
+            var options = new DbContextOptionsBuilder<OrganizationDbContext>()
+                .UseSqlite(_connection)
+                .AddInterceptors(interceptor)
                 .Options;
 
             return new OrganizationDbContext(options);
