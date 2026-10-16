@@ -450,5 +450,49 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             response.Auth.PhoneNumber.ShouldBeNull();
         }
+
+        private async Task<(IdentityTestDatabase Database, string Email)> SeedMarinaAsync()
+        {
+            var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            seedContext.Users.Add(new User
+            {
+                Email = "marina@cantinadanonna.com.br",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "Marina",
+                LastName = "Souza",
+                IsVerified = true
+            });
+            await seedContext.SaveChangesAsync();
+            return (database, "marina@cantinadanonna.com.br");
+        }
+
+        private async Task FailLoginsAsync(IdentityTestDatabase database, string email, int times)
+        {
+            for (var attempt = 0; attempt < times; attempt++)
+            {
+                using var context = database.CreateContext();
+                var sut = CreateSut(context, maxFailedLoginAttempts: 5, lockoutDurationMinutes: 15);
+                var act = () => sut.LoginAsync(new LoginRequest { Email = email, Password = "WrongPassword1!" }, TestClients.KitchenTablet);
+                await act.ShouldThrowAsync<BusinessException>();
+            }
+        }
+
+        [Fact]
+        public async Task LoginAsync_FourWrongPasswords_CountsFourAttemptsWithoutLocking()
+        {
+            // Arrange
+            var (database, email) = await SeedMarinaAsync();
+            using var _ = database;
+
+            // Act
+            await FailLoginsAsync(database, email, 4);
+
+            // Assert
+            using var readContext = database.CreateContext();
+            var marina = await readContext.Users.SingleAsync();
+            marina.FailedAttempts.ShouldBe(4);
+            marina.LockedUntil.ShouldBeNull();
+        }
     }
 }
