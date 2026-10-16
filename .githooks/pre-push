@@ -1,0 +1,12 @@
+#!/bin/sh
+# Rejects pushes to development and main: changes reach them only through a pull request.
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    refs/heads/development|refs/heads/main)
+      echo "pre-push: pushing to ${remote_ref#refs/heads/} is blocked; push a feature branch and open a pull request." >&2
+      echo "pre-push: if this branch tracks origin/development, run: git branch --unset-upstream" >&2
+      exit 1 ;;
+  esac
+done
+exit 0

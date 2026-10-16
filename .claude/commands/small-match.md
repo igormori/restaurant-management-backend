@@ -9,7 +9,8 @@ If no items were given, ask me for them and stop.
 
 1. Run `git status`. If anything is uncommitted, stop and list it: I commit or stash it first.
 2. Run `git fetch origin`, then create the branch from the latest development:
-   `git switch -c backlog-fixes/<YYYY-MM-DD> origin/development`, using today's date. If that
+   `git switch --no-track -c backlog-fixes/<YYYY-MM-DD> origin/development`, using today's date
+   (`--no-track` so a push never goes to development). If that
    branch already exists locally or on origin, add `-2`, `-3`, and so on
    (`backlog-fixes/2026-10-16-2`).
 3. Use the small-batch subagent with the full list of items.
