@@ -8,6 +8,7 @@ using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
+using Shouldly;
 using Xunit;
 
 namespace RestaurantManagement.Modules.Organization.Tests
@@ -67,11 +68,12 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userRoleAssigner = Substitute.For<IUserRoleAssigner>();
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
-            using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), tenant, TestLocalizer.Create(), logger);
 
             // Act
-            var act = () => sut.EditOrganizationAsync(userId, organizationId, ValidRequest);
+            var act = () => sut.EditOrganizationAsync(userId, ValidRequest);
 
             // Assert
             await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
@@ -88,11 +90,12 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userRoleAssigner = Substitute.For<IUserRoleAssigner>();
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
-            using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), tenant, TestLocalizer.Create(), logger);
 
             // Act
-            var response = await sut.EditOrganizationAsync(userId, organizationId, ValidRequest);
+            var response = await sut.EditOrganizationAsync(userId, ValidRequest);
 
             // Assert
             response.Should().NotBeNull();
@@ -111,36 +114,44 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userRoleAssigner = Substitute.For<IUserRoleAssigner>();
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
-            using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), tenant, TestLocalizer.Create(), logger);
 
             // Act
-            var response = await sut.EditOrganizationAsync(userId, organizationId, ValidRequest);
+            var response = await sut.EditOrganizationAsync(userId, ValidRequest);
 
             // Assert
             response.Should().NotBeNull();
             response.Name.Should().Be(ValidRequest.Name);
         }
 
-        [Fact]
-        public async Task EditOrganizationAsync_WhenUserHasWaiterRoleForOrganization_ThrowsForbidden()
+        // Scenario 28
+        [Theory]
+        [InlineData(Roles.Manager)]
+        [InlineData(Roles.Cashier)]
+        [InlineData(Roles.Waiter)]
+        [InlineData(Roles.Kitchen)]
+        public async Task EditOrganizationAsync_RoleOtherThanOwnerOrAdmin_ThrowsForbidden(string role)
         {
             // Arrange
             using var database = new OrganizationTestDatabase();
             var organizationId = await SeedOrganizationAsync(database);
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Waiter);
+            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, role);
             var userRoleAssigner = Substitute.For<IUserRoleAssigner>();
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
-            using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), tenant, TestLocalizer.Create(), logger);
 
             // Act
-            var act = () => sut.EditOrganizationAsync(userId, organizationId, ValidRequest);
+            var act = () => sut.EditOrganizationAsync(userId, ValidRequest);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
+            var exception = await act.ShouldThrowAsync<BusinessException>();
+            exception.StatusCode.ShouldBe(403);
         }
     }
 }

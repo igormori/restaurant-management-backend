@@ -2,6 +2,7 @@ using NSubstitute;
 using RestaurantManagement.Modules.Menu.Models;
 using RestaurantManagement.Modules.Menu.Services;
 using RestaurantManagement.Shared;
+using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Exceptions;
@@ -64,21 +65,22 @@ public class MenuServiceRoleAccessTests
         return organizationLookup;
     }
 
-    private static MenuService CreateSut(Data.MenuDbContext context, IUserRoleLookup userRoleLookup)
-        => new(context, CentroBelongsToCantina(), userRoleLookup, TestLocalizer.Create());
+    private static MenuService CreateSut(Data.MenuDbContext context, IUserRoleLookup userRoleLookup, ITenantContext tenantContext)
+        => new(context, CentroBelongsToCantina(), userRoleLookup, tenantContext, TestLocalizer.Create());
 
     // Scenario 34
     [Fact]
-    public async Task GetMenusByOrganizationAsync_WaiterOfAnotherOrganization_ThrowsForbidden()
+    public async Task GetMenusAsync_WaiterOfAnotherOrganization_ThrowsForbidden()
     {
         // Arrange
         using var database = new MenuTestDatabase();
         await SeedCantinaDinnerMenuAtCentroAsync(database);
-        using var context = database.CreateContext();
-        var sut = CreateSut(context, RoleIn(TrattoriaId, Roles.Waiter));
+        var tenant = TestTenant.Of(CantinaId);
+        using var context = database.CreateContext(tenant);
+        var sut = CreateSut(context, RoleIn(TrattoriaId, Roles.Waiter), tenant);
 
         // Act
-        var act = () => sut.GetMenusByOrganizationAsync(JoaoId, CantinaId);
+        var act = () => sut.GetMenusAsync(JoaoId);
 
         // Assert
         var exception = await act.ShouldThrowAsync<BusinessException>();
@@ -92,8 +94,9 @@ public class MenuServiceRoleAccessTests
         // Arrange
         using var database = new MenuTestDatabase();
         await SeedCantinaDinnerMenuAtCentroAsync(database);
-        using var context = database.CreateContext();
-        var sut = CreateSut(context, RoleIn(TrattoriaId, Roles.Waiter));
+        var tenant = TestTenant.Of(TrattoriaId);
+        using var context = database.CreateContext(tenant);
+        var sut = CreateSut(context, RoleIn(TrattoriaId, Roles.Waiter), tenant);
 
         // Act
         var act = () => sut.GetMenusByLocationAsync(JoaoId, CentroLocationId);
@@ -113,11 +116,11 @@ public class MenuServiceRoleAccessTests
     {
         // Arrange
         using var database = new MenuTestDatabase();
-        using var context = database.CreateContext();
-        var sut = CreateSut(context, RoleIn(CantinaId, role));
+        var tenant = TestTenant.Of(CantinaId);
+        using var context = database.CreateContext(tenant);
+        var sut = CreateSut(context, RoleIn(CantinaId, role), tenant);
         var request = new CreateMenuRequest
         {
-            OrganizationId = CantinaId,
             Name = "Almoço executivo",
             Description = "Prato feito com arroz, feijão e bife"
         };
@@ -141,8 +144,9 @@ public class MenuServiceRoleAccessTests
         // Arrange
         using var database = new MenuTestDatabase();
         await SeedCantinaDinnerMenuAtCentroAsync(database);
-        using var context = database.CreateContext();
-        var sut = CreateSut(context, RoleIn(CantinaId, role));
+        var tenant = TestTenant.Of(CantinaId);
+        using var context = database.CreateContext(tenant);
+        var sut = CreateSut(context, RoleIn(CantinaId, role), tenant);
 
         // Act
         var act = () => sut.DeleteMenuAsync(JoaoId, DinnerMenuId);
@@ -150,7 +154,7 @@ public class MenuServiceRoleAccessTests
         // Assert
         var exception = await act.ShouldThrowAsync<BusinessException>();
         exception.StatusCode.ShouldBe(403);
-        using var checkContext = database.CreateContext();
+        using var checkContext = database.CreateContext(tenant);
         checkContext.Menus.Count(m => m.Id == DinnerMenuId).ShouldBe(1);
     }
 
@@ -162,16 +166,17 @@ public class MenuServiceRoleAccessTests
     [InlineData(Roles.Cashier)]
     [InlineData(Roles.Waiter)]
     [InlineData(Roles.Kitchen)]
-    public async Task GetMenusByOrganizationAsync_AnyRoleOfTheOrganization_ReturnsItsMenus(string role)
+    public async Task GetMenusAsync_AnyRoleOfTheOrganization_ReturnsItsMenus(string role)
     {
         // Arrange
         using var database = new MenuTestDatabase();
         await SeedCantinaDinnerMenuAtCentroAsync(database);
-        using var context = database.CreateContext();
-        var sut = CreateSut(context, RoleIn(CantinaId, role));
+        var tenant = TestTenant.Of(CantinaId);
+        using var context = database.CreateContext(tenant);
+        var sut = CreateSut(context, RoleIn(CantinaId, role), tenant);
 
         // Act
-        var menus = await sut.GetMenusByOrganizationAsync(JoaoId, CantinaId);
+        var menus = await sut.GetMenusAsync(JoaoId);
 
         // Assert
         menus.Select(m => m.Id).ShouldBe(new[] { DinnerMenuId });
@@ -190,8 +195,9 @@ public class MenuServiceRoleAccessTests
         // Arrange
         using var database = new MenuTestDatabase();
         await SeedCantinaDinnerMenuAtCentroAsync(database);
-        using var context = database.CreateContext();
-        var sut = CreateSut(context, RoleIn(CantinaId, role));
+        var tenant = TestTenant.Of(CantinaId);
+        using var context = database.CreateContext(tenant);
+        var sut = CreateSut(context, RoleIn(CantinaId, role), tenant);
 
         // Act
         var menus = await sut.GetMenusByLocationAsync(JoaoId, CentroLocationId);

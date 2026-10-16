@@ -6,6 +6,7 @@ using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
+using RestaurantManagement.Shared.Data;
 
 namespace RestaurantManagement.Modules.Organization.Services
 {
@@ -13,15 +14,18 @@ namespace RestaurantManagement.Modules.Organization.Services
     {
         private readonly OrganizationDbContext _orgDb;
         private readonly IUserRoleLookup _userRoleLookup;
+        private readonly ITenantContext _tenantContext;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public LocationService(
             OrganizationDbContext orgDb,
             IUserRoleLookup userRoleLookup,
+            ITenantContext tenantContext,
             IStringLocalizer<SharedResource> localizer)
         {
             _orgDb = orgDb;
             _userRoleLookup = userRoleLookup;
+            _tenantContext = tenantContext;
             _localizer = localizer;
         }
 
@@ -123,6 +127,12 @@ namespace RestaurantManagement.Modules.Organization.Services
 
             return locations.Select(MapToResponse).ToList();
         }
+
+        public Task<LocationResponse> CreateLocationAsync(Guid userId, CreateLocationRequest request)
+            => throw new NotImplementedException();
+
+        public Task<List<LocationResponse>> GetLocationsAsync(Guid userId)
+            => throw new NotImplementedException();
 
         private static LocationResponse MapToResponse(Location location)
         {

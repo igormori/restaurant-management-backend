@@ -39,7 +39,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger);
 
             // Act
             var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
@@ -49,7 +49,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             using var verifyContext = database.CreateContext();
             (await verifyContext.Organizations.CountAsync()).Should().Be(0);
-            (await verifyContext.OrganizationSettings.CountAsync()).Should().Be(0);
+            (await verifyContext.OrganizationSettings.IgnoreQueryFilters().CountAsync()).Should().Be(0);
         }
 
         [Fact]
@@ -66,14 +66,14 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             using (var context = database.CreateContext())
             {
-                var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
+                var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger);
                 var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
                 await act.Should().ThrowAsync<Exception>();
             }
 
             // Act: since role assignment never succeeded, Identity holds no organization id for this user.
             using var listContext = database.CreateContext();
-            var listSut = new OrganizationService(listContext, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
+            var listSut = new OrganizationService(listContext, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger);
             var organizations = await listSut.GetOrganizationsAsync(userId);
 
             // Assert
@@ -95,7 +95,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             using (var context = database.CreateContext())
             {
-                var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
+                var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger);
                 var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
                 await act.Should().ThrowAsync<Exception>();
             }
@@ -105,7 +105,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
                 .Returns(Task.CompletedTask);
 
             using var secondContext = database.CreateContext();
-            var secondSut = new OrganizationService(secondContext, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
+            var secondSut = new OrganizationService(secondContext, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger);
             var response = await secondSut.CreateOrganizationAsync(userId, ValidRequest);
 
             // Assert
@@ -133,7 +133,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger);
 
             // Act
             var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
@@ -162,7 +162,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger);
 
             // Act
             var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
@@ -195,7 +195,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger);
 
             // Act
             var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
@@ -238,7 +238,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger);
 
             // Act
             var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
@@ -276,7 +276,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestLocalizer.Create(), logger);
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger);
 
             // Act
             var response = await sut.CreateOrganizationAsync(userId, ValidRequest);
@@ -288,7 +288,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             using var verifyContext = database.CreateContext();
             (await verifyContext.Organizations.CountAsync()).Should().Be(1);
-            (await verifyContext.OrganizationSettings.CountAsync()).Should().Be(1);
+            (await verifyContext.OrganizationSettings.IgnoreQueryFilters().CountAsync()).Should().Be(1);
 
             await userRoleAssigner.Received(1).AssignRoleAsync(userId, response.Id, Roles.Owner);
         }

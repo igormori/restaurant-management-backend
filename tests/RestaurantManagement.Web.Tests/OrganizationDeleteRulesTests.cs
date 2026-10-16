@@ -59,7 +59,7 @@ public class OrganizationDeleteRulesTests : IClassFixture<AuditFieldsPostgresFix
     /// <summary>Requires the restrict migration to exist, then applies every migration.</summary>
     private async Task<OrganizationDbContext> CreateFullyMigratedContextAsync()
     {
-        var context = new OrganizationDbContext(await CreateOptionsAsync());
+        var context = new OrganizationDbContext(await CreateOptionsAsync(), NoTenant.Context);
         FindMigration(context, RestrictMigrationSuffix);
         await context.Database.MigrateAsync();
         return context;
@@ -108,7 +108,7 @@ public class OrganizationDeleteRulesTests : IClassFixture<AuditFieldsPostgresFix
 
         // Assert
         exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation);
-        (await context.Locations.SingleAsync()).Id.ShouldBe(CentroLocationId);
+        (await context.Locations.IgnoreQueryFilters().SingleAsync()).Id.ShouldBe(CentroLocationId);
     }
 
     // Scenario 2
@@ -126,7 +126,7 @@ public class OrganizationDeleteRulesTests : IClassFixture<AuditFieldsPostgresFix
 
         // Assert
         exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation);
-        (await context.Locations.SingleAsync()).Id.ShouldBe(CentroLocationId);
+        (await context.Locations.IgnoreQueryFilters().SingleAsync()).Id.ShouldBe(CentroLocationId);
     }
 
     // Scenario 3
@@ -144,7 +144,7 @@ public class OrganizationDeleteRulesTests : IClassFixture<AuditFieldsPostgresFix
 
         // Assert
         exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation);
-        (await context.OrganizationSettings.SingleAsync()).Id.ShouldBe(CantinaSettingsId);
+        (await context.OrganizationSettings.IgnoreQueryFilters().SingleAsync()).Id.ShouldBe(CantinaSettingsId);
     }
 
     // Scenario 4
@@ -184,7 +184,7 @@ public class OrganizationDeleteRulesTests : IClassFixture<AuditFieldsPostgresFix
     public async Task Migrate_OrganizationTablesWithRows_NoRowAddedChangedOrRemoved()
     {
         // Arrange
-        await using var context = new OrganizationDbContext(await CreateOptionsAsync());
+        await using var context = new OrganizationDbContext(await CreateOptionsAsync(), NoTenant.Context);
         var restrictMigration = FindMigration(context, RestrictMigrationSuffix);
         await context.GetService<IMigrator>().MigrateAsync(FindMigration(context, AuditMigrationSuffix));
         await InsertOrganizationAsync(context, CantinaId, "Cantina da Nonna");

@@ -33,5 +33,8 @@ namespace RestaurantManagement.Modules.Identity.Services
                 .Select(r => r.OrganizationId)
                 .ToListAsync();
         }
+
+        public Task<bool> HasLocationAccessAsync(Guid userId, Guid organizationId, Guid locationId)
+            => throw new NotImplementedException();
     }
 }

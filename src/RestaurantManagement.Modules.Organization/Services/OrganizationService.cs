@@ -20,6 +20,7 @@ namespace RestaurantManagement.Modules.Organization.Services
         private readonly IUserRoleLookup _userRoleLookup;
         private readonly IUserRoleAssigner _userRoleAssigner;
         private readonly ITenantScope _tenantScope;
+        private readonly ITenantContext _tenantContext;
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly ILogger<OrganizationService> _logger;
 
@@ -28,6 +29,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             IUserRoleLookup userRoleLookup,
             IUserRoleAssigner userRoleAssigner,
             ITenantScope tenantScope,
+            ITenantContext tenantContext,
             IStringLocalizer<SharedResource> localizer,
             ILogger<OrganizationService> logger)
         {
@@ -35,6 +37,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             _userRoleLookup = userRoleLookup;
             _userRoleAssigner = userRoleAssigner;
             _tenantScope = tenantScope;
+            _tenantContext = tenantContext;
             _localizer = localizer;
             _logger = logger;
         }
@@ -234,6 +237,9 @@ namespace RestaurantManagement.Modules.Organization.Services
                 IsTrialActive = organizationSettings.IsTrialActive
             };
         }
+        public Task<OrganizationResponse> EditOrganizationAsync(Guid userId, EditOrganizationRequest request)
+            => throw new NotImplementedException();
+
         public async Task<List<OrganizationResponse>> GetOrganizationsAsync(Guid userId)
         {
             var userExists = await _userRoleLookup.UserExistsAsync(userId);

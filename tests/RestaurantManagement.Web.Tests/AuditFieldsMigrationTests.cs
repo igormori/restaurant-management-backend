@@ -112,7 +112,7 @@ public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixtur
     private async Task<(DbContextOptions<MenuDbContext> Options, string AuditMigration)> CreateMigratedMenuDatabaseWithRowsAsync()
     {
         var options = await CreateOptionsAsync<MenuDbContext>();
-        await using var context = new MenuDbContext(options);
+        await using var context = new MenuDbContext(options, NoTenant.Context);
         var auditMigration = FindAuditMigration(context);
         await MigrateToAsync(context, MenuBeforeAuditMigration);
         await SeedMenusAsync(context);
@@ -128,8 +128,8 @@ public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixtur
         var (options, _) = await CreateMigratedMenuDatabaseWithRowsAsync();
 
         // Act
-        await using var context = new MenuDbContext(options);
-        var menus = await context.Menus.OrderBy(m => m.Name).ToListAsync();
+        await using var context = new MenuDbContext(options, NoTenant.Context);
+        var menus = await context.Menus.IgnoreQueryFilters().OrderBy(m => m.Name).ToListAsync();
 
         // Assert
         menus.Count.ShouldBe(2);
@@ -151,8 +151,8 @@ public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixtur
         var (options, _) = await CreateMigratedMenuDatabaseWithRowsAsync();
 
         // Act
-        await using var context = new MenuDbContext(options);
-        var locationMenus = await context.LocationMenus.ToListAsync();
+        await using var context = new MenuDbContext(options, NoTenant.Context);
+        var locationMenus = await context.LocationMenus.IgnoreQueryFilters().ToListAsync();
 
         // Assert
         locationMenus.Single(lm => lm.Id == DinnerLocationMenuId).OrganizationId.ShouldBe(OrgA);
@@ -167,8 +167,8 @@ public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixtur
         var (options, _) = await CreateMigratedMenuDatabaseWithRowsAsync();
 
         // Act
-        await using var context = new MenuDbContext(options);
-        var lunch = await context.LocationMenus.SingleAsync(lm => lm.Id == LunchLocationMenuId);
+        await using var context = new MenuDbContext(options, NoTenant.Context);
+        var lunch = await context.LocationMenus.IgnoreQueryFilters().SingleAsync(lm => lm.Id == LunchLocationMenuId);
 
         // Assert
         lunch.CreatedAt.ShouldBe(LaterCreationTime);
@@ -186,8 +186,8 @@ public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixtur
         var (options, _) = await CreateMigratedMenuDatabaseWithRowsAsync();
 
         // Act
-        await using var context = new MenuDbContext(options);
-        var pasta = await context.MenuCategories.SingleAsync();
+        await using var context = new MenuDbContext(options, NoTenant.Context);
+        var pasta = await context.MenuCategories.IgnoreQueryFilters().SingleAsync();
 
         // Assert
         pasta.Name.ShouldBe("Massas");
@@ -206,7 +206,7 @@ public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixtur
         var (options, _) = await CreateMigratedMenuDatabaseWithRowsAsync();
 
         // Act
-        await using var context = new MenuDbContext(options);
+        await using var context = new MenuDbContext(options, NoTenant.Context);
         var locationMenuOrganization = await ReadIsNullableAsync(context, "location_menus", "organization_id");
         var locationMenuUpdatedAt = await ReadIsNullableAsync(context, "location_menus", "updated_at");
         var categoryUpdatedAt = await ReadIsNullableAsync(context, "menu_categories", "updated_at");
@@ -223,7 +223,7 @@ public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixtur
     {
         // Arrange
         var options = await CreateOptionsAsync<MenuDbContext>();
-        await using var context = new MenuDbContext(options);
+        await using var context = new MenuDbContext(options, NoTenant.Context);
         var auditMigration = FindAuditMigration(context);
         await MigrateToAsync(context, MenuBeforeAuditMigration);
 
@@ -231,9 +231,9 @@ public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixtur
         await MigrateToAsync(context, auditMigration);
 
         // Assert
-        (await context.Menus.CountAsync()).ShouldBe(0);
-        (await context.LocationMenus.CountAsync()).ShouldBe(0);
-        (await context.MenuCategories.CountAsync()).ShouldBe(0);
+        (await context.Menus.IgnoreQueryFilters().CountAsync()).ShouldBe(0);
+        (await context.LocationMenus.IgnoreQueryFilters().CountAsync()).ShouldBe(0);
+        (await context.MenuCategories.IgnoreQueryFilters().CountAsync()).ShouldBe(0);
     }
 
     // Scenario 7
@@ -242,7 +242,7 @@ public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixtur
     {
         // Arrange
         var options = await CreateOptionsAsync<OrganizationDbContext>();
-        await using var context = new OrganizationDbContext(options);
+        await using var context = new OrganizationDbContext(options, NoTenant.Context);
         var auditMigration = FindAuditMigration(context);
         await MigrateToAsync(context, OrganizationBeforeAuditMigration);
         await context.Database.ExecuteSqlAsync($"""
@@ -267,11 +267,11 @@ public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixtur
         organization.CreatedAt.ShouldBe(CreationTime);
         organization.CreatedByUserId.ShouldBeNull();
         organization.UpdatedByUserId.ShouldBeNull();
-        var settings = await context.OrganizationSettings.SingleAsync();
+        var settings = await context.OrganizationSettings.IgnoreQueryFilters().SingleAsync();
         settings.OrganizationId.ShouldBe(OrgA);
         settings.PlanType.ShouldBe("TRIAL");
         settings.CreatedByUserId.ShouldBeNull();
-        var location = await context.Locations.SingleAsync();
+        var location = await context.Locations.IgnoreQueryFilters().SingleAsync();
         location.Name.ShouldBe("Unidade Centro");
         location.OrganizationId.ShouldBe(OrgA);
         location.CreatedByUserId.ShouldBeNull();
@@ -316,7 +316,7 @@ public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixtur
     {
         // Arrange
         var options = await CreateOptionsAsync<MenuDbContext>();
-        await using var context = new MenuDbContext(options);
+        await using var context = new MenuDbContext(options, NoTenant.Context);
 
         // Act
         await context.Database.MigrateAsync();
@@ -331,7 +331,7 @@ public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixtur
     {
         // Arrange
         var options = await CreateOptionsAsync<OrganizationDbContext>();
-        await using var context = new OrganizationDbContext(options);
+        await using var context = new OrganizationDbContext(options, NoTenant.Context);
 
         // Act
         await context.Database.MigrateAsync();

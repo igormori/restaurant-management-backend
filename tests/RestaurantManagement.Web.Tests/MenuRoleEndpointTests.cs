@@ -28,7 +28,7 @@ public class MenuRoleEndpointTests : IDisposable
 
     public MenuRoleEndpointTests()
     {
-        _menuService.GetMenusByOrganizationAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(new List<MenuResponse>());
+        _menuService.GetMenusAsync(Arg.Any<Guid>()).Returns(new List<MenuResponse>());
         _menuService.GetMenusByLocationAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(new List<MenuResponse>());
         _factory = _baseFactory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
         {
@@ -47,7 +47,7 @@ public class MenuRoleEndpointTests : IDisposable
     {
         var request = new HttpRequestMessage(method, url);
         request.Headers.Authorization = new AuthenticationHeaderValue(
-            "Bearer", TestAccessTokens.Create(_factory.Services, JoaoId, role));
+            "Bearer", TestAccessTokens.Create(_factory.Services, JoaoId, CantinaId, role));
         return request;
     }
 
@@ -64,7 +64,6 @@ public class MenuRoleEndpointTests : IDisposable
         var request = SignedIn(HttpMethod.Post, "/api/menus/create", role);
         request.Content = JsonContent.Create(new CreateMenuRequest
         {
-            OrganizationId = CantinaId,
             Name = "Almoço executivo",
             Description = "Prato feito com arroz, feijão e bife"
         });
@@ -85,13 +84,13 @@ public class MenuRoleEndpointTests : IDisposable
     [InlineData(Roles.Cashier)]
     [InlineData(Roles.Waiter)]
     [InlineData(Roles.Kitchen)]
-    public async Task GetMenusByOrganization_AnyRole_ReturnsOk(string role)
+    public async Task GetMenus_AnyRole_ReturnsOk(string role)
     {
         // Arrange
         var client = _factory.CreateClient();
 
         // Act
-        var response = await client.SendAsync(SignedIn(HttpMethod.Get, $"/api/menus/organization/{CantinaId}", role));
+        var response = await client.SendAsync(SignedIn(HttpMethod.Get, "/api/menus", role));
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);

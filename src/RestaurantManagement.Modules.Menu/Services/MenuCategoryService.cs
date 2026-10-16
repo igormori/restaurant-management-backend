@@ -4,6 +4,7 @@ using RestaurantManagement.Modules.Menu.Data;
 using RestaurantManagement.Modules.Menu.Entities;
 using RestaurantManagement.Modules.Menu.Models;
 using RestaurantManagement.Shared;
+using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Exceptions;
@@ -15,17 +16,20 @@ namespace RestaurantManagement.Modules.Menu.Services
         private readonly MenuDbContext _context;
         private readonly IOrganizationLookup _organizationLookup;
         private readonly IUserRoleLookup _userRoleLookup;
+        private readonly ITenantContext _tenantContext;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public MenuCategoryService(
             MenuDbContext context,
             IOrganizationLookup organizationLookup,
             IUserRoleLookup userRoleLookup,
+            ITenantContext tenantContext,
             IStringLocalizer<SharedResource> localizer)
         {
             _context = context;
             _organizationLookup = organizationLookup;
             _userRoleLookup = userRoleLookup;
+            _tenantContext = tenantContext;
             _localizer = localizer;
         }
 
@@ -93,6 +97,9 @@ namespace RestaurantManagement.Modules.Menu.Services
 
             return categories.Select(MapToResponse);
         }
+
+        public Task<IEnumerable<MenuCategoryResponse>> GetAllAsync(Guid userId)
+            => throw new NotImplementedException();
 
         public async Task<IEnumerable<MenuCategoryResponse>> GetByLocationIdAsync(Guid userId, Guid locationId)
         {

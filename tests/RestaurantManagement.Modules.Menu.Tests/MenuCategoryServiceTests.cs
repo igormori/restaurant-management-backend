@@ -4,6 +4,7 @@ using RestaurantManagement.Modules.Menu.Entities;
 using RestaurantManagement.Modules.Menu.Models;
 using RestaurantManagement.Modules.Menu.Services;
 using RestaurantManagement.Shared;
+using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Exceptions;
@@ -13,10 +14,9 @@ namespace RestaurantManagement.Modules.Menu.Tests
 {
     public class MenuCategoryServiceTests
     {
-        private static CreateMenuCategoryRequest CreateRequest(Guid menuId, Guid organizationId) => new()
+        private static CreateMenuCategoryRequest CreateRequest(Guid menuId) => new()
         {
             MenuId = menuId,
-            OrganizationId = organizationId,
             Name = "Starters",
             Description = "Starter dishes",
             SortOrder = 1
@@ -78,12 +78,14 @@ namespace RestaurantManagement.Modules.Menu.Tests
         private static MenuCategoryService CreateSut(
             Data.MenuDbContext context,
             IUserRoleLookup userRoleLookup,
+            ITenantContext tenantContext,
             IOrganizationLookup? organizationLookup = null)
         {
             return new MenuCategoryService(
                 context,
                 organizationLookup ?? Substitute.For<IOrganizationLookup>(),
                 userRoleLookup,
+                tenantContext,
                 TestLocalizer.Create());
         }
 
@@ -96,11 +98,12 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, role: null);
 
-            using var context = database.CreateContext();
-            var sut = CreateSut(context, userRoleLookup);
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = CreateSut(context, userRoleLookup, tenant);
 
             // Act
-            var act = () => sut.CreateAsync(userId, CreateRequest(menuId, organizationId));
+            var act = () => sut.CreateAsync(userId, CreateRequest(menuId));
 
             // Assert
             await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
@@ -115,11 +118,12 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
 
-            using var context = database.CreateContext();
-            var sut = CreateSut(context, userRoleLookup);
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = CreateSut(context, userRoleLookup, tenant);
 
             // Act
-            var response = await sut.CreateAsync(userId, CreateRequest(menuId, organizationId));
+            var response = await sut.CreateAsync(userId, CreateRequest(menuId));
 
             // Assert
             response.Should().NotBeNull();
@@ -137,8 +141,9 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, role: null);
 
-            using var context = database.CreateContext();
-            var sut = CreateSut(context, userRoleLookup);
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = CreateSut(context, userRoleLookup, tenant);
 
             // Act
             var act = () => sut.GetByIdAsync(userId, categoryId);
@@ -157,8 +162,9 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
 
-            using var context = database.CreateContext();
-            var sut = CreateSut(context, userRoleLookup);
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = CreateSut(context, userRoleLookup, tenant);
 
             // Act
             var response = await sut.GetByIdAsync(userId, categoryId);
@@ -169,7 +175,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
-        public async Task GetByOrganizationIdAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
+        public async Task GetAllAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
         {
             // Arrange
             using var database = new MenuTestDatabase();
@@ -178,11 +184,12 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, role: null);
 
-            using var context = database.CreateContext();
-            var sut = CreateSut(context, userRoleLookup);
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = CreateSut(context, userRoleLookup, tenant);
 
             // Act
-            var act = () => sut.GetByOrganizationIdAsync(userId, organizationId);
+            var act = () => sut.GetAllAsync(userId);
 
             // Assert
             await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
@@ -198,8 +205,9 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, role: null);
 
-            using var context = database.CreateContext();
-            var sut = CreateSut(context, userRoleLookup);
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = CreateSut(context, userRoleLookup, tenant);
 
             // Act
             var act = () => sut.UpdateAsync(userId, categoryId, UpdateRequest);
@@ -218,8 +226,9 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Admin);
 
-            using var context = database.CreateContext();
-            var sut = CreateSut(context, userRoleLookup);
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = CreateSut(context, userRoleLookup, tenant);
 
             // Act
             var response = await sut.UpdateAsync(userId, categoryId, UpdateRequest);
@@ -239,8 +248,9 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, role: null);
 
-            using var context = database.CreateContext();
-            var sut = CreateSut(context, userRoleLookup);
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = CreateSut(context, userRoleLookup, tenant);
 
             // Act
             var act = () => sut.DeleteAsync(userId, categoryId);
@@ -259,8 +269,9 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
 
-            using var context = database.CreateContext();
-            var sut = CreateSut(context, userRoleLookup);
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = CreateSut(context, userRoleLookup, tenant);
 
             // Act
             var result = await sut.DeleteAsync(userId, categoryId);
