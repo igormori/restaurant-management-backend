@@ -133,6 +133,7 @@ builder.Services.AddControllers()
         options.DataAnnotationLocalizerProvider = (type, factory) =>
             factory.Create(typeof(SharedResource));
     })
+    .AddApplicationPart(typeof(RestaurantManagement.Shared.Controllers.AuditLogController).Assembly)
     .AddApplicationPart(typeof(RestaurantManagement.Modules.Identity.Controllers.AuthController).Assembly)
     .AddApplicationPart(typeof(RestaurantManagement.Modules.Menu.Controllers.MenuController).Assembly)
     .AddApplicationPart(typeof(RestaurantManagement.Modules.Organization.Controllers.OrganizationController).Assembly);
@@ -233,6 +234,7 @@ builder.Services.AddSwaggerGen(c =>
 // Shared Services
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuditLog, AuditLogWriter>();
+builder.Services.AddScoped<IAuditLogReader, AuditLogReader>();
 
 // Identity Module Services
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
