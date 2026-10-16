@@ -43,6 +43,13 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (!menuExists)
                 throw new BusinessException(_localizer["MenuNotFound"].Value, 404);
 
+            if (request.LocationId.HasValue)
+            {
+                var location = await _organizationLookup.GetLocationAsync(request.LocationId.Value);
+                if (location == null || location.OrganizationId != organizationId)
+                    throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
+            }
+
             var category = new MenuCategory
             {
                 Id = Guid.NewGuid(),
