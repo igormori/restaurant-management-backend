@@ -34,10 +34,14 @@ public class StartupConfigurationTests : IDisposable
 
     private WebApplicationFactory<Program> CreateFactory(string environment, Dictionary<string, string?> settings)
     {
+        // Program.cs reads Https:* while building, before factory configuration is applied, so it must come in as host settings.
+        var httpsSettings = settings.Where(s => s.Key.StartsWith("Https:")).ToList();
+        var otherSettings = settings.Except(httpsSettings);
         var factory = new AuthApiFactory().WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment(environment);
-            builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(settings));
+            httpsSettings.ForEach(s => builder.UseSetting(s.Key, s.Value));
+            builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(otherSettings));
         });
         _disposables.Add(factory);
         return factory;
@@ -83,6 +87,21 @@ public class StartupConfigurationTests : IDisposable
 
         // Assert
         act.Should().Throw<Exception>().Where(e => e.ToString().Contains("Jwt:Key"));
+    }
+
+    // Auth hardening rule 4
+    [Fact]
+    public void Startup_NoCertificateInProduction_FailsNamingHttpsCertificatePath()
+    {
+        // Arrange
+        var settings = With(ValidProductionSettings(), "Https:CertificatePath", null);
+        var factory = CreateFactory(Environments.Production, settings);
+
+        // Act
+        var act = () => factory.CreateClient();
+
+        // Assert
+        act.Should().Throw<Exception>().Where(e => e.ToString().Contains("Https:CertificatePath"));
     }
 
     // Scenario 16

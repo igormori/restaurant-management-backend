@@ -29,4 +29,4 @@ string parameters with no compiler protection against swapping them.
 UniqueEmailIndexTests run against a real Postgres via Testcontainers (IdentityPostgresFixture)
 because they prove constraint races and migration-on-existing-data; other tests stay on
 the SQLite in-memory database.
-Accepted gaps are tracked in docs/follow-ups.md; don't fix them as drive-by changes.
+Out-of-scope findings and accepted gaps are tracked in backlog/; don't fix them as drive-by changes.

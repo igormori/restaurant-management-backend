@@ -14,7 +14,7 @@ namespace RestaurantManagement.Web.Tests;
 /// (Rule 3) and another organization's menus and categories answer 404 (Rule 5).
 /// Ana is Owner of both Cantina da Nonna and Trattoria do Sol, and is signed in to Cantina.
 /// </summary>
-public class MenuTenantEndpointTests : IClassFixture<AuditFieldsPostgresFixture>
+public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string TrattoriaCentro = "44444444-dddd-4ddd-8ddd-000000000003";
     private const string Cantina = "a1a1a1a1-0000-4000-8000-000000000001";
@@ -28,9 +28,9 @@ public class MenuTenantEndpointTests : IClassFixture<AuditFieldsPostgresFixture>
     private static readonly Guid CantinaPastaCategoryId = Guid.Parse("66666666-0000-4000-8000-000000000001");
     private static readonly Guid TrattoriaPizzaCategoryId = Guid.Parse("66666666-0000-4000-8000-000000000002");
 
-    private readonly AuditFieldsPostgresFixture _postgres;
+    private readonly PostgresDatabaseFixture _postgres;
 
-    public MenuTenantEndpointTests(AuditFieldsPostgresFixture postgres) => _postgres = postgres;
+    public MenuTenantEndpointTests(PostgresDatabaseFixture postgres) => _postgres = postgres;
 
     private sealed record Row(Guid Id, Guid OrganizationId);
 

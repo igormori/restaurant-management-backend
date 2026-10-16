@@ -15,7 +15,7 @@ namespace RestaurantManagement.Web.Tests;
 /// where its organization comes from, and that a stored entry can never be changed or removed.
 /// Ana is Owner of Cantina da Nonna and is signed in to it.
 /// </summary>
-public class AuditLogStorageTests : IClassFixture<AuditFieldsPostgresFixture>
+public class AuditLogStorageTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string AnaIpAddress = "203.0.113.25";
 
@@ -47,9 +47,9 @@ public class AuditLogStorageTests : IClassFixture<AuditFieldsPostgresFixture>
 
     public static TheoryData<string> TamperingNames => new() { "change the after value", "remove the entry" };
 
-    private readonly AuditFieldsPostgresFixture _postgres;
+    private readonly PostgresDatabaseFixture _postgres;
 
-    public AuditLogStorageTests(AuditFieldsPostgresFixture postgres) => _postgres = postgres;
+    public AuditLogStorageTests(PostgresDatabaseFixture postgres) => _postgres = postgres;
 
     /// <summary>Records an entry the way a request would: Ana's token for Cantina and her network address.</summary>
     private static async Task RecordAsAnaInCantinaAsync(TenantApiFactory factory, AuditEntryDto entry)

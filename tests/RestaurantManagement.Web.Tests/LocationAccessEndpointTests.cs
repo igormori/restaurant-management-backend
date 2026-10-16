@@ -11,7 +11,7 @@ namespace RestaurantManagement.Web.Tests;
 /// Cantina da Nonna has Batel and Mercado Municipal; Trattoria do Sol has Centro.
 /// Bia is a Waiter assigned only to Batel; Ana is a Manager of all Cantina locations.
 /// </summary>
-public class LocationAccessEndpointTests : IClassFixture<AuditFieldsPostgresFixture>
+public class LocationAccessEndpointTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string Batel = "44444444-dddd-4ddd-8ddd-000000000001";
     private const string MercadoMunicipal = "44444444-dddd-4ddd-8ddd-000000000002";
@@ -22,9 +22,9 @@ public class LocationAccessEndpointTests : IClassFixture<AuditFieldsPostgresFixt
     private static readonly Guid CantinaId = Guid.Parse("a1a1a1a1-0000-4000-8000-000000000001");
     private static readonly Guid TrattoriaId = Guid.Parse("b2b2b2b2-0000-4000-8000-000000000002");
 
-    private readonly AuditFieldsPostgresFixture _postgres;
+    private readonly PostgresDatabaseFixture _postgres;
 
-    public LocationAccessEndpointTests(AuditFieldsPostgresFixture postgres) => _postgres = postgres;
+    public LocationAccessEndpointTests(PostgresDatabaseFixture postgres) => _postgres = postgres;
 
     private async Task<TenantApiFactory> CreateFactoryAsync()
     {

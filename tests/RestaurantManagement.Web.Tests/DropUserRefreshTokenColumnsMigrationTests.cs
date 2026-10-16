@@ -12,7 +12,7 @@ namespace RestaurantManagement.Web.Tests;
 /// after AddRefreshTokensTable, when users still hold an old token, then the drop migration is applied.
 /// Raw SQL on purpose: the old columns no longer exist on the User entity.
 /// </summary>
-public class DropUserRefreshTokenColumnsMigrationTests : IClassFixture<AuditFieldsPostgresFixture>
+public class DropUserRefreshTokenColumnsMigrationTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string RefreshTokensMigrationSuffix = "_AddRefreshTokensTable";
     private const string DropColumnsMigrationSuffix = "_DropUserRefreshTokenColumns";
@@ -38,9 +38,9 @@ public class DropUserRefreshTokenColumnsMigrationTests : IClassFixture<AuditFiel
     private static readonly DateTime LastLogin = new(2026, 10, 15, 19, 45, 0, DateTimeKind.Utc);
     private static readonly DateTime OldTokenExpiry = new(2026, 11, 14, 19, 45, 0, DateTimeKind.Utc);
 
-    private readonly AuditFieldsPostgresFixture _fixture;
+    private readonly PostgresDatabaseFixture _fixture;
 
-    public DropUserRefreshTokenColumnsMigrationTests(AuditFieldsPostgresFixture fixture) => _fixture = fixture;
+    public DropUserRefreshTokenColumnsMigrationTests(PostgresDatabaseFixture fixture) => _fixture = fixture;
 
     private static string FindMigration(DbContext context, string suffix)
     {

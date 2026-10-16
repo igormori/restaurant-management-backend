@@ -16,7 +16,10 @@ You build **one small, low-risk change** end to end: failing tests, implementati
 
 ## 1. Is It Small? (check first)
 
-The change qualifies only if **all** are true:
+If the change touches only `docs/`, `backlog/`, `.claude/` or other `.md` files, stop and reply:
+`Docs-only change: the /small command handles it without this agent, tests or review.`
+
+Otherwise, the change qualifies only if **all** are true:
 
 | Check | Limit |
 |---|---|
@@ -24,7 +27,7 @@ The change qualifies only if **all** are true:
 | Files changed or added (tests included) | 5 or fewer |
 | Migration | None, or a new nullable column with no backfill |
 | Roles, auth, tenancy rules, Shared contracts | Not changed |
-| New NuGet package, integration or public endpoint | None |
+| Package not already in the dependency graph, integration or public endpoint (pinning an existing transitive package to a patched version is low risk and allowed) | None |
 | Open business questions | None |
 
 If any check fails, **stop** and reply: `Not a small change: <which check failed>. Use /spec.`
@@ -33,7 +36,7 @@ If any check fails, **stop** and reply: `Not a small change: <which check failed
 
 ## 2. Before Writing
 
-Read `.claude/skills/architecture/SKILL.md`, `.claude/skills/testing/SKILL.md`, `.claude/skills/clean-code/SKILL.md`, `.claude/skills/security/SKILL.md` and the module's `CLAUDE.md`. Read only the code this change touches.
+Read `.claude/skills/architecture/SKILL.md`, `.claude/skills/testing/SKILL.md`, `.claude/skills/clean-code/SKILL.md` and the module's `CLAUDE.md`. Read `.claude/skills/security/SKILL.md` **only** if the change touches an endpoint, tenant data, authentication or user input. Read only the code this change touches.
 
 ---
 
@@ -41,7 +44,7 @@ Read `.claude/skills/architecture/SKILL.md`, `.claude/skills/testing/SKILL.md`, 
 
 1. **Tests first:** write the failing tests (failure cases first, then happy path; security tests if an endpoint or tenant data is touched). Run them with `.claude/scripts/test-summary.sh <test-project> "FullyQualifiedName~<ClassName>"`: they must fail for the right reason. Never call `dotnet test` directly.
 2. **Implement** the minimum code to make them pass, in the folders the architecture skill allows.
-3. Run `.claude/scripts/test-summary.sh all` (full suite green) and `dotnet format`.
+3. Run `.claude/scripts/test-summary.sh all` once (full suite) and `dotnet format`. Every test must pass. Record the passed and failed counts per test project.
 4. **Self-check the diff:** location, size limits, one responsibility per class, only "why" comments, no secrets, nothing beyond the request.
 5. **Commit once**, staging only the files you changed, by path (never `git add -A` or `git add .`). Conventional Commits (root `CLAUDE.md`).
 6. Out-of-scope findings: read `.claude/skills/backlog/SKILL.md` first. It decides whether to fix inline, stop, or write a backlog item, and how.
@@ -50,9 +53,11 @@ Read `.claude/skills/architecture/SKILL.md`, `.claude/skills/testing/SKILL.md`, 
 
 ## 4. Rules
 
-- If the change grows past Section 1 while you work, stop, discard your uncommitted changes to the files you touched, and reply `Not a small change: <reason>. Use /spec.`
+- If the change grows past Section 1 while you work, stop, discard your uncommitted changes to **the files you changed** (by path; never touch other files), and reply `Not a small change: <reason>. Use /spec.`
 - Two failed attempts at making the same test pass: stop and report what you tried.
-- Never push, merge or rebase.
+- If a command is denied, stop and report it. Never reach the same result with another command.
+- Never amend, push, merge or rebase.
+- Report test results only from a real run, with real counts. Never claim "green" without them.
 
 ---
 
@@ -64,7 +69,7 @@ Your final message contains **only**:
 Small change: <done | stopped>
 What: <one line in plain words>
 Commit: <hash> — <commit summary>
-Tests: <n> new, all passing · full suite green
+Tests: <n> new · full suite: <project> <passed>/<failed>, <project> <passed>/<failed>, …
 Files: <n> changed
 
 Backlog files created: <paths, or "None">

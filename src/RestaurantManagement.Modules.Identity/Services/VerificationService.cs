@@ -131,11 +131,11 @@ namespace RestaurantManagement.Modules.Identity.Services
             {
                 await _emailService.SendVerificationEmailAsync(user.Email, user.FirstName, code, _securityOptions.VerificationCodeExpiryMinutes);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Decide if we fail the whole request or just log. 
+                // Decide if we fail the whole request or just log.
                 // fail the request because the user will not receive the code
-                _logger.LogError("Failed to send verification email to {Email}", user.Email);
+                _logger.LogError(ex, "Failed to send verification email to {Email}", user.Email);
                 throw new BusinessException(_localizer["EmailSendingFailed"].Value, 500);
             }
 

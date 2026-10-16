@@ -118,7 +118,7 @@ dotnet build
 
 - ✅ Multi-tenant with trial/subscription support
 - ✅ JWT authentication with refresh tokens
-- ✅ Role-based access control (Owner, Admin, Staff)
+- ✅ Role-based access control (Owner, Admin, Manager, Cashier, Waiter, Kitchen), checked by permission
 - ✅ Cross-module data access via multi-DbContext injection
 - ✅ Sentry error tracking
 - ✅ Multi-language support (en, pt-BR)

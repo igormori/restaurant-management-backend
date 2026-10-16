@@ -30,13 +30,13 @@ namespace RestaurantManagement.Modules.Organization.Tests
         private static EditOrganizationRequest EditRequest(
             decimal serviceChargeRate, decimal discountApprovalLimit = 5m, string businessDayCutoff = "04:00",
             string name = "Cantina da Nonna") => new()
-        {
-            Name = name,
-            Description = "Cozinha italiana de família",
-            ServiceChargeRate = serviceChargeRate,
-            DiscountApprovalLimit = discountApprovalLimit,
-            BusinessDayCutoff = businessDayCutoff
-        };
+            {
+                Name = name,
+                Description = "Cozinha italiana de família",
+                ServiceChargeRate = serviceChargeRate,
+                DiscountApprovalLimit = discountApprovalLimit,
+                BusinessDayCutoff = businessDayCutoff
+            };
 
         private static async Task SeedCantinaAsync(OrganizationTestDatabase database)
         {

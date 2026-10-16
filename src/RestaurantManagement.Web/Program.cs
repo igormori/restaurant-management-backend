@@ -38,6 +38,9 @@ var builder = WebApplication.CreateBuilder(args);
 // ---------------------------------------------
 builder.AddKeyVaultSecrets();
 
+// Outside Development: HTTPS only, and startup fails without a certificate
+builder.UseHttpsOnlyOutsideDevelopment();
+
 // ---------------------------------------------
 // Add Localization
 // ---------------------------------------------
@@ -237,6 +240,11 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+builder.Services.AddScoped<IRefreshTokenCleanupService, RefreshTokenCleanupService>();
+if (builder.Configuration.GetValue("RefreshTokenCleanup:Enabled", true))
+{
+    builder.Services.AddHostedService<RefreshTokenCleanupWorker>();
+}
 builder.Services.AddScoped<IVerificationService, VerificationService>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<IPasswordChangeService, PasswordChangeService>();

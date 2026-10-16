@@ -15,16 +15,16 @@ namespace RestaurantManagement.Web.Tests;
 /// Organization currency and settings through the real endpoints on PostgreSQL (spec Rules 1, 5 and 7).
 /// Ana owns Cantina da Nonna (BRL) and Maple Leaf Bistro (CAD); Liberty Diner (USD) belongs to someone else.
 /// </summary>
-public class OrganizationFieldsEndpointTests : IClassFixture<AuditFieldsPostgresFixture>
+public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFixture>
 {
     private static readonly Guid AnaId = Guid.Parse("11111111-aaaa-4aaa-8aaa-00000000000a");
     private static readonly Guid CantinaId = Guid.Parse("a1a1a1a1-0000-4000-8000-000000000001");
     private static readonly Guid MapleId = Guid.Parse("b2b2b2b2-0000-4000-8000-000000000002");
     private static readonly Guid LibertyId = Guid.Parse("c3c3c3c3-0000-4000-8000-000000000003");
 
-    private readonly AuditFieldsPostgresFixture _postgres;
+    private readonly PostgresDatabaseFixture _postgres;
 
-    public OrganizationFieldsEndpointTests(AuditFieldsPostgresFixture postgres) => _postgres = postgres;
+    public OrganizationFieldsEndpointTests(PostgresDatabaseFixture postgres) => _postgres = postgres;
 
     private async Task<TenantApiFactory> CreateFactoryAsync()
     {

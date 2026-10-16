@@ -53,10 +53,10 @@ Later: own point of sale with payments by PIX (Brazilian instant payment), card 
 - **Owner:** the only system role. Can do everything at every location. Cannot be edited or
   deleted. Every organization always keeps at least one Owner. Only an Owner can make someone
   else an Owner or remove that role.
-- **Admin and Staff:** default roles created for every new organization. The Owner can edit or
-  delete them. Admin: everything except organization settings. Staff: read-only on orders and menu.
-- **Custom roles:** the Owner creates any role (Chef, Waiter, Cashier) with any mix of permissions.
-  Visible only inside that organization.
+- **Admin, Manager, Cashier, Waiter, Kitchen:** fixed roles, the same in every organization;
+  organizations cannot create, edit or delete roles. Admin: all permissions, like the Owner.
+  Manager: menu management and reports. Cashier, Waiter and Kitchen: no management permissions;
+  they may read their organization's menus.
 - A user can have several roles at once; their permissions add up.
 - A role applies to one location or to all locations of the organization. A role for location A
   gives nothing at location B.

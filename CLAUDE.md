@@ -1,12 +1,13 @@
 # RestaurantManagement
 
 .NET 9 modular monolith (Identity, Menu, Organization, Shared, Web) on PostgreSQL. Multi-tenant:
-data belongs to an organization. Roles: Owner, Admin, Staff. Launch markets: Brazil, Canada and
+data belongs to an organization. Roles: Owner, Admin, Manager, Cashier, Waiter, Kitchen (access is checked by permission). Launch markets: Brazil, Canada and
 the USA. Each organization chooses its currency (BRL: Brazilian real, USD: US dollar, CAD:
 Canadian dollar) and each location its time zone; never assume a country default.
 
 **Not launched yet: the database holds no real data.** Tables, columns and migrations may be
-changed freely, with no backfill or data preservation. Remove this paragraph at launch.
+changed freely, with no backfill or data preservation. Remove this paragraph at launch, once
+`backlog/pre-production/` is empty.
 
 ## Skills
 Detailed rules live in skills. Read the ones your role needs before starting:
@@ -51,6 +52,7 @@ Scenarios: 1–3
 - Summary: lowercase, imperative, no trailing period, 72 characters max for the whole line;
   says what changed and its effect, e.g.
   `fix(identity): return a generic 401 for locked accounts`
+- Branches start from `development`, and pull requests always target `development`, never `main`
 - Body only when the why isn't obvious. Scenario numbers and ticket IDs (`Refs: ABC-123`) go
   in the body, never in the summary
 
@@ -104,7 +106,8 @@ stop the flow when something is wrong.
 
 High risk (flagged in `plan.md`; the solution architect decides what to do at Gate 1):
 new Shared contract, auth or role changes, new module, migration on a table that has data or
-with a backfill, new NuGet package.
+with a backfill. Adding a package not already in the dependency graph is high risk. Pinning an
+existing transitive package to a patched version is low risk.
 
 After Gate 2, test files are read-only: never edit, delete, skip or weaken a test. If a test
 looks wrong, stop and say why.
@@ -113,7 +116,9 @@ looks wrong, stop and say why.
 Rules in `.claude/skills/backlog/SKILL.md`, read only when about to write an item. In short: a
 finding that breaks the current task blocks it; a tiny fix in a file already being changed is made
 inline; anything else becomes a backlog item written by the agent that found it, after searching
-for duplicates. Agents write items as `proposed`; only the user accepts, merges or deletes them.
+for duplicates. Agents write items as `proposed`; only the user accepts or merges them.
+When work fully solves an item, agents commit the fix and delete the item file, but never commit
+the deletion: the user checks and commits it. Agents never push.
 
 ### Terminal output
 The reviewer reads the files in `docs/`, not the terminal. When a step finishes, show the

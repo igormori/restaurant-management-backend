@@ -19,7 +19,7 @@ namespace RestaurantManagement.Web.Tests;
 /// database (plan T9). The user comes only from the access token: a user ID in the body is ignored.
 /// Maria (Owner of Cantina da Nonna) and João (Cashier of Cantina da Nonna) are each signed in on one device.
 /// </summary>
-public class PasswordChangeEndpointTests : IClassFixture<AuditFieldsPostgresFixture>
+public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string ChangeUrl = "/api/auth/change-password";
     private const string CookieName = "refresh_token";
@@ -32,9 +32,9 @@ public class PasswordChangeEndpointTests : IClassFixture<AuditFieldsPostgresFixt
     private static readonly Guid JoaoId = Guid.Parse("22222222-bbbb-4bbb-8bbb-00000000000b");
     private static readonly Guid CantinaId = Guid.Parse("a1a1a1a1-0000-4000-8000-000000000001");
 
-    private readonly AuditFieldsPostgresFixture _postgres;
+    private readonly PostgresDatabaseFixture _postgres;
 
-    public PasswordChangeEndpointTests(AuditFieldsPostgresFixture postgres) => _postgres = postgres;
+    public PasswordChangeEndpointTests(PostgresDatabaseFixture postgres) => _postgres = postgres;
 
     private static async Task SeedUserAsync(TenantApiFactory factory, Guid userId, string email, string firstName, string password, string role)
     {

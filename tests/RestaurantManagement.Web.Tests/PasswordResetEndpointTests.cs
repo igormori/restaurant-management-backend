@@ -24,7 +24,7 @@ namespace RestaurantManagement.Web.Tests;
 /// substituted so the test can read the code. Maria is Owner of Cantina da Nonna and signed in on
 /// two devices.
 /// </summary>
-public class PasswordResetEndpointTests : IClassFixture<AuditFieldsPostgresFixture>
+public class PasswordResetEndpointTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string ForgotUrl = "/api/auth/forgot-password";
     private const string ResetUrl = "/api/auth/reset-password";
@@ -36,11 +36,11 @@ public class PasswordResetEndpointTests : IClassFixture<AuditFieldsPostgresFixtu
     private static readonly Guid MariaId = Guid.Parse("11111111-aaaa-4aaa-8aaa-00000000000a");
     private static readonly Guid CantinaId = Guid.Parse("a1a1a1a1-0000-4000-8000-000000000001");
 
-    private readonly AuditFieldsPostgresFixture _postgres;
+    private readonly PostgresDatabaseFixture _postgres;
     private readonly IEmailService _emailService = Substitute.For<IEmailService>();
     private string? _lastEmailedCode;
 
-    public PasswordResetEndpointTests(AuditFieldsPostgresFixture postgres)
+    public PasswordResetEndpointTests(PostgresDatabaseFixture postgres)
     {
         _postgres = postgres;
         _emailService.SendPasswordResetEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>())

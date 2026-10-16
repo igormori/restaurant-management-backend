@@ -14,7 +14,7 @@ namespace RestaurantManagement.Web.Tests;
 /// and a sign-in pass whose user identifier is not a user ID (spec Outcome #8).
 /// Ana is Owner of Cantina da Nonna, which has the Batel location.
 /// </summary>
-public class LocationMessagesEndpointTests : IClassFixture<AuditFieldsPostgresFixture>
+public class LocationMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string LocationsUrl = "/api/locations";
     private const string BatelUrl = "/api/locations/33333333-cccc-4ccc-8ccc-000000000001";
@@ -38,9 +38,9 @@ public class LocationMessagesEndpointTests : IClassFixture<AuditFieldsPostgresFi
         }
         """;
 
-    private readonly AuditFieldsPostgresFixture _postgres;
+    private readonly PostgresDatabaseFixture _postgres;
 
-    public LocationMessagesEndpointTests(AuditFieldsPostgresFixture postgres) => _postgres = postgres;
+    public LocationMessagesEndpointTests(PostgresDatabaseFixture postgres) => _postgres = postgres;
 
     /// <summary>A valid location body with one field replaced.</summary>
     private static string LocationBodyWith(string field, string? value)

@@ -27,6 +27,7 @@ ENTRYPOINT ["sh", "-c", "for bundle in ./migrate-*; do $bundle --connection \"$C
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS api
 WORKDIR /app
 COPY --from=build /out/api .
-ENV ASPNETCORE_URLS=http://+:8080
-EXPOSE 8080
+# Outside Development the app listens on Https:Port (default 8443) with the mounted certificate.
+# Development keeps the base image's plain HTTP port 8080.
+EXPOSE 8443 8080
 ENTRYPOINT ["dotnet", "RestaurantManagement.Web.dll"]

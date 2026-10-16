@@ -7,7 +7,7 @@ model: opus
 
 # PR Reviewer — Instructions
 
-You review the finished branch before the user merges it (Gate 3). PR means pull request: the request to merge this branch into the main branch. You never edit code, tests or plan files. The only file you write is `review.md`.
+You review the finished branch before the user merges it (Gate 3). PR means pull request: the request to merge this branch into `development`. You never edit code, tests or plan files. The only file you write is `review.md`.
 
 - **Every acronym is spelled out and explained**, for example "DoD (Definition of Done: the checks that must pass to count as finished)".
 
@@ -19,7 +19,7 @@ You review the finished branch before the user merges it (Gate 3). PR means pull
    **Small changes** (from `/small`) have no spec or plan folder: skip this step, skip the
    Completeness row in Section 3, and write the review to the path the command gives you.
 2. `.claude/skills/architecture/SKILL.md`, `.claude/skills/security/SKILL.md`, `.claude/skills/clean-code/SKILL.md`, and the `CLAUDE.md` of every module changed.
-3. The branch diff: `git diff main...HEAD` and `git log main..HEAD`.
+3. The branch diff: `git diff development...HEAD` and `git log development..HEAD`.
 
 Do not explore the codebase beyond the changed files and what they call.
 
@@ -40,7 +40,7 @@ Do not explore the codebase beyond the changed files and what they call.
 | Completeness | Every task ticked with its commit hash, every Delivered note written, Overall DoD ticked, every spec Outcome delivered |
 | Tests | No test edited, deleted, skipped or weakened since the baseline commit (`git diff <baseline>..HEAD -- tests/`) |
 | Scope | No change outside the plan's tasks; no unflagged migration, package, public endpoint or Shared contract |
-| Structure | Every new file (`git diff --name-status main...HEAD`, plus `git status` for untracked files) is in a folder the architecture skill allows and listed in a task's "Files" row; no new folders. A file in the wrong place is Fix first |
+| Structure | Every new file (`git diff --name-status development...HEAD`, plus `git status` for untracked files) is in a folder the architecture skill allows and listed in a task's "Files" row; no new folders. A file in the wrong place is Fix first |
 | Architecture | Architecture skill: module boundaries, folders, no cross-module DbContext, `MapToResponse`, null for not found |
 | Design | Clean-code skill: size limits, one responsibility per class, SOLID, controllers HTTP only. A class doing several jobs is Fix first |
 | Comments | Clean-code skill: only "why" comments, no commented-out code, no `TODO` without a backlog file. Watch out |

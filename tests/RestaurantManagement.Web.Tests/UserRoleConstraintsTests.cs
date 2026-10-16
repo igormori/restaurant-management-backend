@@ -12,7 +12,7 @@ namespace RestaurantManagement.Web.Tests;
 /// Inserts use raw SQL on purpose: the database must enforce the rules whatever the write path,
 /// and an empty organization can no longer be expressed through the entity.
 /// </summary>
-public class UserRoleConstraintsTests : IClassFixture<AuditFieldsPostgresFixture>
+public class UserRoleConstraintsTests : IClassFixture<PostgresDatabaseFixture>
 {
     private static readonly Guid CantinaId = Guid.Parse("c1c1c1c1-0000-4000-8000-000000000001");
     private static readonly Guid TrattoriaId = Guid.Parse("c2c2c2c2-0000-4000-8000-000000000002");
@@ -23,9 +23,9 @@ public class UserRoleConstraintsTests : IClassFixture<AuditFieldsPostgresFixture
 
     private static readonly DateTime CreationTime = new(2026, 10, 15, 18, 30, 0, DateTimeKind.Utc);
 
-    private readonly AuditFieldsPostgresFixture _fixture;
+    private readonly PostgresDatabaseFixture _fixture;
 
-    public UserRoleConstraintsTests(AuditFieldsPostgresFixture fixture) => _fixture = fixture;
+    public UserRoleConstraintsTests(PostgresDatabaseFixture fixture) => _fixture = fixture;
 
     /// <summary>Applies every Identity migration and adds Maria as a user.</summary>
     private async Task<IdentityDbContext> CreateMigratedContextWithMariaAsync()
