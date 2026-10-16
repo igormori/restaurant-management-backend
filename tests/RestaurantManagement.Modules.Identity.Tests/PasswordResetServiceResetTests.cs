@@ -266,5 +266,28 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await _auditRecorder.Received(1).RecordAsync(MariaId, AuditActions.PasswordReset, Arg.Any<CancellationToken>());
             await _auditRecorder.ReceivedWithAnyArgs(1).RecordAsync(default, default!, default);
         }
+
+        [Fact]
+        public async Task ResetPasswordAsync_ValidCodeOnLockedAccount_ClearsLoginLockAndFailedAttempts()
+        {
+            // Arrange
+            using var database = await CreateDatabaseAsync();
+            using (var context = database.CreateContext())
+            {
+                var maria = await context.Users.SingleAsync(u => u.Id == MariaId);
+                maria.FailedAttempts = 3;
+                maria.LockedUntil = DateTime.UtcNow.AddMinutes(10);
+                await context.SaveChangesAsync();
+            }
+            var code = await RequestCodeAsync(database);
+
+            // Act
+            await ResetAsync(database, MariaEmail, code, NewPassword);
+
+            // Assert
+            var after = await ReadMariaAsync(database);
+            after.FailedAttempts.ShouldBe(0);
+            after.LockedUntil.ShouldBeNull();
+        }
     }
 }
