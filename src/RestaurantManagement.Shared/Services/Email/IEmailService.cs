@@ -4,5 +4,6 @@ namespace RestaurantManagement.Shared.Services.Email
     {
         Task SendEmailAsync(string to, string subject, string body);
         Task SendVerificationEmailAsync(string to, string firstName, string code, int expiryMinutes);
+        Task SendPasswordResetEmailAsync(string to, string firstName, string code, int expiryMinutes);
     }
 }

@@ -184,9 +184,10 @@ public class IdentityDeleteRulesTests : IClassFixture<AuditFieldsPostgresFixture
         remaining.UserId.ShouldBe(JoaoId);
     }
 
-    // Scenario 11; refresh-tokens-own-table Scenario 4 adds the refresh token cascade
+    // Scenario 11; refresh-tokens-own-table Scenario 4 adds the refresh token cascade;
+    // password reset Scenario 6 adds the reset code cascade
     [Fact]
-    public async Task Migrate_IdentityForeignKeys_RolesRestrictCodesAndRefreshTokensCascade()
+    public async Task Migrate_IdentityForeignKeys_RolesRestrictCodesResetCodesAndRefreshTokensCascade()
     {
         // Arrange
         await using var context = await CreateFullyMigratedContextAsync();
@@ -196,7 +197,8 @@ public class IdentityDeleteRulesTests : IClassFixture<AuditFieldsPostgresFixture
 
         // Assert
         deleteRules.ShouldBe(
-            "fk_refresh_tokens_users_user_id:CASCADE,"
+            "fk_password_reset_codes_users_user_id:CASCADE,"
+            + "fk_refresh_tokens_users_user_id:CASCADE,"
             + "fk_user_roles_users_user_id:RESTRICT,"
             + "fk_user_verification_codes_users_user_id:CASCADE");
     }

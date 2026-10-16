@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.TestHost;
@@ -7,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Services;
+using Shouldly;
 using Sentry;
 
 namespace RestaurantManagement.Web.Tests;
@@ -265,5 +268,61 @@ public class AuthRateLimitingTests : IDisposable
                 return ((SentryEvent)arguments[0]!, (Scope?)arguments[1]);
             })
             .ToList();
+    }
+
+    // Password reset: Scenario 40
+    [Theory]
+    [InlineData("/api/auth/forgot-password", "ForgotPassword")]
+    [InlineData("/api/auth/reset-password", "ResetPassword")]
+    [InlineData("/api/auth/change-password", "ChangePassword")]
+    public async Task PasswordEndpoint_LimitExceeded_ReturnsTooManyRequests(string url, string policy)
+    {
+        // Arrange: one request per 10 minutes; the password services are substituted
+        var resetService = Substitute.For<IPasswordResetService>();
+        resetService.RequestResetCodeAsync(Arg.Any<ForgotPasswordRequest>()).Returns(new MessageResponse { Message = "PasswordResetRequested" });
+        resetService.ResetPasswordAsync(Arg.Any<ResetPasswordRequest>()).Returns(new MessageResponse { Message = "PasswordReset" });
+        var changeService = Substitute.For<IPasswordChangeService>();
+        changeService.ChangePasswordAsync(Arg.Any<Guid>(), Arg.Any<ChangePasswordRequest>()).Returns(new MessageResponse { Message = "PasswordChanged" });
+        var factory = _factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"AuthRateLimit:{policy}:PermitLimit"] = "1",
+                [$"AuthRateLimit:{policy}:WindowSeconds"] = "600",
+            }));
+            builder.ConfigureTestServices(services =>
+            {
+                services.RemoveAll<IPasswordResetService>();
+                services.RemoveAll<IPasswordChangeService>();
+                services.AddSingleton(resetService);
+                services.AddSingleton(changeService);
+            });
+        });
+        _disposables.Add(factory);
+        var client = factory.CreateClient();
+        var accessToken = TestAccessTokens.Create(factory.Services, Guid.Parse("11111111-aaaa-4aaa-8aaa-00000000000a"), "Owner");
+        HttpRequestMessage PasswordRequest()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, url)
+            {
+                Content = JsonContent.Create(new
+                {
+                    email = "maria@cantinadanonna.com.br",
+                    code = "482913",
+                    currentPassword = "Massa@Fresca2026",
+                    newPassword = "Nhoque@Batata2027"
+                })
+            };
+            request.Headers.Add(TestRemoteIpStartupFilter.RemoteIpHeader, IpA);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            return request;
+        }
+        await client.SendAsync(PasswordRequest());
+
+        // Act
+        var response = await client.SendAsync(PasswordRequest());
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
     }
 }

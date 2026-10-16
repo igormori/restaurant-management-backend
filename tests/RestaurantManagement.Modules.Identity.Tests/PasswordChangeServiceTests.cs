@@ -1,0 +1,170 @@
+using Microsoft.EntityFrameworkCore;
+using NSubstitute;
+using RestaurantManagement.Modules.Identity.Data;
+using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Shared.Services.AuditLog;
+using RestaurantManagement.Shared.Utils.Exceptions;
+using Shouldly;
+using Xunit;
+
+namespace RestaurantManagement.Modules.Identity.Tests
+{
+    /// <summary>
+    /// A signed-in user replacing a known password (plan T8). The user comes only from the token, so the
+    /// service takes the user ID separately from the request. A rejected change changes nothing; a
+    /// successful one replaces the password, ends every session of the user and is audited.
+    /// Maria is active and verified and signed in on two devices; Pedro is inactive; Lucia is unverified.
+    /// </summary>
+    public class PasswordChangeServiceTests
+    {
+        private const string OldPassword = "Massa@Fresca2026";
+        private const string NewPassword = "Nhoque@Batata2027";
+
+        private static readonly Guid MariaId = Guid.Parse("11111111-aaaa-4aaa-8aaa-00000000000a");
+        private static readonly Guid PedroId = Guid.Parse("33333333-cccc-4ccc-8ccc-00000000000c");
+        private static readonly Guid LuciaId = Guid.Parse("55555555-eeee-4eee-8eee-00000000000e");
+
+        private readonly IPasswordAuditRecorder _auditRecorder = Substitute.For<IPasswordAuditRecorder>();
+
+        private static async Task<IdentityTestDatabase> CreateDatabaseAsync()
+        {
+            var database = new IdentityTestDatabase();
+            var hash = BCrypt.Net.BCrypt.HashPassword(OldPassword);
+            using (var context = database.CreateContext())
+            {
+                context.Users.AddRange(
+                    new User { Id = MariaId, Email = "maria@cantinadanonna.com.br", PasswordHash = hash, FirstName = "Maria", LastName = "Souza", IsVerified = true },
+                    new User { Id = PedroId, Email = "pedro@cantinadanonna.com.br", PasswordHash = hash, FirstName = "Pedro", LastName = "Alves", IsVerified = true, IsActive = false },
+                    new User { Id = LuciaId, Email = "lucia@cantinadanonna.com.br", PasswordHash = hash, FirstName = "Lucia", LastName = "Ramos", IsVerified = false });
+                await context.SaveChangesAsync();
+            }
+
+            using (var context = database.CreateContext())
+            {
+                var tokens = new RefreshTokenService(context, TestJwtOptions.Create());
+                await tokens.IssueAsync(MariaId, null, TestClients.KitchenTablet.DeviceDescription, TestClients.KitchenTablet.IpAddress);
+                await tokens.IssueAsync(MariaId, null, TestClients.ManagerLaptop.DeviceDescription, TestClients.ManagerLaptop.IpAddress);
+            }
+
+            return database;
+        }
+
+        private async Task<MessageResponse> ChangeAsync(IdentityTestDatabase database, Guid userId, string currentPassword, string newPassword)
+        {
+            using var context = database.CreateContext();
+            var sut = new PasswordChangeService(context, TestLocalizer.Create(), new RefreshTokenService(context, TestJwtOptions.Create()), _auditRecorder);
+            return await sut.ChangePasswordAsync(userId, new ChangePasswordRequest { CurrentPassword = currentPassword, NewPassword = newPassword });
+        }
+
+        private static async Task<User> ReadUserAsync(IdentityTestDatabase database, Guid userId)
+        {
+            using var context = database.CreateContext();
+            return await context.Users.SingleAsync(u => u.Id == userId);
+        }
+
+        private static async Task<List<RefreshToken>> ReadMariaTokensAsync(IdentityTestDatabase database)
+        {
+            using var context = database.CreateContext();
+            return await context.RefreshTokens.Where(t => t.UserId == MariaId).ToListAsync();
+        }
+
+        // Scenario 28
+        [Theory]
+        [InlineData("99999999-9999-4999-8999-999999999999")]   // no such user
+        [InlineData("33333333-cccc-4ccc-8ccc-00000000000c")]   // Pedro, inactive
+        [InlineData("55555555-eeee-4eee-8eee-00000000000e")]   // Lucia, email not verified
+        public async Task ChangePasswordAsync_UnknownInactiveOrUnverifiedUser_RejectedAsInvalidSession(string userId)
+        {
+            // Arrange
+            using var database = await CreateDatabaseAsync();
+
+            // Act
+            var rejection = await Should.ThrowAsync<BusinessException>(() => ChangeAsync(database, Guid.Parse(userId), OldPassword, NewPassword));
+
+            // Assert
+            rejection.StatusCode.ShouldBe(401);
+            await _auditRecorder.DidNotReceiveWithAnyArgs().RecordAsync(default, default!, default);
+        }
+
+        // Scenario 29
+        [Fact]
+        public async Task ChangePasswordAsync_WrongCurrentPassword_RejectedAndNothingChanges()
+        {
+            // Arrange
+            using var database = await CreateDatabaseAsync();
+
+            // Act
+            var rejection = await Should.ThrowAsync<BusinessException>(() => ChangeAsync(database, MariaId, "Pizza@Errada2025", NewPassword));
+
+            // Assert
+            rejection.StatusCode.ShouldBe(400);
+            BCrypt.Net.BCrypt.Verify(OldPassword, (await ReadUserAsync(database, MariaId)).PasswordHash).ShouldBeTrue();
+            (await ReadMariaTokensAsync(database)).ShouldAllBe(t => t.RevokedAt == null);
+            await _auditRecorder.DidNotReceiveWithAnyArgs().RecordAsync(default, default!, default);
+        }
+
+        // Scenario 30
+        [Fact]
+        public async Task ChangePasswordAsync_NewPasswordSameAsCurrent_RejectedAndSessionsKept()
+        {
+            // Arrange
+            using var database = await CreateDatabaseAsync();
+
+            // Act
+            var rejection = await Should.ThrowAsync<BusinessException>(() => ChangeAsync(database, MariaId, OldPassword, OldPassword));
+
+            // Assert
+            rejection.StatusCode.ShouldBe(400);
+            (await ReadMariaTokensAsync(database)).ShouldAllBe(t => t.RevokedAt == null);
+        }
+
+        // Scenario 31
+        [Fact]
+        public async Task ChangePasswordAsync_CorrectCurrentPassword_NewPasswordVerifiesAndOldDoesNot()
+        {
+            // Arrange
+            using var database = await CreateDatabaseAsync();
+
+            // Act
+            await ChangeAsync(database, MariaId, OldPassword, NewPassword);
+
+            // Assert
+            var maria = await ReadUserAsync(database, MariaId);
+            BCrypt.Net.BCrypt.Verify(NewPassword, maria.PasswordHash).ShouldBeTrue();
+            BCrypt.Net.BCrypt.Verify(OldPassword, maria.PasswordHash).ShouldBeFalse();
+        }
+
+        // Scenario 32
+        [Fact]
+        public async Task ChangePasswordAsync_CorrectCurrentPassword_RevokesEveryRefreshTokenAsPasswordChanged()
+        {
+            // Arrange
+            using var database = await CreateDatabaseAsync();
+
+            // Act
+            await ChangeAsync(database, MariaId, OldPassword, NewPassword);
+
+            // Assert
+            var tokens = await ReadMariaTokensAsync(database);
+            tokens.Count.ShouldBe(2);
+            tokens.ShouldAllBe(t => t.RevokedAt != null && t.RevocationReason == RefreshToken.ReasonPasswordChanged);
+        }
+
+        // Scenario 33
+        [Fact]
+        public async Task ChangePasswordAsync_CorrectCurrentPassword_RecordsPasswordChangedAuditOnce()
+        {
+            // Arrange
+            using var database = await CreateDatabaseAsync();
+
+            // Act
+            await ChangeAsync(database, MariaId, OldPassword, NewPassword);
+
+            // Assert
+            await _auditRecorder.Received(1).RecordAsync(MariaId, AuditActions.PasswordChanged, Arg.Any<CancellationToken>());
+            await _auditRecorder.ReceivedWithAnyArgs(1).RecordAsync(default, default!, default);
+        }
+    }
+}

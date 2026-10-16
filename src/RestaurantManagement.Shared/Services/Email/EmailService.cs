@@ -83,5 +83,11 @@ namespace RestaurantManagement.Shared.Services.Email
         {
             await SendEmailAsync(to, VerificationEmailTemplate.Subject, VerificationEmailTemplate.Build(to, firstName, code, expiryMinutes));
         }
+
+        // Stub (tester): implemented in T1.
+        public Task SendPasswordResetEmailAsync(string to, string firstName, string code, int expiryMinutes)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

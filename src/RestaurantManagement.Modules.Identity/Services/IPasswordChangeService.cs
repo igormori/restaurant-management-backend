@@ -1,0 +1,13 @@
+using RestaurantManagement.Modules.Identity.Models;
+
+namespace RestaurantManagement.Modules.Identity.Services
+{
+    public interface IPasswordChangeService
+    {
+        /// <summary>
+        /// Replaces the password of the signed-in user (ID from the token only) after checking the
+        /// current one, and ends every session of that user (task T8).
+        /// </summary>
+        Task<MessageResponse> ChangePasswordAsync(Guid userId, ChangePasswordRequest request);
+    }
+}

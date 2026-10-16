@@ -7,6 +7,8 @@ namespace RestaurantManagement.Modules.Identity.Entities
         public const string ReasonLogout = "logout";
         public const string ReasonLogoutEverywhere = "logout_everywhere";
         public const string ReasonReuseDetected = "reuse_detected";
+        // Stub (tester): revocation reason for T7 and T8.
+        public const string ReasonPasswordChanged = "password_changed";
 
         public const int DeviceDescriptionMaxLength = 512;
         public const int IpAddressMaxLength = 45;

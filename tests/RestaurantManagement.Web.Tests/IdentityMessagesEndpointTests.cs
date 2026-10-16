@@ -58,4 +58,35 @@ public class IdentityMessagesEndpointTests : IDisposable
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         (await FieldErrorsAsync(response)).ShouldContain(expected);
     }
+
+    // 16 characters repeated 8 times, plus one: 129 characters.
+    private const string Password129 =
+        "Massa@Fresca2026" + "Massa@Fresca2026" + "Massa@Fresca2026" + "Massa@Fresca2026"
+        + "Massa@Fresca2026" + "Massa@Fresca2026" + "Massa@Fresca2026" + "Massa@Fresca2026" + "x";
+
+    // Password reset: Scenario 9 (guard: moving the rules into one attribute keeps these messages)
+    [Theory]
+    [InlineData("pt", "Massa@1", "O campo Password deve ter pelo menos 8 caracteres.")]
+    [InlineData("en", Password129, "The field Password must be a maximum of 128 characters.")]
+    [InlineData("pt", "massa@fresca2026", "A senha deve conter pelo menos uma letra maiúscula, um número e um caractere especial.")]
+    [InlineData("en", "", "The Password field is required.")]
+    public async Task Register_PasswordBreaksRule_ReturnsUnchangedLocalizedError(string culture, string password, string expected)
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+        var request = Request("POST", "/api/auth/register", culture, new
+        {
+            email = "joana@padariasaojorge.com.br",
+            password,
+            firstName = "Joana",
+            lastName = "Pereira"
+        });
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await FieldErrorsAsync(response)).ShouldContain(expected);
+    }
 }

@@ -1,12 +1,46 @@
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using RestaurantManagement.Shared.Options;
+using Shouldly;
 
 namespace RestaurantManagement.Shared.Tests
 {
     public class AuthRateLimitOptionsValidatorTests
     {
         private readonly AuthRateLimitOptionsValidator _validator = new();
+
+        // Sets one limit of the forgot, reset or change password policy; the key is shown in the test results.
+        private static readonly Dictionary<string, Action<AuthRateLimitOptions, int>> PasswordPolicyLimits = new()
+        {
+            ["ForgotPassword:PermitLimit"] = (options, value) => options.ForgotPassword.PermitLimit = value,
+            ["ForgotPassword:WindowSeconds"] = (options, value) => options.ForgotPassword.WindowSeconds = value,
+            ["ResetPassword:PermitLimit"] = (options, value) => options.ResetPassword.PermitLimit = value,
+            ["ResetPassword:WindowSeconds"] = (options, value) => options.ResetPassword.WindowSeconds = value,
+            ["ChangePassword:PermitLimit"] = (options, value) => options.ChangePassword.PermitLimit = value,
+            ["ChangePassword:WindowSeconds"] = (options, value) => options.ChangePassword.WindowSeconds = value
+        };
+
+        // Password reset Scenario 4
+        [Theory]
+        [InlineData("ForgotPassword:PermitLimit", 0)]
+        [InlineData("ForgotPassword:WindowSeconds", -600)]
+        [InlineData("ResetPassword:PermitLimit", -1)]
+        [InlineData("ResetPassword:WindowSeconds", 0)]
+        [InlineData("ChangePassword:PermitLimit", 0)]
+        [InlineData("ChangePassword:WindowSeconds", -60)]
+        public void Validate_PasswordPolicyLimitZeroOrNegative_FailsNamingTheSetting(string setting, int value)
+        {
+            // Arrange
+            var options = new AuthRateLimitOptions();
+            PasswordPolicyLimits[setting](options, value);
+
+            // Act
+            var result = _validator.Validate(null, options);
+
+            // Assert
+            result.Failed.ShouldBeTrue();
+            result.FailureMessage.ShouldContain(setting);
+        }
 
         [Fact]
         public void Validate_DefaultOptions_Succeeds()
