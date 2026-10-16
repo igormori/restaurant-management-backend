@@ -69,12 +69,6 @@ namespace RestaurantManagement.Modules.Organization.Services
                 throw new BusinessException(_localizer["TrialOrganizationsCannotCreateNew"].Value, 400);
             }
 
-            // 🧪 SENTRY TEST: Trigger an exception for testing
-            if (request.Name?.ToUpper() == "TEST_SENTRY")
-            {
-                throw new Exception("🧪 Sentry Test Exception: This is intentional to test error tracking!");
-            }
-
             using var tx = await _orgDb.Database.BeginTransactionAsync();
 
             // 1. Create Organization
