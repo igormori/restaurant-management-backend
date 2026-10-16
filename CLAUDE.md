@@ -6,7 +6,8 @@ the USA. Each organization chooses its currency (BRL: Brazilian real, USD: US do
 Canadian dollar) and each location its time zone; never assume a country default.
 
 **Not launched yet: the database holds no real data.** Tables, columns and migrations may be
-changed freely, with no backfill or data preservation. Remove this paragraph at launch.
+changed freely, with no backfill or data preservation. Remove this paragraph at launch, once
+`backlog/pre-production/` is empty.
 
 ## Skills
 Detailed rules live in skills. Read the ones your role needs before starting:
