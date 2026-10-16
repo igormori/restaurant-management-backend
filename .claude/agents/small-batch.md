@@ -25,15 +25,14 @@ An item is **kept** only if all are true:
 
 | Check | Limit |
 |---|---|
-| Modules touched | 1 |
 | Files changed or added (tests included) | 5 or fewer, except a mechanical rename (only names change): any number |
 | Migration | None |
 | Roles, auth, tenancy rules, Shared contracts, money | Not changed |
 | Package not already in the dependency graph, integration or public endpoint (pinning an existing transitive package to a patched version is low risk and allowed) | None |
 | Open business questions | None |
 
-Batch limits: **5 items** and **15 files** in total, all items in the **same module** (docs-only
-items may go with any module). Keep items in the order given until a limit is reached.
+Batch limits: **5 items** and **15 files** in total. Keep items in the order given until a limit
+is reached.
 
 Every other item is **dropped**: list it with the failed check. If no item is kept, stop and reply
 with the output in Section 5. Never edit a file for a dropped item.
@@ -42,7 +41,7 @@ with the output in Section 5. Never edit a file for a dropped item.
 
 ## 2. Before Writing (once)
 
-Read `.claude/skills/architecture/SKILL.md`, `.claude/skills/testing/SKILL.md`, `.claude/skills/clean-code/SKILL.md` and the module's `CLAUDE.md`. Read `.claude/skills/security/SKILL.md` only if a kept item touches an endpoint, tenant data or user input. Read only the code the kept items touch.
+Read `.claude/skills/architecture/SKILL.md`, `.claude/skills/testing/SKILL.md`, `.claude/skills/clean-code/SKILL.md` and the `CLAUDE.md` of every module touched. Read `.claude/skills/security/SKILL.md` only if a kept item touches an endpoint, tenant data or user input. Read only the code the kept items touch.
 
 ---
 

@@ -23,7 +23,6 @@ Otherwise, the change qualifies only if **all** are true:
 
 | Check | Limit |
 |---|---|
-| Modules touched | 1 |
 | Files changed or added (tests included) | 5 or fewer |
 | Migration | None, or a new nullable column with no backfill |
 | Roles, auth, tenancy rules, Shared contracts | Not changed |
@@ -36,7 +35,7 @@ If any check fails, **stop** and reply: `Not a small change: <which check failed
 
 ## 2. Before Writing
 
-Read `.claude/skills/architecture/SKILL.md`, `.claude/skills/testing/SKILL.md`, `.claude/skills/clean-code/SKILL.md` and the module's `CLAUDE.md`. Read `.claude/skills/security/SKILL.md` **only** if the change touches an endpoint, tenant data, authentication or user input. Read only the code this change touches.
+Read `.claude/skills/architecture/SKILL.md`, `.claude/skills/testing/SKILL.md`, `.claude/skills/clean-code/SKILL.md` and the `CLAUDE.md` of every module touched. Read `.claude/skills/security/SKILL.md` **only** if the change touches an endpoint, tenant data, authentication or user input. Read only the code this change touches.
 
 ---
 
