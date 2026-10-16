@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs tests and prints a short summary: build errors, each test's result, the first line of
+# Runs tests and prints a short summary: build errors, each failed test (passed tests are left out), the first line of
 # each failure's message, and the totals. Never prints stack traces or container logs.
 #
 # Usage:
@@ -11,7 +11,7 @@
 
 set -uo pipefail
 
-MAX_LINES=80
+MAX_FAILURE_LINES=80
 TARGET="${1:-}"
 FILTER="${2:-}"
 
@@ -36,13 +36,21 @@ fi
 ARGS=(test "$TEST_TARGET" --no-build --nologo --logger "console;verbosity=normal")
 [[ -n "$FILTER" ]] && ARGS+=(--filter "$FILTER")
 
+OUT_FILE=$(mktemp)
+TOTALS_PATTERN="^(Total tests|Passed!|Failed!)|^(Passed|Failed|Skipped): "
 dotnet "${ARGS[@]}" 2>&1 | awk '
-  /^[[:space:]]+Passed [A-Za-z]/ { sub(/^[[:space:]]+/, ""); sub(/ \[[^]]*\]$/, ""); print "  " $0; next }
-  /^[[:space:]]+Failed [A-Za-z]/ { sub(/^[[:space:]]+/, ""); sub(/ \[[^]]*\]$/, ""); print "  " $0; want_msg = 1; next }
+  /^[[:space:]]+Passed [A-Za-z]/ { next }
+  /^[[:space:]]+Failed [A-Za-z].* \[[0-9<]/ { sub(/^[[:space:]]+/, ""); sub(/ \[[^]]*\]$/, ""); print "  " $0; want_msg = 1; next }
   want_msg && /^[[:space:]]*Error Message:/ { next }
   want_msg && /[A-Za-z]/ && !/^[[:space:]]+at / && !/Stack Trace:/ {
     msg = $0; sub(/^[[:space:]]+/, "", msg); print "      -> " substr(msg, 1, 200); want_msg = 0; next }
-  /(Total tests|Passed!|Failed!)/ { sub(/^[[:space:]]+/, ""); print $0 }
-' | head -n "$MAX_LINES"
+  /(Total tests|Passed!|Failed!|^[[:space:]]+(Passed|Failed|Skipped): )/ { sub(/^[[:space:]]+/, ""); print $0 }
+' > "$OUT_FILE"
+TEST_EXIT=${PIPESTATUS[0]}
 
-exit "${PIPESTATUS[0]}"
+# Failures are capped; the totals of every project are always printed after them
+grep -vE "$TOTALS_PATTERN" "$OUT_FILE" | head -n "$MAX_FAILURE_LINES"
+grep -E "$TOTALS_PATTERN" "$OUT_FILE"
+rm -f "$OUT_FILE"
+
+exit "$TEST_EXIT"
