@@ -53,6 +53,8 @@ Scenarios: 1–3
   says what changed and its effect, e.g.
   `fix(identity): return a generic 401 for locked accounts`
 - Branches start from `development`, and pull requests always target `development`, never `main`
+- Never push to `development` or `main`: `.githooks/pre-push` rejects it. A branch created from
+  `origin/development` must not track it (`git switch --no-track -c ...`)
 - Body only when the why isn't obvious. Scenario numbers and ticket IDs (`Refs: ABC-123`) go
   in the body, never in the summary
 
