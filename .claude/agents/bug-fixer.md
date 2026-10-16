@@ -13,7 +13,7 @@ You fix one bug at a time, and you prove it with a test.
 ## Branch
 Do this before any other step.
 1. Run `git branch --show-current` and `git status`.
-2. On `main`: create `fix/<short-kebab-name-of-the-bug>` with `git checkout -b`. If `main` has
+2. On `development`: create `fix/<short-kebab-name-of-the-bug>` with `git checkout -b`. If `development` has
    uncommitted changes, stop and report them instead.
 3. On a `feature/` or `fix/` branch: stay on it (the bug may come from that branch's review),
    and say so in your report.
