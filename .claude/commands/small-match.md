@@ -9,12 +9,14 @@ If no items were given, ask me for them and stop.
 
 1. Run `git status`. If anything is uncommitted, stop and list it: I commit or stash it first.
 2. Run `git fetch origin`, then create the branch from the latest development:
-   `git switch -c <type>/<short-kebab-title> origin/development` (`fix/`, `chore/` or `refactor/`).
+   `git switch -c backlog-fixes/<YYYY-MM-DD> origin/development`, using today's date. If that
+   branch already exists locally or on origin, add `-2`, `-3`, and so on
+   (`backlog-fixes/2026-10-16-2`).
 3. Use the small-batch subagent with the full list of items.
    If it kept no items, show me its message and stop.
 4. Use the pr-reviewer subagent on the branch. There is no plan folder: it reviews the diff
    against the skills only, writes its review to `docs/reviews/<branch-name>.md` (with `/`
-   replaced by `-`), and checks each commit is one item. The small-batch agent already ran the
+   replaced by `-`, e.g. `docs/reviews/backlog-fixes-2026-10-16.md`), and checks each commit is one item. The small-batch agent already ran the
    full suite: the reviewer runs only `dotnet build RestaurantManagement.sln` and the test
    projects of the module changed.
 

@@ -27,7 +27,7 @@ Otherwise, the change qualifies only if **all** are true:
 | Files changed or added (tests included) | 5 or fewer |
 | Migration | None, or a new nullable column with no backfill |
 | Roles, auth, tenancy rules, Shared contracts | Not changed |
-| New NuGet package, integration or public endpoint | None |
+| Package not already in the dependency graph, integration or public endpoint (pinning an existing transitive package to a patched version is low risk and allowed) | None |
 | Open business questions | None |
 
 If any check fails, **stop** and reply: `Not a small change: <which check failed>. Use /spec.`

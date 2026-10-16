@@ -29,7 +29,7 @@ An item is **kept** only if all are true:
 | Files changed or added (tests included) | 5 or fewer, except a mechanical rename (only names change): any number |
 | Migration | None |
 | Roles, auth, tenancy rules, Shared contracts, money | Not changed |
-| New NuGet package, integration or public endpoint | None |
+| Package not already in the dependency graph, integration or public endpoint (pinning an existing transitive package to a patched version is low risk and allowed) | None |
 | Open business questions | None |
 
 Batch limits: **5 items** and **15 files** in total, all items in the **same module** (docs-only
@@ -57,8 +57,13 @@ Read `.claude/skills/architecture/SKILL.md`, `.claude/skills/testing/SKILL.md`, 
 5. **Self-check the diff:** location, size limits, one responsibility per class, only "why"
    comments, no secrets, nothing beyond the item.
 6. **Commit the item alone**, staged by path (never `git add -A` or `git add .`). Conventional
-   Commits (root `CLAUDE.md`); if the item is a backlog file, add `Refs: <backlog file path>` to
-   the body and update the item as the backlog skill says. Never delete a backlog file.
+   Commits (root `CLAUDE.md`). If the item is a backlog file:
+   - The summary is the item's title, lowercase, shortened only to fit 72 characters, e.g.
+     `fix(identity): resend email failure log drops the exception`.
+   - Add `Refs: <backlog file path>` to the body.
+   - Fully solved: after the commit, delete the backlog file (and its row in
+     `backlog/README.md`, if any) and leave the deletion uncommitted for the user to check.
+     Partly solved: update what is left, as the backlog skill says.
 
 If an item fails twice, or grows past Section 1, **stop the whole batch**: leave that item's files
 as they are (never discard, reset or delete), keep the earlier commits, and report.
