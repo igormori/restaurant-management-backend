@@ -1,6 +1,6 @@
 # Plan: Localize All Client-Facing Messages
 
-**Spec:** docs/specs/shared/2026-10-15-localize-client-messages.md   **Date:** 2026-10-15   **Status:** In progress
+**Spec:** docs/specs/shared/2026-10-15-localize-client-messages.md   **Date:** 2026-10-15   **Status:** Done
 **Risk:** Medium — changes shared code used by every endpoint (message catalog, error handler); no data, schema or permission change
 
 ## Summary
@@ -31,10 +31,10 @@ Terms used below:
 | T8 | — | — | Auth failure response changes from 500 to 401 on `api/locations`; no permission or role change |
 
 ## Overall Definition of Done
-- [ ] All tasks done, tests passing
-- [ ] All spec Outcomes met
-- [ ] Full test suite green after the last batch
-- [ ] No out-of-scope changes; findings in the backlog
+- [x] All tasks done, tests passing
+- [x] All spec Outcomes met
+- [x] Full test suite green after the last batch
+- [x] No out-of-scope changes; findings in the backlog
 
 ## Checklist
 - [x] T1 — Add missing messages to the catalog
