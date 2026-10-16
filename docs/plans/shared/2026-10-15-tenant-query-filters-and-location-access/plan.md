@@ -1,6 +1,6 @@
 # Plan: Tenant Query Filters and Location Access Check
 
-**Spec:** docs/specs/shared/2026-10-15-tenant-query-filters-and-location-access.md   **Date:** 2026-10-15   **Status:** In progress
+**Spec:** docs/specs/shared/2026-10-15-tenant-query-filters-and-location-access.md   **Date:** 2026-10-15   **Status:** Done
 **Risk:** High — changes how every module reads tenant data, breaks seven endpoint contracts (organization ID removed from URL and body), adds a 403 path to every authenticated request, and extends a Shared contract
 
 ## Summary
@@ -39,12 +39,12 @@ Terms used below:
 No public endpoint, no role change, no raw SQL, no migration (query filters do not change the schema). The frontend must switch to the new routes from T3 and T5 in the same release.
 
 ## Overall Definition of Done
-- [ ] All tasks done, tests passing
-- [ ] All spec Outcomes met
-- [ ] Full test suite green after the last batch
-- [ ] No out-of-scope changes; findings in the backlog
-- [ ] `IgnoreQueryFilters` appears only in the places listed in CLAUDE.md
-- [ ] No endpoint reads an organization ID from the URL or request body (organization selection in Identity excepted)
+- [x] All tasks done, tests passing
+- [x] All spec Outcomes met
+- [x] Full test suite green after the last batch
+- [x] No out-of-scope changes; findings in the backlog
+- [x] `IgnoreQueryFilters` appears only in the places listed in CLAUDE.md
+- [x] No endpoint reads an organization ID from the URL or request body (organization selection in Identity excepted)
 
 ## Checklist
 - [x] T1 — Shared tenant context and query filter builder
