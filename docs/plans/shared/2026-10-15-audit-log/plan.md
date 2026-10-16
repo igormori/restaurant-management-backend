@@ -1,6 +1,6 @@
 # Plan: Audit Log
 
-**Spec:** docs/specs/shared/2026-10-15-audit-log.md   **Date:** 2026-10-16   **Status:** Draft
+**Spec:** docs/specs/shared/2026-10-15-audit-log.md   **Date:** 2026-10-16   **Status:** In progress
 **Risk:** High — new table and first DbContext with migrations in Shared, new Shared contract, new endpoint behind a permission
 
 ## Summary
@@ -44,7 +44,7 @@ No public endpoint, no role or auth change, no raw SQL.
 - [ ] No service, contract or endpoint can update or delete an audit entry (Outcome #4)
 
 ## Checklist
-- [ ] T1 — Audit log storage and writer
+- [x] T1 — Audit log storage and writer
 - [ ] T2 — Read audit log endpoint
 - [ ] T3 — Record settings changes
 - [ ] T4 — Record location status changes

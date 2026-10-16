@@ -2,8 +2,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace RestaurantManagement.Shared.Data
 {
-    // Stub created by the tester: T1 adds the configuration, tenant filter, index and the refusal
-    // to save changed or removed entries.
     public class AuditLogDbContext : DbContext
     {
         private readonly ITenantContext _tenantContext;
@@ -15,5 +13,33 @@ namespace RestaurantManagement.Shared.Data
         }
 
         public DbSet<AuditLogEntry> AuditLogEntries { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new AuditLogEntryConfiguration());
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyTenantQueryFilters(() => _tenantContext);
+        }
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            RefuseChangesToStoredEntries();
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+        {
+            RefuseChangesToStoredEntries();
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+        // The log is append-only: a stored entry can never be edited or removed.
+        private void RefuseChangesToStoredEntries()
+        {
+            var tampered = ChangeTracker.Entries<AuditLogEntry>()
+                .Any(e => e.State is EntityState.Modified or EntityState.Deleted);
+            if (tampered)
+                throw new InvalidOperationException("Audit log entries cannot be changed or removed.");
+        }
     }
 }
