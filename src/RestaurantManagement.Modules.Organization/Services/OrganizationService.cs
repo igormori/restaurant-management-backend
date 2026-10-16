@@ -47,7 +47,7 @@ namespace RestaurantManagement.Modules.Organization.Services
         {
             var userExists = await _userRoleLookup.UserExistsAsync(ownerUserId);
             if (!userExists)
-                throw new InvalidOperationException(_localizer["UserNotFound"].Value);
+                throw new BusinessException(_localizer["UserNotFound"].Value, 401);
 
             // Get user's organization IDs from Identity module
             var userOrgIds = await _userRoleLookup.GetOrganizationIdsForUserAsync(ownerUserId);
@@ -187,12 +187,12 @@ namespace RestaurantManagement.Modules.Organization.Services
             // 1. check if organiztion exists and get it
             var organization = await _orgDb.Organizations.FirstOrDefaultAsync(org => org.Id == organizationId);
             if (organization == null)
-                throw new InvalidOperationException(_localizer["OrganizationNotFound"].Value);
+                throw new BusinessException(_localizer["OrganizationNotFound"].Value, 404);
 
             // 2. Get the organiztion settings
             var organizationSettings = await _orgDb.OrganizationSettings.FirstOrDefaultAsync(orgS => orgS.OrganizationId == organizationId);
             if (organizationSettings == null)
-                throw new InvalidOperationException(_localizer["OrganizationSettingsNotFound"].Value);
+                throw new BusinessException(_localizer["OrganizationSettingsNotFound"].Value, 404);
 
             // 3. Only Owner or Admin of this organization may edit it
             var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
@@ -221,7 +221,7 @@ namespace RestaurantManagement.Modules.Organization.Services
         {
             var userExists = await _userRoleLookup.UserExistsAsync(userId);
             if (!userExists)
-                throw new InvalidOperationException(_localizer["UserNotFound"].Value);
+                throw new BusinessException(_localizer["UserNotFound"].Value, 401);
 
             // Get organization IDs from Identity module
             var orgIds = await _userRoleLookup.GetOrganizationIdsForUserAsync(userId);
