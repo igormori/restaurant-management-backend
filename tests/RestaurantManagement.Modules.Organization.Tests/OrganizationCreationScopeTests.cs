@@ -7,6 +7,7 @@ using RestaurantManagement.Modules.Organization.Services;
 using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Services.Identity;
 using Shouldly;
 using Xunit;
@@ -55,7 +56,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             public OrganizationService CreateService(OrganizationDbContext context) => new(
                 context, RoleLookup, RoleAssigner, TenantScope, Tenant, TestLocalizer.Create(),
-                Substitute.For<ILogger<OrganizationService>>());
+                Substitute.For<ILogger<OrganizationService>>(), Substitute.For<IAuditLog>());
         }
 
         // Scenario 1

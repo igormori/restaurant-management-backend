@@ -68,6 +68,8 @@ Later: own point of sale with payments by PIX (Brazilian instant payment), card 
 - Nothing in use is deleted: locations are closed and users are deactivated, so history is kept.
 - Each organization sells in one currency, chosen when it is created: BRL (Brazilian real),
   USD (US dollar) or CAD (Canadian dollar). No country default.
+- Changes to money, roles, permissions, settings or status are written to the audit log: who,
+  when, and the values before and after. Each spec lists which of its actions are logged.
 - Each location has its own time zone (Canada and the USA span several), used for its business
   day. No country default.
 - Not launched yet: there is no real customer data.

@@ -7,6 +7,7 @@ using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.Identity;
 using Shouldly;
 using Xunit;
+using RestaurantManagement.Shared.Services.AuditLog;
 
 namespace RestaurantManagement.Modules.Organization.Tests
 {
@@ -87,7 +88,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             userRoleLookup.GetOrganizationIdsForUserAsync(userId).Returns(new List<Guid>());
             using var context = database.CreateContext();
             var sut = new OrganizationService(context, userRoleLookup, Substitute.For<IUserRoleAssigner>(), new TenantScope(),
-                TestTenant.None, TestLocalizer.Create(), Substitute.For<ILogger<OrganizationService>>());
+                TestTenant.None, TestLocalizer.Create(), Substitute.For<ILogger<OrganizationService>>(), Substitute.For<IAuditLog>());
 
             // Act
             var created = await sut.CreateOrganizationAsync(userId, new CreateOrganizationRequest { Name = "Maple Leaf Bistro", Currency = "CAD" });
@@ -96,7 +97,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             userRoleLookup.GetOrganizationIdsForUserAsync(userId).Returns(new List<Guid> { created.Id });
             using var listContext = database.CreateContext();
             var listSut = new OrganizationService(listContext, userRoleLookup, Substitute.For<IUserRoleAssigner>(), new TenantScope(),
-                TestTenant.None, TestLocalizer.Create(), Substitute.For<ILogger<OrganizationService>>());
+                TestTenant.None, TestLocalizer.Create(), Substitute.For<ILogger<OrganizationService>>(), Substitute.For<IAuditLog>());
             var stored = (await listSut.GetOrganizationsAsync(userId)).ShouldHaveSingleItem();
             stored.ServiceChargeRate.ShouldBe(0m);
             stored.DiscountApprovalLimit.ShouldBe(0m);

@@ -6,12 +6,12 @@ description: Clean code rules for the RestaurantManagement backend — size limi
 # Clean code
 
 ## 1. Size limits
-Generated migrations are exempt. Above a limit, split by responsibility; never just move code around.
+Generated migrations and `Program.cs` are exempt. Above a limit, split by responsibility; never just move code around.
 
 | Unit | Limit | When over the limit |
 |---|---|---|
 | File | 200 lines (enforced by hook) | The class does more than one job: split it |
-| `Program.cs` | 300 lines (enforced by hook) | Move registrations into extension methods per module (e.g. `AddIdentityModule()`) |
+| `Program.cs` | No line limit | Prefer extension methods per module (e.g. `AddIdentityModule()`) to keep it readable |
 | Class | One responsibility | If you need "and" to describe it, split it |
 | Method | 30 lines | Extract well-named private methods |
 | Controller action | 10 lines | Business logic belongs in `Services/` |

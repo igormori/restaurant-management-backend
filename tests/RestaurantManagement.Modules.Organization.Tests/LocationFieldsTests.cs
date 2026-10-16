@@ -9,6 +9,8 @@ using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Shouldly;
 using Xunit;
+using RestaurantManagement.Shared.Services.AuditLog;
+using Microsoft.Extensions.Logging;
 
 namespace RestaurantManagement.Modules.Organization.Tests
 {
@@ -127,7 +129,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         {
             var userRoleLookup = Substitute.For<IUserRoleLookup>();
             userRoleLookup.GetRoleAsync(userId, organizationId).Returns(role);
-            return new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
+            return new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
         }
 
         // Scenario 11

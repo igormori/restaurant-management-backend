@@ -183,6 +183,12 @@
   <data name="UrlAttribute_ValidationError" xml:space="preserve">
     <value>The {0} field is not a valid URL.</value>
   </data>
+  <data name="AuditLogInvalidDateRange" xml:space="preserve">
+    <value>The start date must not be after the end date.</value>
+  </data>
+  <data name="AuditLogUnknownAction" xml:space="preserve">
+    <value>The action is not a known audit log action.</value>
+  </data>
 </root>
 
 

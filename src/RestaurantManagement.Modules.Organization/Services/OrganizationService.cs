@@ -1,6 +1,7 @@
 using RestaurantManagement.Shared;
 using System;
 using System.Globalization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,7 @@ using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
@@ -24,6 +26,7 @@ namespace RestaurantManagement.Modules.Organization.Services
         private readonly ITenantContext _tenantContext;
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly ILogger<OrganizationService> _logger;
+        private readonly IAuditLog _auditLog;
 
         public OrganizationService(
             OrganizationDbContext orgDb,
@@ -32,7 +35,8 @@ namespace RestaurantManagement.Modules.Organization.Services
             ITenantScope tenantScope,
             ITenantContext tenantContext,
             IStringLocalizer<SharedResource> localizer,
-            ILogger<OrganizationService> logger)
+            ILogger<OrganizationService> logger,
+            IAuditLog auditLog)
         {
             _orgDb = orgDb;
             _userRoleLookup = userRoleLookup;
@@ -41,6 +45,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             _tenantContext = tenantContext;
             _localizer = localizer;
             _logger = logger;
+            _auditLog = auditLog;
         }
 
         public async Task<OrganizationResponse> CreateOrganizationAsync(Guid ownerUserId, CreateOrganizationRequest request)
@@ -199,6 +204,8 @@ namespace RestaurantManagement.Modules.Organization.Services
             if (role != Roles.Owner && role != Roles.Admin)
                 throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
 
+            var before = (organizationSettings.ServiceChargeRate, organizationSettings.DiscountApprovalLimit, organizationSettings.BusinessDayCutoff);
+
             // 2. Edit Organization Information
             organization.Name = request.Name;
             organization.Description = request.Description;
@@ -213,9 +220,41 @@ namespace RestaurantManagement.Modules.Organization.Services
 
             await _orgDb.SaveChangesAsync();
 
+            await RecordSettingsChangeAsync(organizationSettings, before);
+
             // 4. Return sanitized response
             return ToResponse(organization, organizationSettings);
         }
+
+        // The edit is already saved; a failed audit write must not undo it or fail the request.
+        private async Task RecordSettingsChangeAsync(OrganizationSettings settings, (decimal Rate, decimal Limit, TimeOnly Cutoff) before)
+        {
+            if (before == (settings.ServiceChargeRate, settings.DiscountApprovalLimit, settings.BusinessDayCutoff))
+                return;
+
+            try
+            {
+                await _auditLog.RecordAsync(new AuditEntryDto
+                {
+                    Action = AuditActions.SettingsChanged,
+                    EntityType = "OrganizationSettings",
+                    EntityId = settings.Id,
+                    Before = ToSettingsJson(before.Rate, before.Limit, before.Cutoff),
+                    After = ToSettingsJson(settings.ServiceChargeRate, settings.DiscountApprovalLimit, settings.BusinessDayCutoff)
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to record the settings change for organization {OrganizationId}.", settings.OrganizationId);
+            }
+        }
+
+        private static string ToSettingsJson(decimal rate, decimal limit, TimeOnly cutoff) => JsonSerializer.Serialize(new
+        {
+            serviceChargeRate = rate,
+            discountApprovalLimit = limit,
+            businessDayCutoff = cutoff.ToString("HH:mm", CultureInfo.InvariantCulture)
+        });
 
         public async Task<List<OrganizationResponse>> GetOrganizationsAsync(Guid userId)
         {

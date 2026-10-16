@@ -7,6 +7,7 @@ using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.Identity;
 using Shouldly;
 using Xunit;
+using RestaurantManagement.Shared.Services.AuditLog;
 
 namespace RestaurantManagement.Modules.Organization.Tests
 {
@@ -28,7 +29,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
                 .Returns(Task.CompletedTask);
             var logger = Substitute.For<ILogger<OrganizationService>>();
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger);
+            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
             var request = new CreateOrganizationRequest { Name = name, Currency = "BRL" };
 
             // Act

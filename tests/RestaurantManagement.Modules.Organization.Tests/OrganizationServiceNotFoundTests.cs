@@ -8,6 +8,7 @@ using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Shouldly;
 using Xunit;
+using RestaurantManagement.Shared.Services.AuditLog;
 
 namespace RestaurantManagement.Modules.Organization.Tests
 {
@@ -25,7 +26,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         {
             var context = database.CreateContext(tenant);
             return new OrganizationService(context, lookup, Substitute.For<IUserRoleAssigner>(), new TenantScope(), tenant,
-                TestLocalizer.Create(), Substitute.For<ILogger<OrganizationService>>());
+                TestLocalizer.Create(), Substitute.For<ILogger<OrganizationService>>(), Substitute.For<IAuditLog>());
         }
 
         [Fact]

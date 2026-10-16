@@ -14,6 +14,7 @@ using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Middleware;
 using RestaurantManagement.Shared.Options;
+using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Services.Email;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Services.Organization;
@@ -132,6 +133,7 @@ builder.Services.AddControllers()
         options.DataAnnotationLocalizerProvider = (type, factory) =>
             factory.Create(typeof(SharedResource));
     })
+    .AddApplicationPart(typeof(RestaurantManagement.Shared.Controllers.AuditLogController).Assembly)
     .AddApplicationPart(typeof(RestaurantManagement.Modules.Identity.Controllers.AuthController).Assembly)
     .AddApplicationPart(typeof(RestaurantManagement.Modules.Menu.Controllers.MenuController).Assembly)
     .AddApplicationPart(typeof(RestaurantManagement.Modules.Organization.Controllers.OrganizationController).Assembly);
@@ -176,6 +178,9 @@ builder.Services.AddDbContext<MenuDbContext>((serviceProvider, options) =>
 builder.Services.AddDbContext<OrganizationDbContext>((serviceProvider, options) =>
     options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
         .AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>()));
+
+builder.Services.AddAuditLog((sp, options) => options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
+    .AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>()));
 
 // ---------------------------------------------
 // Sentry for error tracking
