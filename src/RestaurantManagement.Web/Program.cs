@@ -117,6 +117,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddPermissionPolicies();
+builder.Services.AddLocalizedValidationTitle();
 
 // ---------------------------------------------
 // Controllers

@@ -19,4 +19,4 @@ The organization ID on organization selection is a required field, but a request
 - [ ] A body with `null` or text that is not an ID for these fields returns a translated message, not the platform's English text
 
 ## Related
-- backlog/bugs/2026-10-15-validation-error-title-english-only.md
+None
