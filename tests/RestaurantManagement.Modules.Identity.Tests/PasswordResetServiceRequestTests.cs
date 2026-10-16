@@ -170,5 +170,22 @@ namespace RestaurantManagement.Modules.Identity.Tests
             stored.CodeHash.ShouldNotBe(sentCode);
             stored.CodeHash.ShouldBe(Hasher.ComputeHash(MariaId, sentCode!));
         }
+
+        [Fact]
+        public async Task RequestResetCodeAsync_SecondRequestWithinResendWait_SameAcknowledgementAndNoNewCode()
+        {
+            // Arrange
+            using var database = await CreateDatabaseAsync();
+            var first = await RequestAsync(database, MariaEmail);
+
+            // Act
+            var second = await RequestAsync(database, MariaEmail);
+
+            // Assert
+            second.Message.ShouldBe(first.Message);
+            await _emailService.ReceivedWithAnyArgs(1).SendPasswordResetEmailAsync(default!, default!, default!, default);
+            using var context = database.CreateContext();
+            (await context.Set<PasswordResetCode>().CountAsync()).ShouldBe(1);
+        }
     }
 }
