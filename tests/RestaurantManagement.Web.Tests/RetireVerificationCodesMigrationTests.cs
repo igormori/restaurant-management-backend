@@ -81,6 +81,7 @@ public class RetireVerificationCodesMigrationTests : IClassFixture<AuditFieldsPo
         await InsertReadableCodeAsync(context, MariaCodeId, MariaId, MariaReadableCode, isUsed: false);
         await InsertReadableCodeAsync(context, JoaoCodeId, JoaoId, JoaoReadableCode, isUsed: true);
         await migrator.MigrateAsync(retireMigration);
+        await migrator.MigrateAsync(); // bring the schema to the current model before using today's services
 
         return options;
     }
