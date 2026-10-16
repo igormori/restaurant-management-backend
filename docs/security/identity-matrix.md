@@ -61,7 +61,7 @@ forgot password 3/10 min, reset password 10/10 min, change password 10/min.
 | V6 | Lock expired | Code checked again and can verify | ✅ | `VerificationServiceTests.VerifyEmailAsync_LockoutExpired_EvaluatesCodeAndVerifiesUser` |
 | V7 | Code issued before a resend | 401; the newest code works | ✅ | `VerificationServiceTests.VerifyEmailAsync_WithCodeInvalidatedByResend_ThrowsBusinessException`, `VerificationServiceTests.VerifyEmailAsync_NewestCodeAfterResend_MarksUserVerified` |
 | V8 | Same code submitted twice | Second attempt 401 | ✅ | `VerificationServiceTests.VerifyEmailAsync_SameCodeSubmittedTwice_SecondAttemptThrowsBusinessException` |
-| V9 | Code missing, or over 6 characters | 400 | ❌ | |
+| V9 | Code missing, or over 6 characters | 400 | ✅ | `VerifyEmailRequestValidationTests.Validate_VerifyCodeMissingOrOverSixCharacters_ReturnsErrorOnCode`, `VerifyEmailRequestValidationTests.Validate_VerifyCodeOfSixCharacters_ReturnsNoErrorOnCode`, `VerifyEmailRequestValidationTests.Validate_ResetCodeMissingOrOverSixCharacters_ReturnsErrorOnCode` |
 | V10 | Rate limit exceeded | 429 | ✅ | `AuthRateLimitingTests.PublicAuthEndpoint_LimitExceeded_ReturnsTooManyRequestsWithRetryAfter` |
 | V11 | Locked account compared with an unknown email, on verify and resend | Same status and body for both | 🐞 | Today a locked account gets 423: `backlog/bugs/2026-10-16-verification-lockout-reveals-account.md` |
 
