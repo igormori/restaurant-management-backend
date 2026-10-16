@@ -87,6 +87,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             if (role != Roles.Owner && role != Roles.Admin)
                 throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
 
+            var previousStatus = location.Status;
             location.Name = request.Name;
             location.Address = request.Address;
             location.City = request.City;
@@ -102,6 +103,7 @@ namespace RestaurantManagement.Modules.Organization.Services
 
             await EnsureCodeIsFreeAsync(location.Code, location.Id);
             await SaveAsync();
+            await RecordStatusChangeAsync(location, previousStatus);
 
             return MapToResponse(location);
         }
@@ -125,10 +127,36 @@ namespace RestaurantManagement.Modules.Organization.Services
             // Wait, "Delete" usually implies "Gone". But requirement says "If user closes... don't delete data".
             // So "Delete" endpoint creates a "Closed" state.
 
+            var previousStatus = location.Status;
             location.Status = LocationStatus.Closed;
             location.UpdatedAt = DateTime.UtcNow;
 
             await _orgDb.SaveChangesAsync();
+            await RecordStatusChangeAsync(location, previousStatus);
+        }
+
+        // The change is already saved; a failed audit write must not undo it or fail the request.
+        private async Task RecordStatusChangeAsync(Location location, LocationStatus previousStatus)
+        {
+            if (location.Status == previousStatus)
+                return;
+
+            try
+            {
+                await _auditLog.RecordAsync(new AuditEntryDto
+                {
+                    Action = AuditActions.LocationStatusChanged,
+                    EntityType = "Location",
+                    EntityId = location.Id,
+                    LocationId = location.Id,
+                    Before = previousStatus.ToString(),
+                    After = location.Status.ToString()
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to record the status change of location {LocationId}.", location.Id);
+            }
         }
 
         public async Task<List<LocationResponse>> GetLocationsAsync(Guid userId)
