@@ -28,6 +28,7 @@ ALLOWED_NEW_FILES = [
     rf"^docs/plans/[a-z-]+/{DATE_SLUG}/batches/B\d+\.md$",
     rf"^backlog/(features|bugs|improvements|tech-debt)/{DATE_SLUG}\.md$",
     r"^docs/reviews/[a-z0-9-]+\.md$",
+    r"^docs/security/[a-z0-9-]+-matrix\.md$",
     rf"^src/RestaurantManagement\.Modules\.{PASCAL}/({MODULE_FOLDERS})/{PASCAL}\.cs$",
     rf"^src/RestaurantManagement\.Modules\.{PASCAL}/Migrations/\d{{14}}_{PASCAL}(\.Designer)?\.cs$",
     rf"^src/RestaurantManagement\.Modules\.{PASCAL}/Migrations/{PASCAL}ModelSnapshot\.cs$",
