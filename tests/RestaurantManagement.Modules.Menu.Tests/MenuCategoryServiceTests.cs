@@ -110,6 +110,127 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        public async Task CreateAsync_WhenMenuBelongsToAnotherOrganization_ThrowsNotFoundAndStoresNothing()
+        {
+            // Arrange
+            using var database = new MenuTestDatabase();
+            var (foreignMenuId, _) = await SeedMenuAsync(database);
+            var ownOrganizationId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var userRoleLookup = CreateUserRoleLookup(userId, ownOrganizationId, Roles.Owner);
+
+            var tenant = TestTenant.Of(ownOrganizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = CreateSut(context, userRoleLookup, tenant);
+
+            // Act
+            var act = () => sut.CreateAsync(userId, CreateRequest(foreignMenuId));
+
+            // Assert
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 404);
+            using var readContext = database.CreateContext();
+            readContext.MenuCategories.Count().Should().Be(0);
+        }
+
+        [Fact]
+        public async Task CreateAsync_WhenMenuDoesNotExist_ThrowsNotFound()
+        {
+            // Arrange
+            using var database = new MenuTestDatabase();
+            var organizationId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
+
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = CreateSut(context, userRoleLookup, tenant);
+
+            // Act
+            var act = () => sut.CreateAsync(userId, CreateRequest(Guid.NewGuid()));
+
+            // Assert
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 404);
+        }
+
+        [Fact]
+        public async Task CreateAsync_WhenLocationBelongsToAnotherOrganization_ThrowsNotFoundAndStoresNothing()
+        {
+            // Arrange
+            using var database = new MenuTestDatabase();
+            var (menuId, organizationId) = await SeedMenuAsync(database);
+            var userId = Guid.NewGuid();
+            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
+            var foreignLocationId = Guid.NewGuid();
+            var organizationLookup = Substitute.For<IOrganizationLookup>();
+            organizationLookup.GetLocationAsync(foreignLocationId).Returns(
+                new LocationSummaryDto { Id = foreignLocationId, OrganizationId = Guid.NewGuid() });
+
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = CreateSut(context, userRoleLookup, tenant, organizationLookup);
+            var request = CreateRequest(menuId);
+            request.LocationId = foreignLocationId;
+
+            // Act
+            var act = () => sut.CreateAsync(userId, request);
+
+            // Assert
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 404);
+            using var readContext = database.CreateContext();
+            readContext.MenuCategories.Count().Should().Be(0);
+        }
+
+        [Fact]
+        public async Task CreateAsync_WhenLocationDoesNotExist_ThrowsNotFoundAndStoresNothing()
+        {
+            // Arrange
+            using var database = new MenuTestDatabase();
+            var (menuId, organizationId) = await SeedMenuAsync(database);
+            var userId = Guid.NewGuid();
+            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
+
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = CreateSut(context, userRoleLookup, tenant);
+            var request = CreateRequest(menuId);
+            request.LocationId = Guid.NewGuid();
+
+            // Act
+            var act = () => sut.CreateAsync(userId, request);
+
+            // Assert
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 404);
+            using var readContext = database.CreateContext();
+            readContext.MenuCategories.Count().Should().Be(0);
+        }
+
+        [Fact]
+        public async Task CreateAsync_WhenLocationBelongsToOrganization_StoresLocationId()
+        {
+            // Arrange
+            using var database = new MenuTestDatabase();
+            var (menuId, organizationId) = await SeedMenuAsync(database);
+            var userId = Guid.NewGuid();
+            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
+            var locationId = Guid.NewGuid();
+            var organizationLookup = Substitute.For<IOrganizationLookup>();
+            organizationLookup.GetLocationAsync(locationId).Returns(
+                new LocationSummaryDto { Id = locationId, OrganizationId = organizationId });
+
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = CreateSut(context, userRoleLookup, tenant, organizationLookup);
+            var request = CreateRequest(menuId);
+            request.LocationId = locationId;
+
+            // Act
+            var response = await sut.CreateAsync(userId, request);
+
+            // Assert
+            response.LocationId.Should().Be(locationId);
+        }
+
+        [Fact]
         public async Task CreateAsync_WhenUserIsOwnerOrAdmin_CreatesCategory()
         {
             // Arrange

@@ -38,6 +38,18 @@ namespace RestaurantManagement.Modules.Menu.Services
             var organizationId = GetTokenOrganizationId();
             await CheckUserPermission(userId, organizationId);
 
+            // The tenant query filter hides other organizations' menus, so a foreign MenuId looks missing.
+            var menuExists = await _context.Menus.AnyAsync(m => m.Id == request.MenuId);
+            if (!menuExists)
+                throw new BusinessException(_localizer["MenuNotFound"].Value, 404);
+
+            if (request.LocationId.HasValue)
+            {
+                var location = await _organizationLookup.GetLocationAsync(request.LocationId.Value);
+                if (location == null || location.OrganizationId != organizationId)
+                    throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
+            }
+
             var category = new MenuCategory
             {
                 Id = Guid.NewGuid(),
