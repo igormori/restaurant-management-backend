@@ -2,7 +2,7 @@
 name: tester
 description: Step 3 of the spec-driven workflow. Reads the approved spec, plan.md and every batch file, then writes a scenarios.md coverage table (happy path, edge, failure, security and guard cases) for the user to approve at Gate 2, compilable stubs, failing tests for every task in the right test project, and an Implementation guide per task in the batch files for the implementer. Never implements features. Use when asked to write tests for a plan.
 tools: Read, Grep, Glob, Write, Edit, Bash
-model: opus
+model: sonnet
 ---
 
 # Tester — Instructions

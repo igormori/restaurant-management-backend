@@ -27,8 +27,30 @@ Test projects mirror `src/`: `tests/<ProjectName>.Tests`
 - Names: `Method_Scenario_ExpectedResult`,
   e.g. `DetectWaste_PurchasesExceedUsageBy25Percent_ReturnsVarianceAlert`
 - Every test has explicit `// Arrange`, `// Act`, `// Assert` comments; one behaviour per test
-- Realistic restaurant values (grams, dish names, prices in BRL), never `foo`/`bar`/`123`
+- Realistic restaurant values (grams, dish names, prices in BRL, USD or CAD), never
+  `foo`/`bar`/`123`
 - No logic in tests: no loops or conditionals deciding what to assert
 - Cover the failure cases first, then the happy path
 - Bug fixes start with a failing test that reproduces the bug
 - Tests are written before the implementation and must fail first
+
+## 4. Existing fixtures and patterns
+Use these; don't search the codebase for them. If one is missing for your case, follow the
+closest example file below.
+
+| Need | Use | Where |
+|---|---|---|
+| Module unit test database (SQLite in-memory) | <class/helper> | <path> |
+| Integration test app and database (WebApplicationFactory + Testcontainers PostgreSQL) | <fixture class>, collection `<name>` | <path> |
+| Signed-in client with organization, location and role | <helper method> | <path> |
+| Second organization for cross-tenant tests | <helper method> | <path> |
+| Seed an organization, location or user | <builder/helper> | <path> |
+| Fake current user / tenant in unit tests | <helper or NSubstitute setup> | <path> |
+| Clock / time zone in tests | <helper> | <path> |
+
+### Example files to copy
+| Test type | Example |
+|---|---|
+| Service unit test | <path> |
+| Endpoint integration test (incl. 403 and cross-tenant 404) | <path> |
+| PostgreSQL-only behaviour (constraint, migration) | <path> |
