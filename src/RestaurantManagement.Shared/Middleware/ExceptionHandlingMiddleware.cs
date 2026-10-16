@@ -49,10 +49,11 @@ namespace RestaurantManagement.Shared.Middleware
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 context.Response.ContentType = "application/json";
 
-                var localizer = context.RequestServices.GetRequiredService<IStringLocalizer<SharedResource>>();
+                // The last-resort handler must not throw, so fall back to English without a localizer.
+                var localizer = context.RequestServices?.GetService<IStringLocalizer<SharedResource>>();
                 var errorResponse = new
                 {
-                    message = localizer["UnexpectedError"].Value,
+                    message = localizer?["UnexpectedError"].Value ?? "An unexpected error occurred.",
                     detail = _env.IsDevelopment() ? ex.Message : null
                 };
 
