@@ -31,7 +31,7 @@ public sealed class TenantApiFactory : AuthApiFactory
 
     private TenantApiFactory(string connectionString) => _connectionString = connectionString;
 
-    public static async Task<TenantApiFactory> CreateAsync(AuditFieldsPostgresFixture postgres)
+    public static async Task<TenantApiFactory> CreateAsync(PostgresDatabaseFixture postgres)
     {
         var factory = new TenantApiFactory(await postgres.CreateDatabaseAsync());
         using var scope = factory.Services.CreateScope();

@@ -6,35 +6,11 @@ using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Menu.Data;
 using RestaurantManagement.Modules.Organization.Data;
 using Shouldly;
-using Testcontainers.PostgreSql;
 using Xunit;
 
 namespace RestaurantManagement.Web.Tests;
 
-/// <summary>
-/// One PostgreSQL container shared by the class; every test gets its own empty database.
-/// </summary>
-public sealed class AuditFieldsPostgresFixture : IAsyncLifetime
-{
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:16-alpine").Build();
-
-    public async Task InitializeAsync() => await _container.StartAsync();
-
-    public async Task DisposeAsync() => await _container.DisposeAsync();
-
-    public async Task<string> CreateDatabaseAsync()
-    {
-        var databaseName = "audit_" + Guid.NewGuid().ToString("N");
-        await using var connection = new NpgsqlConnection(_container.GetConnectionString());
-        await connection.OpenAsync();
-        await using var command = new NpgsqlCommand($"CREATE DATABASE {databaseName}", connection);
-        await command.ExecuteNonQueryAsync();
-
-        return new NpgsqlConnectionStringBuilder(_container.GetConnectionString()) { Database = databaseName }.ConnectionString;
-    }
-}
-
-public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixture>
+public class AuditFieldsMigrationTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string AuditMigrationSuffix = "_AddAuditFields";
     // Each "before" name below must be the migration immediately preceding AddAuditFields in its module:
@@ -59,9 +35,9 @@ public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixtur
     private static readonly DateTime CreationTime = new(2026, 3, 14, 18, 30, 0, DateTimeKind.Utc);
     private static readonly DateTime LaterCreationTime = new(2026, 3, 16, 9, 15, 0, DateTimeKind.Utc);
 
-    private readonly AuditFieldsPostgresFixture _fixture;
+    private readonly PostgresDatabaseFixture _fixture;
 
-    public AuditFieldsMigrationTests(AuditFieldsPostgresFixture fixture) => _fixture = fixture;
+    public AuditFieldsMigrationTests(PostgresDatabaseFixture fixture) => _fixture = fixture;
 
     private async Task<DbContextOptions<T>> CreateOptionsAsync<T>() where T : DbContext
         => new DbContextOptionsBuilder<T>()

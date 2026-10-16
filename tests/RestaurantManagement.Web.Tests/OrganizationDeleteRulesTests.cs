@@ -12,7 +12,7 @@ namespace RestaurantManagement.Web.Tests;
 /// Delete rules between organizations and their locations and settings, enforced by PostgreSQL.
 /// Deletes use raw SQL on purpose: the database must refuse them whatever the write path.
 /// </summary>
-public class OrganizationDeleteRulesTests : IClassFixture<AuditFieldsPostgresFixture>
+public class OrganizationDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string RestrictMigrationSuffix = "_RestrictOrganizationCascadeDeletes";
     private const string AuditMigrationSuffix = "_AddAuditFields";
@@ -39,9 +39,9 @@ public class OrganizationDeleteRulesTests : IClassFixture<AuditFieldsPostgresFix
     private static readonly DateTime CreationTime = new(2026, 3, 14, 18, 30, 0, DateTimeKind.Utc);
     private static readonly DateTime TrialEndDate = new(2026, 4, 13, 18, 30, 0, DateTimeKind.Utc);
 
-    private readonly AuditFieldsPostgresFixture _fixture;
+    private readonly PostgresDatabaseFixture _fixture;
 
-    public OrganizationDeleteRulesTests(AuditFieldsPostgresFixture fixture) => _fixture = fixture;
+    public OrganizationDeleteRulesTests(PostgresDatabaseFixture fixture) => _fixture = fixture;
 
     private async Task<DbContextOptions<OrganizationDbContext>> CreateOptionsAsync()
         => new DbContextOptionsBuilder<OrganizationDbContext>()

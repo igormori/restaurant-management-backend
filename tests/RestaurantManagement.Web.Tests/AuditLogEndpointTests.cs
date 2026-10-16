@@ -13,7 +13,7 @@ namespace RestaurantManagement.Web.Tests;
 /// organization's entries, only with the reports.view permission, filtered by date and action, newest
 /// first, paged. Entries are seeded at fixed times; Ana is signed in to Cantina da Nonna.
 /// </summary>
-public class AuditLogEndpointTests : IClassFixture<AuditFieldsPostgresFixture>
+public class AuditLogEndpointTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string Cantina = "a1a1a1a1-0000-4000-8000-000000000001";
     private const string AuditLogUrl = "/api/audit-log";
@@ -36,9 +36,9 @@ public class AuditLogEndpointTests : IClassFixture<AuditFieldsPostgresFixture>
     private static readonly DateTime Oct14 = new(2026, 10, 14, 18, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime Oct15 = new(2026, 10, 15, 8, 0, 0, DateTimeKind.Utc);
 
-    private readonly AuditFieldsPostgresFixture _postgres;
+    private readonly PostgresDatabaseFixture _postgres;
 
-    public AuditLogEndpointTests(AuditFieldsPostgresFixture postgres) => _postgres = postgres;
+    public AuditLogEndpointTests(PostgresDatabaseFixture postgres) => _postgres = postgres;
 
     private sealed record EntryRow(Guid Id, string Action, DateTime CreatedAt);
 

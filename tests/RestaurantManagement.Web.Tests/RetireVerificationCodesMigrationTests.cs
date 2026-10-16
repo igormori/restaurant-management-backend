@@ -21,7 +21,7 @@ namespace RestaurantManagement.Web.Tests;
 /// Rows are seeded right after the column rename (HashVerificationCodes), when code_hash still
 /// holds the readable codes written before release, then the retire migration is applied.
 /// </summary>
-public class RetireVerificationCodesMigrationTests : IClassFixture<AuditFieldsPostgresFixture>
+public class RetireVerificationCodesMigrationTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string HashMigrationSuffix = "_HashVerificationCodes";
     private const string RetireMigrationSuffix = "_RetireUnhashedVerificationCodes";
@@ -35,9 +35,9 @@ public class RetireVerificationCodesMigrationTests : IClassFixture<AuditFieldsPo
 
     private static readonly DateTime CreationTime = new(2026, 10, 15, 13, 5, 0, DateTimeKind.Utc);
 
-    private readonly AuditFieldsPostgresFixture _fixture;
+    private readonly PostgresDatabaseFixture _fixture;
 
-    public RetireVerificationCodesMigrationTests(AuditFieldsPostgresFixture fixture) => _fixture = fixture;
+    public RetireVerificationCodesMigrationTests(PostgresDatabaseFixture fixture) => _fixture = fixture;
 
     private static string FindMigration(DbContext context, string suffix)
     {

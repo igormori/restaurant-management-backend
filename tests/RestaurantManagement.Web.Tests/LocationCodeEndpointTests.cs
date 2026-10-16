@@ -14,15 +14,15 @@ namespace RestaurantManagement.Web.Tests;
 /// Also: a location edit that leaves out an optional field keeps that field's stored value.
 /// Ana owns Cantina da Nonna and Trattoria do Sol.
 /// </summary>
-public class LocationCodeEndpointTests : IClassFixture<AuditFieldsPostgresFixture>
+public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
 {
     private static readonly Guid AnaId = Guid.Parse("11111111-aaaa-4aaa-8aaa-00000000000a");
     private static readonly Guid CantinaId = Guid.Parse("a1a1a1a1-0000-4000-8000-000000000001");
     private static readonly Guid TrattoriaId = Guid.Parse("b2b2b2b2-0000-4000-8000-000000000002");
 
-    private readonly AuditFieldsPostgresFixture _postgres;
+    private readonly PostgresDatabaseFixture _postgres;
 
-    public LocationCodeEndpointTests(AuditFieldsPostgresFixture postgres) => _postgres = postgres;
+    public LocationCodeEndpointTests(PostgresDatabaseFixture postgres) => _postgres = postgres;
 
     private async Task<TenantApiFactory> CreateFactoryAsync()
     {
