@@ -1,6 +1,6 @@
 # Plan: Forgot and change password
 
-**Spec:** docs/specs/identity/2026-10-16-password-reset.md   **Date:** 2026-10-16   **Status:** In progress
+**Spec:** docs/specs/identity/2026-10-16-password-reset.md   **Date:** 2026-10-16   **Status:** Done
 **Risk:** High — new table and migration, two new public endpoints, password and session changes, Shared contract changes
 
 ## Summary
