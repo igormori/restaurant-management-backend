@@ -46,7 +46,7 @@
     <value>Usuário não encontrado..</value>
   </data>
   <data name="UnauthorizedMessage" xml:space="preserve">
-    <value>Usuàrio não autorizado!</value>
+    <value>Usuário não autorizado!</value>
   </data>
   <data name="InvalidToken" xml:space="preserve">
     <value>Token Invalido.</value>

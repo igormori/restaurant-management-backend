@@ -18,6 +18,7 @@ public class PrivateByDefaultTests : IDisposable
 {
     private const string UndeclaredUrl = "/api/test-probe/undeclared";
     private const string EnglishUnauthorizedMessage = "Unauthorized user.";
+    private const string PortugueseUnauthorizedMessage = "Usuário não autorizado!";
 
     private static readonly Guid MariaId = Guid.Parse("11111111-aaaa-4aaa-8aaa-00000000000a");
 
@@ -61,6 +62,23 @@ public class PrivateByDefaultTests : IDisposable
         var body = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
         body.ShouldNotBeNull();
         body["message"].ShouldBe(EnglishUnauthorizedMessage);
+    }
+
+    [Fact]
+    public async Task UndeclaredEndpoint_NoAccessTokenInPortuguese_ReturnsPortugueseUnauthorizedMessage()
+    {
+        // Arrange
+        var client = CreateClient();
+        var request = new HttpRequestMessage(HttpMethod.Get, UndeclaredUrl);
+        request.Headers.Add("Accept-Language", "pt-PT");
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        var body = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+        body.ShouldNotBeNull();
+        body["message"].ShouldBe(PortugueseUnauthorizedMessage);
     }
 
     // Scenario 29
