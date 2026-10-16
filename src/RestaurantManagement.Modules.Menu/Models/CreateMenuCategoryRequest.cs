@@ -1,10 +1,13 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using RestaurantManagement.Shared.Models;
 
 namespace RestaurantManagement.Modules.Menu.Models
 {
     public class CreateMenuCategoryRequest
     {
-        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [RequiredId(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [JsonConverter(typeof(LenientGuidConverter))]
         public Guid MenuId { get; set; }
 
         public Guid? LocationId { get; set; }
