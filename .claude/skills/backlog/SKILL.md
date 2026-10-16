@@ -70,11 +70,11 @@ What is wrong or missing, in plain words.
 
 - Agents always write **`proposed`**. Only the user changes it to **`accepted`**, merges items, or
   deletes them.
-- A commit that fully solves an item deletes the item file (and its row in `backlog/README.md`,
-  if any) in that same commit, with `Refs: <backlog file path>` in the body. Commit it; never
-  push it. The user pushes and merges.
+- When work fully solves an item, commit the fix with `Refs: <backlog file path>` in the body,
+  then delete the item file (and its row in `backlog/README.md`, if any) but **never commit the
+  deletion**: the user checks what was solved and commits it. Never push.
 - When a spec fully solves an item, the spec lists it under "Backlog Impact" and the item is
-  deleted by the commit that finishes that work. Partially solved: update Problem and Acceptance criteria to
+  deleted, uncommitted, once that work is done. Partially solved: update Problem and Acceptance criteria to
   what is left.
 
 ## 6. Limits
