@@ -1,6 +1,6 @@
 # Plan: Audit Log
 
-**Spec:** docs/specs/shared/2026-10-15-audit-log.md   **Date:** 2026-10-16   **Status:** In progress
+**Spec:** docs/specs/shared/2026-10-15-audit-log.md   **Date:** 2026-10-16   **Status:** Done
 **Risk:** High — new table and first DbContext with migrations in Shared, new Shared contract, new endpoint behind a permission
 
 ## Summary
@@ -37,11 +37,11 @@ Decisions (answered by the user):
 No public endpoint, no role or auth change, no raw SQL.
 
 ## Overall Definition of Done
-- [ ] All tasks done, tests passing
-- [ ] Spec Outcomes #2, #3 and #4 met (#1 can't be checked in this plan, see Decisions)
-- [ ] Full test suite green after the last batch
-- [ ] No out-of-scope changes; findings in the backlog
-- [ ] No service, contract or endpoint can update or delete an audit entry (Outcome #4)
+- [x] All tasks done, tests passing
+- [x] Spec Outcomes #2, #3 and #4 met (#1 can't be checked in this plan, see Decisions)
+- [x] Full test suite green after the last batch
+- [x] No out-of-scope changes; findings in the backlog
+- [x] No service, contract or endpoint can update or delete an audit entry (Outcome #4)
 
 ## Checklist
 - [x] T1 — Audit log storage and writer
