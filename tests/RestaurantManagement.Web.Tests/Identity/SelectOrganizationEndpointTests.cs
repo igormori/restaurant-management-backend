@@ -30,6 +30,6 @@ public class SelectOrganizationEndpointTests : IDisposable
         var response = await client.PostAsJsonAsync(SelectOrganizationUrl, request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "only a signed-in person can choose an organization");
     }
 }

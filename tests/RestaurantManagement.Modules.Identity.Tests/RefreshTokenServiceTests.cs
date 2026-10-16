@@ -98,8 +98,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var rotated = await RotateAsync(database, "bm90LWEtcmVhbC10b2tlbi1mb3ItY2FudGluYQ==");
 
             // Assert
-            rotated.ShouldBeNull();
-            (await ReadTokensAsync(database)).ShouldHaveSingleItem().RevokedAt.ShouldBeNull();
+            rotated.ShouldBeNull("an unknown refresh token is refused");
+            (await ReadTokensAsync(database)).ShouldHaveSingleItem().RevokedAt.ShouldBeNull("an unknown token changes nothing: the real session stays active");
         }
 
         // Scenario 10
@@ -116,9 +116,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var rotated = await RotateAsync(database, issued.Token);
 
             // Assert
-            rotated.ShouldBeNull();
+            rotated.ShouldBeNull("an expired refresh token is refused");
             var token = (await ReadTokensAsync(database)).ShouldHaveSingleItem();
-            token.RevokedAt.ShouldBeNull();
+            token.RevokedAt.ShouldBeNull("an expired token is not marked revoked");
         }
 
         // Scenario 11
@@ -135,7 +135,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var reused = await RotateAsync(database, issued.Token);
 
             // Assert
-            reused.ShouldBeNull();
+            reused.ShouldBeNull("a refresh token that was already rotated cannot be used again");
         }
 
         // Scenario 12
@@ -153,9 +153,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var family = (await ReadTokensAsync(database)).Where(t => t.FamilyId == issued.FamilyId).ToList();
-            family.Count.ShouldBe(2);
-            family.ShouldAllBe(t => t.RevokedAt != null);
-            family.ShouldContain(t => t.RevocationReason == RefreshToken.ReasonReuseDetected);
+            family.Count.ShouldBe(2, "the family holds the original token and its replacement");
+            family.ShouldAllBe(t => t.RevokedAt != null, "reusing a rotated token revokes the whole session family");
+            family.ShouldContain(t => t.RevocationReason == RefreshToken.ReasonReuseDetected, "the family is marked as revoked because of token reuse");
         }
 
         // Scenario 13
@@ -174,7 +174,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var laptopToken = await ReadFamilyMemberAsync(database, laptop.FamilyId, active: true);
-            laptopToken.RevokedAt.ShouldBeNull();
+            laptopToken.RevokedAt.ShouldBeNull("reuse on one device must not sign out the user's other device");
         }
 
         // Scenario 14
@@ -190,8 +190,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var revoked = await RevokeAsync(database, "bm90LWEtcmVhbC10b2tlbi1mb3ItY2FudGluYQ==");
 
             // Assert
-            revoked.ShouldBeFalse();
-            (await ReadTokensAsync(database)).ShouldHaveSingleItem().RevokedAt.ShouldBeNull();
+            revoked.ShouldBeFalse("logging out with an unknown token reports nothing was revoked");
+            (await ReadTokensAsync(database)).ShouldHaveSingleItem().RevokedAt.ShouldBeNull("logging out with an unknown token changes nothing");
         }
 
         // Scenario 15
@@ -208,11 +208,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             var token = (await ReadTokensAsync(database)).ShouldHaveSingleItem();
             token.UserId.ShouldBe(MariaId);
-            token.OrganizationId.ShouldBeNull();
+            token.OrganizationId.ShouldBeNull("a plain sign-in carries no organization");
             token.FamilyId.ShouldBe(issued.FamilyId);
-            token.RevokedAt.ShouldBeNull();
-            token.DeviceDescription.ShouldBe(TabletDevice);
-            token.IpAddress.ShouldBe(TabletIp);
+            token.RevokedAt.ShouldBeNull("a new sign-in token is active");
+            token.DeviceDescription.ShouldBe(TabletDevice, "the sign-in records which device was used");
+            token.IpAddress.ShouldBe(TabletIp, "the sign-in records the IP address of the device");
             token.ExpiresAt.ShouldBe(DateTime.UtcNow.AddDays(TestJwtOptions.RefreshTokenExpireDays), TimeSpan.FromMinutes(1));
             issued.ExpiresAt.ShouldBe(token.ExpiresAt, TimeSpan.FromSeconds(1));
         }
@@ -231,8 +231,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             issued.Token.ShouldNotBeNullOrWhiteSpace();
             var token = (await ReadTokensAsync(database)).ShouldHaveSingleItem();
-            token.TokenHash.ShouldNotBeNullOrWhiteSpace();
-            token.TokenHash.ShouldNotBe(issued.Token);
+            token.TokenHash.ShouldNotBeNullOrWhiteSpace("the refresh token is stored as a fingerprint");
+            token.TokenHash.ShouldNotBe(issued.Token, "the refresh token is never stored readable, only as a fingerprint");
         }
 
         // Scenario 17
@@ -248,9 +248,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var laptop = await IssueAsync(database, MariaId, deviceDescription: LaptopDevice, ipAddress: LaptopIp);
 
             // Assert
-            tablet.FamilyId.ShouldNotBe(laptop.FamilyId);
+            tablet.FamilyId.ShouldNotBe(laptop.FamilyId, "each device gets its own session family");
             tablet.Token.ShouldNotBe(laptop.Token);
-            (await ReadTokensAsync(database)).Count(t => t.RevokedAt == null).ShouldBe(2);
+            (await ReadTokensAsync(database)).Count(t => t.RevokedAt == null).ShouldBe(2, "signing in on a second device keeps the first device's session active");
         }
 
         // Scenario 18
@@ -267,7 +267,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var token = (await ReadTokensAsync(database)).ShouldHaveSingleItem();
-            token.DeviceDescription.ShouldBe(new string('A', 512));
+            token.DeviceDescription.ShouldBe(new string('A', 512), "the device description is cut at 512 characters");
         }
 
         // Scenario 19
@@ -283,11 +283,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var rotated = await RotateAsync(database, issued.Token);
 
             // Assert
-            rotated.ShouldNotBeNull();
+            rotated.ShouldNotBeNull("an active token can be rotated");
             var oldToken = await ReadFamilyMemberAsync(database, issued.FamilyId, active: false);
             var newToken = await ReadFamilyMemberAsync(database, issued.FamilyId, active: true);
-            oldToken.RevocationReason.ShouldBe(RefreshToken.ReasonRotated);
-            oldToken.ReplacedByTokenId.ShouldBe(newToken.Id);
+            oldToken.RevocationReason.ShouldBe(RefreshToken.ReasonRotated, "the old token is revoked as rotated when it is used");
+            oldToken.ReplacedByTokenId.ShouldBe(newToken.Id, "the old token points to its replacement");
         }
 
         // Scenario 20
@@ -304,12 +304,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             rotated.ShouldNotBeNull();
-            rotated.Token.ShouldNotBe(issued.Token);
-            rotated.FamilyId.ShouldBe(issued.FamilyId);
+            rotated.Token.ShouldNotBe(issued.Token, "rotation issues a different token");
+            rotated.FamilyId.ShouldBe(issued.FamilyId, "the new token stays in the same session family");
             rotated.UserId.ShouldBe(MariaId);
             rotated.ExpiresAt.ShouldBe(DateTime.UtcNow.AddDays(TestJwtOptions.RefreshTokenExpireDays), TimeSpan.FromMinutes(1));
             var newToken = await ReadFamilyMemberAsync(database, issued.FamilyId, active: true);
-            newToken.TokenHash.ShouldNotBe(rotated.Token);
+            newToken.TokenHash.ShouldNotBe(rotated.Token, "the new token is stored only as a fingerprint");
         }
 
         // Scenario 21
@@ -326,7 +326,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             rotated.ShouldNotBeNull();
-            rotated.OrganizationId.ShouldBe(CantinaOrganizationId);
+            rotated.OrganizationId.ShouldBe(CantinaOrganizationId, "the chosen organization is carried by the replacement token");
             (await ReadFamilyMemberAsync(database, issued.FamilyId, active: true)).OrganizationId.ShouldBe(CantinaOrganizationId);
         }
 
@@ -344,7 +344,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             rotated.ShouldNotBeNull();
-            rotated.OrganizationId.ShouldBe(CantinaOrganizationId);
+            rotated.OrganizationId.ShouldBe(CantinaOrganizationId, "refreshing keeps the organization the user already chose");
         }
 
         // Scenario 23
@@ -362,8 +362,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var rotatedLaptop = await RotateAsync(database, laptop.Token);
 
             // Assert
-            rotatedTablet.ShouldNotBeNull();
-            rotatedLaptop.ShouldNotBeNull();
+            rotatedTablet.ShouldNotBeNull("the tablet session refreshes");
+            rotatedLaptop.ShouldNotBeNull("the laptop session refreshes independently of the tablet");
             rotatedTablet.FamilyId.ShouldBe(tablet.FamilyId);
             rotatedLaptop.FamilyId.ShouldBe(laptop.FamilyId);
         }
@@ -382,9 +382,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var revoked = await RevokeAsync(database, tablet.Token);
 
             // Assert
-            revoked.ShouldBeTrue();
-            (await ReadFamilyMemberAsync(database, tablet.FamilyId, active: false)).RevocationReason.ShouldBe(RefreshToken.ReasonLogout);
-            (await ReadFamilyMemberAsync(database, laptop.FamilyId, active: true)).RevokedAt.ShouldBeNull();
+            revoked.ShouldBeTrue("logging out revokes the device's token");
+            (await ReadFamilyMemberAsync(database, tablet.FamilyId, active: false)).RevocationReason.ShouldBe(RefreshToken.ReasonLogout, "the logged-out token is marked as a logout");
+            (await ReadFamilyMemberAsync(database, laptop.FamilyId, active: true)).RevokedAt.ShouldBeNull("logging out on one device leaves the other device signed in");
         }
 
         // Scenario 25
@@ -401,9 +401,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var revokedCount = await RevokeAllAsync(database, MariaId);
 
             // Assert
-            revokedCount.ShouldBe(2);
+            revokedCount.ShouldBe(2, "logout-all revokes every token of the user");
             var tokens = await ReadTokensAsync(database);
-            tokens.ShouldAllBe(t => t.RevokedAt != null && t.RevocationReason == RefreshToken.ReasonLogoutEverywhere);
+            tokens.ShouldAllBe(t => t.RevokedAt != null && t.RevocationReason == RefreshToken.ReasonLogoutEverywhere, "no session is left active and each is marked as logged out everywhere");
         }
 
         // Scenario 26
@@ -421,7 +421,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var joaoToken = await ReadFamilyMemberAsync(database, joao.FamilyId, active: true);
-            joaoToken.UserId.ShouldBe(JoaoId);
+            joaoToken.UserId.ShouldBe(JoaoId, "logout-all for one user leaves another user's session active");
         }
 
         // Scenario 75
@@ -438,11 +438,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var revoked = await RevokeAsync(database, issued.Token);
 
             // Assert
-            revoked.ShouldBeFalse();
+            revoked.ShouldBeFalse("logout with an already rotated token is not a normal logout");
             var family = (await ReadTokensAsync(database)).Where(t => t.FamilyId == issued.FamilyId).ToList();
-            family.Count.ShouldBe(2);
-            family.ShouldAllBe(t => t.RevokedAt != null);
-            family.ShouldContain(t => t.RevocationReason == RefreshToken.ReasonReuseDetected);
+            family.Count.ShouldBe(2, "the family holds the original token and its replacement");
+            family.ShouldAllBe(t => t.RevokedAt != null, "logout with a reused token revokes the whole device family");
+            family.ShouldContain(t => t.RevocationReason == RefreshToken.ReasonReuseDetected, "the family is marked as revoked because of token reuse");
         }
 
         // Scenario 78
@@ -458,10 +458,10 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var rotated = await RotateAsync(database, joao.Token, CantinaOrganizationId, expectedUserId: MariaId);
 
             // Assert
-            rotated.ShouldBeNull();
+            rotated.ShouldBeNull("a refresh token of another user is not rotated for the caller");
             var token = (await ReadTokensAsync(database)).ShouldHaveSingleItem();
-            token.RevokedAt.ShouldBeNull();
-            token.ReplacedByTokenId.ShouldBeNull();
+            token.RevokedAt.ShouldBeNull("the other user's token stays active");
+            token.ReplacedByTokenId.ShouldBeNull("the other user's token is not replaced");
             token.OrganizationId.ShouldBe(TrattoriaOrganizationId);
         }
     }

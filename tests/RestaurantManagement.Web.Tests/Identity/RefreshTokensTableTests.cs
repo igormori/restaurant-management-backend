@@ -113,7 +113,7 @@ public class RefreshTokensTableTests : IClassFixture<PostgresDatabaseFixture>
             () => InsertTokenAsync(context, JoaoTokenId, JoaoId, TrattoriaId, TabletFingerprint));
 
         // Assert
-        exception.InnerException.ShouldBeOfType<PostgresException>().SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation);
+        exception.InnerException.ShouldBeOfType<PostgresException>().SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation, "two sessions can never share the same token fingerprint");
     }
 
     // Scenario 2
@@ -130,8 +130,8 @@ public class RefreshTokensTableTests : IClassFixture<PostgresDatabaseFixture>
         var deleted = await context.Database.ExecuteSqlAsync($"DELETE FROM users WHERE id = {MariaId}");
 
         // Assert
-        deleted.ShouldBe(1);
-        (await context.Set<RefreshToken>().CountAsync(t => t.UserId == MariaId)).ShouldBe(0);
+        deleted.ShouldBe(1, "a user with no role can be deleted");
+        (await context.Set<RefreshToken>().CountAsync(t => t.UserId == MariaId)).ShouldBe(0, "the deleted user's sessions go with the user");
     }
 
     // Scenario 3
@@ -149,8 +149,8 @@ public class RefreshTokensTableTests : IClassFixture<PostgresDatabaseFixture>
 
         // Assert
         var remaining = await context.Set<RefreshToken>().AsNoTracking().SingleAsync();
-        remaining.Id.ShouldBe(JoaoTokenId);
-        remaining.UserId.ShouldBe(JoaoId);
+        remaining.Id.ShouldBe(JoaoTokenId, "deleting one user must never delete another user's session");
+        remaining.UserId.ShouldBe(JoaoId, "the remaining session still belongs to the other user");
     }
 
     // Scenario 5
@@ -170,7 +170,7 @@ public class RefreshTokensTableTests : IClassFixture<PostgresDatabaseFixture>
         await context.GetService<IMigrator>().MigrateAsync(refreshTokensMigration);
 
         // Assert
-        (await ReadScalarAsync(context, UserRowsSql)).ShouldBe(usersBefore);
+        (await ReadScalarAsync(context, UserRowsSql)).ShouldBe(usersBefore, "adding the sessions table must not change any existing user");
     }
 
     // Scenario 7
@@ -202,11 +202,11 @@ public class RefreshTokensTableTests : IClassFixture<PostgresDatabaseFixture>
             stolenCopyService.RotateAsync(rawToken));
 
         // Assert: the second use counts as reuse (Rule 5), so the whole family ends up revoked
-        results.Count(r => r != null).ShouldBe(1);
+        results.Count(r => r != null).ShouldBe(1, "when the same refresh token is used twice at once, only one request may get a new session");
         await using var assertContext = new IdentityDbContext(options);
         var family = await assertContext.Set<RefreshToken>().AsNoTracking().Where(t => t.UserId == MariaId).ToListAsync();
-        family.ShouldAllBe(t => t.RevokedAt != null);
-        family.ShouldContain(t => t.RevocationReason == RefreshToken.ReasonReuseDetected);
+        family.ShouldAllBe(t => t.RevokedAt != null, "a reused token means it may be stolen, so every session of that family must be revoked");
+        family.ShouldContain(t => t.RevocationReason == RefreshToken.ReasonReuseDetected, "the revocation must be recorded as a detected reuse");
     }
 
     // Scenario 8
@@ -222,6 +222,6 @@ public class RefreshTokensTableTests : IClassFixture<PostgresDatabaseFixture>
         var service = scope.ServiceProvider.GetService<IRefreshTokenService>();
 
         // Assert
-        service.ShouldBeOfType<RefreshTokenService>();
+        service.ShouldBeOfType<RefreshTokenService>("the app must use the real refresh token service, or sessions would not work");
     }
 }

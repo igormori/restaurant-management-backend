@@ -48,12 +48,12 @@ public class RegisterEndpointTests : IClassFixture<PostgresDatabaseFixture>
         });
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "a valid registration is accepted");
         var rawBody = await response.Content.ReadAsStringAsync();
         var body = JsonNode.Parse(rawBody)!.AsObject();
-        body["token"].ShouldBeNull();
-        body.Select(property => property.Key.ToLowerInvariant()).ShouldNotContain(key => key.Contains("password"));
-        rawBody.ShouldNotContain(password);
-        response.Headers.Contains("Set-Cookie").ShouldBeFalse();
+        body["token"].ShouldBeNull("registering must not sign the person in, because the email is not verified yet");
+        body.Select(property => property.Key.ToLowerInvariant()).ShouldNotContain(key => key.Contains("password"), "the response must never carry any password data");
+        rawBody.ShouldNotContain(password, customMessage: "the password the person typed must never be echoed back");
+        response.Headers.Contains("Set-Cookie").ShouldBeFalse("registering must not start a session, so no cookie is set");
     }
 }

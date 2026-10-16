@@ -45,7 +45,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = Validate(password);
 
             // Assert
-            result.ShouldNotBe(ValidationResult.Success);
+            result.ShouldNotBe(ValidationResult.Success, "a password that is too short, too long, or missing an uppercase letter, digit or symbol is refused");
         }
 
         [Theory]
@@ -58,7 +58,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = Validate(password);
 
             // Assert
-            result.ShouldNotBe(ValidationResult.Success);
+            result.ShouldNotBe(ValidationResult.Success, "an underscore or a space does not count as a symbol, so the password is refused");
         }
 
         // Scenario 8
@@ -72,7 +72,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = Validate(password);
 
             // Assert
-            result.ShouldBe(ValidationResult.Success);
+            result.ShouldBe(ValidationResult.Success, "a password of exactly 8 or exactly 64 characters is accepted");
         }
 
         // Scenario 24
@@ -91,8 +91,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var isValid = Validator.TryValidateObject(request, new ValidationContext(request), results, validateAllProperties: true);
 
             // Assert
-            isValid.ShouldBeFalse();
-            results.ShouldContain(r => r.MemberNames.Contains("NewPassword"));
+            isValid.ShouldBeFalse("a weak new password is refused on reset and on change");
+            results.ShouldContain(r => r.MemberNames.Contains("NewPassword"), "the error is reported on the new password field");
         }
 
         [Fact]
@@ -103,8 +103,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = Validate(Password73Bytes);
 
             // Assert
-            result.ShouldNotBe(ValidationResult.Success);
-            result!.MemberNames.ShouldContain("Password");
+            result.ShouldNotBe(ValidationResult.Success, "a password over 72 bytes is refused even when it is within 64 characters");
+            result!.MemberNames.ShouldContain("Password", "the error is reported on the password field");
         }
 
         [Fact]
@@ -115,7 +115,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = Validate(Password72Bytes);
 
             // Assert
-            result.ShouldBe(ValidationResult.Success);
+            result.ShouldBe(ValidationResult.Success, "a password of exactly 72 bytes is accepted");
         }
     }
 }

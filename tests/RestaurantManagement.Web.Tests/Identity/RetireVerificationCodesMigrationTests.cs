@@ -117,9 +117,9 @@ public class RetireVerificationCodesMigrationTests : IClassFixture<PostgresDatab
             () => sut.VerifyEmailAsync(new VerifyEmailRequest { Email = "maria.souza@cantina.com.br", Code = MariaReadableCode }));
 
         // Assert
-        thrown.StatusCode.ShouldBe(401);
+        thrown.StatusCode.ShouldBe(401, "a readable code stored before codes were fingerprinted must be refused");
         await using var verifyContext = new IdentityDbContext(options);
-        (await verifyContext.Users.SingleAsync(u => u.Id == MariaId)).IsVerified.ShouldBeFalse();
+        (await verifyContext.Users.SingleAsync(u => u.Id == MariaId)).IsVerified.ShouldBeFalse("the refused old code must not verify the account");
     }
 
     // Hash verification codes: Scenario 37
@@ -135,8 +135,8 @@ public class RetireVerificationCodesMigrationTests : IClassFixture<PostgresDatab
         var codes = await context.UserVerificationCodes.ToListAsync();
 
         // Assert
-        codes.Count.ShouldBe(2);
-        codes.ShouldAllBe(c => c.IsUsed);
+        codes.Count.ShouldBe(2, "the migration keeps every old code row");
+        codes.ShouldAllBe(c => c.IsUsed, "every old readable code must be marked used so it can never verify anyone");
     }
 
     // Hash verification codes: Scenario 38
@@ -152,8 +152,8 @@ public class RetireVerificationCodesMigrationTests : IClassFixture<PostgresDatab
         var storedValues = await context.UserVerificationCodes.Select(c => c.CodeHash).ToListAsync();
 
         // Assert
-        storedValues.Count.ShouldBe(2);
-        storedValues.ShouldAllBe(value => value == string.Empty);
+        storedValues.Count.ShouldBe(2, "the migration keeps every old code row");
+        storedValues.ShouldAllBe(value => value == string.Empty, "readable codes must be erased, because only fingerprints may be stored");
     }
 
     // Hash verification codes: Scenario 39
@@ -169,6 +169,6 @@ public class RetireVerificationCodesMigrationTests : IClassFixture<PostgresDatab
         var mariaCode = await context.UserVerificationCodes.SingleAsync(c => c.Id == MariaCodeId);
 
         // Assert
-        mariaCode.CreatedAt.ShouldBe(CreationTime);
+        mariaCode.CreatedAt.ShouldBe(CreationTime, "the creation time must be kept, because the 60-second resend wait is measured from it");
     }
 }

@@ -52,11 +52,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var results = await Task.WhenAll(task1, task2);
 
             // Assert
-            results.Should().ContainSingle(ex => ex != null && ex is BusinessException);
-            results.Should().ContainSingle(ex => ex == null);
+            results.Should().ContainSingle(ex => ex != null && ex is BusinessException, "of two simultaneous registrations with one email, exactly one is rejected");
+            results.Should().ContainSingle(ex => ex == null, "of two simultaneous registrations with one email, exactly one succeeds");
 
             using var verifyContext = _postgresFixture.CreateContext();
-            (await verifyContext.Users.CountAsync(u => u.Email == email)).Should().Be(1);
+            (await verifyContext.Users.CountAsync(u => u.Email == email)).Should().Be(1, "only one account may exist for the email");
         }
 
         [Fact]
@@ -102,7 +102,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             await using var verifyContext = new Data.IdentityDbContext(options);
             var emails = await verifyContext.Users.Select(u => u.Email).ToListAsync();
-            emails.Should().BeEquivalentTo(new[] { "first@test.com", "second@test.com" });
+            emails.Should().BeEquivalentTo(new[] { "first@test.com", "second@test.com" }, "the email uniqueness migration keeps existing accounts");
         }
 
         private static async Task<Exception?> InvokeCapturingExceptionAsync(Func<Task> action)

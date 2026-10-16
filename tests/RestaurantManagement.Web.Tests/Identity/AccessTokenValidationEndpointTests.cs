@@ -69,7 +69,7 @@ public class AccessTokenValidationEndpointTests : IDisposable
         var response = await LogoutAllWithAsync(token);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "an access token that expired 10 minutes ago is past the 5-minute allowance and must be refused");
         await _factory.SessionService.DidNotReceive().LogoutAllAsync(Arg.Any<Guid>());
     }
 
@@ -111,7 +111,7 @@ public class AccessTokenValidationEndpointTests : IDisposable
         var response = await LogoutAllWithAsync(token);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "a token signed with another key, issuer or audience, or not signed at all, is forged and must be refused");
         await _factory.SessionService.DidNotReceive().LogoutAllAsync(Arg.Any<Guid>());
     }
 }

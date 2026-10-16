@@ -72,7 +72,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database);
 
             // Assert
-            OrganizationClaimOf(response.Auth.Token).ShouldBeNull();
+            OrganizationClaimOf(response.Auth.Token).ShouldBeNull("a user with roles in two organizations gets no organization in the token until they choose one");
         }
 
         // Scenario 30
@@ -88,7 +88,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database);
 
             // Assert
-            OrganizationClaimOf(response.Auth.Token).ShouldBeNull();
+            OrganizationClaimOf(response.Auth.Token).ShouldBeNull("a user with no roles gets no organization in the token");
         }
 
         // Scenario 32
@@ -104,7 +104,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database);
 
             // Assert
-            OrganizationClaimOf(response.Auth.Token).ShouldBe(CantinaOrganizationId.ToString());
+            OrganizationClaimOf(response.Auth.Token).ShouldBe(CantinaOrganizationId.ToString(), "a user with a single organization gets that organization in the token");
         }
 
         // Scenario 33
@@ -122,7 +122,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database);
 
             // Assert
-            OrganizationClaimOf(response.Auth.Token).ShouldBe(CantinaOrganizationId.ToString());
+            OrganizationClaimOf(response.Auth.Token).ShouldBe(CantinaOrganizationId.ToString(), "two roles in the same organization still count as one organization");
         }
 
         // Scenario 34
@@ -141,7 +141,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var refreshed = await sut.RefreshTokenAsync(loginResponse.RefreshToken);
 
             // Assert
-            OrganizationClaimOf(refreshed.Auth.Token).ShouldBe(CantinaOrganizationId.ToString());
+            OrganizationClaimOf(refreshed.Auth.Token).ShouldBe(CantinaOrganizationId.ToString(), "a refreshed token keeps the user's single organization");
         }
     }
 }

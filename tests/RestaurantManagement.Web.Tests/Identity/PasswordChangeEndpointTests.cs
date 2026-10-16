@@ -95,7 +95,7 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
         var response = await client.PostAsJsonAsync(ChangeUrl, new { currentPassword = MariaPassword, newPassword = NewPassword });
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "changing a password requires being signed in");
     }
 
     // Scenario 35
@@ -114,10 +114,10 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
         var response = await client.SendAsync(ChangeRequestAsMaria(factory, new { userId = JoaoId, currentPassword = MariaPassword, newPassword = NewPassword }));
 
         // Assert
-        response.IsSuccessStatusCode.ShouldBeTrue();
-        BCrypt.Net.BCrypt.Verify(NewPassword, (await ReadUserAsync(factory, MariaId)).PasswordHash).ShouldBeTrue();
-        BCrypt.Net.BCrypt.Verify(JoaoPassword, (await ReadUserAsync(factory, JoaoId)).PasswordHash).ShouldBeTrue();
-        (await IsRefreshAcceptedAsync(factory, joaoToken)).ShouldBeTrue();
+        response.IsSuccessStatusCode.ShouldBeTrue("the caller's own password change is accepted");
+        BCrypt.Net.BCrypt.Verify(NewPassword, (await ReadUserAsync(factory, MariaId)).PasswordHash).ShouldBeTrue("the signed-in caller's password is the one that changes");
+        BCrypt.Net.BCrypt.Verify(JoaoPassword, (await ReadUserAsync(factory, JoaoId)).PasswordHash).ShouldBeTrue("a user ID in the request body must be ignored, so the other user's password stays the same");
+        (await IsRefreshAcceptedAsync(factory, joaoToken)).ShouldBeTrue("the other user's sessions must stay active");
     }
 
     // Scenario 39
@@ -137,12 +137,12 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
         var response = await client.SendAsync(request);
 
         // Assert
-        response.IsSuccessStatusCode.ShouldBeTrue();
+        response.IsSuccessStatusCode.ShouldBeTrue("a change with the correct current password is accepted");
         response.Headers.TryGetValues(HeaderNames.SetCookie, out var values).ShouldBeTrue("the response must clear the cookie");
         var cookie = SetCookieHeaderValue.ParseList(values!.ToList()).Single(c => c.Name == CookieName);
-        cookie.Value.ToString().ShouldBeEmpty();
-        cookie.Path.ToString().ShouldBe(CookiePath);
-        (await IsRefreshAcceptedAsync(factory, earlierToken)).ShouldBeFalse();
+        cookie.Value.ToString().ShouldBeEmpty("the cleared cookie must carry no token");
+        cookie.Path.ToString().ShouldBe(CookiePath, "the browser only removes a cookie sent with the same path it was set with");
+        (await IsRefreshAcceptedAsync(factory, earlierToken)).ShouldBeFalse("changing the password signs the person out everywhere, so an earlier session token must be refused");
     }
 
     // 36 two-byte letters plus one ASCII letter: 37 characters, 73 UTF-8 bytes.
@@ -165,8 +165,8 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await LocalizedResponses.FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "a current password over 72 bytes is refused before it is checked");
+        (await LocalizedResponses.FieldErrorsAsync(response)).ShouldContain(expected, "the error must be in the requested language and explain the 72-byte limit");
     }
 
     [Fact]
@@ -183,6 +183,6 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
         var response = await client.SendAsync(request);
 
         // Assert
-        (await LocalizedResponses.FieldErrorsAsync(response)).ShouldNotContain(m => m.Contains("72 bytes"));
+        (await LocalizedResponses.FieldErrorsAsync(response)).ShouldNotContain(m => m.Contains("72 bytes"), "a current password of exactly 72 bytes is within the limit");
     }
 }

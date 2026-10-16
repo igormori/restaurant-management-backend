@@ -65,7 +65,7 @@ public class PasswordResetCodesTableTests : IClassFixture<PostgresDatabaseFixtur
         columns.ShouldBe(
             "password_reset_codes.code_hash,password_reset_codes.created_at,password_reset_codes.expires_at,"
             + "password_reset_codes.id,password_reset_codes.is_used,password_reset_codes.user_id,"
-            + "users.password_reset_failed_attempts,users.password_reset_locked_until");
-        indexes.ShouldBe("ix_password_reset_codes_user_id,pk_password_reset_codes");
+            + "users.password_reset_failed_attempts,users.password_reset_locked_until", "reset codes have their own table and their own counters on users, apart from login and verification");
+        indexes.ShouldBe("ix_password_reset_codes_user_id,pk_password_reset_codes", "looking up a user's reset codes must be indexed");
     }
 }

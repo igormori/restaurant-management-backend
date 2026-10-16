@@ -73,7 +73,7 @@ public class StartupConfigurationTests : IDisposable
         var act = () => factory.CreateClient();
 
         // Assert
-        act.Should().Throw<Exception>().Where(e => e.ToString().Contains("Jwt:Key"));
+        act.Should().Throw<Exception>().Where(e => e.ToString().Contains("Jwt:Key"), "the app must refuse to start with a weak or placeholder signing key, and the error must name the setting to fix");
     }
 
     // Scenario 15
@@ -88,7 +88,7 @@ public class StartupConfigurationTests : IDisposable
         var act = () => factory.CreateClient();
 
         // Assert
-        act.Should().Throw<Exception>().Where(e => e.ToString().Contains("Jwt:Key"));
+        act.Should().Throw<Exception>().Where(e => e.ToString().Contains("Jwt:Key"), "the app must refuse to start with a weak or placeholder signing key, and the error must name the setting to fix");
     }
 
     // Auth hardening rule 4
@@ -120,7 +120,7 @@ public class StartupConfigurationTests : IDisposable
         var act = () => factory.CreateClient();
 
         // Assert
-        act.Should().Throw<Exception>().Where(e => e.ToString().Contains("Jwt:ExpireMinutes"));
+        act.Should().Throw<Exception>().Where(e => e.ToString().Contains("Jwt:ExpireMinutes"), "the app must refuse to start when the access token lifetime is not positive, and the error must name the setting to fix");
     }
 
     // Scenario 17
@@ -221,7 +221,7 @@ public class StartupConfigurationTests : IDisposable
         var jwtOptions = factory.Services.GetRequiredService<IOptions<JwtOptions>>().Value;
 
         // Assert
-        jwtOptions.ExpireMinutes.Should().Be(15);
+        jwtOptions.ExpireMinutes.Should().Be(15, "an access token lasts 15 minutes unless configured otherwise");
     }
 
     // Hash verification codes: Scenario 4
@@ -236,7 +236,7 @@ public class StartupConfigurationTests : IDisposable
         var thrown = Should.Throw<Exception>(() => factory.CreateClient());
 
         // Assert
-        thrown.ToString().ShouldContain("VerificationCode:HashKey");
+        thrown.ToString().ShouldContain("VerificationCode:HashKey", customMessage: "the app must refuse to start without a strong code fingerprint key, and the error must name the setting to fix");
     }
 
     // Hash verification codes: Scenario 5
@@ -251,7 +251,7 @@ public class StartupConfigurationTests : IDisposable
         var thrown = Should.Throw<Exception>(() => factory.CreateClient());
 
         // Assert
-        thrown.ToString().ShouldContain("VerificationCode:HashKey");
+        thrown.ToString().ShouldContain("VerificationCode:HashKey", customMessage: "the app must refuse to start without a strong code fingerprint key, and the error must name the setting to fix");
     }
 
     // Hash verification codes: Scenario 6
@@ -266,7 +266,7 @@ public class StartupConfigurationTests : IDisposable
         var thrown = Should.Throw<Exception>(() => factory.CreateClient());
 
         // Assert
-        thrown.ToString().ShouldContain("VerificationCode:HashKey");
+        thrown.ToString().ShouldContain("VerificationCode:HashKey", customMessage: "the app must refuse to start without a strong code fingerprint key, and the error must name the setting to fix");
     }
 
     // Hash verification codes: Scenario 10

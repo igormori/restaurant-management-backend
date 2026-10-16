@@ -22,7 +22,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var matches = sut.IsMatch(MariaId, "482914", storedHash);
 
             // Assert
-            matches.ShouldBeFalse();
+            matches.ShouldBeFalse("a wrong code never matches the stored fingerprint");
         }
 
         // Hash verification codes: Scenario 12
@@ -38,7 +38,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var matches = sut.IsMatch(MariaId, EmailedCode, storedHash);
 
             // Assert
-            matches.ShouldBeFalse();
+            matches.ShouldBeFalse("another user's code never matches, because the fingerprint is made per user");
         }
 
         // Hash verification codes: Scenario 13
@@ -55,7 +55,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var matches = sut.IsMatch(MariaId, EmailedCode, storedHash);
 
             // Assert
-            matches.ShouldBeFalse();
+            matches.ShouldBeFalse("a fingerprint made with a different server key never matches");
         }
 
         // Hash verification codes: Scenario 14
@@ -70,7 +70,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var matches = sut.IsMatch(MariaId, EmailedCode, string.Empty);
 
             // Assert
-            matches.ShouldBeFalse();
+            matches.ShouldBeFalse("an empty stored fingerprint never matches");
         }
 
         // Hash verification codes: Scenario 15
@@ -85,7 +85,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var matches = sut.IsMatch(MariaId, EmailedCode, EmailedCode);
 
             // Assert
-            matches.ShouldBeFalse();
+            matches.ShouldBeFalse("a readable code stored in place of a fingerprint never matches");
         }
 
         // Hash verification codes: Scenario 16
@@ -100,7 +100,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var hash = sut.ComputeHash(MariaId, EmailedCode);
 
             // Assert
-            hash.ShouldNotContain(EmailedCode);
+            hash.ShouldNotContain(EmailedCode, customMessage: "the stored fingerprint never contains the readable code");
         }
 
         // Hash verification codes: Scenario 17
@@ -115,7 +115,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var hash = sut.ComputeHash(MariaId, EmailedCode);
 
             // Assert
-            hash.ShouldMatch("^[0-9a-f]{64}$");
+            hash.ShouldMatch("^[0-9a-f]{64}$", "the stored fingerprint is a 64-character hex value");
         }
 
         // Hash verification codes: Scenario 18
@@ -131,7 +131,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var matches = sut.IsMatch(MariaId, EmailedCode, storedHash);
 
             // Assert
-            matches.ShouldBeTrue();
+            matches.ShouldBeTrue("the right code for the right user matches its stored fingerprint");
         }
     }
 }

@@ -47,7 +47,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var results = Validate(request);
 
             // Assert
-            results.ShouldContain(r => r.MemberNames.Contains(field));
+            results.ShouldContain(r => r.MemberNames.Contains(field), "a missing or too-long registration field is refused with an error on that field");
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var results = Validate(request);
 
             // Assert
-            results.ShouldBeEmpty();
+            results.ShouldBeEmpty("first and last names of exactly 100 characters are accepted");
         }
     }
 }

@@ -23,7 +23,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = Validate(Password73Bytes);
 
             // Assert
-            result.ShouldNotBe(ValidationResult.Success);
+            result.ShouldNotBe(ValidationResult.Success, "a password over 72 bytes is refused");
         }
 
         [Fact]
@@ -34,7 +34,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = Validate(Password72Bytes);
 
             // Assert
-            result.ShouldBe(ValidationResult.Success);
+            result.ShouldBe(ValidationResult.Success, "a password of exactly 72 bytes is accepted");
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = Validate(null);
 
             // Assert
-            result.ShouldBe(ValidationResult.Success);
+            result.ShouldBe(ValidationResult.Success, "a missing password is not rejected by the byte limit; other rules handle it");
         }
     }
 }

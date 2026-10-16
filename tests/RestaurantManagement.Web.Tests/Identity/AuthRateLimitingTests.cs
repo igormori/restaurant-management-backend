@@ -100,8 +100,8 @@ public class AuthRateLimitingTests : IDisposable
 
         var response = await PostLoginAsync(client, IpA);
 
-        response.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
-        response.Headers.RetryAfter!.Delta!.Value.TotalSeconds.Should().BeInRange(1, 60);
+        response.StatusCode.Should().Be(HttpStatusCode.TooManyRequests, "the login limit is 2 requests per window and this is the third from the same address");
+        response.Headers.RetryAfter!.Delta!.Value.TotalSeconds.Should().BeInRange(1, 60, "a blocked person must be told how many seconds to wait, within the 60-second window");
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public class AuthRateLimitingTests : IDisposable
         var response = await PostLoginAsync(client, IpA, culture: PortugueseCulture);
 
         var body = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-        body!["message"].Should().Be(PortugueseMessage);
+        body!["message"].Should().Be(PortugueseMessage, "a blocked person who asked for Portuguese must read the refusal in Portuguese");
     }
 
     [Fact]
@@ -127,7 +127,7 @@ public class AuthRateLimitingTests : IDisposable
         var response = await PostLoginAsync(client, IpA);
 
         var body = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-        body!["message"].Should().Be(EnglishMessage);
+        body!["message"].Should().Be(EnglishMessage, "without a language choice the refusal is in English");
     }
 
     [Fact]
@@ -150,7 +150,7 @@ public class AuthRateLimitingTests : IDisposable
 
         var response = await client.SendAsync(request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "the login limit counts login requests only, so registering is still allowed");
     }
 
     [Fact]
@@ -162,7 +162,7 @@ public class AuthRateLimitingTests : IDisposable
 
         var response = await PostLoginAsync(client, IpB);
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "the limit is counted per IP address, so another address is not affected");
     }
 
     [Fact]
@@ -174,7 +174,7 @@ public class AuthRateLimitingTests : IDisposable
 
         var response = await PostLoginAsync(client, IpA, forwardedFor: "198.51.100.2");
 
-        response.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
+        response.StatusCode.Should().Be(HttpStatusCode.TooManyRequests, "a forwarded-for header from a sender that is not a trusted proxy is ignored, so a caller cannot dodge the limit by faking its address");
     }
 
     [Fact]
@@ -189,8 +189,8 @@ public class AuthRateLimitingTests : IDisposable
         var otherClient = await PostLoginAsync(client, ProxyIp, forwardedFor: "198.51.100.2");
         var sameClient = await PostLoginAsync(client, ProxyIp, forwardedFor: "198.51.100.1");
 
-        otherClient.StatusCode.Should().Be(HttpStatusCode.OK);
-        sameClient.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
+        otherClient.StatusCode.Should().Be(HttpStatusCode.OK, "a trusted proxy forwards the real client address, and this is a different client from the one already counted");
+        sameClient.StatusCode.Should().Be(HttpStatusCode.TooManyRequests, "the forwarded client already used its single login in this window");
     }
 
     [Fact]
@@ -218,8 +218,8 @@ public class AuthRateLimitingTests : IDisposable
         await PostLoginAsync(client, IpA);
         await PostLoginAsync(client, IpA);
 
-        CapturedEvents(hub).Should().ContainSingle()
-            .Which.Event.Level.Should().Be(SentryLevel.Warning);
+        CapturedEvents(hub).Should().ContainSingle("repeated rejections in one window must raise only one alert, not flood the monitoring")
+            .Which.Event.Level.Should().Be(SentryLevel.Warning, "a blocked address is a warning, not an error");
     }
 
     [Fact]
@@ -238,10 +238,10 @@ public class AuthRateLimitingTests : IDisposable
             ["endpoint"] = LoginUrl,
             ["client_ip"] = IpA,
         });
-        scope.Request.Data.Should().BeNull();
-        scope.Extra.Should().BeEmpty();
-        sentryEvent.Request.Data.Should().BeNull();
-        sentryEvent.User.Email.Should().BeNull();
+        scope.Request.Data.Should().BeNull("the request body (email, password) must never be sent to monitoring");
+        scope.Extra.Should().BeEmpty("the alert carries only the endpoint and the IP address, nothing else");
+        sentryEvent.Request.Data.Should().BeNull("the request body (email, password) must never be sent to monitoring");
+        sentryEvent.User.Email.Should().BeNull("the person's email must never be sent to monitoring");
     }
 
     [Fact]
@@ -253,8 +253,8 @@ public class AuthRateLimitingTests : IDisposable
         var response = await PostLoginAsync(client, IpA);
 
         var body = await response.Content.ReadFromJsonAsync<AuthResponse>();
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        body!.Email.Should().Be("user@example.com");
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "a login within the limit must go through");
+        body!.Email.Should().Be("user@example.com", "within the limit the login service answers normally");
     }
 
     [Fact]
@@ -266,8 +266,9 @@ public class AuthRateLimitingTests : IDisposable
         var statuses = new List<HttpStatusCode>();
         for (var i = 0; i < 4; i++) statuses.Add((await PostLoginAsync(client, IpA)).StatusCode);
 
-        statuses.Should().Equal(
-            HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.TooManyRequests);
+        statuses.Should().Equal(new[] {
+            HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.TooManyRequests },
+            "the configured limit is 3 logins per window, so the fourth is refused");
     }
 
     private static List<(SentryEvent Event, Scope? Scope)> CapturedEvents(IHub hub)
@@ -337,7 +338,7 @@ public class AuthRateLimitingTests : IDisposable
         var response = await client.SendAsync(PasswordRequest());
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
+        response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests, "the limit is one request per window for each of these password endpoints and this is the second");
     }
 
     [Theory]
@@ -390,7 +391,7 @@ public class AuthRateLimitingTests : IDisposable
         var response = await client.SendAsync(PublicRequest());
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
-        response.Headers.RetryAfter.ShouldNotBeNull();
+        response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests, "the limit is one request per window for this endpoint and this is the second");
+        response.Headers.RetryAfter.ShouldNotBeNull("a blocked person must be told how long to wait");
     }
 }

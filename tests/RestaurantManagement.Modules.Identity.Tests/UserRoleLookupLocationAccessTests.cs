@@ -59,7 +59,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var hasAccess = await HasLocationAccessAsync(database, userId, CantinaId, MercadoMunicipalLocationId);
 
             // Assert
-            hasAccess.ShouldBeTrue();
+            hasAccess.ShouldBeTrue("a role for all locations allows any location of the organization");
         }
 
         // Scenario 30
@@ -77,7 +77,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var hasAccess = await HasLocationAccessAsync(database, userId, CantinaId, BatelLocationId);
 
             // Assert
-            hasAccess.ShouldBeFalse();
+            hasAccess.ShouldBeFalse("a role in another organization never gives access to this organization's locations");
         }
 
         // Scenario 31
@@ -98,7 +98,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var hasAccess = await HasLocationAccessAsync(database, userId, CantinaId, Guid.Parse(location));
 
             // Assert
-            hasAccess.ShouldBe(expected);
+            hasAccess.ShouldBe(expected, "a role for given locations allows only those locations");
         }
     }
 }

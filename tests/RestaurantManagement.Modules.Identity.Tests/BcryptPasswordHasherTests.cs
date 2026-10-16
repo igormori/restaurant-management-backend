@@ -26,7 +26,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = _sut.Verify(password!, _sut.Hash(Password));
 
             // Assert
-            result.ShouldBeFalse();
+            result.ShouldBeFalse("a blank password never matches a stored hash");
         }
 
         [Theory]
@@ -40,7 +40,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = _sut.Verify(Password, hash!);
 
             // Assert
-            result.ShouldBeFalse();
+            result.ShouldBeFalse("a blank or malformed stored hash never matches any password");
         }
 
         private static readonly string Password72Bytes = "Massa@Fresca26" + new string('é', 29);
@@ -68,7 +68,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = _sut.Verify(Password73Bytes, hash);
 
             // Assert
-            result.ShouldBeFalse();
+            result.ShouldBeFalse("a password over 72 bytes must not match just because its first 72 bytes do");
         }
 
         [Fact]
@@ -79,7 +79,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var hash = _sut.Hash(Password72Bytes);
 
             // Assert
-            _sut.Verify(Password72Bytes, hash).ShouldBeTrue();
+            _sut.Verify(Password72Bytes, hash).ShouldBeTrue("a password of exactly 72 bytes is stored and still verifies");
         }
 
         [Fact]
@@ -93,7 +93,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = _sut.Verify("Massa@Fresca2027", hash);
 
             // Assert
-            result.ShouldBeFalse();
+            result.ShouldBeFalse("a wrong password never matches");
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var hash = _sut.Hash(Password);
 
             // Assert
-            hash.ShouldStartWith("$2a$12$");
+            hash.ShouldStartWith("$2a$12$", customMessage: "passwords are stored only as bcrypt hashes with work factor 12");
             _sut.Verify(Password, hash).ShouldBeTrue();
         }
 
@@ -117,7 +117,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var second = _sut.Hash(Password);
 
             // Assert
-            first.ShouldNotBe(second);
+            first.ShouldNotBe(second, "each hash is salted, so the same password never produces the same stored value");
         }
 
         [Fact]
@@ -132,8 +132,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var isValid = Validator.TryValidateObject(request, new ValidationContext(request), results, validateAllProperties: true);
 
             // Assert
-            isValid.ShouldBeFalse();
-            results.ShouldContain(r => r.MemberNames.Contains("Password"));
+            isValid.ShouldBeFalse("a login password over 64 characters is refused");
+            results.ShouldContain(r => r.MemberNames.Contains("Password"), "the error is reported on the password field");
         }
 
         [Fact]
@@ -148,8 +148,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var isValid = Validator.TryValidateObject(request, new ValidationContext(request), results, validateAllProperties: true);
 
             // Assert
-            isValid.ShouldBeFalse();
-            results.ShouldContain(r => r.MemberNames.Contains("CurrentPassword"));
+            isValid.ShouldBeFalse("a current password over 64 characters is refused before any check");
+            results.ShouldContain(r => r.MemberNames.Contains("CurrentPassword"), "the error is reported on the current password field");
         }
     }
 }

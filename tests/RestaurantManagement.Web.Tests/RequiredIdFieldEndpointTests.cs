@@ -45,8 +45,8 @@ public class RequiredIdFieldEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response, field)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "a missing or null ID is refused with a 400");
+        (await FieldErrorsAsync(response, field)).ShouldContain(expected, "the error must name the missing ID field in the requested language");
     }
 
     [Theory]
@@ -65,7 +65,7 @@ public class RequiredIdFieldEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "a value that is not an ID is refused with a 400");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, "the error must say the ID is required, in the requested language");
     }
 }

@@ -23,6 +23,6 @@ public class RefreshTokenCleanupWiringTests : IDisposable
         var hostedServices = _factory.Services.GetServices<IHostedService>();
 
         // Assert
-        hostedServices.ShouldNotContain(service => service is RefreshTokenCleanupWorker);
+        hostedServices.ShouldNotContain(service => service is RefreshTokenCleanupWorker, "tests must not run the cleanup job, so test runs never delete rows from a real database");
     }
 }

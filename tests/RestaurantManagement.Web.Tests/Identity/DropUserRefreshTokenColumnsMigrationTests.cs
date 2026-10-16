@@ -108,7 +108,7 @@ public class DropUserRefreshTokenColumnsMigrationTests : IClassFixture<PostgresD
         await context.GetService<IMigrator>().MigrateAsync(dropMigration);
 
         // Assert
-        (await ReadScalarAsync(context, UserRowsWithoutOldTokenSql)).ShouldBe(usersBefore);
+        (await ReadScalarAsync(context, UserRowsWithoutOldTokenSql)).ShouldBe(usersBefore, "dropping the old token columns must not change any other user data");
     }
 
     // Scenario 68
@@ -124,7 +124,7 @@ public class DropUserRefreshTokenColumnsMigrationTests : IClassFixture<PostgresD
         await context.GetService<IMigrator>().MigrateAsync(dropMigration);
 
         // Assert
-        (await ReadScalarAsync(context, OldTokenColumnsSql)).ShouldBeEmpty();
+        (await ReadScalarAsync(context, OldTokenColumnsSql)).ShouldBeEmpty("users no longer store a single refresh token, because sessions now live in their own table");
     }
 
     // Scenario 69
@@ -141,6 +141,6 @@ public class DropUserRefreshTokenColumnsMigrationTests : IClassFixture<PostgresD
         await context.GetService<IMigrator>().MigrateAsync(dropMigration);
 
         // Assert
-        (await ReadScalarAsync(context, RefreshTokenRowsSql)).ShouldBe(tokensBefore);
+        (await ReadScalarAsync(context, RefreshTokenRowsSql)).ShouldBe(tokensBefore, "existing sessions must survive the migration untouched");
     }
 }

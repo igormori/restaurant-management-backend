@@ -46,7 +46,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 .Select(call => call.GetArguments()[3])
                 .OfType<Exception>()
                 .SingleOrDefault();
-            loggedException.ShouldBeSameAs(smtpFailure);
+            loggedException.ShouldBeSameAs(smtpFailure, "when the verification email cannot be sent, the failure is logged");
         }
     }
 }

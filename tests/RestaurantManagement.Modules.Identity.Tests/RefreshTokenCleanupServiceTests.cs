@@ -58,8 +58,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             var deleted = await PurgeAsync(database);
 
-            deleted.ShouldBe(1);
-            (await RemainingIdsAsync(database)).ShouldBeEmpty();
+            deleted.ShouldBe(1, "a token expired for longer than the 30-day retention is deleted");
+            (await RemainingIdsAsync(database)).ShouldBeEmpty("the old expired token is gone");
         }
 
         [Fact]
@@ -71,8 +71,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             var deleted = await PurgeAsync(database);
 
-            deleted.ShouldBe(0);
-            (await RemainingIdsAsync(database)).ShouldBe(new[] { recent.Id });
+            deleted.ShouldBe(0, "a token expired for less than the retention period is not deleted");
+            (await RemainingIdsAsync(database)).ShouldBe(new[] { recent.Id }, ignoreOrder: false, customMessage: "the recently expired token is kept");
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             await PurgeAsync(database);
 
-            (await RemainingIdsAsync(database)).ShouldBe(new[] { active.Id });
+            (await RemainingIdsAsync(database)).ShouldBe(new[] { active.Id }, ignoreOrder: false, customMessage: "a token that has not expired is never deleted");
         }
 
         [Fact]
@@ -96,7 +96,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             await PurgeAsync(database);
 
-            (await RemainingIdsAsync(database)).ShouldBe(new[] { revoked.Id });
+            (await RemainingIdsAsync(database)).ShouldBe(new[] { revoked.Id }, ignoreOrder: false, customMessage: "a revoked token that has not expired is kept, because reuse detection still needs it");
         }
 
         [Fact]
@@ -110,8 +110,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             var deleted = await PurgeAsync(database);
 
-            deleted.ShouldBe(2);
-            (await RemainingIdsAsync(database)).ShouldBe(new[] { active.Id });
+            deleted.ShouldBe(2, "both tokens expired past the retention are deleted, revoked or not");
+            (await RemainingIdsAsync(database)).ShouldBe(new[] { active.Id }, ignoreOrder: false, customMessage: "only the token still valid remains");
         }
     }
 }

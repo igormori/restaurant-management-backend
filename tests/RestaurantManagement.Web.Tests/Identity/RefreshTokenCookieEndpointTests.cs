@@ -81,13 +81,13 @@ public class RefreshTokenCookieEndpointTests : IDisposable
 
     private static void ShouldBeSecureRefreshCookie(SetCookieHeaderValue cookie)
     {
-        cookie.Value.ToString().ShouldBe(IssuedToken);
-        cookie.HttpOnly.ShouldBeTrue();
-        cookie.Secure.ShouldBeTrue();
-        cookie.SameSite.ShouldBe(SameSiteMode.Strict);
-        cookie.Path.ToString().ShouldBe(CookiePath);
-        cookie.Expires.ShouldNotBeNull();
-        cookie.Expires.Value.UtcDateTime.ShouldBe(TokenExpiry, TimeSpan.FromSeconds(1));
+        cookie.Value.ToString().ShouldBe(IssuedToken, "the refresh token travels in the cookie");
+        cookie.HttpOnly.ShouldBeTrue("page scripts must not be able to read the refresh token");
+        cookie.Secure.ShouldBeTrue("the refresh token must only be sent over HTTPS");
+        cookie.SameSite.ShouldBe(SameSiteMode.Strict, "the refresh token must never be sent on requests started by other sites");
+        cookie.Path.ToString().ShouldBe(CookiePath, "the cookie is only sent to the auth routes");
+        cookie.Expires.ShouldNotBeNull("the cookie must expire together with the refresh token");
+        cookie.Expires.Value.UtcDateTime.ShouldBe(TokenExpiry, TimeSpan.FromSeconds(1), "the cookie must expire when the refresh token does");
     }
 
     // Scenario 46
@@ -104,7 +104,7 @@ public class RefreshTokenCookieEndpointTests : IDisposable
         var response = await client.SendAsync(RefreshRequest(cookieToken: null));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "a refresh without a cookie has no session to renew and must be refused");
     }
 
     // Scenario 47
@@ -120,7 +120,7 @@ public class RefreshTokenCookieEndpointTests : IDisposable
         var response = await client.SendAsync(LoginRequest());
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "valid credentials log the person in");
         ShouldBeSecureRefreshCookie(RefreshCookieOf(response));
     }
 
@@ -137,11 +137,11 @@ public class RefreshTokenCookieEndpointTests : IDisposable
         var response = await client.SendAsync(LoginRequest());
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "valid credentials log the person in");
         var body = await response.Content.ReadAsStringAsync();
-        body.ShouldContain("access-pass-for-maria");
-        body.ShouldNotContain(IssuedToken);
-        body.ShouldNotContain("refreshToken", Case.Insensitive);
+        body.ShouldContain("access-pass-for-maria", customMessage: "the access token is returned in the body");
+        body.ShouldNotContain(IssuedToken, customMessage: "the refresh token must never appear in the body, only in the cookie");
+        body.ShouldNotContain("refreshToken", Case.Insensitive, "the body must not even have a refresh token field");
     }
 
     // Scenario 49
@@ -178,9 +178,9 @@ public class RefreshTokenCookieEndpointTests : IDisposable
         var response = await client.SendAsync(RefreshRequest(CurrentCookieToken));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "a valid refresh cookie renews the session");
         ShouldBeSecureRefreshCookie(RefreshCookieOf(response));
-        (await response.Content.ReadAsStringAsync()).ShouldNotContain(IssuedToken);
+        (await response.Content.ReadAsStringAsync()).ShouldNotContain(IssuedToken, customMessage: "the new refresh token must never appear in the body, only in the cookie");
     }
 
     // Scenario 51
@@ -204,9 +204,9 @@ public class RefreshTokenCookieEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "choosing a member organization succeeds");
         ShouldBeSecureRefreshCookie(RefreshCookieOf(response));
-        (await response.Content.ReadAsStringAsync()).ShouldNotContain(IssuedToken);
+        (await response.Content.ReadAsStringAsync()).ShouldNotContain(IssuedToken, customMessage: "the replacement refresh token must never appear in the body, only in the cookie");
     }
 
     // Scenario 52
@@ -227,9 +227,9 @@ public class RefreshTokenCookieEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.Headers.TryGetValues("Access-Control-Allow-Origin", out var origins).ShouldBeTrue();
+        response.Headers.TryGetValues("Access-Control-Allow-Origin", out var origins).ShouldBeTrue("a configured origin must be told it is allowed");
         origins!.ShouldBe(new[] { AllowedOrigin });
-        response.Headers.TryGetValues("Access-Control-Allow-Credentials", out var credentials).ShouldBeTrue();
+        response.Headers.TryGetValues("Access-Control-Allow-Credentials", out var credentials).ShouldBeTrue("the allowed origin may send cookies, which the refresh cookie needs");
         credentials!.ShouldBe(new[] { "true" });
     }
 }

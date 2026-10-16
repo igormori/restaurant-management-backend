@@ -125,8 +125,8 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
             () => context.Database.ExecuteSqlAsync($"DELETE FROM users WHERE id = {MariaId}"));
 
         // Assert
-        exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation);
-        (await context.UserRoles.SingleAsync()).Id.ShouldBe(MariaOwnerRoleId);
+        exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation, "a user who still holds a role must not be deletable");
+        (await context.UserRoles.SingleAsync()).Id.ShouldBe(MariaOwnerRoleId, "the refused delete must leave the role in place");
     }
 
     // Scenario 8
@@ -144,8 +144,8 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
             () => context.Database.ExecuteSqlAsync($"DELETE FROM users WHERE id = {JoaoId}"));
 
         // Assert
-        exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation);
-        (await context.UserRoles.SingleAsync()).Id.ShouldBe(JoaoStaffRoleId);
+        exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation, "a deactivated user who still holds a role must not be deletable either");
+        (await context.UserRoles.SingleAsync()).Id.ShouldBe(JoaoStaffRoleId, "the refused delete must leave the role in place");
     }
 
     // Scenario 9
@@ -163,8 +163,8 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
         var deleted = await context.Database.ExecuteSqlAsync($"DELETE FROM users WHERE id = {MariaId}");
 
         // Assert
-        deleted.ShouldBe(1);
-        (await context.UserVerificationCodes.CountAsync()).ShouldBe(0);
+        deleted.ShouldBe(1, "a user with no role can be deleted");
+        (await context.UserVerificationCodes.CountAsync()).ShouldBe(0, "the deleted user's verification codes go with the user");
     }
 
     // Scenario 10
@@ -184,8 +184,8 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
 
         // Assert
         var remaining = await context.UserVerificationCodes.SingleAsync();
-        remaining.Id.ShouldBe(JoaoCodeId);
-        remaining.UserId.ShouldBe(JoaoId);
+        remaining.Id.ShouldBe(JoaoCodeId, "deleting one user must never delete another user's code");
+        remaining.UserId.ShouldBe(JoaoId, "the remaining code still belongs to the other user");
     }
 
     // Scenario 11; refresh-tokens-own-table Scenario 4 adds the refresh token cascade;
@@ -205,7 +205,7 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
             "fk_password_reset_codes_users_user_id:CASCADE,"
             + "fk_refresh_tokens_users_user_id:CASCADE,"
             + "fk_user_roles_users_user_id:RESTRICT,"
-            + "fk_user_verification_codes_users_user_id:CASCADE");
+            + "fk_user_verification_codes_users_user_id:CASCADE", "roles must block deleting a user, while codes, reset codes and refresh tokens are deleted with the user");
     }
 
     // Scenario 12
@@ -231,8 +231,8 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
         await context.GetService<IMigrator>().MigrateAsync(restrictMigration);
 
         // Assert
-        (await ReadScalarAsync(context, UserRowsSql)).ShouldBe(usersBefore);
-        (await ReadScalarAsync(context, RoleRowsSql)).ShouldBe(rolesBefore);
-        (await ReadScalarAsync(context, CodeRowsSql)).ShouldBe(codesBefore);
+        (await ReadScalarAsync(context, UserRowsSql)).ShouldBe(usersBefore, "changing the delete rules must not alter any user");
+        (await ReadScalarAsync(context, RoleRowsSql)).ShouldBe(rolesBefore, "changing the delete rules must not alter any role");
+        (await ReadScalarAsync(context, CodeRowsSql)).ShouldBe(codesBefore, "changing the delete rules must not alter any code");
     }
 }

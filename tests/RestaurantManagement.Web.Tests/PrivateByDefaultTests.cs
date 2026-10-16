@@ -44,7 +44,7 @@ public class PrivateByDefaultTests : IDisposable
         var response = await client.GetAsync(UndeclaredUrl);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "an endpoint with no access rule is private by default, so an anonymous caller must be refused");
     }
 
     // Scenario 28
@@ -129,8 +129,8 @@ public class PrivateByDefaultTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldNotBe(HttpStatusCode.Unauthorized);
-        response.StatusCode.ShouldNotBe(HttpStatusCode.Forbidden);
-        ((int)response.StatusCode).ShouldBeLessThan(500);
+        response.StatusCode.ShouldNotBe(HttpStatusCode.Unauthorized, "the sign-in endpoints are public, so a caller with no token must not be turned away");
+        response.StatusCode.ShouldNotBe(HttpStatusCode.Forbidden, "the sign-in endpoints are public, so a caller with no token must not be turned away");
+        ((int)response.StatusCode).ShouldBeLessThan(500, "a public endpoint must answer without a server error");
     }
 }

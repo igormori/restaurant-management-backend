@@ -94,11 +94,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
             }
 
             // Assert
-            rejection.StatusCode.ShouldBe(wrongCode.StatusCode);
-            rejection.Message.ShouldBe(wrongCode.Message);
+            rejection.StatusCode.ShouldBe(wrongCode.StatusCode, "a deactivated user gets the same status as a wrong code, so nothing reveals the account state");
+            rejection.Message.ShouldBe(wrongCode.Message, "a deactivated user gets the same message as a wrong code");
             using var verify = database.CreateContext();
-            BCrypt.Net.BCrypt.Verify(OldPassword, (await verify.Users.SingleAsync(u => u.Id == MariaId)).PasswordHash).ShouldBeTrue();
-            (await verify.RefreshTokens.Where(t => t.UserId == MariaId).ToListAsync()).ShouldAllBe(t => t.RevokedAt == null);
+            BCrypt.Net.BCrypt.Verify(OldPassword, (await verify.Users.SingleAsync(u => u.Id == MariaId)).PasswordHash).ShouldBeTrue("the old password must still work because the reset was refused");
+            (await verify.RefreshTokens.Where(t => t.UserId == MariaId).ToListAsync()).ShouldAllBe(t => t.RevokedAt == null, "a refused reset does not sign the user out of any device");
             await auditRecorder.DidNotReceiveWithAnyArgs().RecordAsync(default, default!, default);
         }
     }

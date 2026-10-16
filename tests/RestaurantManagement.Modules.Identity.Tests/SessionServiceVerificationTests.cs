@@ -61,12 +61,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var act = () => sut.LoginAsync(new LoginRequest { Email = "unverified@test.com", Password = Password }, TestClients.KitchenTablet);
 
             // Assert
-            var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(401);
+            var thrown = await act.Should().ThrowAsync<BusinessException>("an unverified account cannot log in");
+            thrown.Which.StatusCode.Should().Be(401, "an unverified account gets the generic 401 login failure");
 
             // refresh-tokens-own-table Scenario 41: a refused sign-in stores no refresh token
             using var verifyContext = database.CreateContext();
-            (await verifyContext.Set<RefreshToken>().CountAsync()).Should().Be(0);
+            (await verifyContext.Set<RefreshToken>().CountAsync()).Should().Be(0, "a refused login stores no refresh token");
         }
 
         [Fact]
@@ -114,8 +114,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await sut.LoginAsync(new LoginRequest { Email = "toverify@test.com", Password = Password }, TestClients.KitchenTablet);
 
             // Assert
-            response.Auth.Token.Should().NotBeNullOrEmpty();
-            response.RefreshToken.Should().NotBeNullOrEmpty();
+            response.Auth.Token.Should().NotBeNullOrEmpty("once the email is verified the user can log in and gets an access token");
+            response.RefreshToken.Should().NotBeNullOrEmpty("a verified login also gets a refresh token");
         }
     }
 }

@@ -29,7 +29,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var results = Validate(request);
 
             // Assert
-            results.ShouldContain(r => r.MemberNames.Contains("Code"));
+            results.ShouldContain(r => r.MemberNames.Contains("Code"), "a missing code or one over 6 characters is refused with an error on the code");
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var results = Validate(request);
 
             // Assert
-            results.ShouldNotContain(r => r.MemberNames.Contains("Code"));
+            results.ShouldNotContain(r => r.MemberNames.Contains("Code"), "a code of 6 characters is accepted");
         }
 
         [Theory]
@@ -60,7 +60,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var results = Validate(request);
 
             // Assert
-            results.ShouldContain(r => r.MemberNames.Contains("Code"));
+            results.ShouldContain(r => r.MemberNames.Contains("Code"), "a missing reset code or one over 6 characters is refused with an error on the code");
         }
     }
 }

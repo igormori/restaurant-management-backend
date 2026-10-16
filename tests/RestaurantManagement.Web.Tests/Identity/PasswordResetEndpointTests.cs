@@ -112,9 +112,9 @@ public class PasswordResetEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var unknown = await client.PostAsJsonAsync(ForgotUrl, new { email = "ninguem@cantinadanonna.com.br" });
 
         // Assert
-        known.StatusCode.ShouldBe(HttpStatusCode.OK);
-        unknown.StatusCode.ShouldBe(known.StatusCode);
-        (await unknown.Content.ReadAsStringAsync()).ShouldBe(await known.Content.ReadAsStringAsync());
+        known.StatusCode.ShouldBe(HttpStatusCode.OK, "asking for a reset always gets the same acknowledgement");
+        unknown.StatusCode.ShouldBe(known.StatusCode, "an unknown email must look exactly like a real one, so nobody can discover who has an account");
+        (await unknown.Content.ReadAsStringAsync()).ShouldBe(await known.Content.ReadAsStringAsync(), "the body must not reveal whether the email has an account");
         await _emailService.ReceivedWithAnyArgs(1).SendPasswordResetEmailAsync(default!, default!, default!, default);
     }
 
@@ -135,12 +135,12 @@ public class PasswordResetEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.PostAsJsonAsync(ResetUrl, new { email = MariaEmail, code, newPassword = NewPassword });
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "a correct reset code changes the password");
         var body = await response.Content.ReadAsStringAsync();
-        body.ShouldNotContain(code);
-        body.ShouldNotContain(NewPassword);
-        (await IsRefreshAcceptedAsync(factory, earlierTokens[0])).ShouldBeFalse();
-        (await IsRefreshAcceptedAsync(factory, earlierTokens[1])).ShouldBeFalse();
+        body.ShouldNotContain(code, customMessage: "the reset code must never be echoed back");
+        body.ShouldNotContain(NewPassword, customMessage: "the new password must never be echoed back");
+        (await IsRefreshAcceptedAsync(factory, earlierTokens[0])).ShouldBeFalse("a reset signs the person out everywhere, so the first device's session must be refused");
+        (await IsRefreshAcceptedAsync(factory, earlierTokens[1])).ShouldBeFalse("a reset signs the person out everywhere, so the second device's session must be refused");
     }
 
     // Scenario 38
@@ -162,16 +162,16 @@ public class PasswordResetEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var auditResponse = await ownerClient.GetAsync(AuditLogUrl);
 
         // Assert
-        reset.StatusCode.ShouldBe(HttpStatusCode.OK);
-        auditResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        reset.StatusCode.ShouldBe(HttpStatusCode.OK, "the reset must succeed");
+        auditResponse.StatusCode.ShouldBe(HttpStatusCode.OK, "the organization owner can read the audit log");
         var auditBody = await auditResponse.Content.ReadAsStringAsync();
-        auditBody.ShouldNotContain(NewPassword);
-        auditBody.ShouldNotContain(OldPassword);
+        auditBody.ShouldNotContain(NewPassword, customMessage: "the audit log must never hold the new password");
+        auditBody.ShouldNotContain(OldPassword, customMessage: "the audit log must never hold the old password");
         var entry = (await auditResponse.Content.ReadFromJsonAsync<AuditPage>())!.Items.ShouldHaveSingleItem();
-        entry.Action.ShouldBe(AuditActions.PasswordReset);
-        entry.EntityId.ShouldBe(MariaId);
-        entry.Before.ShouldBeNull();
-        entry.After.ShouldBeNull();
-        entry.Reason.ShouldBeNull();
+        entry.Action.ShouldBe(AuditActions.PasswordReset, "the reset is recorded as a password reset in the user's organization");
+        entry.EntityId.ShouldBe(MariaId, "the audit entry names the user whose password was reset");
+        entry.Before.ShouldBeNull("the audit entry must carry no password data");
+        entry.After.ShouldBeNull("the audit entry must carry no password data");
+        entry.Reason.ShouldBeNull("the audit entry must carry no password data");
     }
 }

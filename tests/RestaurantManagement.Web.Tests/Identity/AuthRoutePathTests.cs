@@ -39,7 +39,7 @@ public class AuthRoutePathTests : IDisposable
             && raw.StartsWith("api/auth", StringComparison.OrdinalIgnoreCase));
 
         // Assert
-        template.ShouldNotBeNull();
-        ("/" + template).ShouldStartWith(CookiePath + "/", Case.Sensitive);
+        template.ShouldNotBeNull("the auth endpoint must exist under the api/auth path");
+        ("/" + template).ShouldStartWith(CookiePath + "/", Case.Sensitive, "browsers match the refresh cookie path case-sensitively, so every auth route must start with exactly that path or the cookie is not sent");
     }
 }

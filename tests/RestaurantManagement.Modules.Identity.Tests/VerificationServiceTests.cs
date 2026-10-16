@@ -61,11 +61,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(401);
+            thrown.Which.StatusCode.Should().Be(401, "a wrong code is refused with the generic 401");
 
             using var verifyContext = database.CreateContext();
             var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
-            reloaded.IsVerified.Should().BeFalse();
+            reloaded.IsVerified.Should().BeFalse("a wrong code must not verify the account");
         }
 
         // Hash verification codes: Scenario 23
@@ -95,7 +95,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(401);
+            thrown.Which.StatusCode.Should().Be(401, "an expired code is refused with the generic 401");
         }
 
         // Hash verification codes: Scenario 24
@@ -125,7 +125,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(401);
+            thrown.Which.StatusCode.Should().Be(401, "a code that was already used is refused with the generic 401");
         }
 
         // Hash verification codes: Scenario 25
@@ -156,11 +156,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(401);
+            thrown.Which.StatusCode.Should().Be(401, "another account's code is refused with the generic 401");
 
             using var verifyContext = database.CreateContext();
             var reloadedOwner = await verifyContext.Users.SingleAsync(u => u.Email == "owner@test.com");
-            reloadedOwner.IsVerified.Should().BeFalse();
+            reloadedOwner.IsVerified.Should().BeFalse("another account's code must not verify this account");
         }
 
         [Fact]
@@ -190,7 +190,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             using var verifyContext = database.CreateContext();
             var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
-            reloaded.IsVerified.Should().BeTrue();
+            reloaded.IsVerified.Should().BeTrue("a correct, unexpired code verifies the account");
         }
 
         [Fact]
@@ -227,7 +227,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(401);
+            thrown.Which.StatusCode.Should().Be(401, "the same code cannot be used a second time");
         }
 
         [Fact]
@@ -244,8 +244,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(401);
-            thrown.Which.Message.Should().Be("InvalidEmailOrCode");
+            thrown.Which.StatusCode.Should().Be(401, "an unknown email is refused with the same 401 as a wrong code");
+            thrown.Which.Message.Should().Be("InvalidEmailOrCode", "an unknown email gets the generic message, so nobody can tell which emails exist");
         }
 
         [Fact]
@@ -262,7 +262,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await sut.ResendVerificationCodeAsync(new ResendVerificationRequest { Email = "nobody@test.com" });
 
             // Assert
-            response.Message.Should().Be("VerificationResendAcknowledged");
+            response.Message.Should().Be("VerificationResendAcknowledged", "resend answers the same generic acknowledgement for an unknown email");
             await emailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
         }
 
@@ -284,7 +284,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await sut.ResendVerificationCodeAsync(new ResendVerificationRequest { Email = "verified@test.com" });
 
             // Assert
-            response.Message.Should().Be("VerificationResendAcknowledged");
+            response.Message.Should().Be("VerificationResendAcknowledged", "resend answers the same generic acknowledgement for an already verified account");
             await emailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
         }
 
@@ -315,11 +315,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await sut.ResendVerificationCodeAsync(new ResendVerificationRequest { Email = "user@test.com" });
 
             // Assert
-            response.Message.Should().Be("VerificationResendAcknowledged");
+            response.Message.Should().Be("VerificationResendAcknowledged", "a resend within 60 seconds gets the same generic acknowledgement");
 
             using var verifyContext = database.CreateContext();
             var codeCount = await verifyContext.UserVerificationCodes.CountAsync(v => v.UserId == user.Id);
-            codeCount.Should().Be(1);
+            codeCount.Should().Be(1, "a resend within 60 seconds creates no new code");
             await emailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
         }
 
@@ -346,7 +346,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var alreadyVerifiedResponse = await verifiedSut.ResendVerificationCodeAsync(new ResendVerificationRequest { Email = "verified@test.com" });
 
             // Assert
-            unknownEmailResponse.Message.Should().Be(alreadyVerifiedResponse.Message);
+            unknownEmailResponse.Message.Should().Be(alreadyVerifiedResponse.Message, "resend must answer the same for an unknown email and a verified one");
             await unknownEmailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
             await verifiedEmailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
         }
@@ -383,8 +383,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var unknownEmailThrown = await unknownEmailAct.Should().ThrowAsync<BusinessException>();
             var invalidCodeThrown = await invalidCodeAct.Should().ThrowAsync<BusinessException>();
 
-            unknownEmailThrown.Which.StatusCode.Should().Be(invalidCodeThrown.Which.StatusCode);
-            unknownEmailThrown.Which.Message.Should().Be(invalidCodeThrown.Which.Message);
+            unknownEmailThrown.Which.StatusCode.Should().Be(invalidCodeThrown.Which.StatusCode, "an unknown email gets the same status as a wrong code");
+            unknownEmailThrown.Which.Message.Should().Be(invalidCodeThrown.Which.Message, "an unknown email gets the same message as a wrong code");
         }
 
         [Fact]
@@ -413,7 +413,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var act = () => sut.ResendVerificationCodeAsync(new ResendVerificationRequest { Email = "user@test.com" });
 
             // Assert
-            await act.Should().NotThrowAsync();
+            await act.Should().NotThrowAsync("once the 60-second wait has passed a resend is accepted");
             await emailService.Received(1).SendVerificationEmailAsync(user.Email, user.FirstName, Arg.Any<string>(), Arg.Any<int>());
         }
 
@@ -451,11 +451,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(401);
+            thrown.Which.StatusCode.Should().Be(401, "a code issued before a resend is refused");
 
             using var verifyContext = database.CreateContext();
             var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
-            reloaded.IsVerified.Should().BeFalse();
+            reloaded.IsVerified.Should().BeFalse("the replaced code must not verify the account");
         }
 
         // Hash verification codes: Scenario 29
@@ -484,14 +484,14 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await sut.VerifyEmailAsync(new VerifyEmailRequest { Email = "user@test.com", Code = "123456" });
 
             // Assert
-            response.Message.Should().Be("UserVerified");
+            response.Message.Should().Be("UserVerified", "a correct code answers with the verified message");
 
             using var verifyContext = database.CreateContext();
             var reloadedUser = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
-            reloadedUser.IsVerified.Should().BeTrue();
+            reloadedUser.IsVerified.Should().BeTrue("a correct code verifies the account");
 
             var reloadedCode = await verifyContext.UserVerificationCodes.SingleAsync(v => v.UserId == user.Id);
-            reloadedCode.IsUsed.Should().BeTrue();
+            reloadedCode.IsUsed.Should().BeTrue("the code is marked used once it verifies the account");
         }
 
         // Hash verification codes: Scenario 34
@@ -529,12 +529,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await sut.ResendVerificationCodeAsync(new ResendVerificationRequest { Email = "user@test.com" });
 
             // Assert
-            response.Message.Should().Be("VerificationCodeResent");
+            response.Message.Should().Be("VerificationCodeResent", "after the 60-second wait a resend answers that a new code was sent");
 
             using var verifyContext = database.CreateContext();
             var codes = await verifyContext.UserVerificationCodes.Where(v => v.UserId == user.Id).ToListAsync();
-            codes.Where(c => c.Id == firstCode.Id || c.Id == secondCode.Id).Should().HaveCount(2).And.OnlyContain(c => c.IsUsed);
-            codes.Should().ContainSingle(c => !c.IsUsed && c.Id != firstCode.Id && c.Id != secondCode.Id);
+            codes.Where(c => c.Id == firstCode.Id || c.Id == secondCode.Id).Should().HaveCount(2).And.OnlyContain(c => c.IsUsed, "a resend cancels every older open code");
+            codes.Should().ContainSingle(c => !c.IsUsed && c.Id != firstCode.Id && c.Id != secondCode.Id, "a resend leaves exactly one new open code");
 
             await emailService.Received(1).SendVerificationEmailAsync(user.Email, user.FirstName, Arg.Any<string>(), 15);
         }
@@ -560,11 +560,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var act = () => sut.ResendVerificationCodeAsync(new ResendVerificationRequest { Email = "user@test.com" });
 
             // Assert
-            var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(500);
+            var thrown = await act.Should().ThrowAsync<BusinessException>("a resend whose email cannot be sent reports the failure");
+            thrown.Which.StatusCode.Should().Be(500, "a failed email send is a 500");
 
             using var verifyContext = database.CreateContext();
-            (await verifyContext.UserVerificationCodes.AnyAsync(v => v.UserId == user.Id)).Should().BeTrue();
+            (await verifyContext.UserVerificationCodes.AnyAsync(v => v.UserId == user.Id)).Should().BeTrue("the new code is still stored when the email fails");
         }
 
         // Hash verification codes: Scenario 20
@@ -594,11 +594,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(401);
+            thrown.Which.StatusCode.Should().Be(401, "a wrong code is refused with the generic 401");
 
             using var verifyContext = database.CreateContext();
             var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
-            reloaded.VerificationFailedAttempts.Should().Be(1);
+            reloaded.VerificationFailedAttempts.Should().Be(1, "each wrong code adds one to the failed-attempt counter");
         }
 
         // Hash verification codes: Scenario 22
@@ -636,15 +636,15 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(423);
+            thrown.Which.StatusCode.Should().Be(423, "the last allowed wrong code locks verification");
 
             using var verifyContext = database.CreateContext();
             var reloadedCode = await verifyContext.UserVerificationCodes.SingleAsync(v => v.UserId == user.Id);
-            reloadedCode.IsUsed.Should().BeTrue();
+            reloadedCode.IsUsed.Should().BeTrue("locking verification cancels every open code");
 
             var reloadedUser = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
-            reloadedUser.VerificationLockedUntil.Should().NotBeNull();
-            reloadedUser.VerificationLockedUntil!.Value.Should().BeAfter(DateTime.UtcNow);
+            reloadedUser.VerificationLockedUntil.Should().NotBeNull("the last wrong code starts a verification lock");
+            reloadedUser.VerificationLockedUntil!.Value.Should().BeAfter(DateTime.UtcNow, "the verification lock lies in the future");
         }
 
         // Hash verification codes: Scenario 21
@@ -682,11 +682,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(423);
+            thrown.Which.StatusCode.Should().Be(423, "a locked account is refused with a 423 even with the correct code");
 
             using var verifyContext = database.CreateContext();
             var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
-            reloaded.IsVerified.Should().BeFalse();
+            reloaded.IsVerified.Should().BeFalse("a locked account stays unverified even with the correct code");
         }
 
         // Hash verification codes: Scenario 35
@@ -725,12 +725,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(423);
+            thrown.Which.StatusCode.Should().Be(423, "a locked account cannot ask for a new code");
             await emailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
 
             using var verifyContext = database.CreateContext();
             var codeCount = await verifyContext.UserVerificationCodes.CountAsync(v => v.UserId == user.Id);
-            codeCount.Should().Be(1);
+            codeCount.Should().Be(1, "no new code is created while verification is locked");
         }
 
         // Hash verification codes: Scenario 31
@@ -769,7 +769,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             using var verifyContext = database.CreateContext();
             var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
-            reloaded.IsVerified.Should().BeTrue();
+            reloaded.IsVerified.Should().BeTrue("once the lock has expired the correct code verifies the account");
         }
 
         [Fact]
@@ -807,7 +807,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             using var verifyContext = database.CreateContext();
             var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
-            reloaded.IsVerified.Should().BeTrue();
+            reloaded.IsVerified.Should().BeTrue("a correct code still verifies after fewer wrong codes than the limit");
         }
 
         [Fact]
@@ -845,8 +845,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             using var verifyContext = database.CreateContext();
             var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
-            reloaded.VerificationFailedAttempts.Should().Be(0);
-            reloaded.VerificationLockedUntil.Should().BeNull();
+            reloaded.VerificationFailedAttempts.Should().Be(0, "a successful verification resets the failed-attempt counter");
+            reloaded.VerificationLockedUntil.Should().BeNull("a successful verification leaves no lock");
         }
 
         [Fact]
@@ -885,10 +885,10 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             using var verifyContext = database.CreateContext();
             var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
-            reloaded.VerificationFailedAttempts.Should().Be(0);
+            reloaded.VerificationFailedAttempts.Should().Be(0, "a resend after the wait resets the failed-attempt counter");
 
             var newCode = await verifyContext.UserVerificationCodes.SingleOrDefaultAsync(v => v.UserId == user.Id && !v.IsUsed);
-            newCode.Should().NotBeNull();
+            newCode.Should().NotBeNull("a resend leaves one new open code");
         }
 
         [Fact]
@@ -918,8 +918,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             using var verifyContext = database.CreateContext();
             var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
-            reloaded.IsVerified.Should().BeTrue();
-            reloaded.VerificationFailedAttempts.Should().Be(0);
+            reloaded.IsVerified.Should().BeTrue("a correct code verifies the account");
+            reloaded.VerificationFailedAttempts.Should().Be(0, "a correct code leaves the failed-attempt counter at zero");
         }
 
         [Fact]
@@ -961,7 +961,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             using var verifyContext = database.CreateContext();
             var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
-            reloaded.VerificationFailedAttempts.Should().Be(0);
+            reloaded.VerificationFailedAttempts.Should().Be(0, "a resend after the lock expired resets the failed-attempt counter");
         }
 
         // Hash verification codes: Scenario 28
@@ -989,8 +989,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             using var verifyContext = database.CreateContext();
             var stored = await verifyContext.UserVerificationCodes.SingleAsync(v => v.UserId == user.Id && !v.IsUsed);
             emailedCode.ShouldNotBeNull();
-            stored.CodeHash.ShouldNotContain(emailedCode);
-            Hasher.IsMatch(user.Id, emailedCode, stored.CodeHash).ShouldBeTrue();
+            stored.CodeHash.ShouldNotContain(emailedCode, customMessage: "the verification code is never stored readable");
+            Hasher.IsMatch(user.Id, emailedCode, stored.CodeHash).ShouldBeTrue("only the fingerprint of the emailed code is stored");
         }
 
         // Hash verification codes: Scenario 30
@@ -1030,7 +1030,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             using var verifyContext = database.CreateContext();
             var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "maria.souza@cantina.com.br");
-            reloaded.IsVerified.ShouldBeTrue();
+            reloaded.IsVerified.ShouldBeTrue("the newest code sent by a resend verifies the account");
         }
     }
 }

@@ -71,8 +71,8 @@ public class UserRoleConstraintsTests : IClassFixture<PostgresDatabaseFixture>
             () => InsertRoleWithoutOrganizationAsync(context, FirstRoleId, "Owner"));
 
         // Assert
-        exception.SqlState.ShouldBe(PostgresErrorCodes.NotNullViolation);
-        exception.ColumnName.ShouldBe("organization_id");
+        exception.SqlState.ShouldBe(PostgresErrorCodes.NotNullViolation, "a role must always belong to an organization");
+        exception.ColumnName.ShouldBe("organization_id", "the refusal must be about the missing organization");
     }
 
     // Scenario 14
@@ -89,8 +89,8 @@ public class UserRoleConstraintsTests : IClassFixture<PostgresDatabaseFixture>
             () => InsertRoleAsync(context, SecondRoleId, CantinaId, locationId: null, "Manager"));
 
         // Assert
-        exception.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation);
-        exception.ConstraintName.ShouldBe(IdentityDbContext.UniqueUserRoleIndexName);
+        exception.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation, "the same role cannot be given twice for the same scope");
+        exception.ConstraintName.ShouldBe(IdentityDbContext.UniqueUserRoleIndexName, "the duplicate must be stopped by the unique role rule");
     }
 
     // Scenario 15
@@ -107,8 +107,8 @@ public class UserRoleConstraintsTests : IClassFixture<PostgresDatabaseFixture>
             () => InsertRoleAsync(context, SecondRoleId, CantinaId, CentroLocationId, "Waiter"));
 
         // Assert
-        exception.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation);
-        exception.ConstraintName.ShouldBe(IdentityDbContext.UniqueUserRoleIndexName);
+        exception.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation, "the same role cannot be given twice for the same scope");
+        exception.ConstraintName.ShouldBe(IdentityDbContext.UniqueUserRoleIndexName, "the duplicate must be stopped by the unique role rule");
     }
 
     // Scenario 16
@@ -124,7 +124,7 @@ public class UserRoleConstraintsTests : IClassFixture<PostgresDatabaseFixture>
         await InsertRoleAsync(context, SecondRoleId, CantinaId, CentroLocationId, "Manager");
 
         // Assert
-        (await CountRolesAsync(context)).ShouldBe(2);
+        (await CountRolesAsync(context)).ShouldBe(2, "these two roles are different, so both must be kept");
     }
 
     // Scenario 17
@@ -140,7 +140,7 @@ public class UserRoleConstraintsTests : IClassFixture<PostgresDatabaseFixture>
         await InsertRoleAsync(context, SecondRoleId, CantinaId, locationId: null, "Cashier");
 
         // Assert
-        (await CountRolesAsync(context)).ShouldBe(2);
+        (await CountRolesAsync(context)).ShouldBe(2, "these two roles are different, so both must be kept");
     }
 
     // Scenario 18
@@ -156,6 +156,6 @@ public class UserRoleConstraintsTests : IClassFixture<PostgresDatabaseFixture>
         await InsertRoleAsync(context, SecondRoleId, TrattoriaId, locationId: null, "Owner");
 
         // Assert
-        (await CountRolesAsync(context)).ShouldBe(2);
+        (await CountRolesAsync(context)).ShouldBe(2, "these two roles are different, so both must be kept");
     }
 }

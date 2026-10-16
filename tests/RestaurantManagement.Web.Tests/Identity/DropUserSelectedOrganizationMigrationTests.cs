@@ -83,7 +83,7 @@ public class DropUserSelectedOrganizationMigrationTests : IClassFixture<Postgres
         await context.GetService<IMigrator>().MigrateAsync(drop);
 
         // Assert
-        (await ReadScalarAsync(context, ColumnSql)).ShouldBeEmpty();
+        (await ReadScalarAsync(context, ColumnSql)).ShouldBeEmpty("the stored organization choice is gone from users, because each session now carries its own organization");
     }
 
     [Fact]
@@ -99,6 +99,6 @@ public class DropUserSelectedOrganizationMigrationTests : IClassFixture<Postgres
         await context.GetService<IMigrator>().MigrateAsync(drop);
 
         // Assert
-        (await ReadScalarAsync(context, UserRowsWithoutColumnSql)).ShouldBe(usersBefore);
+        (await ReadScalarAsync(context, UserRowsWithoutColumnSql)).ShouldBe(usersBefore, "dropping the old column must not change any other user data");
     }
 }

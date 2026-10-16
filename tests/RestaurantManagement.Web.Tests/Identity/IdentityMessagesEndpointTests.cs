@@ -36,8 +36,8 @@ public class IdentityMessagesEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "invalid data is refused with a 400 before anything is saved");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, "the error must be written in the language the person asked for and name the broken field");
     }
 
     [Theory]
@@ -60,8 +60,8 @@ public class IdentityMessagesEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "invalid data is refused with a 400 before anything is saved");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, "the error must be written in the language the person asked for and name the broken field");
     }
 
     // Scenario 14
@@ -81,8 +81,8 @@ public class IdentityMessagesEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "invalid data is refused with a 400 before anything is saved");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, "the error must be written in the language the person asked for and name the broken field");
     }
 
     // 14 ASCII bytes + 29 two-byte letters = 72 bytes; "x" makes 73. Both are well under 64 characters.
@@ -104,8 +104,8 @@ public class IdentityMessagesEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "invalid data is refused with a 400 before anything is saved");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, "the error must be written in the language the person asked for and name the broken field");
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public class IdentityMessagesEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldNotBe(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldNotBe(HttpStatusCode.BadRequest, "a password of exactly 72 bytes is within the limit and must pass validation");
     }
 
     // 16 characters repeated 4 times, plus one: 65 characters.
@@ -150,7 +150,7 @@ public class IdentityMessagesEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "invalid data is refused with a 400 before anything is saved");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, "the error must be written in the language the person asked for and name the broken field");
     }
 }

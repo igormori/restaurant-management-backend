@@ -121,9 +121,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var unknownEmail = await Should.ThrowAsync<BusinessException>(() => ResetAsync(database, "ninguem@cantinadanonna.com.br", code, NewPassword));
 
             // Assert
-            unknownEmail.StatusCode.ShouldBe(401);
-            unknownEmail.StatusCode.ShouldBe(wrongCode.StatusCode);
-            unknownEmail.Message.ShouldBe(wrongCode.Message);
+            unknownEmail.StatusCode.ShouldBe(401, "an unknown email gets the 401 reset-code rejection");
+            unknownEmail.StatusCode.ShouldBe(wrongCode.StatusCode, "an unknown email gets the same status as a wrong code, so nobody can tell which emails exist");
+            unknownEmail.Message.ShouldBe(wrongCode.Message, "an unknown email gets the same message as a wrong code");
         }
 
         // Scenario 19
@@ -139,9 +139,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var rejection = await Should.ThrowAsync<BusinessException>(() => ResetAsync(database, MariaEmail, NeverIssuedCode, NewPassword));
 
             // Assert
-            rejection.StatusCode.ShouldBe(401);
-            BCrypt.Net.BCrypt.Verify(OldPassword, (await ReadMariaAsync(database)).PasswordHash).ShouldBeTrue();
-            (await ReadMariaTokensAsync(database)).ShouldAllBe(t => t.RevokedAt == null);
+            rejection.StatusCode.ShouldBe(401, "a wrong reset code is rejected with a 401");
+            BCrypt.Net.BCrypt.Verify(OldPassword, (await ReadMariaAsync(database)).PasswordHash).ShouldBeTrue("a rejected reset leaves the old password working");
+            (await ReadMariaTokensAsync(database)).ShouldAllBe(t => t.RevokedAt == null, "a rejected reset does not sign the user out of any device");
             await _auditRecorder.DidNotReceiveWithAnyArgs().RecordAsync(default, default!, default);
         }
 
@@ -163,8 +163,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var rejection = await Should.ThrowAsync<BusinessException>(() => ResetAsync(database, MariaEmail, code, NewPassword));
 
             // Assert
-            rejection.StatusCode.ShouldBe(401);
-            BCrypt.Net.BCrypt.Verify(OldPassword, (await ReadMariaAsync(database)).PasswordHash).ShouldBeTrue();
+            rejection.StatusCode.ShouldBe(401, "an expired reset code is rejected with a 401");
+            BCrypt.Net.BCrypt.Verify(OldPassword, (await ReadMariaAsync(database)).PasswordHash).ShouldBeTrue("an expired code leaves the old password working");
         }
 
         // Scenario 21
@@ -181,8 +181,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var rejection = await Should.ThrowAsync<BusinessException>(() => ResetAsync(database, MariaEmail, code, "Lasanha@Forno2028"));
 
             // Assert
-            rejection.StatusCode.ShouldBe(401);
-            BCrypt.Net.BCrypt.Verify(NewPassword, (await ReadMariaAsync(database)).PasswordHash).ShouldBeTrue();
+            rejection.StatusCode.ShouldBe(401, "a reset code that was already used is rejected");
+            BCrypt.Net.BCrypt.Verify(NewPassword, (await ReadMariaAsync(database)).PasswordHash).ShouldBeTrue("the password set by the first reset is not overwritten by a second use of the code");
         }
 
         // Scenario 22
@@ -201,8 +201,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var rejection = await Should.ThrowAsync<BusinessException>(() => ResetAsync(database, MariaEmail, code, NewPassword, maxAttempts: 3));
 
             // Assert
-            rejection.StatusCode.ShouldBe(401);
-            BCrypt.Net.BCrypt.Verify(OldPassword, (await ReadMariaAsync(database)).PasswordHash).ShouldBeTrue();
+            rejection.StatusCode.ShouldBe(401, "after too many wrong codes even the correct code is rejected");
+            BCrypt.Net.BCrypt.Verify(OldPassword, (await ReadMariaAsync(database)).PasswordHash).ShouldBeTrue("the password is unchanged while the reset is locked");
         }
 
         // Scenario 23
@@ -219,8 +219,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var rejection = await Should.ThrowAsync<BusinessException>(() => ResetAsync(database, MariaEmail, firstCode, NewPassword));
 
             // Assert
-            rejection.StatusCode.ShouldBe(401);
-            BCrypt.Net.BCrypt.Verify(OldPassword, (await ReadMariaAsync(database)).PasswordHash).ShouldBeTrue();
+            rejection.StatusCode.ShouldBe(401, "an older code is rejected once a newer one was requested");
+            BCrypt.Net.BCrypt.Verify(OldPassword, (await ReadMariaAsync(database)).PasswordHash).ShouldBeTrue("the old password still works because the replaced code was refused");
         }
 
         // Scenario 25
@@ -237,8 +237,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var maria = await ReadMariaAsync(database);
-            BCrypt.Net.BCrypt.Verify(NewPassword, maria.PasswordHash).ShouldBeTrue();
-            BCrypt.Net.BCrypt.Verify(OldPassword, maria.PasswordHash).ShouldBeFalse();
+            BCrypt.Net.BCrypt.Verify(NewPassword, maria.PasswordHash).ShouldBeTrue("after a correct reset the new password works");
+            BCrypt.Net.BCrypt.Verify(OldPassword, maria.PasswordHash).ShouldBeFalse("after a correct reset the old password stops working");
         }
 
         // Scenario 26
@@ -255,8 +255,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var tokens = await ReadMariaTokensAsync(database);
-            tokens.Count.ShouldBe(2);
-            tokens.ShouldAllBe(t => t.RevokedAt != null && t.RevocationReason == RefreshToken.ReasonPasswordChanged);
+            tokens.Count.ShouldBe(2, "the user was signed in on two devices");
+            tokens.ShouldAllBe(t => t.RevokedAt != null && t.RevocationReason == RefreshToken.ReasonPasswordChanged, "a correct reset signs the user out of every device");
         }
 
         // Scenario 27
@@ -296,8 +296,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var after = await ReadMariaAsync(database);
-            after.FailedAttempts.ShouldBe(0);
-            after.LockedUntil.ShouldBeNull();
+            after.FailedAttempts.ShouldBe(0, "a successful reset clears the failed login attempts");
+            after.LockedUntil.ShouldBeNull("a successful reset lifts the login lock");
         }
 
         [Fact]
@@ -318,8 +318,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await ResetAsync(database, MariaEmail, code, NewPassword);
 
             // Assert
-            code.ShouldNotBeNullOrEmpty();
-            BCrypt.Net.BCrypt.Verify(NewPassword, (await ReadMariaAsync(database)).PasswordHash).ShouldBeTrue();
+            code.ShouldNotBeNullOrEmpty("once the reset lock has expired a new code is emailed");
+            BCrypt.Net.BCrypt.Verify(NewPassword, (await ReadMariaAsync(database)).PasswordHash).ShouldBeTrue("the new code works once the reset lock has expired");
         }
     }
 }

@@ -52,10 +52,10 @@ public class LogoutEndpointTests : IDisposable
     {
         response.Headers.TryGetValues(HeaderNames.SetCookie, out var values).ShouldBeTrue("the response must clear the cookie");
         var cookie = SetCookieHeaderValue.ParseList(values!.ToList()).Single(c => c.Name == CookieName);
-        cookie.Value.ToString().ShouldBeEmpty();
-        cookie.Path.ToString().ShouldBe(CookiePath);
-        cookie.Expires.ShouldNotBeNull();
-        cookie.Expires.Value.ShouldBeLessThan(DateTimeOffset.UtcNow);
+        cookie.Value.ToString().ShouldBeEmpty("the cleared cookie must carry no token");
+        cookie.Path.ToString().ShouldBe(CookiePath, "the browser only removes a cookie sent with the same path it was set with");
+        cookie.Expires.ShouldNotBeNull("a cleared cookie needs an expiry date so the browser deletes it");
+        cookie.Expires.Value.ShouldBeLessThan(DateTimeOffset.UtcNow, "the expiry must be in the past so the browser deletes the cookie now");
     }
 
     // Scenario 60
@@ -70,7 +70,7 @@ public class LogoutEndpointTests : IDisposable
         var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, LogoutAllUrl));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "logging out of every device requires being signed in");
         await _factory.SessionService.DidNotReceive().LogoutAllAsync(Arg.Any<Guid>());
     }
 
@@ -86,7 +86,7 @@ public class LogoutEndpointTests : IDisposable
         var response = await client.SendAsync(LogoutRequest(cookieToken: null));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        response.StatusCode.ShouldBe(HttpStatusCode.NoContent, "logging out without a cookie is not an error and changes nothing");
         await _factory.SessionService.Received(1).LogoutAsync(Arg.Is<string?>(t => t == null));
     }
 
@@ -102,7 +102,7 @@ public class LogoutEndpointTests : IDisposable
         var response = await client.SendAsync(LogoutRequest(TabletCookieToken));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        response.StatusCode.ShouldBe(HttpStatusCode.NoContent, "logging out with a valid cookie succeeds without a body");
         await _factory.SessionService.Received(1).LogoutAsync(TabletCookieToken);
     }
 
@@ -136,7 +136,7 @@ public class LogoutEndpointTests : IDisposable
         var response = await client.SendAsync(LogoutAllRequest(role));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        response.StatusCode.ShouldBe(HttpStatusCode.NoContent, "any signed-in role may log out of all its devices");
     }
 
     // Scenario 65
@@ -194,6 +194,6 @@ public class LogoutEndpointTests : IDisposable
         var response = await client.SendAsync(second);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
+        response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests, "logout shares the refresh limit of one request per window here and this is the second");
     }
 }
