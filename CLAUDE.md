@@ -77,8 +77,12 @@ own "Rules for this file" section is the full rule set; in short:
 - No row is ✅ without a named test, and every Identity test is named in the matrix
 - New Identity tests go in `tests/RestaurantManagement.Modules.Identity.Tests/` (unit) or
   `tests/RestaurantManagement.Web.Tests/Identity/` (endpoint and database)
+- Every Identity test carries `[Trait("Rule", "<row ID>")]` for each row naming it, and its key
+  assertions say the rule in plain words (testing skill, "Writing tests")
 - `python3 .claude/scripts/check-identity-matrix.py` checks all of this, in CI too. Run it before
   committing an Identity change
+- In CI, `.claude/scripts/report-test-results.py` shows every failed test with its rule ID, case
+  and expected result on the run page and the pull request
 - The pr-reviewer flags an Identity change that leaves the matrix behind as Fix first
 
 ## Tenant data filtering

@@ -15,6 +15,10 @@ test.
 - No row is ✅ without a named test. Name tests as `ClassName.MethodName`.
 - Every Identity test is named in a row, or in section 11 when it protects the schema or wiring
   rather than a rule.
+- Every named test carries `[Trait("Rule", "<ID>")]` for each row naming it, and its key
+  assertions say the rule in plain words. In CI a failure is reported as "Rule L8: 5th wrong
+  password", with the Expected column and the failure message, on the run page and the pull
+  request. Run one rule locally with `dotnet test --filter Rule=L8`.
 - Row IDs never change or get reused. A removed rule is deleted with its row.
 - The pull request reviewer checks every Identity change against this file and flags anything
   missing.

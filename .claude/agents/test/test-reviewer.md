@@ -48,7 +48,9 @@ Coverage:
 - The "Spec Outcome coverage" table lists every spec Outcome.
 - Identity or authentication plans: every Security, Failure and Edge scenario has a row in
   `docs/security/identity-matrix.md` naming its test, still ❌. A missing row, or one already
-  marked ✅, is Fix first.
+  marked ✅, is Fix first. Run `python3 .claude/scripts/check-identity-matrix.py`: a test
+  without its `[Trait("Rule", ...)]` tag is Fix first; key assertions without a rule message
+  are Watch out.
 - A `Guard` covers behaviour that is truly correct today; a new behaviour marked `Guard` is a finding.
 
 Strength:

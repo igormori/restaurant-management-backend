@@ -68,7 +68,7 @@ For every task, cover each spec Outcome and the task's DoD with these scenario t
 | Test files | In the project the testing skill assigns: module unit tests on SQLite, database and endpoint behaviour in Web.Tests on PostgreSQL. Names follow `Method_Scenario_ExpectedResult` |
 | Stubs | Empty classes, methods or models in the right module folders (architecture skill) so tests compile. Bodies throw `NotImplementedException`. No logic |
 | Batch files | An **Implementation guide** under each task (template below). Do not change any other field |
-| `docs/security/identity-matrix.md` | Only when the plan touches Identity or authentication: a row for every Security, Failure and Edge scenario of that area, with the next free ID in its section, status ❌ and the test name. Change a row whose Expected result the plan changes. Rows are written now, before the feature is built; the implementer turns them ✅ |
+| `docs/security/identity-matrix.md` | Only when the plan touches Identity or authentication: a row for every Security, Failure and Edge scenario of that area, with the next free ID in its section, status ❌ and the test name. Change a row whose Expected result the plan changes. Rows are written now, before the feature is built; the implementer turns them ✅. Each of those tests carries `[Trait("Rule", "<row ID>")]` and rule messages on its key assertions (testing skill) |
 
 ---
 
