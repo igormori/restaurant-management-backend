@@ -17,7 +17,7 @@ You build **one small, low-risk change** end to end: failing tests, implementati
 ## 1. Is It Small? (check first)
 
 If the change touches only `docs/`, `backlog/`, `.claude/` or other `.md` files, stop and reply:
-`Docs-only change: handle it in /small step 3, without this agent.`
+`Docs-only change: the /small command handles it without this agent, tests or review.`
 
 Otherwise, the change qualifies only if **all** are true:
 
