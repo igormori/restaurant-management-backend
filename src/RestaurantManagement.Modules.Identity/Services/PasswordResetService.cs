@@ -107,8 +107,21 @@ namespace RestaurantManagement.Modules.Identity.Services
             }
 
             await ReplacePasswordAsync(user, resetCode, request.NewPassword);
-            await _auditRecorder.RecordAsync(user.Id, AuditActions.PasswordReset);
+            await RecordAuditAsync(user.Id);
             return new MessageResponse { Message = _localizer["PasswordResetSucceeded"].Value };
+        }
+
+        // The password is already saved; a failed audit write must not fail the request.
+        private async Task RecordAuditAsync(Guid userId)
+        {
+            try
+            {
+                await _auditRecorder.RecordAsync(userId, AuditActions.PasswordReset);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to record the password reset of user {UserId}.", userId);
+            }
         }
 
         private async Task ReplacePasswordAsync(User user, PasswordResetCode resetCode, string newPassword)

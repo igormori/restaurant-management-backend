@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
@@ -15,17 +17,20 @@ namespace RestaurantManagement.Modules.Identity.Services
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly IPasswordAuditRecorder _auditRecorder;
+        private readonly ILogger<PasswordChangeService> _logger;
 
         public PasswordChangeService(
             IdentityDbContext db,
             IStringLocalizer<SharedResource> localizer,
             IRefreshTokenService refreshTokenService,
-            IPasswordAuditRecorder auditRecorder)
+            IPasswordAuditRecorder auditRecorder,
+            ILogger<PasswordChangeService>? logger = null)
         {
             _db = db;
             _localizer = localizer;
             _refreshTokenService = refreshTokenService;
             _auditRecorder = auditRecorder;
+            _logger = logger ?? NullLogger<PasswordChangeService>.Instance;
         }
 
         public async Task<MessageResponse> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
@@ -42,8 +47,21 @@ namespace RestaurantManagement.Modules.Identity.Services
                 throw new BusinessException(_localizer["NewPasswordSameAsCurrent"].Value, 400);
 
             await ReplacePasswordAsync(user, request.NewPassword);
-            await _auditRecorder.RecordAsync(user.Id, AuditActions.PasswordChanged);
+            await RecordAuditAsync(user.Id);
             return new MessageResponse { Message = _localizer["PasswordChangeSucceeded"].Value };
+        }
+
+        // The password is already saved; a failed audit write must not fail the request.
+        private async Task RecordAuditAsync(Guid userId)
+        {
+            try
+            {
+                await _auditRecorder.RecordAsync(userId, AuditActions.PasswordChanged);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to record the password change of user {UserId}.", userId);
+            }
         }
 
         private async Task ReplacePasswordAsync(User user, string newPassword)
