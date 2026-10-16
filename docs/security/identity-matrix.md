@@ -48,7 +48,7 @@ forgot password 3/10 min, reset password 10/10 min, change password 10/min.
 | R11 | Invalid phone number | 400, translated message | ✅ | `IdentityMessagesEndpointTests.Register_InvalidPhoneNumber_ReturnsLocalizedPhoneError` |
 | R12 | Verification email fails to send | 200 anyway; account stays unverified | ✅ | `RegistrationServiceTests.RegisterAsync_EmailSendingFails_StillCreatesUnverifiedUser` |
 | R13 | Stored secrets | Password only as bcrypt (work factor 12); code only as its keyed fingerprint | ✅ | `RegistrationServiceTests.RegisterAsync_ValidRequest_StoresFingerprintOfEmailedCodeNotTheCode`, `BcryptPasswordHasherTests.Hash_Password_UsesWorkFactor12AndVerifies` |
-| R14 | Rate limit exceeded | 429 with `Retry-After` | ❌ | |
+| R14 | Rate limit exceeded | 429 with `Retry-After` | ✅ | `AuthRateLimitingTests.PublicAuthEndpoint_LimitExceeded_ReturnsTooManyRequestsWithRetryAfter` |
 
 ## 2. Verify email: `POST /api/auth/verify` (public)
 | ID | Case | Expected | Status | Test |
@@ -62,7 +62,7 @@ forgot password 3/10 min, reset password 10/10 min, change password 10/min.
 | V7 | Code issued before a resend | 401; the newest code works | ✅ | `VerificationServiceTests.VerifyEmailAsync_WithCodeInvalidatedByResend_ThrowsBusinessException`, `VerificationServiceTests.VerifyEmailAsync_NewestCodeAfterResend_MarksUserVerified` |
 | V8 | Same code submitted twice | Second attempt 401 | ✅ | `VerificationServiceTests.VerifyEmailAsync_SameCodeSubmittedTwice_SecondAttemptThrowsBusinessException` |
 | V9 | Code missing, or over 6 characters | 400 | ❌ | |
-| V10 | Rate limit exceeded | 429 | ❌ | |
+| V10 | Rate limit exceeded | 429 | ✅ | `AuthRateLimitingTests.PublicAuthEndpoint_LimitExceeded_ReturnsTooManyRequestsWithRetryAfter` |
 | V11 | Locked account compared with an unknown email, on verify and resend | Same status and body for both | 🐞 | Today a locked account gets 423: `backlog/bugs/2026-10-16-verification-lockout-reveals-account.md` |
 
 ## 3. Resend verification: `POST /api/auth/resend-verification` (public)
@@ -72,7 +72,7 @@ forgot password 3/10 min, reset password 10/10 min, change password 10/min.
 | RS2 | After the 60 s wait | Older codes cancelled; new code emailed and stored as a fingerprint; failed-attempt counter reset | ✅ | `VerificationServiceTests.ResendVerificationCodeAsync_OutsideCooldown_MarksEarlierCodesUsedAndEmailsNewCode`, `VerificationServiceTests.ResendVerificationCodeAsync_CooldownJustElapsed_SendsNewCode`, `VerificationServiceTests.ResendVerificationCodeAsync_OutsideLockout_ResetsVerificationFailedAttempts`, `VerificationServiceTests.ResendVerificationCodeAsync_OutsideCooldown_StoresFingerprintOfEmailedCodeNotTheCode`, `AuthControllerTests.ResendVerification_ValidRequest_ReturnsOkWithMessageBody` |
 | RS3 | Verification locked | No email (status: see V11) | ✅ | `VerificationServiceTests.ResendVerificationCodeAsync_AccountLocked_ThrowsAndSendsNoEmail` |
 | RS4 | Lock expired | New code sent; failed-attempt counter reset | ✅ | `VerificationServiceTests.ResendVerificationCodeAsync_LockoutExpired_SendsNewCodeAndResetsAttempts` |
-| RS5 | Rate limit exceeded | 429 | ❌ | |
+| RS5 | Rate limit exceeded | 429 | ✅ | `AuthRateLimitingTests.PublicAuthEndpoint_LimitExceeded_ReturnsTooManyRequestsWithRetryAfter` |
 | RS6 | Email fails to send | 500 `EmailSendingFailed`; the failure is logged | ✅ | `VerificationServiceTests.ResendVerificationCodeAsync_EmailSendingFails_ThrowsBusinessException`, `VerificationServiceEmailFailureLogTests.ResendVerificationCodeAsync_EmailSendingFails_LogsTheCaughtException` |
 
 ## 4. Login: `POST /api/auth/login` (public)
@@ -108,7 +108,7 @@ forgot password 3/10 min, reset password 10/10 min, change password 10/min.
 | F5 | Removed from the token's organization | 401 | ✅ | `SessionServiceRefreshTests.RefreshTokenAsync_TokenForOrganizationUserIsNotMemberOf_ThrowsInvalidOrExpiredToken401`, `SessionServiceSelectOrganizationTests.RefreshTokenAsync_MembershipOfSelectedOrganizationRemoved_ThrowsUnauthorized` |
 | F6 | After choosing an organization | Keeps that organization and only its roles | ✅ | `SessionServiceSelectOrganizationTests.RefreshTokenAsync_AfterSelectingOrganization_KeepsSelectedOrganizationAndItsRolesOnly`, `SessionServiceRefreshTests.RefreshTokenAsync_UserWithRole_JwtContainsRoleClaim`, `SessionServiceOrganizationClaimTests.RefreshTokenAsync_UserWithOneOrganization_NewTokenCarriesThatOrganizationId`, `RefreshTokenServiceTests.RotateAsync_WithoutOrganization_ReplacementKeepsTokenOrganization` |
 | F7 | Two devices | Each refreshes independently | ✅ | `SessionServiceRefreshTests.RefreshTokenAsync_TwoDevicesSignedIn_BothRefreshSucceed`, `RefreshTokenServiceTests.RotateAsync_TwoDevicesOfOneUser_BothRotateIndependently` |
-| F8 | Rate limit exceeded on `/refresh` | 429 | ❌ | |
+| F8 | Rate limit exceeded on `/refresh` | 429 | ✅ | `AuthRateLimitingTests.PublicAuthEndpoint_LimitExceeded_ReturnsTooManyRequestsWithRetryAfter` |
 | F9 | Cookie of another user | Not rotated for the caller; that user's token untouched | ✅ | `RefreshTokenServiceTests.RotateAsync_TokenOfAnotherUser_ReturnsNullAndLeavesItActiveAndUnreplaced` |
 
 ## 6. Choose organization: `POST /api/auth/select-organization` (signed in)

@@ -325,4 +325,54 @@ public class AuthRateLimitingTests : IDisposable
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
     }
+
+    [Theory]
+    [InlineData("/api/auth/register", "Register")]
+    [InlineData("/api/auth/verify", "Verify")]
+    [InlineData("/api/auth/resend-verification", "ResendVerification")]
+    [InlineData("/api/auth/refresh", "Refresh")]
+    public async Task PublicAuthEndpoint_LimitExceeded_ReturnsTooManyRequestsWithRetryAfter(string url, string policy)
+    {
+        // Arrange: one request per 10 minutes; the services are substituted
+        _factory.VerificationService.VerifyEmailAsync(Arg.Any<VerifyEmailRequest>())
+            .Returns(new MessageResponse { Message = "EmailVerified" });
+        _factory.VerificationService.ResendVerificationCodeAsync(Arg.Any<ResendVerificationRequest>())
+            .Returns(new MessageResponse { Message = "VerificationCodeSent" });
+        _factory.SessionService.RefreshTokenAsync(Arg.Any<string?>())
+            .Returns(new SessionResult
+            {
+                Auth = new AuthResponse { Email = "user@example.com", FirstName = "A", LastName = "B" },
+                RefreshToken = "cmF0ZS1saW1pdC10ZXN0LXJlZnJlc2gtdG9rZW4=",
+                RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(30)
+            });
+        var client = CreateClient(new Dictionary<string, string?>
+        {
+            [$"AuthRateLimit:{policy}:PermitLimit"] = "1",
+            [$"AuthRateLimit:{policy}:WindowSeconds"] = "600",
+        });
+        HttpRequestMessage PublicRequest()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, url)
+            {
+                Content = JsonContent.Create(new
+                {
+                    email = "maria@cantinadanonna.com.br",
+                    password = "Massa@Fresca2026",
+                    firstName = "Maria",
+                    lastName = "Souza",
+                    code = "482913"
+                })
+            };
+            request.Headers.Add(TestRemoteIpStartupFilter.RemoteIpHeader, IpA);
+            return request;
+        }
+        await client.SendAsync(PublicRequest());
+
+        // Act
+        var response = await client.SendAsync(PublicRequest());
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
+        response.Headers.RetryAfter.ShouldNotBeNull();
+    }
 }
