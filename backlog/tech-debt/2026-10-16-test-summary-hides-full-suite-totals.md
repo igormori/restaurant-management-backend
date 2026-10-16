@@ -15,6 +15,9 @@ tester and implementer instructions require.
 ## Evidence
 - `.claude/scripts/test-summary.sh:14` — `MAX_LINES=80`
 - `.claude/scripts/test-summary.sh:46` — `head -n "$MAX_LINES"` applied to all output, including passed tests
+- Seen again in docs/plans/identity/2026-10-16-password-reset (tester, 2026-10-16): the full run
+  stopped after the Shared and Organization tests. Integration-test logs ("Failed to determine the
+  https port for redirect.") also match the `Failed` pattern and fill the 80 lines
 
 ## Acceptance criteria
 - [ ] `test-summary.sh all` always shows every failed test with its first message line and the totals for every test project
