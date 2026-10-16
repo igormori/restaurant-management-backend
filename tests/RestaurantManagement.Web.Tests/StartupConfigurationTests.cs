@@ -17,10 +17,12 @@ public class StartupConfigurationTests : IDisposable
 
     private readonly TestHttpsCertificate _certificate = new();
     private readonly List<IDisposable> _disposables = new();
+    private readonly List<string> _environmentKeys = new();
 
     public void Dispose()
     {
         _disposables.ForEach(d => d.Dispose());
+        _environmentKeys.ForEach(key => Environment.SetEnvironmentVariable(key, null));
         _certificate.Dispose();
     }
 
@@ -34,10 +36,20 @@ public class StartupConfigurationTests : IDisposable
 
     private WebApplicationFactory<Program> CreateFactory(string environment, Dictionary<string, string?> settings)
     {
+        // Program.cs reads Https:* while building, before factory configuration is applied, so it must come from the environment.
+        var httpsSettings = settings.Where(s => s.Key.StartsWith("Https:")).ToList();
+        foreach (var (key, value) in httpsSettings)
+        {
+            var name = key.Replace(":", "__");
+            Environment.SetEnvironmentVariable(name, value);
+            _environmentKeys.Add(name);
+        }
+
+        var otherSettings = settings.Except(httpsSettings);
         var factory = new AuthApiFactory().WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment(environment);
-            builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(settings));
+            builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(otherSettings));
         });
         _disposables.Add(factory);
         return factory;
@@ -83,6 +95,21 @@ public class StartupConfigurationTests : IDisposable
 
         // Assert
         act.Should().Throw<Exception>().Where(e => e.ToString().Contains("Jwt:Key"));
+    }
+
+    // Auth hardening rule 4
+    [Fact]
+    public void Startup_NoCertificateInProduction_FailsNamingHttpsCertificatePath()
+    {
+        // Arrange
+        var settings = With(ValidProductionSettings(), "Https:CertificatePath", null);
+        var factory = CreateFactory(Environments.Production, settings);
+
+        // Act
+        var act = () => factory.CreateClient();
+
+        // Assert
+        act.Should().Throw<Exception>().Where(e => e.ToString().Contains("Https:CertificatePath"));
     }
 
     // Scenario 16
