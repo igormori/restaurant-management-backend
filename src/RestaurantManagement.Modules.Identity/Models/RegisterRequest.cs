@@ -27,11 +27,8 @@ namespace RestaurantManagement.Modules.Identity.Models
         }
 
         [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
-        [MinLength(8, ErrorMessage = "MinLengthAttribute_ValidationError")]
-        [MaxLength(128, ErrorMessage = "MaxLengthAttribute_ValidationError")]
+        [PasswordRules]
         [DataType(DataType.Password)]
-        [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).+$",
-            ErrorMessage = "PasswordComplexity_ValidationError")]
         public string Password { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
