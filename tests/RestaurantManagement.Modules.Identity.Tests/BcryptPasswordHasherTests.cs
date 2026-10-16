@@ -41,6 +41,42 @@ namespace RestaurantManagement.Modules.Identity.Tests
             result.ShouldBeFalse();
         }
 
+        private static readonly string Password72Bytes = "Massa@Fresca26" + new string('é', 29);
+        private static readonly string Password73Bytes = Password72Bytes + "x";
+
+        [Fact]
+        public void Hash_PasswordOver72Bytes_Throws()
+        {
+            // Act
+            var act = () => _sut.Hash(Password73Bytes);
+
+            // Assert
+            Should.Throw<ArgumentException>(act);
+        }
+
+        [Fact]
+        public void Verify_PasswordOver72Bytes_ReturnsFalseEvenWhenFirst72BytesMatch()
+        {
+            // Arrange
+            var hash = _sut.Hash(Password72Bytes);
+
+            // Act
+            var result = _sut.Verify(Password73Bytes, hash);
+
+            // Assert
+            result.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void Hash_PasswordOfExactly72Bytes_HashesAndVerifies()
+        {
+            // Act
+            var hash = _sut.Hash(Password72Bytes);
+
+            // Assert
+            _sut.Verify(Password72Bytes, hash).ShouldBeTrue();
+        }
+
         [Fact]
         public void Verify_WrongPassword_ReturnsFalse()
         {

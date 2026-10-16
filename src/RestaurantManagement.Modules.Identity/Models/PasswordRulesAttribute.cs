@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Localization;
+using RestaurantManagement.Modules.Identity.Services;
 using RestaurantManagement.Shared;
 
 namespace RestaurantManagement.Modules.Identity.Models
 {
     /// <summary>
-    /// Password rules shared by registration, reset and change: 8 to 64 characters with at least one
+    /// Password rules shared by registration, reset and change: 8 to 64 characters and at most 72 UTF-8 bytes with at least one
     /// uppercase letter, one digit and one symbol. An empty value is left to [Required].
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
@@ -41,6 +42,9 @@ namespace RestaurantManagement.Modules.Identity.Models
             var hasUpper = password.Any(char.IsUpper);
             var hasDigit = password.Any(char.IsDigit);
             var hasSymbol = password.Any(c => !char.IsLetterOrDigit(c) && c != '_' && !char.IsWhiteSpace(c));
+            if (BcryptPasswordHasher.ExceedsByteLimit(password))
+                return ("PasswordTooManyBytes_ValidationError", BcryptPasswordHasher.MaxPasswordBytes);
+
             return hasUpper && hasDigit && hasSymbol ? (null, null) : ("PasswordComplexity_ValidationError", null);
         }
     }

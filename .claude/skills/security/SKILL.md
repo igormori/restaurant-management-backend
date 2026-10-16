@@ -41,8 +41,11 @@ Based on the OWASP (Open Worldwide Application Security Project) API Security To
 ## 5. Authentication and passwords
 - Passwords are hashed with BCrypt, work factor 12 or more, through one password hashing
   interface. No other class calls BCrypt directly.
-- Passwords are 64 characters maximum, checked before hashing (BCrypt ignores everything past
-  72 bytes, so longer passwords would be silently cut).
+- Passwords are 64 characters maximum **and** 72 UTF-8 bytes maximum, checked before hashing
+  (BCrypt ignores everything past 72 bytes, and accented letters and emoji take 2 to 4 bytes
+  each, so 64 characters can exceed 72 bytes). A longer password is rejected, never truncated.
+  Enforce it both in validation (`PasswordRulesAttribute`, 400 with a translated message) and in
+  the hasher (`Hash` throws, `Verify` returns false).
 - Login failures return one generic message. Never say whether the email exists.
 - JWT: validate issuer, audience, lifetime and signing key. Short-lived access tokens.
 - Rate-limit login, registration and password reset endpoints.

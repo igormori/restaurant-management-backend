@@ -39,6 +39,29 @@ public class IdentityMessagesEndpointTests : IDisposable
         (await FieldErrorsAsync(response)).ShouldContain(expected);
     }
 
+    [Theory]
+    [InlineData("pt", "O campo Password deve ter no máximo 72 bytes. Caracteres especiais e emojis ocupam mais de um byte; use menos deles.")]
+    [InlineData("en", "The field Password must be a maximum of 72 bytes. Special characters and emoji take more than one byte, so use fewer of them.")]
+    public async Task Register_PasswordOver72Bytes_ReturnsLocalizedByteLimitError(string culture, string expected)
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+        var request = Request("POST", "/api/auth/register", culture, new
+        {
+            email = "joana@padariasaojorge.com.br",
+            password = "Massa@Fresca26" + new string('é', 29) + "x",
+            firstName = "Joana",
+            lastName = "Pereira"
+        });
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await FieldErrorsAsync(response)).ShouldContain(expected);
+    }
+
     // Scenario 14
     [Theory]
     [InlineData("pt", """{ "password": "Massa@Fresca2026" }""", "O campo Email é obrigatório.")]

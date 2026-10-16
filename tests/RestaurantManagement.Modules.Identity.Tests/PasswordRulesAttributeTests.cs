@@ -23,6 +23,10 @@ namespace RestaurantManagement.Modules.Identity.Tests
             ["change"] = new ChangePasswordRequest { CurrentPassword = "Massa@Fresca2026", NewPassword = "massa" }
         };
 
+        // 14 ASCII bytes + 29 two-byte letters = 72 bytes in 43 characters; one more byte makes 73.
+        private static readonly string Password72Bytes = "Massa@Fresca26" + new string('é', 29);
+        private static readonly string Password73Bytes = Password72Bytes + "x";
+
         private static ValidationResult? Validate(string password)
             => new PasswordRulesAttribute().GetValidationResult(password, new ValidationContext(new object()) { MemberName = "Password" });
 
@@ -71,6 +75,27 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             isValid.ShouldBeFalse();
             results.ShouldContain(r => r.MemberNames.Contains("NewPassword"));
+        }
+
+        [Fact]
+        public void GetValidationResult_PasswordOver72BytesWithin64Characters_ReturnsError()
+        {
+            // Act
+            var result = Validate(Password73Bytes);
+
+            // Assert
+            result.ShouldNotBe(ValidationResult.Success);
+            result!.MemberNames.ShouldContain("Password");
+        }
+
+        [Fact]
+        public void GetValidationResult_PasswordOfExactly72Bytes_ReturnsSuccess()
+        {
+            // Act
+            var result = Validate(Password72Bytes);
+
+            // Assert
+            result.ShouldBe(ValidationResult.Success);
         }
     }
 }

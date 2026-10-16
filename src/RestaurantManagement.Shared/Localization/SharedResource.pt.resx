@@ -39,6 +39,9 @@
   <data name="PasswordComplexity_ValidationError" xml:space="preserve">
     <value>A senha deve conter pelo menos uma letra maiúscula, um número e um caractere especial.</value>
   </data>
+  <data name="PasswordTooManyBytes_ValidationError" xml:space="preserve">
+    <value>O campo {0} deve ter no máximo {1} bytes. Caracteres especiais e emojis ocupam mais de um byte; use menos deles.</value>
+  </data>
   <data name="EmailAlreadyRegistered" xml:space="preserve">
     <value>E-mail já cadastrado.</value>
   </data>

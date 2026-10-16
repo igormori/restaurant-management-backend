@@ -39,6 +39,9 @@
   <data name="PasswordComplexity_ValidationError" xml:space="preserve">
     <value>Password must contain at least one uppercase letter, one number, and one special character.</value>
   </data>
+  <data name="PasswordTooManyBytes_ValidationError" xml:space="preserve">
+    <value>The field {0} must be a maximum of {1} bytes. Special characters and emoji take more than one byte, so use fewer of them.</value>
+  </data>
   <data name="EmailAlreadyRegistered" xml:space="preserve">
     <value>Email is already registered.</value>
   </data>
