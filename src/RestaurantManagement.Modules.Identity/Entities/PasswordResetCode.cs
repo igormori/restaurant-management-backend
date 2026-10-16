@@ -1,6 +1,6 @@
 namespace RestaurantManagement.Modules.Identity.Entities
 {
-    // Stub (tester): shape of a password reset code row. Not yet mapped in IdentityDbContext (task T3).
+    // Same shape as UserVerificationCode, kept in its own table so reset and verification never mix.
     public class PasswordResetCode
     {
         public Guid Id { get; set; }

@@ -15,6 +15,7 @@ namespace RestaurantManagement.Modules.Identity.Data
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<UserVerificationCode> UserVerificationCodes { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -61,6 +62,16 @@ namespace RestaurantManagement.Modules.Identity.Data
                 .WithMany()
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Reset codes are owned by the user and go with the user.
+            modelBuilder.Entity<PasswordResetCode>(entity =>
+            {
+                entity.HasOne(c => c.User)
+                    .WithMany()
+                    .HasForeignKey(c => c.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(c => c.UserId);
+            });
 
             // One row per device session; tokens go with the user. OrganizationId has no foreign key
             // because it belongs to another module.

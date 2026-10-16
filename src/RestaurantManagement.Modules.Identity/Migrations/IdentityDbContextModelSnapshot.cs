@@ -22,6 +22,43 @@ namespace RestaurantManagement.Modules.Identity.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.PasswordResetCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("code_hash");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_used");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_password_reset_codes");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_password_reset_codes_user_id");
+
+                    b.ToTable("password_reset_codes", (string)null);
+                });
+
             modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -149,6 +186,14 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                         .HasColumnType("text")
                         .HasColumnName("password_hash");
 
+                    b.Property<int>("PasswordResetFailedAttempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("password_reset_failed_attempts");
+
+                    b.Property<DateTime?>("PasswordResetLockedUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("password_reset_locked_until");
+
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("text")
                         .HasColumnName("phone_number");
@@ -269,6 +314,18 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                         .HasDatabaseName("ix_user_verification_codes_user_id");
 
                     b.ToTable("user_verification_codes", (string)null);
+                });
+
+            modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.PasswordResetCode", b =>
+                {
+                    b.HasOne("RestaurantManagement.Modules.Identity.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_password_reset_codes_users_user_id");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.RefreshToken", b =>

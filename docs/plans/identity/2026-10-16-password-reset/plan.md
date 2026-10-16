@@ -43,7 +43,7 @@ Decided: audit entries go to each organization the user holds a role in; a user 
 ## Checklist
 - [x] T1 — Password reset email
 - [x] T2 — Rate limit policies for the three endpoints
-- [ ] T3 — Reset code storage and migration
+- [x] T3 — Reset code storage and migration
 - [ ] T4 — Reusable registration password rules
 - [ ] T5 — Password audit recorder
 - [ ] T6 — Request a reset code

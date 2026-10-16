@@ -17,6 +17,8 @@ namespace RestaurantManagement.Modules.Identity.Entities
         public DateTime? LockedUntil { get; set; }
         public int VerificationFailedAttempts { get; set; } = 0;
         public DateTime? VerificationLockedUntil { get; set; }
+        public int PasswordResetFailedAttempts { get; set; } = 0;
+        public DateTime? PasswordResetLockedUntil { get; set; }
         public DateTime? LastLoginAt { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
