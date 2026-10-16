@@ -31,6 +31,14 @@ namespace RestaurantManagement.Modules.Organization.Data
                 .HasConversion<string>()
                 .HasMaxLength(3);
 
+            modelBuilder.Entity<OrganizationSettings>()
+                .Property(s => s.ServiceChargeRate)
+                .HasPrecision(5, 2);
+
+            modelBuilder.Entity<OrganizationSettings>()
+                .Property(s => s.DiscountApprovalLimit)
+                .HasPrecision(5, 2);
+
             modelBuilder.Entity<Location>()
                 .HasOne(l => l.Organization)
                 .WithMany(o => o.Locations)

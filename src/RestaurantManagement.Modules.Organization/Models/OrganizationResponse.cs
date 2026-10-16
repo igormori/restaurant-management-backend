@@ -64,7 +64,6 @@ namespace RestaurantManagement.Modules.Organization.Models
         public bool IsTrialActive { get; set; }
 
         public Currency Currency { get; set; }
-        // Stubs (tester): filled by T2 (settings; cutoff as HH:mm).
         public decimal ServiceChargeRate { get; set; }
         public decimal DiscountApprovalLimit { get; set; }
         public string BusinessDayCutoff { get; set; } = string.Empty;

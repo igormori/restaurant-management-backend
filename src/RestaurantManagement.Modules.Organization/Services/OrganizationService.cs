@@ -1,5 +1,6 @@
 using RestaurantManagement.Shared;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -105,6 +106,9 @@ namespace RestaurantManagement.Modules.Organization.Services
                 MaxLocations = 1,
                 TrialEndDate = DateTime.UtcNow.AddDays(30),
                 IsTrialActive = true,
+                ServiceChargeRate = 0,
+                DiscountApprovalLimit = 0,
+                BusinessDayCutoff = new TimeOnly(4, 0),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -154,21 +158,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             }
 
             // 5. Return sanitized response
-            return new OrganizationResponse
-            {
-                Id = org.Id,
-                Name = org.Name,
-                Description = org.Description,
-                LogoUrl = org.LogoUrl,
-                PrimaryColor = org.PrimaryColor,
-                SecondaryColor = org.SecondaryColor,
-                AccentColor = org.AccentColor,
-                Currency = org.Currency,
-                PlanType = settings.PlanType,
-                MaxLocations = settings.MaxLocations,
-                TrialEndDate = settings.TrialEndDate,
-                IsTrialActive = settings.IsTrialActive
-            };
+            return ToResponse(org, settings);
         }
 
         private async Task RevokeRoleBestEffortAsync(Guid ownerUserId, Guid organizationId, Exception causeException)
@@ -223,26 +213,16 @@ namespace RestaurantManagement.Modules.Organization.Services
             organization.SecondaryColor = request.SecondaryColor;
             organization.AccentColor = request.AccentColor;
             organization.UpdatedAt = DateTime.UtcNow;
+            organizationSettings.ServiceChargeRate = request.ServiceChargeRate!.Value;
+            organizationSettings.DiscountApprovalLimit = request.DiscountApprovalLimit!.Value;
+            organizationSettings.BusinessDayCutoff = TimeOnly.ParseExact(request.BusinessDayCutoff!, "HH:mm", CultureInfo.InvariantCulture);
 
             await _orgDb.SaveChangesAsync();
 
             // 4. Return sanitized response
-            return new OrganizationResponse
-            {
-                Id = organization.Id,
-                Name = organization.Name,
-                Description = organization.Description,
-                LogoUrl = organization.LogoUrl,
-                PrimaryColor = organization.PrimaryColor,
-                SecondaryColor = organization.SecondaryColor,
-                AccentColor = organization.AccentColor,
-                Currency = organization.Currency,
-                PlanType = organizationSettings.PlanType,
-                MaxLocations = organizationSettings.MaxLocations,
-                TrialEndDate = organizationSettings.TrialEndDate,
-                IsTrialActive = organizationSettings.IsTrialActive
-            };
+            return ToResponse(organization, organizationSettings);
         }
+
         public async Task<List<OrganizationResponse>> GetOrganizationsAsync(Guid userId)
         {
             var userExists = await _userRoleLookup.UserExistsAsync(userId);
@@ -257,24 +237,28 @@ namespace RestaurantManagement.Modules.Organization.Services
                 .Where(o => orgIds.Contains(o.Id))
                 .IgnoreQueryFilters() // Filter-bypass rule: lists plan details for every one of the user's memberships
                 .Include(o => o.Settings)
-                .Select(o => new OrganizationResponse
-                {
-                    Id = o.Id,
-                    Name = o.Name,
-                    Description = o.Description,
-                    LogoUrl = o.LogoUrl,
-                    PrimaryColor = o.PrimaryColor,
-                    SecondaryColor = o.SecondaryColor,
-                    AccentColor = o.AccentColor,
-                    Currency = o.Currency,
-                    PlanType = o.Settings != null ? o.Settings.PlanType : "UNKNOWN",
-                    MaxLocations = o.Settings != null ? o.Settings.MaxLocations : 0,
-                    TrialEndDate = o.Settings != null ? o.Settings.TrialEndDate : (DateTime?)null,
-                    IsTrialActive = o.Settings != null ? o.Settings.IsTrialActive : false
-                })
                 .ToListAsync();
 
-            return organizations;
+            return organizations.Select(o => ToResponse(o, o.Settings)).ToList();
         }
+
+        private static OrganizationResponse ToResponse(Entities.Organization org, OrganizationSettings? settings) => new()
+        {
+            Id = org.Id,
+            Name = org.Name,
+            Description = org.Description,
+            LogoUrl = org.LogoUrl,
+            PrimaryColor = org.PrimaryColor,
+            SecondaryColor = org.SecondaryColor,
+            AccentColor = org.AccentColor,
+            Currency = org.Currency,
+            PlanType = settings?.PlanType ?? "UNKNOWN",
+            MaxLocations = settings?.MaxLocations ?? 0,
+            TrialEndDate = settings?.TrialEndDate,
+            IsTrialActive = settings?.IsTrialActive ?? false,
+            ServiceChargeRate = settings?.ServiceChargeRate ?? 0,
+            DiscountApprovalLimit = settings?.DiscountApprovalLimit ?? 0,
+            BusinessDayCutoff = (settings?.BusinessDayCutoff ?? default).ToString("HH:mm", CultureInfo.InvariantCulture)
+        };
     }
 }

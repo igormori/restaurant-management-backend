@@ -170,6 +170,10 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<TimeOnly>("BusinessDayCutoff")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("business_day_cutoff");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -177,6 +181,11 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("created_by_user_id");
+
+                    b.Property<decimal>("DiscountApprovalLimit")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("discount_approval_limit");
 
                     b.Property<bool>("IsTrialActive")
                         .HasColumnType("boolean")
@@ -194,6 +203,11 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("plan_type");
+
+                    b.Property<decimal>("ServiceChargeRate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("service_charge_rate");
 
                     b.Property<DateTime>("TrialEndDate")
                         .HasColumnType("timestamp with time zone")
