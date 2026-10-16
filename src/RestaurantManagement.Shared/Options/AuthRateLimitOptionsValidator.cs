@@ -14,6 +14,9 @@ namespace RestaurantManagement.Shared.Options
             ValidateEndpoint(nameof(options.ResendVerification), options.ResendVerification, failures);
             ValidateEndpoint(nameof(options.Verify), options.Verify, failures);
             ValidateEndpoint(nameof(options.Refresh), options.Refresh, failures);
+            ValidateEndpoint(nameof(options.ForgotPassword), options.ForgotPassword, failures);
+            ValidateEndpoint(nameof(options.ResetPassword), options.ResetPassword, failures);
+            ValidateEndpoint(nameof(options.ChangePassword), options.ChangePassword, failures);
             ValidateTrustedProxies(options.TrustedProxies, failures);
 
             return failures.Count == 0

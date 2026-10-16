@@ -7,10 +7,9 @@ namespace RestaurantManagement.Shared.Options
         public EndpointRateLimit ResendVerification { get; set; } = new() { PermitLimit = 3, WindowSeconds = 600 };
         public EndpointRateLimit Verify { get; set; } = new() { PermitLimit = 10, WindowSeconds = 600 };
         public EndpointRateLimit Refresh { get; set; } = new() { PermitLimit = 30, WindowSeconds = 60 };
-        // Stub (tester): defaults and validation are part of T2.
-        public EndpointRateLimit ForgotPassword { get; set; } = new();
-        public EndpointRateLimit ResetPassword { get; set; } = new();
-        public EndpointRateLimit ChangePassword { get; set; } = new();
+        public EndpointRateLimit ForgotPassword { get; set; } = new() { PermitLimit = 3, WindowSeconds = 600 };
+        public EndpointRateLimit ResetPassword { get; set; } = new() { PermitLimit = 10, WindowSeconds = 600 };
+        public EndpointRateLimit ChangePassword { get; set; } = new() { PermitLimit = 10, WindowSeconds = 60 };
         public string[] TrustedProxies { get; set; } = Array.Empty<string>();
     }
 

@@ -38,6 +38,9 @@ namespace RestaurantManagement.Web.RateLimiting
                 AddIpPolicy(options, AuthRateLimitPolicies.Refresh, limits => limits.Refresh);
                 AddIpPolicy(options, AuthRateLimitPolicies.Verify, limits => limits.Verify);
                 AddIpPolicy(options, AuthRateLimitPolicies.ResendVerification, limits => limits.ResendVerification);
+                AddIpPolicy(options, AuthRateLimitPolicies.ForgotPassword, limits => limits.ForgotPassword);
+                AddIpPolicy(options, AuthRateLimitPolicies.ResetPassword, limits => limits.ResetPassword);
+                AddIpPolicy(options, AuthRateLimitPolicies.ChangePassword, limits => limits.ChangePassword);
             });
 
             return services;
