@@ -36,7 +36,7 @@ forgot password 3/10 min, reset password 10/10 min, change password 10/min.
 | ID | Case | Expected | Status | Test |
 |---|---|---|---|---|
 | R1 | Valid data | 200; user saved active and unverified; 6-digit code emailed | ✅ | `RegistrationServiceTests.RegisterAsync_ValidRequest_SendsVerificationEmailWithFirstNameAndConfiguredExpiry`, `RegistrationServiceTests.RegisterAsync_EmailSendingFails_StillCreatesUnverifiedUser` |
-| R2 | Response body | No access token and no password data | ❌ | |
+| R2 | Response body | No access token and no password data | ✅ | `RegisterEndpointTests.Register_ValidRequest_ResponseHasNoAccessTokenNoPasswordDataAndNoCookie` |
 | R3 | Email already registered | 400 `EmailAlreadyRegistered`; no email sent | ✅ | `RegistrationServiceTests.RegisterAsync_EmailAlreadyRegistered_ThrowsBusinessExceptionAndSendsNoEmail` |
 | R4 | Same email in other casing or with spaces | Treated as a duplicate (400) | ✅ | `RegistrationServiceTests.RegisterAsync_ExistingEmailDifferentCasing_RejectsDuplicate` |
 | R5 | Two requests at once with the same email | One account created, the other gets 400 | ✅ | `UniqueEmailIndexTests.RegisterAsync_TwoConcurrentRequestsSameEmail_CreatesOneUserAndRejectsOther`, `RegistrationServiceTests.RegisterAsync_UniqueViolationOnSave_ThrowsBusinessExceptionWithPreCheckMessage` |
