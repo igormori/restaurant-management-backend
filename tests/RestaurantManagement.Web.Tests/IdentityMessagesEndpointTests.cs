@@ -82,6 +82,42 @@ public class IdentityMessagesEndpointTests : IDisposable
         (await FieldErrorsAsync(response)).ShouldContain(expected);
     }
 
+    // 14 ASCII bytes + 29 two-byte letters = 72 bytes; "x" makes 73. Both are well under 64 characters.
+    private const string LoginPassword72Bytes = "Massa@Fresca26" + "ééééééééééééééééééééééééééééé";
+
+    [Theory]
+    [InlineData("pt", "ana@cantinadanonna.com.br", "O campo Password deve ter no máximo 72 bytes. Caracteres especiais e emojis ocupam mais de um byte; use menos deles.")]
+    [InlineData("en", "ana@cantinadanonna.com.br", "The field Password must be a maximum of 72 bytes. Special characters and emoji take more than one byte, so use fewer of them.")]
+    [InlineData("pt", "ninguem@cantinadanonna.com.br", "O campo Password deve ter no máximo 72 bytes. Caracteres especiais e emojis ocupam mais de um byte; use menos deles.")]
+    [InlineData("en", "ninguem@cantinadanonna.com.br", "The field Password must be a maximum of 72 bytes. Special characters and emoji take more than one byte, so use fewer of them.")]
+    public async Task Login_PasswordOver72Bytes_ReturnsSameLocalizedByteLimitError(string culture, string email, string expected)
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+        var request = Request("POST", "/api/auth/login", culture, new { email, password = LoginPassword72Bytes + "x" });
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await FieldErrorsAsync(response)).ShouldContain(expected);
+    }
+
+    [Fact]
+    public async Task Login_PasswordOf72Bytes_PassesValidation()
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+        var request = Request("POST", "/api/auth/login", "en", new { email = "ninguem@cantinadanonna.com.br", password = LoginPassword72Bytes });
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.ShouldNotBe(HttpStatusCode.BadRequest);
+    }
+
     // 16 characters repeated 4 times, plus one: 65 characters.
     private const string Password65 =
         "Massa@Fresca2026" + "Massa@Fresca2026" + "Massa@Fresca2026" + "Massa@Fresca2026" + "x";
