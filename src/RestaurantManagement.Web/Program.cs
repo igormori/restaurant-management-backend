@@ -287,6 +287,7 @@ app.UseCors("DefaultCorsPolicy");
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<LocationAccessMiddleware>();
 app.MapControllers();
 app.Run();
 

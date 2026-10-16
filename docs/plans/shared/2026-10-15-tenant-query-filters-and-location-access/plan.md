@@ -53,5 +53,5 @@ No public endpoint, no role change, no raw SQL, no migration (query filters do n
 - [x] T4 — Apply filters in Organization, with the listed bypasses
 - [x] T5 — Organization endpoints take the organization from the token
 - [x] T6 — Location assignment lookup in Identity
-- [ ] T7 — X-Location-Id check middleware
+- [x] T7 — X-Location-Id check middleware
 - [ ] T8 — Filter-bypass rule in CLAUDE.md
