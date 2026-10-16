@@ -120,7 +120,7 @@ namespace RestaurantManagement.Modules.Menu.Services
 
         public async Task<MenuCategoryResponse?> UpdateAsync(Guid userId, Guid id, UpdateMenuCategoryRequest request)
         {
-            var category = await _context.MenuCategories.FindAsync(id);
+            var category = await _context.MenuCategories.FirstOrDefaultAsync(c => c.Id == id);
             if (category == null)
                 return null;
 
@@ -137,7 +137,7 @@ namespace RestaurantManagement.Modules.Menu.Services
 
         public async Task<bool> DeleteAsync(Guid userId, Guid id)
         {
-            var category = await _context.MenuCategories.FindAsync(id);
+            var category = await _context.MenuCategories.FirstOrDefaultAsync(c => c.Id == id);
             if (category == null)
                 return false;
 

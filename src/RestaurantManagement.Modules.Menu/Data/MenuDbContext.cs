@@ -23,6 +23,7 @@ namespace RestaurantManagement.Modules.Menu.Data
             // Apply any entity configurations from this assembly
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(MenuDbContext).Assembly);
             base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyTenantQueryFilters(() => _tenantContext);
         }
     }
 }
