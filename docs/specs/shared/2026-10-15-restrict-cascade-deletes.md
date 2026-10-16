@@ -43,7 +43,7 @@ Deleting an organization silently deletes its locations and its settings. Other 
 ## Out of Scope
 | Item | Backlog file |
 |---|---|
-| Menu module: menus to location menus and menu categories still cascade; needs its own design | `/backlog/bugs/2026-10-15-menu-restrict-cascade-deletes.md` |
+| Menu module: menus to location menus and menu categories still cascade; needs its own design | `/backlog/improvements/2026-10-15-menu-deactivate-instead-of-delete.md` |
 
 ## Backlog Impact
 | Backlog file | Result |

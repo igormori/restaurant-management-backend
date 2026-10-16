@@ -19,13 +19,13 @@ One file per item, filed by type.
 ## Bugs
 | Item | File |
 |---|---|
-| Menu: restrict cascade deletes | [menu-restrict-cascade-deletes.md](bugs/menu-restrict-cascade-deletes.md) |
 
 ## Improvements
 | Item | Size | File |
 |---|---|---|
 | Session redesign: access pass revocation | Medium | [session-redesign.md](improvements/session-redesign.md) |
 | Reject breached passwords | Small | [breached-passwords.md](improvements/breached-passwords.md) |
+| Menu: deactivate instead of delete | Medium | [2026-10-15-menu-deactivate-instead-of-delete.md](improvements/2026-10-15-menu-deactivate-instead-of-delete.md) |
 
 ## Tech debt
 | Item | Size | File |
