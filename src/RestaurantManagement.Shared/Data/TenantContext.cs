@@ -15,8 +15,8 @@ namespace RestaurantManagement.Shared.Data
             _selectedLocation = selectedLocation;
         }
 
-        public Guid? OrganizationId => throw new NotImplementedException();
+        public Guid? OrganizationId => _tenantScope.OrganizationId ?? _currentUser.OrganizationId;
 
-        public Guid? LocationId => throw new NotImplementedException();
+        public Guid? LocationId => _selectedLocation.LocationId;
     }
 }

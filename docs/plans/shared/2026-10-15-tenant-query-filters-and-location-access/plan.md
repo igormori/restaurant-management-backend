@@ -1,6 +1,6 @@
 # Plan: Tenant Query Filters and Location Access Check
 
-**Spec:** docs/specs/shared/2026-10-15-tenant-query-filters-and-location-access.md   **Date:** 2026-10-15   **Status:** Draft
+**Spec:** docs/specs/shared/2026-10-15-tenant-query-filters-and-location-access.md   **Date:** 2026-10-15   **Status:** In progress
 **Risk:** High — changes how every module reads tenant data, breaks seven endpoint contracts (organization ID removed from URL and body), adds a 403 path to every authenticated request, and extends a Shared contract
 
 ## Summary
@@ -47,7 +47,7 @@ No public endpoint, no role change, no raw SQL, no migration (query filters do n
 - [ ] No endpoint reads an organization ID from the URL or request body (organization selection in Identity excepted)
 
 ## Checklist
-- [ ] T1 — Shared tenant context and query filter builder
+- [x] T1 — Shared tenant context and query filter builder
 - [ ] T2 — Apply filters in Menu
 - [ ] T3 — Menu endpoints take the organization from the token
 - [ ] T4 — Apply filters in Organization, with the listed bypasses
