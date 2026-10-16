@@ -1,7 +1,7 @@
 # Forgot-password response time reveals which emails have accounts
 
 **Status:** proposed
-**Severity:** high
+**Severity:** critical
 **Origin:** docs/plans/identity/2026-10-16-password-reset/review.md · Watch out #2
 **Date:** 2026-10-16
 

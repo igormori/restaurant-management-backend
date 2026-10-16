@@ -1,7 +1,7 @@
 # Scenarios: Forgot and change password
 
 **Plan:** docs/plans/identity/2026-10-16-password-reset/plan.md
-**Coverage:** 40 scenarios — 16 happy · 3 edge · 16 failure · 3 security · 2 guard
+**Coverage:** 43 scenarios — 16 happy · 3 edge · 18 failure · 4 security · 2 guard
 
 | # | Task | Type | Scenario (plain words) | Test name | Test file |
 |---|---|---|---|---|---|
@@ -45,6 +45,9 @@
 | 38 | T9 | Happy | Through the API, a reset shows up in the organization's audit log as a password reset of the user, with no password data | `ResetPassword_ValidCode_AuditEntryInUsersOrganizationWithoutPasswordData` | `tests/RestaurantManagement.Web.Tests/PasswordResetEndpointTests.cs` |
 | 39 | T9 | Happy | Through the API, a successful change clears the login cookie and the earlier login is refused | `ChangePassword_CorrectCurrentPassword_ClearsRefreshCookieAndEarlierTokenRefused` | `tests/RestaurantManagement.Web.Tests/PasswordChangeEndpointTests.cs` |
 | 40 | T9 | Failure | Going over the request limit on forgot, reset or change password gets "too many requests" (429) | `PasswordEndpoint_LimitExceeded_ReturnsTooManyRequests` | `tests/RestaurantManagement.Web.Tests/AuthRateLimitingTests.cs` |
+| 41 | T8 | Failure | Fix round: if writing the audit entry fails after a change is saved, the change still succeeds and the error is logged | `ChangePasswordAsync_AuditWriteFails_SucceedsAndLogsError` | `tests/RestaurantManagement.Modules.Identity.Tests/PasswordAuditFailureTests.cs` |
+| 42 | T7 | Failure | Fix round: if writing the audit entry fails after a reset is saved, the reset still succeeds and the error is logged | `ResetPasswordAsync_AuditWriteFails_SucceedsAndLogsError` | `tests/RestaurantManagement.Modules.Identity.Tests/PasswordAuditFailureTests.cs` |
+| 43 | T7 | Security | Fix round: a user deactivated after asking for a code gets the same answer as a wrong code, and nothing changes (password, sessions, audit) | `ResetPasswordAsync_DeactivatedAfterRequestingCode_RejectedLikeWrongCodeAndNothingChanges` | `tests/RestaurantManagement.Modules.Identity.Tests/PasswordResetInactiveUserTests.cs` |
 
 ## Spec Outcome coverage
 | Outcome | Scenarios |
@@ -59,8 +62,8 @@
 | #8 Change needs current password | 29, 31 |
 | #9 All sessions end | 26, 32, 37, 39 |
 | #10 Rate limit applies (and codes and passwords never in logs or responses) | 3, 4, 15, 37, 40 |
-| #11 Actions are audited | 10, 11, 12, 27, 33, 38 |
-| #12 Inactive or unverified user gets no code | 14 |
+| #11 Actions are audited | 10, 11, 12, 27, 33, 38, 41, 42 |
+| #12 Inactive or unverified user gets no code | 14, 43 |
 
 Spec rule 8 (same password refused on change) is scenario 30. Spec rule 2's lockout uses the
 existing verification limits (scenario 22).
