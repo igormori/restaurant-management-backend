@@ -39,6 +39,7 @@ namespace RestaurantManagement.Modules.Organization.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyTenantQueryFilters(() => _tenantContext);
         }
     }
 }

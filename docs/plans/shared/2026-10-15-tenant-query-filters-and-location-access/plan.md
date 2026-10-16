@@ -50,8 +50,8 @@ No public endpoint, no role change, no raw SQL, no migration (query filters do n
 - [x] T1 — Shared tenant context and query filter builder
 - [x] T2 — Apply filters in Menu
 - [x] T3 — Menu endpoints take the organization from the token
-- [ ] T4 — Apply filters in Organization, with the listed bypasses
-- [ ] T5 — Organization endpoints take the organization from the token
+- [x] T4 — Apply filters in Organization, with the listed bypasses
+- [x] T5 — Organization endpoints take the organization from the token
 - [ ] T6 — Location assignment lookup in Identity
 - [ ] T7 — X-Location-Id check middleware
 - [ ] T8 — Filter-bypass rule in CLAUDE.md

@@ -54,6 +54,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             // Get organizations with settings from Organization module
             var userOrgs = await _orgDb.Organizations
                 .Where(o => userOrgIds.Contains(o.Id))
+                .IgnoreQueryFilters() // Filter-bypass rule: the user's own memberships may have no token organization yet
                 .Include(o => o.Settings)
                 .ToListAsync();
 
@@ -192,8 +193,10 @@ namespace RestaurantManagement.Modules.Organization.Services
             }
         }
 
-        public async Task<OrganizationResponse> EditOrganizationAsync(Guid userId, Guid organizationId, EditOrganizationRequest request)
+        public async Task<OrganizationResponse> EditOrganizationAsync(Guid userId, EditOrganizationRequest request)
         {
+            var organizationId = _tenantContext.OrganizationId
+                ?? throw new BusinessException(_localizer["OrganizationRequired"].Value, 403);
 
             // 1. check if organiztion exists and get it
             var organization = await _orgDb.Organizations.FirstOrDefaultAsync(org => org.Id == organizationId);
@@ -237,9 +240,6 @@ namespace RestaurantManagement.Modules.Organization.Services
                 IsTrialActive = organizationSettings.IsTrialActive
             };
         }
-        public Task<OrganizationResponse> EditOrganizationAsync(Guid userId, EditOrganizationRequest request)
-            => throw new NotImplementedException();
-
         public async Task<List<OrganizationResponse>> GetOrganizationsAsync(Guid userId)
         {
             var userExists = await _userRoleLookup.UserExistsAsync(userId);
@@ -252,6 +252,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             // Get organizations with settings from Organization module
             var organizations = await _orgDb.Organizations
                 .Where(o => orgIds.Contains(o.Id))
+                .IgnoreQueryFilters() // Filter-bypass rule: lists plan details for every one of the user's memberships
                 .Include(o => o.Settings)
                 .Select(o => new OrganizationResponse
                 {

@@ -29,8 +29,10 @@ namespace RestaurantManagement.Modules.Organization.Services
             _localizer = localizer;
         }
 
-        public async Task<LocationResponse> CreateLocationAsync(Guid userId, Guid organizationId, CreateLocationRequest request)
+        public async Task<LocationResponse> CreateLocationAsync(Guid userId, CreateLocationRequest request)
         {
+            var organizationId = RequireOrganizationId();
+
             // 1. Verify User is Owner or Admin of the Organization
             var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
 
@@ -112,8 +114,10 @@ namespace RestaurantManagement.Modules.Organization.Services
             await _orgDb.SaveChangesAsync();
         }
 
-        public async Task<List<LocationResponse>> GetLocationsByOrganizationAsync(Guid userId, Guid organizationId)
+        public async Task<List<LocationResponse>> GetLocationsAsync(Guid userId)
         {
+            var organizationId = RequireOrganizationId();
+
             // Verify User belongs to Organization (any role)
             var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
 
@@ -121,18 +125,15 @@ namespace RestaurantManagement.Modules.Organization.Services
                 throw new BusinessException(_localizer["UserNotMemberOfOrganization"].Value, 403);
 
             var locations = await _orgDb.Locations
-                .Where(l => l.OrganizationId == organizationId)
                 .OrderBy(l => l.Name)
                 .ToListAsync();
 
             return locations.Select(MapToResponse).ToList();
         }
 
-        public Task<LocationResponse> CreateLocationAsync(Guid userId, CreateLocationRequest request)
-            => throw new NotImplementedException();
-
-        public Task<List<LocationResponse>> GetLocationsAsync(Guid userId)
-            => throw new NotImplementedException();
+        private Guid RequireOrganizationId()
+            => _tenantContext.OrganizationId
+                ?? throw new BusinessException(_localizer["OrganizationRequired"].Value, 403);
 
         private static LocationResponse MapToResponse(Location location)
         {
