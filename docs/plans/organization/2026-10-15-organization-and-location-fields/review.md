@@ -1,16 +1,18 @@
 # Review: Organization and Location Fields
 
-**Verdict:** Fix first — the code is sound, but `plan.md` is not closed out: two Overall DoD (Definition of Done: the checks that must pass to count as finished) items are unticked and no task records its commit hash.
+**Verdict:** Fix first — the code is sound and unchanged since the first review, but `plan.md` is still not closed out, and the new backlog note reports a test gap that does not exist.
 **Build:** pass (0 errors, 1 old warning)   **Tests:** 593 passed, 0 failed
 
-Reviewed range: `f9e96ec..HEAD` (6 commits). Local `main` is stale (`e008597`). This branch starts
-from `development` (`f9e96ec`), so `git diff main...HEAD` also shows the already merged PR #9.
-Open the pull request against `development`.
+Second pass. Reviewed range: `f9e96ec..HEAD` (7 commits). Local `main` is stale, so open the pull
+request against `development`. Since the first review, only `plan.md`, `review.md` and one backlog
+file changed; no file in `src/` or `tests/` changed (tests are unchanged since baseline `eeeb711`).
+Task hashes and the "All spec Outcomes met" item from the first Fix first are now done.
 
 ## Fix first
 | # | File:line | Problem | Change |
 |---|---|---|---|
-| 1 | docs/plans/organization/2026-10-15-organization-and-location-fields/plan.md:3,43,47,51-54 | "All spec Outcomes met" and "cross-tenant and role rejection tests" are unticked, Status is still "In progress", and no Checklist task has its commit hash. The work is done: scenarios 1–25 cover Outcomes #1–#7; the role rejections are in `LocationFieldsTests.cs:226`, `LocationServiceTests.cs:304` and `OrganizationServiceEditTests.cs:134`; the cross-tenant tests are scenarios 5, 10 and 16 plus `LocationById_LocationOfAnotherOrganization_...` | Tick both items, set Status to Done, and add hashes: T1 `3e49c8e`, T2 `f8bec07`, T3 `cb03adf`, T4 `05f3405` |
+| 1 | docs/plans/organization/2026-10-15-organization-and-location-fields/plan.md:3,47 | Status is still "In progress" and the DoD (Definition of Done: the checks that must pass to count as finished) item "cross-tenant and role rejection tests" is still unticked. It is met. Cross-tenant: `PUT`/`DELETE api/locations/{id}` in `tests/RestaurantManagement.Web.Tests/OrganizationTenantEndpointTests.cs:82-100` (scenario 18, its body carries a valid `timeZone` and `code`, so the 404 comes from the tenant filter, not validation), list (scenario 22), create (scenario 23). Role rejections: `LocationFieldsTests.cs:226`, `LocationServiceTests.cs:304`, `OrganizationServiceEditTests.cs:134` | Tick line 47 and set Status to Done |
+| 2 | backlog/improvements/2026-10-15-add-cross-tenant-test-for-location-edit.md:1 | Says no test covers an Owner of organization A editing organization B's location. `LocationById_LocationOfAnotherOrganization_ReturnsNotFoundAndLeavesItUnchanged` (PUT case) covers exactly that and checks B's row is unchanged | Delete this backlog file |
 
 ## Watch out
 | # | File:line | Problem | Suggestion |

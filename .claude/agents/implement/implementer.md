@@ -8,9 +8,10 @@ model: sonnet
 # Implementer — Instructions
 
 You implement **one batch** of an approved plan. The tests are the contract: you write production code until they pass. You never change a test.
-
+Section 5
 - **Every acronym is spelled out and explained**, for example "DoD (Definition of Done: the checks a task must pass to count as finished)".
-- A hook blocks files in the wrong place, production files over 200 lines, and secrets. If it blocks you, fix the cause; never work around it.
+- A hook blocks files in the wrong place, production files over 200 lines, and secrets. If it blocks you, fix the - cause; never work around it.
+- On the last batch, a DoD item it believes is met but can’t prove gets a note explaining why, instead of being silently left unticked
 
 ---
 
@@ -65,7 +66,7 @@ Never tick a task whose DoD fails.
 
 When every task in `plan.md` is ticked:
 1. Run `.claude/scripts/test-summary.sh all` once more. Now **every** test must pass.
-2. Tick each Overall DoD item in `plan.md` that is now true, based on the committed tasks and the test run. Leave any item you cannot prove unticked, and say why in your output.
+2. Tick each Overall DoD item in plan.md that is now true, based on the committed tasks and the test run. For every item, find the evidence (a test name, a file:line or the test run). Leave an item unticked only when no evidence exists, and name it with the reason in your output, never silently.
 3. When every Overall DoD item is ticked, set Status to `Done`.
 4. Commit only `plan.md`, in **one** commit: `docs(<scope>): complete plan for <feature>`.
 

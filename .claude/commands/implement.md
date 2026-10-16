@@ -17,8 +17,11 @@ If no plan was given, ask me for it and stop.
    folder and the batch ID. Wait for it to finish before starting the next batch.
    If it reports "stopped" or any [Blocking] item, stop the whole flow and show me its message.
 5. When every batch is done, use the pr-reviewer subagent on the branch.
-6. If the verdict is "Fix first", send the review to a new implementer subagent once to fix
-   the Fix first items, then run the pr-reviewer once more. Do not loop again.
+6. If the verdict is "Fix first":
+   - If **every** Fix first item is in `docs/` or `backlog/` (no code or test change), send them
+     to a new implementer subagent to fix and commit, and do **not** run the pr-reviewer again.
+   - Otherwise, send the review to a new implementer subagent once to fix the Fix first items,
+     then run the pr-reviewer once more. Do not loop again.
 
 Show me, exactly as returned and with nothing added before or after:
 - each implementer's final message, in batch order
