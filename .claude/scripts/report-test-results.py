@@ -75,6 +75,11 @@ def escape_annotation(text: str) -> str:
     return text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
 
 
+# Property values (title, file) also end at ":" or ",", so GitHub needs those escaped too.
+def escape_property(text: str) -> str:
+    return escape_annotation(text).replace(":", "%3A").replace(",", "%2C")
+
+
 def cell(text: str) -> str:
     return text.replace("|", "\\|").replace("\r", "").replace("\n", "<br>")
 
@@ -110,8 +115,8 @@ def main() -> int:
         body = f"Expected: {expected}\nTest: {display_name}\n\n{short}" if expected else f"Test: {display_name}\n\n{short}"
         if on_github:
             file, line = find_test_line(cls, method)
-            location = f"file={file},line={line}," if file else ""
-            print(f"::error {location}title={escape_annotation(title)}::{escape_annotation(body)}")
+            location = f"file={escape_property(file)},line={line}," if file else ""
+            print(f"::error {location}title={escape_property(title)}::{escape_annotation(body)}")
         else:
             print(f"FAILED  {title}\n  {body.replace(chr(10), chr(10) + '  ')}\n")
 

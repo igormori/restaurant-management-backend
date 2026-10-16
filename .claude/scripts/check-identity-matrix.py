@@ -4,7 +4,8 @@ Keeps docs/security/identity-matrix.md and the Identity tests in step. Fails (ex
   1. the matrix names a test that does not exist (renamed or deleted),
   2. an Identity test is named nowhere in the matrix (every test maps to a row),
   3. a row marked ✅ names no test, or
-  4. a test's [Trait("Rule", "<ID>")] tags differ from the IDs of the rows that name it.
+  4. a test's [Trait("Rule", "<ID>")] tags differ from the IDs of the rows that name it, or
+  5. a file has a [Fact] or [Theory] this script cannot pair with a method (so nothing is skipped silently).
 
 Usage: python3 .claude/scripts/check-identity-matrix.py   (from anywhere; run by CI)
 """
@@ -33,9 +34,13 @@ TEST_ATTRIBUTE = re.compile(r"\[(?:Fact|Theory)\b")
 RULE_TRAIT = re.compile(r'Trait\(\s*"Rule"\s*,\s*"([^"]+)"\s*\)')
 
 
+UNREADABLE = []
+
+
 def tests_in(path: Path) -> dict:
     """Maps (class, method) to the set of Rule trait IDs, for every [Fact] or [Theory] method."""
-    lines = path.read_text(encoding="utf-8").splitlines()
+    source = path.read_text(encoding="utf-8")
+    lines = source.splitlines()
     found = {}
     for index, line in enumerate(lines):
         match = METHOD.match(line)
@@ -48,6 +53,10 @@ def tests_in(path: Path) -> dict:
         block = "\n".join(lines[start:index])
         if TEST_ATTRIBUTE.search(block):
             found[(path.stem, match.group(1))] = set(RULE_TRAIT.findall(block))
+    attributes = len(TEST_ATTRIBUTE.findall(source))
+    if attributes != len(found):
+        UNREADABLE.append(f"{path}: {attributes} [Fact]/[Theory] attributes but {len(found)} test methods read; "
+                          "declare tests as `public async Task` or `public void` with single-line attributes")
     return found
 
 
@@ -88,6 +97,7 @@ def main() -> int:
         problems.append(f"Matrix names a test that does not exist: {cls}.{method}")
     for cls, method in sorted(set(identity_tests) - set(rows)):
         problems.append(f"Identity test not mapped in the matrix: {cls}.{method}")
+    problems += UNREADABLE
     for row in untested:
         problems.append(f"Row marked ✅ without a named test: {row}")
     for test in sorted(set(rows) & set(existing)):
