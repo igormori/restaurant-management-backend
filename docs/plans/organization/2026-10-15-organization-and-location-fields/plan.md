@@ -1,6 +1,6 @@
 # Plan: Organization and Location Fields
 
-**Spec:** docs/specs/organization/2026-10-15-organization-and-location-fields.md   **Date:** 2026-10-15   **Status:** In progress
+**Spec:** docs/specs/organization/2026-10-15-organization-and-location-fields.md   **Date:** 2026-10-15   **Status:** Done
 **Risk:** Medium — three schema-only migrations (new required columns and a unique index) on Organization tables; no real data, no backfill
 
 ## Summary
@@ -44,7 +44,7 @@ The business-day rule is a pure calculator with no database access, unit-tested 
 - [x] Full test suite green after the last batch
 - [x] No out-of-scope changes; findings in the backlog
 - [x] No country default for currency or time zone anywhere in code, migrations or test seed helpers
-- [ ] Every changed endpoint has a cross-tenant test and rejection tests for Manager, Cashier, Waiter and Kitchen
+- [x] Every changed endpoint has a cross-tenant test and rejection tests for Manager, Cashier, Waiter and Kitchen
 - [x] Migrations generated following `.claude/skills/ef-migration/SKILL.md`, never hand-edited
 
 ## Checklist
