@@ -1,10 +1,31 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace RestaurantManagement.Modules.Identity.Models
 {
-    // Stub (tester): validation and password rules are part of T7.
     public class ResetPasswordRequest
     {
-        public string Email { get; set; } = string.Empty;
-        public string Code { get; set; } = string.Empty;
+        private string _email = string.Empty;
+        private string _code = string.Empty;
+
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [EmailAddress(ErrorMessage = "EmailAddressAttribute_ValidationError")]
+        [MaxLength(320, ErrorMessage = "MaxLengthAttribute_ValidationError")]
+        public string Email
+        {
+            get => _email;
+            set => _email = value?.Trim().ToLowerInvariant() ?? string.Empty;
+        }
+
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(6, ErrorMessage = "MaxLengthAttribute_ValidationError")]
+        public string Code
+        {
+            get => _code;
+            set => _code = value?.Trim() ?? string.Empty;
+        }
+
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [PasswordRules]
         public string NewPassword { get; set; } = string.Empty;
     }
 }

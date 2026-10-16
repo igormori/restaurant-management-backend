@@ -46,7 +46,7 @@ Decided: audit entries go to each organization the user holds a role in; a user 
 - [x] T3 — Reset code storage and migration
 - [x] T4 — Reusable registration password rules
 - [x] T5 — Password audit recorder
-- [ ] T6 — Request a reset code
-- [ ] T7 — Reset the password with a code
+- [x] T6 — Request a reset code
+- [x] T7 — Reset the password with a code
 - [ ] T8 — Change a known password
 - [ ] T9 — Forgot, reset and change endpoints

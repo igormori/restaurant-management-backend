@@ -1,13 +1,11 @@
 namespace RestaurantManagement.Modules.Identity.Entities
 {
-    // Stub (tester): shape of the refresh_tokens row. Not yet mapped in IdentityDbContext (task T1).
     public class RefreshToken
     {
         public const string ReasonRotated = "rotated";
         public const string ReasonLogout = "logout";
         public const string ReasonLogoutEverywhere = "logout_everywhere";
         public const string ReasonReuseDetected = "reuse_detected";
-        // Stub (tester): revocation reason for T7 and T8.
         public const string ReasonPasswordChanged = "password_changed";
 
         public const int DeviceDescriptionMaxLength = 512;

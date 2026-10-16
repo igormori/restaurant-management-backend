@@ -80,14 +80,14 @@ namespace RestaurantManagement.Modules.Identity.Services
             return true;
         }
 
-        public async Task<int> RevokeAllForUserAsync(Guid userId)
+        public async Task<int> RevokeAllForUserAsync(Guid userId, string reason = RefreshToken.ReasonLogoutEverywhere)
         {
             var now = DateTime.UtcNow;
             return await _db.RefreshTokens
                 .Where(t => t.UserId == userId && t.RevokedAt == null)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(t => t.RevokedAt, now)
-                    .SetProperty(t => t.RevocationReason, RefreshToken.ReasonLogoutEverywhere));
+                    .SetProperty(t => t.RevocationReason, reason));
         }
 
         private async Task<IssuedRefreshToken?> ReplaceAsync(RefreshToken existing, Guid? organizationId, DateTime now)

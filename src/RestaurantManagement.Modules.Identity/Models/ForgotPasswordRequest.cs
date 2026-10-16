@@ -1,8 +1,18 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace RestaurantManagement.Modules.Identity.Models
 {
-    // Stub (tester): validation and email normalization are part of T6.
     public class ForgotPasswordRequest
     {
-        public string Email { get; set; } = string.Empty;
+        private string _email = string.Empty;
+
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [EmailAddress(ErrorMessage = "EmailAddressAttribute_ValidationError")]
+        [MaxLength(320, ErrorMessage = "MaxLengthAttribute_ValidationError")]
+        public string Email
+        {
+            get => _email;
+            set => _email = value?.Trim().ToLowerInvariant() ?? string.Empty;
+        }
     }
 }

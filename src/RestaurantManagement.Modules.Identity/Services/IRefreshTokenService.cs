@@ -1,3 +1,4 @@
+using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
 
 namespace RestaurantManagement.Modules.Identity.Services
@@ -21,6 +22,6 @@ namespace RestaurantManagement.Modules.Identity.Services
         Task<bool> RevokeAsync(string rawToken);
 
         /// <summary>Revokes every active token of a user and returns how many were revoked.</summary>
-        Task<int> RevokeAllForUserAsync(Guid userId);
+        Task<int> RevokeAllForUserAsync(Guid userId, string reason = RefreshToken.ReasonLogoutEverywhere);
     }
 }

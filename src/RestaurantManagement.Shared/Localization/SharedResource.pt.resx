@@ -189,4 +189,13 @@
   <data name="AuditLogUnknownAction" xml:space="preserve">
     <value>A ação não é uma ação conhecida do registro de auditoria.</value>
   </data>
+  <data name="PasswordResetAcknowledged" xml:space="preserve">
+    <value>Se existir uma conta para este e-mail, um código de redefinição foi enviado.</value>
+  </data>
+  <data name="InvalidEmailOrResetCode" xml:space="preserve">
+    <value>E-mail ou código de redefinição inválidos.</value>
+  </data>
+  <data name="PasswordResetSucceeded" xml:space="preserve">
+    <value>Senha redefinida. Entre com a nova senha.</value>
+  </data>
 </root>

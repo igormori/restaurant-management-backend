@@ -189,6 +189,15 @@
   <data name="AuditLogUnknownAction" xml:space="preserve">
     <value>The action is not a known audit log action.</value>
   </data>
+  <data name="PasswordResetAcknowledged" xml:space="preserve">
+    <value>If an account exists for this email, a reset code has been sent.</value>
+  </data>
+  <data name="InvalidEmailOrResetCode" xml:space="preserve">
+    <value>Invalid email or reset code.</value>
+  </data>
+  <data name="PasswordResetSucceeded" xml:space="preserve">
+    <value>Password reset. Sign in with your new password.</value>
+  </data>
 </root>
 
 
