@@ -48,5 +48,5 @@ Decided: audit entries go to each organization the user holds a role in; a user 
 - [x] T5 — Password audit recorder
 - [x] T6 — Request a reset code
 - [x] T7 — Reset the password with a code
-- [ ] T8 — Change a known password
+- [x] T8 — Change a known password
 - [ ] T9 — Forgot, reset and change endpoints

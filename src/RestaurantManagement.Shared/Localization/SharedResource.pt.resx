@@ -198,4 +198,13 @@
   <data name="PasswordResetSucceeded" xml:space="preserve">
     <value>Senha redefinida. Entre com a nova senha.</value>
   </data>
+  <data name="CurrentPasswordIncorrect" xml:space="preserve">
+    <value>A senha atual está incorreta.</value>
+  </data>
+  <data name="NewPasswordSameAsCurrent" xml:space="preserve">
+    <value>A nova senha deve ser diferente da senha atual.</value>
+  </data>
+  <data name="PasswordChangeSucceeded" xml:space="preserve">
+    <value>Senha alterada. Entre novamente nos seus dispositivos.</value>
+  </data>
 </root>

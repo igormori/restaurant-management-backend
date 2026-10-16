@@ -198,6 +198,15 @@
   <data name="PasswordResetSucceeded" xml:space="preserve">
     <value>Password reset. Sign in with your new password.</value>
   </data>
+  <data name="CurrentPasswordIncorrect" xml:space="preserve">
+    <value>The current password is incorrect.</value>
+  </data>
+  <data name="NewPasswordSameAsCurrent" xml:space="preserve">
+    <value>The new password must be different from the current password.</value>
+  </data>
+  <data name="PasswordChangeSucceeded" xml:space="preserve">
+    <value>Password changed. Sign in again on your devices.</value>
+  </data>
 </root>
 
 
