@@ -250,6 +250,7 @@ builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<IPasswordChangeService, PasswordChangeService>();
 builder.Services.AddScoped<IPasswordAuditRecorder, PasswordAuditRecorder>();
 builder.Services.AddSingleton<IVerificationCodeHasher, VerificationCodeHasher>();
+builder.Services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
 
 // Organization Module Services
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();

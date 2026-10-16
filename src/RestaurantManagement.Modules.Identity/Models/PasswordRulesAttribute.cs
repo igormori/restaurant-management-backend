@@ -5,14 +5,14 @@ using RestaurantManagement.Shared;
 namespace RestaurantManagement.Modules.Identity.Models
 {
     /// <summary>
-    /// Password rules shared by registration, reset and change: 8 to 128 characters with at least one
+    /// Password rules shared by registration, reset and change: 8 to 64 characters with at least one
     /// uppercase letter, one digit and one symbol. An empty value is left to [Required].
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
     public sealed class PasswordRulesAttribute : ValidationAttribute
     {
         private const int MinLength = 8;
-        private const int MaxLength = 128;
+        private const int MaxLength = 64;
 
         // Default key so the catalog completeness check sees a real key; the broken rule picks the message.
         public PasswordRulesAttribute() => ErrorMessage = "PasswordComplexity_ValidationError";

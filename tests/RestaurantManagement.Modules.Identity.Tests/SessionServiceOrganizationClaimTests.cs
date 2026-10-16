@@ -24,7 +24,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private static SessionService CreateSut(IdentityDbContext context)
         {
             var jwtOptions = TestJwtOptions.Create();
-            return new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create(), Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>(), new RefreshTokenService(context, jwtOptions));
+            return new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create(), Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>(), new RefreshTokenService(context, jwtOptions), TestPasswordHasher.Create());
         }
 
         private static async Task SeedUserAsync(IdentityTestDatabase database, params UserRole[] roles)

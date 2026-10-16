@@ -40,7 +40,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var logger = Substitute.For<ILogger<RegistrationService>>();
 
             using var context = database.CreateContext();
-            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create());
+            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create(), TestPasswordHasher.Create());
 
             var request = new RegisterRequest
             {
@@ -69,7 +69,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var securityOptions = TestSecurityOptions.Create(verificationCodeExpiryMinutes: 15);
 
             using var context = database.CreateContext();
-            var sut = new RegistrationService(context, securityOptions, TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create());
+            var sut = new RegistrationService(context, securityOptions, TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create(), TestPasswordHasher.Create());
 
             var request = new RegisterRequest
             {
@@ -106,7 +106,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var logger = Substitute.For<ILogger<RegistrationService>>();
 
             using var context = database.CreateContext();
-            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create());
+            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create(), TestPasswordHasher.Create());
 
             var request = new RegisterRequest
             {
@@ -149,7 +149,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var logger = Substitute.For<ILogger<RegistrationService>>();
 
             using var context = _postgresFixture.CreateContext();
-            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create());
+            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create(), TestPasswordHasher.Create());
 
             var request = new RegisterRequest
             {
@@ -189,7 +189,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var logger = Substitute.For<ILogger<RegistrationService>>();
 
             using var context = _postgresFixture.CreateContext();
-            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create());
+            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create(), TestPasswordHasher.Create());
 
             var request = new RegisterRequest
             {
@@ -221,7 +221,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var hasher = TestVerificationCodeHasher.Create();
 
             using var context = database.CreateContext();
-            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, hasher);
+            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, hasher, TestPasswordHasher.Create());
 
             var request = new RegisterRequest
             {

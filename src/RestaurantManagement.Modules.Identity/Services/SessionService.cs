@@ -17,7 +17,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         // A valid bcrypt hash (at the production work factor) for a password nobody knows.
         // Verifying against it when no user row exists keeps login's response time and code
         // path the same whether or not the email is registered.
-        private const string DummyPasswordHash = "$2a$11$aanIzxoCRxQATB.lcuy8zOgcxV.Fq4zTZHoJMKJ1gLzIU4nEcpnF2";
+        private const string DummyPasswordHash = "$2a$12$z5AP5prcIZEKwcL7mduukuQ20TNSkKv4d3UTPLfXQSYByQbNKlPUG";
 
         private const string OrganizationRequiredKey = "OrganizationRequired";
         private const string NotMemberKey = "UserNotMemberOfOrganization";
@@ -33,6 +33,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         private readonly OrganizationMembership _organizations;
         private readonly IRefreshTokenService _refreshTokens;
         private readonly AccessTokenFactory _accessTokens;
+        private readonly IPasswordHasher _passwordHasher;
 
         public SessionService(
             IdentityDbContext db,
@@ -41,7 +42,8 @@ namespace RestaurantManagement.Modules.Identity.Services
             IStringLocalizer<SharedResource> localizer,
             IHub hub,
             IOrganizationLookup organizationLookup,
-            IRefreshTokenService refreshTokenService)
+            IRefreshTokenService refreshTokenService,
+            IPasswordHasher passwordHasher)
         {
             _db = db;
             _securityOptions = securityOptions.Value;
@@ -50,6 +52,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             _organizations = new OrganizationMembership(organizationLookup);
             _refreshTokens = refreshTokenService;
             _accessTokens = new AccessTokenFactory(jwtOptions.Value);
+            _passwordHasher = passwordHasher;
         }
 
         public async Task LogoutAsync(string? refreshToken)
@@ -74,7 +77,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             // 🔑 Always verify a password, even when no user row exists, so an unregistered
             // email does equivalent work to a wrong password for a real account.
             var passwordHash = user?.PasswordHash ?? DummyPasswordHash;
-            var isPasswordValid = PasswordVerifier.Verify(request.Password, passwordHash);
+            var isPasswordValid = _passwordHasher.Verify(request.Password, passwordHash);
 
             // A locked account is not told it is locked, and attempts while locked do not extend the lock.
             var isLocked = user != null && user.LockedUntil.HasValue && user.LockedUntil > DateTime.UtcNow;

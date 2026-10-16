@@ -63,7 +63,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 _logger,
                 Hasher,
                 new RefreshTokenService(context, TestJwtOptions.Create()),
-                Substitute.For<IPasswordAuditRecorder>());
+                Substitute.For<IPasswordAuditRecorder>(),
+                TestPasswordHasher.Create());
             return await sut.RequestResetCodeAsync(new ForgotPasswordRequest { Email = email });
         }
 

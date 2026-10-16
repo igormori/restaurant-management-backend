@@ -54,7 +54,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private async Task<MessageResponse> ChangeAsync(IdentityTestDatabase database, Guid userId, string currentPassword, string newPassword)
         {
             using var context = database.CreateContext();
-            var sut = new PasswordChangeService(context, TestLocalizer.Create(), new RefreshTokenService(context, TestJwtOptions.Create()), _auditRecorder);
+            var sut = new PasswordChangeService(context, TestLocalizer.Create(), new RefreshTokenService(context, TestJwtOptions.Create()), _auditRecorder, TestPasswordHasher.Create());
             return await sut.ChangePasswordAsync(userId, new ChangePasswordRequest { CurrentPassword = currentPassword, NewPassword = newPassword });
         }
 

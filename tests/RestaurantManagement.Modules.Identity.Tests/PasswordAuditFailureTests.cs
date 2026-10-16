@@ -71,7 +71,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             using var database = await CreateDatabaseAsync();
             var logger = Substitute.For<ILogger<PasswordChangeService>>();
             using var context = database.CreateContext();
-            var sut = new PasswordChangeService(context, TestLocalizer.Create(), new RefreshTokenService(context, TestJwtOptions.Create()), _auditRecorder, logger);
+            var sut = new PasswordChangeService(context, TestLocalizer.Create(), new RefreshTokenService(context, TestJwtOptions.Create()), _auditRecorder, TestPasswordHasher.Create(), logger);
 
             // Act
             var response = await sut.ChangePasswordAsync(MariaId, new ChangePasswordRequest { CurrentPassword = OldPassword, NewPassword = NewPassword });
@@ -98,7 +98,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 logger,
                 TestVerificationCodeHasher.Create(),
                 new RefreshTokenService(context, TestJwtOptions.Create()),
-                _auditRecorder);
+                _auditRecorder, TestPasswordHasher.Create());
             await sut.RequestResetCodeAsync(new ForgotPasswordRequest { Email = MariaEmail });
             logger.ClearReceivedCalls();
 

@@ -77,7 +77,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 Substitute.For<ILogger<PasswordResetService>>(),
                 TestVerificationCodeHasher.Create(),
                 new RefreshTokenService(context, TestJwtOptions.Create()),
-                _auditRecorder);
+                _auditRecorder,
+                TestPasswordHasher.Create());
 
         /// <summary>Asks for a code for Maria and returns the one that was emailed.</summary>
         private async Task<string> RequestCodeAsync(IdentityTestDatabase database)

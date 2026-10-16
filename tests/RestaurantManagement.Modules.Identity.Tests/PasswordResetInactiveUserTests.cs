@@ -61,7 +61,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 Substitute.For<ILogger<PasswordResetService>>(),
                 TestVerificationCodeHasher.Create(),
                 new RefreshTokenService(context, TestJwtOptions.Create()),
-                auditRecorder);
+                auditRecorder,
+                TestPasswordHasher.Create());
 
             using (var context = database.CreateContext())
             {

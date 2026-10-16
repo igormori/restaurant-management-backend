@@ -24,6 +24,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         private readonly IVerificationCodeHasher _hasher;
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly IPasswordAuditRecorder _auditRecorder;
+        private readonly IPasswordHasher _passwordHasher;
 
         public PasswordResetService(
             IdentityDbContext db,
@@ -33,7 +34,8 @@ namespace RestaurantManagement.Modules.Identity.Services
             ILogger<PasswordResetService> logger,
             IVerificationCodeHasher hasher,
             IRefreshTokenService refreshTokenService,
-            IPasswordAuditRecorder auditRecorder)
+            IPasswordAuditRecorder auditRecorder,
+            IPasswordHasher passwordHasher)
         {
             _db = db;
             _securityOptions = securityOptions.Value;
@@ -43,6 +45,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             _hasher = hasher;
             _refreshTokenService = refreshTokenService;
             _auditRecorder = auditRecorder;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<MessageResponse> RequestResetCodeAsync(ForgotPasswordRequest request)
@@ -127,7 +130,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         private async Task ReplacePasswordAsync(User user, PasswordResetCode resetCode, string newPassword)
         {
             await using var transaction = await _db.Database.BeginTransactionAsync();
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            user.PasswordHash = _passwordHasher.Hash(newPassword);
             user.UpdatedAt = DateTime.UtcNow;
             user.PasswordResetFailedAttempts = 0;
             user.PasswordResetLockedUntil = null;

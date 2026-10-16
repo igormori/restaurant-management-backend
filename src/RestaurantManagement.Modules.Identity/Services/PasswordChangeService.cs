@@ -17,6 +17,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly IPasswordAuditRecorder _auditRecorder;
+        private readonly IPasswordHasher _passwordHasher;
         private readonly ILogger<PasswordChangeService> _logger;
 
         public PasswordChangeService(
@@ -24,12 +25,14 @@ namespace RestaurantManagement.Modules.Identity.Services
             IStringLocalizer<SharedResource> localizer,
             IRefreshTokenService refreshTokenService,
             IPasswordAuditRecorder auditRecorder,
+            IPasswordHasher passwordHasher,
             ILogger<PasswordChangeService>? logger = null)
         {
             _db = db;
             _localizer = localizer;
             _refreshTokenService = refreshTokenService;
             _auditRecorder = auditRecorder;
+            _passwordHasher = passwordHasher;
             _logger = logger ?? NullLogger<PasswordChangeService>.Instance;
         }
 
@@ -40,7 +43,7 @@ namespace RestaurantManagement.Modules.Identity.Services
                 throw new BusinessException(_localizer["UnauthorizedMessage"].Value, 401);
 
             // A wrong current password is not counted toward the login lockout: the caller already holds a valid session.
-            if (!PasswordVerifier.Verify(request.CurrentPassword, user.PasswordHash))
+            if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
                 throw new BusinessException(_localizer["CurrentPasswordIncorrect"].Value, 400);
 
             if (request.NewPassword == request.CurrentPassword)
@@ -67,7 +70,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         private async Task ReplacePasswordAsync(User user, string newPassword)
         {
             await using var transaction = await _db.Database.BeginTransactionAsync();
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            user.PasswordHash = _passwordHasher.Hash(newPassword);
             user.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
             await _refreshTokenService.RevokeAllForUserAsync(user.Id, RefreshToken.ReasonPasswordChanged);

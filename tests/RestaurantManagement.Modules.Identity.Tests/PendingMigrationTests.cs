@@ -43,7 +43,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var logger = Substitute.For<ILogger<RegistrationService>>();
 
             await using var context = new Data.IdentityDbContext(options);
-            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create());
+            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create(), TestPasswordHasher.Create());
 
             var request = new RegisterRequest
             {
@@ -82,7 +82,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var logger = Substitute.For<ILogger<RegistrationService>>();
 
             await using var context = new Data.IdentityDbContext(options);
-            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create());
+            var sut = new RegistrationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), emailService, logger, TestVerificationCodeHasher.Create(), TestPasswordHasher.Create());
 
             var request = new RegisterRequest
             {

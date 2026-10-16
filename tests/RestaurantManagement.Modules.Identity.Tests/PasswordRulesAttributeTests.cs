@@ -6,16 +6,15 @@ using Xunit;
 namespace RestaurantManagement.Modules.Identity.Tests
 {
     /// <summary>
-    /// The registration password rules in one reusable attribute (plan T4): 8 to 128 characters, at
+    /// The registration password rules in one reusable attribute (plan T4): 8 to 64 characters, at
     /// least one uppercase letter, one digit and one symbol. The reset and change requests use the
     /// same rules for their new password (plan T7 and T8).
     /// </summary>
     public class PasswordRulesAttributeTests
     {
-        // 16 characters repeated 8 times is exactly 128.
-        private const string Password128 =
-            "Massa@Fresca2026" + "Massa@Fresca2026" + "Massa@Fresca2026" + "Massa@Fresca2026"
-            + "Massa@Fresca2026" + "Massa@Fresca2026" + "Massa@Fresca2026" + "Massa@Fresca2026";
+        // 16 characters repeated 4 times is exactly 64.
+        private const string Password64 =
+            "Massa@Fresca2026" + "Massa@Fresca2026" + "Massa@Fresca2026" + "Massa@Fresca2026";
 
         // Requests carrying a weak new password; the key is shown in the test results.
         private static readonly Dictionary<string, object> RequestsWithWeakNewPassword = new()
@@ -30,7 +29,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         // Scenario 7
         [Theory]
         [InlineData("Massa@1")]                        // 7 characters
-        [InlineData(Password128 + "x")]                // 129 characters
+        [InlineData(Password64 + "x")]                // 65 characters
         [InlineData("massa@fresca2026")]               // no uppercase letter
         [InlineData("Massa@Fresca")]                   // no digit
         [InlineData("MassaFresca2026")]                // no symbol
@@ -46,7 +45,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         // Scenario 8
         [Theory]
         [InlineData("Massa@26")]                       // exactly 8 characters
-        [InlineData(Password128)]                      // exactly 128 characters
+        [InlineData(Password64)]                      // exactly 64 characters
         public void GetValidationResult_PasswordAtLengthLimits_ReturnsSuccess(string password)
         {
             // Act

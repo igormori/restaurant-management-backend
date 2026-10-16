@@ -22,6 +22,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         private readonly IEmailService _emailService;
         private readonly ILogger<RegistrationService> _logger;
         private readonly IVerificationCodeHasher _hasher;
+        private readonly IPasswordHasher _passwordHasher;
 
         public RegistrationService(
             IdentityDbContext db,
@@ -29,7 +30,8 @@ namespace RestaurantManagement.Modules.Identity.Services
             IStringLocalizer<SharedResource> localizer,
             IEmailService emailService,
             ILogger<RegistrationService> logger,
-            IVerificationCodeHasher hasher)
+            IVerificationCodeHasher hasher,
+            IPasswordHasher passwordHasher)
         {
             _db = db;
             _securityOptions = securityOptions.Value;
@@ -37,6 +39,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             _emailService = emailService;
             _logger = logger;
             _hasher = hasher;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -46,7 +49,7 @@ namespace RestaurantManagement.Modules.Identity.Services
                 throw new BusinessException(_localizer["EmailAlreadyRegistered"].Value, 400);
 
             // 2. Hash password
-            string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            string passwordHash = _passwordHasher.Hash(request.Password);
 
             using var tx = await _db.Database.BeginTransactionAsync();
 

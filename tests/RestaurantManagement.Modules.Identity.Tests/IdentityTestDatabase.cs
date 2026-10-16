@@ -80,6 +80,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
     }
 
+    /// <summary>The real password hasher, so tests seed and check hashes the way production does.</summary>
+    public static class TestPasswordHasher
+    {
+        public static IPasswordHasher Create() => new BcryptPasswordHasher();
+    }
+
     /// <summary>
     /// JWT (JSON Web Token) settings shared by the session and refresh token tests:
     /// access passes last 60 minutes, refresh tokens 30 days.

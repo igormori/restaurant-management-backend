@@ -42,7 +42,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 lockoutDurationMinutes: lockoutDurationMinutes);
 
             var jwtOptions = CreateJwtOptions();
-            return new SessionService(context, securityOptions, jwtOptions, TestLocalizer.Create(), hub ?? Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>(), new RefreshTokenService(context, jwtOptions));
+            return new SessionService(context, securityOptions, jwtOptions, TestLocalizer.Create(), hub ?? Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>(), new RefreshTokenService(context, jwtOptions), TestPasswordHasher.Create());
         }
 
         private static List<SentryEvent> CapturedEvents(IHub hub)
@@ -277,7 +277,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 TestLocalizer.Create(),
                 Substitute.For<IHub>(),
                 Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>(),
-                new RefreshTokenService(context, defaultExpiryJwtOptions));
+                new RefreshTokenService(context, defaultExpiryJwtOptions),
+                TestPasswordHasher.Create());
 
             // Act
             var response = await sut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = Password }, TestClients.KitchenTablet);
@@ -312,6 +313,24 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             response.Auth.Token.Should().NotBeNullOrEmpty();
             response.RefreshToken.Should().NotBeNullOrEmpty();
+        }
+
+        [Fact]
+        public async Task LoginAsync_UnknownEmail_VerifiesAgainstAWorkFactor12DummyHash()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var context = database.CreateContext();
+            var hasher = Substitute.For<IPasswordHasher>();
+            var jwtOptions = CreateJwtOptions();
+            var sut = new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create(), Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>(), new RefreshTokenService(context, jwtOptions), hasher);
+
+            // Act
+            var act = () => sut.LoginAsync(new LoginRequest { Email = "nobody@test.com", Password = Password }, TestClients.KitchenTablet);
+            await act.Should().ThrowAsync<BusinessException>();
+
+            // Assert
+            hasher.Received(1).Verify(Password, Arg.Is<string>(hash => hash.StartsWith("$2a$12$")));
         }
     }
 }
