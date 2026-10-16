@@ -22,6 +22,9 @@ If no plan was given, ask me for it and stop.
      to a new implementer subagent to fix and commit, and do **not** run the pr-reviewer again.
    - Otherwise, send the review to a new implementer subagent once to fix the Fix first items,
      then run the pr-reviewer once more. Do not loop again.
+   - In every fix round (including changes I ask for after reading the review), update
+     `scenarios.md` for any new test and the affected tasks' Delivered notes, in the same
+     commits as the fixes, with a `Scenarios:` line in each commit body.
 
 Show me, exactly as returned and with nothing added before or after:
 - each implementer's final message, in batch order
