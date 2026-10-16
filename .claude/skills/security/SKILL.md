@@ -61,7 +61,8 @@ Based on the OWASP (Open Worldwide Application Security Project) API Security To
   data. Emails only when needed to debug.
 
 ## 8. Dependencies
-- No new NuGet package without a flag in the plan.
+- Adding a package not already in the dependency graph is high risk: flag it in the plan.
+  Pinning an existing transitive package to a patched version is low risk.
 - Run `dotnet list package --vulnerable` before merging a change that adds or updates packages.
 
 ## Checklist for reviewers

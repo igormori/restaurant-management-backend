@@ -106,7 +106,8 @@ stop the flow when something is wrong.
 
 High risk (flagged in `plan.md`; the solution architect decides what to do at Gate 1):
 new Shared contract, auth or role changes, new module, migration on a table that has data or
-with a backfill, new NuGet package.
+with a backfill. Adding a package not already in the dependency graph is high risk. Pinning an
+existing transitive package to a patched version is low risk.
 
 After Gate 2, test files are read-only: never edit, delete, skip or weaken a test. If a test
 looks wrong, stop and say why.

@@ -29,7 +29,7 @@ An item is **kept** only if all are true:
 | Files changed or added (tests included) | 5 or fewer, except a mechanical rename (only names change): any number |
 | Migration | None |
 | Roles, auth, tenancy rules, Shared contracts, money | Not changed |
-| New NuGet package, integration or public endpoint | None |
+| Package not already in the dependency graph, integration or public endpoint (pinning an existing transitive package to a patched version is low risk and allowed) | None |
 | Open business questions | None |
 
 Batch limits: **5 items** and **15 files** in total, all items in the **same module** (docs-only
