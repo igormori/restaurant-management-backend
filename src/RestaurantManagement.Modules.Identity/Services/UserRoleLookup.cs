@@ -34,7 +34,12 @@ namespace RestaurantManagement.Modules.Identity.Services
                 .ToListAsync();
         }
 
-        public Task<bool> HasLocationAccessAsync(Guid userId, Guid organizationId, Guid locationId)
-            => throw new NotImplementedException();
+        public async Task<bool> HasLocationAccessAsync(Guid userId, Guid organizationId, Guid locationId)
+        {
+            return await _db.UserRoles.AnyAsync(r =>
+                r.UserId == userId
+                && r.OrganizationId == organizationId
+                && (r.LocationId == null || r.LocationId == locationId));
+        }
     }
 }
