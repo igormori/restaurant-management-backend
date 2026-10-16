@@ -38,6 +38,9 @@ var builder = WebApplication.CreateBuilder(args);
 // ---------------------------------------------
 builder.AddKeyVaultSecrets();
 
+// Outside Development: HTTPS only, and startup fails without a certificate
+builder.UseHttpsOnlyOutsideDevelopment();
+
 // ---------------------------------------------
 // Add Localization
 // ---------------------------------------------
