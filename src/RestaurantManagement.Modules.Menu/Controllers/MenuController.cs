@@ -93,9 +93,9 @@ namespace RestaurantManagement.Modules.Menu.Controllers
             return Ok(new { message = _localizer["MenuDetachedSuccessfully"].Value });
         }
 
-        [HttpGet("organization/{organizationId}")]
+        [HttpGet]
         [Authorize(Roles = "Owner,Admin,Manager,Cashier,Waiter,Kitchen")]
-        public async Task<ActionResult<List<MenuResponse>>> GetByOrganization(Guid organizationId)
+        public async Task<ActionResult<List<MenuResponse>>> GetAll()
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!Guid.TryParse(userIdStr, out var userId))
@@ -103,7 +103,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
                 return Unauthorized();
             }
 
-            var response = await _menuService.GetMenusByOrganizationAsync(userId, organizationId);
+            var response = await _menuService.GetMenusAsync(userId);
             return Ok(response);
         }
 

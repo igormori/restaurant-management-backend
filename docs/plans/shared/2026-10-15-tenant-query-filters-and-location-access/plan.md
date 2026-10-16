@@ -49,7 +49,7 @@ No public endpoint, no role change, no raw SQL, no migration (query filters do n
 ## Checklist
 - [x] T1 — Shared tenant context and query filter builder
 - [x] T2 — Apply filters in Menu
-- [ ] T3 — Menu endpoints take the organization from the token
+- [x] T3 — Menu endpoints take the organization from the token
 - [ ] T4 — Apply filters in Organization, with the listed bypasses
 - [ ] T5 — Organization endpoints take the organization from the token
 - [ ] T6 — Location assignment lookup in Identity

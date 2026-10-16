@@ -35,13 +35,14 @@ namespace RestaurantManagement.Modules.Menu.Services
 
         public async Task<MenuCategoryResponse> CreateAsync(Guid userId, CreateMenuCategoryRequest request)
         {
-            await CheckUserPermission(userId, request.OrganizationId);
+            var organizationId = GetTokenOrganizationId();
+            await CheckUserPermission(userId, organizationId);
 
             var category = new MenuCategory
             {
                 Id = Guid.NewGuid(),
                 MenuId = request.MenuId,
-                OrganizationId = request.OrganizationId,
+                OrganizationId = organizationId,
                 LocationId = request.LocationId,
                 Name = request.Name,
                 Description = request.Description,
@@ -85,8 +86,9 @@ namespace RestaurantManagement.Modules.Menu.Services
             return categories.Select(MapToResponse);
         }
 
-        public async Task<IEnumerable<MenuCategoryResponse>> GetByOrganizationIdAsync(Guid userId, Guid organizationId)
+        public async Task<IEnumerable<MenuCategoryResponse>> GetAllAsync(Guid userId)
         {
+            var organizationId = GetTokenOrganizationId();
             await CheckUserPermission(userId, organizationId);
 
             var categories = await _context.MenuCategories
@@ -97,9 +99,6 @@ namespace RestaurantManagement.Modules.Menu.Services
 
             return categories.Select(MapToResponse);
         }
-
-        public Task<IEnumerable<MenuCategoryResponse>> GetAllAsync(Guid userId)
-            => throw new NotImplementedException();
 
         public async Task<IEnumerable<MenuCategoryResponse>> GetByLocationIdAsync(Guid userId, Guid locationId)
         {
@@ -147,6 +146,12 @@ namespace RestaurantManagement.Modules.Menu.Services
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        private Guid GetTokenOrganizationId()
+        {
+            return _tenantContext.OrganizationId
+                ?? throw new BusinessException(_localizer["OrganizationRequired"].Value, 403);
         }
 
         private async Task CheckUserPermission(Guid userId, Guid organizationId)

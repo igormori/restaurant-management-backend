@@ -12,7 +12,6 @@ namespace RestaurantManagement.Modules.Menu.Services
         Task DeleteMenuAsync(Guid userId, Guid menuId);
         Task AttachMenuToLocationAsync(Guid userId, Guid menuId, Guid locationId);
         Task DetachMenuFromLocationAsync(Guid userId, Guid menuId, Guid locationId);
-        Task<List<MenuResponse>> GetMenusByOrganizationAsync(Guid userId, Guid organizationId);
         Task<List<MenuResponse>> GetMenusAsync(Guid userId);
         Task<List<MenuResponse>> GetMenusByLocationAsync(Guid userId, Guid locationId);
     }

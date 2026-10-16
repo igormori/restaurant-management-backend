@@ -6,9 +6,6 @@ namespace RestaurantManagement.Modules.Menu.Models
 {
     public class CreateMenuRequest
     {
-        [Required]
-        public Guid OrganizationId { get; set; }
-
         [Required, MaxLength(100)]
         public string Name { get; set; } = string.Empty;
 

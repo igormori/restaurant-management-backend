@@ -7,7 +7,6 @@ namespace RestaurantManagement.Modules.Menu.Services
         Task<MenuCategoryResponse> CreateAsync(Guid userId, CreateMenuCategoryRequest request);
         Task<MenuCategoryResponse?> GetByIdAsync(Guid userId, Guid id);
         Task<IEnumerable<MenuCategoryResponse>> GetByMenuIdAsync(Guid userId, Guid menuId);
-        Task<IEnumerable<MenuCategoryResponse>> GetByOrganizationIdAsync(Guid userId, Guid organizationId);
         Task<IEnumerable<MenuCategoryResponse>> GetAllAsync(Guid userId);
         Task<IEnumerable<MenuCategoryResponse>> GetByLocationIdAsync(Guid userId, Guid locationId);
         Task<MenuCategoryResponse?> UpdateAsync(Guid userId, Guid id, UpdateMenuCategoryRequest request);
