@@ -46,5 +46,5 @@ No public endpoint, no role or auth change, no raw SQL.
 ## Checklist
 - [x] T1 — Audit log storage and writer
 - [x] T2 — Read audit log endpoint
-- [ ] T3 — Record settings changes
+- [x] T3 — Record settings changes
 - [ ] T4 — Record location status changes
