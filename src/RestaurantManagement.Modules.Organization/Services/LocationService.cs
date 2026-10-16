@@ -1,6 +1,7 @@
 using RestaurantManagement.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Npgsql;
 using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
@@ -52,12 +53,16 @@ namespace RestaurantManagement.Modules.Organization.Services
                 Country = request.Country,
                 PhoneNumber = request.PhoneNumber,
                 Status = LocationStatus.Active,
+                TimeZone = request.TimeZone!,
+                Type = ParseType(request.Type) ?? LocationType.Store,
+                Code = NormalizeCode(request.Code),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
+            await EnsureCodeIsFreeAsync(location.Code, null);
             _orgDb.Locations.Add(location);
-            await _orgDb.SaveChangesAsync();
+            await SaveAsync();
 
             return MapToResponse(location);
         }
@@ -81,10 +86,14 @@ namespace RestaurantManagement.Modules.Organization.Services
             location.PostalCode = request.PostalCode;
             location.Country = request.Country;
             location.PhoneNumber = request.PhoneNumber;
-            location.Status = request.Status;
+            location.Status = request.Status ?? location.Status;
+            location.TimeZone = request.TimeZone!;
+            location.Type = ParseType(request.Type) ?? location.Type;
+            location.Code = NormalizeCode(request.Code);
             location.UpdatedAt = DateTime.UtcNow;
 
-            await _orgDb.SaveChangesAsync();
+            await EnsureCodeIsFreeAsync(location.Code, location.Id);
+            await SaveAsync();
 
             return MapToResponse(location);
         }
@@ -131,6 +140,32 @@ namespace RestaurantManagement.Modules.Organization.Services
             return locations.Select(MapToResponse).ToList();
         }
 
+        private static LocationType? ParseType(string? type)
+            => type is null ? null : Enum.Parse<LocationType>(type);
+
+        private static string NormalizeCode(string? code) => code!.Trim().ToUpperInvariant();
+
+        // The tenant query filter limits this check to the token organization.
+        private async Task EnsureCodeIsFreeAsync(string code, Guid? ignoredLocationId)
+        {
+            var taken = await _orgDb.Locations.AnyAsync(l => l.Code == code && l.Id != ignoredLocationId);
+            if (taken)
+                throw new BusinessException(_localizer["LocationCodeAlreadyUsed"].Value, 400);
+        }
+
+        // A concurrent request can pass the check above; the unique index then rejects the second one.
+        private async Task SaveAsync()
+        {
+            try
+            {
+                await _orgDb.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+            {
+                throw new BusinessException(_localizer["LocationCodeAlreadyUsed"].Value, 400);
+            }
+        }
+
         private Guid RequireOrganizationId()
             => _tenantContext.OrganizationId
                 ?? throw new BusinessException(_localizer["OrganizationRequired"].Value, 403);
@@ -149,6 +184,9 @@ namespace RestaurantManagement.Modules.Organization.Services
                 Country = location.Country,
                 PhoneNumber = location.PhoneNumber,
                 Status = location.Status,
+                TimeZone = location.TimeZone,
+                Type = location.Type,
+                Code = location.Code,
                 CreatedAt = location.CreatedAt,
                 UpdatedAt = location.UpdatedAt
             };

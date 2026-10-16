@@ -50,5 +50,5 @@ The business-day rule is a pure calculator with no database access, unit-tested 
 ## Checklist
 - [x] T1 — Organization currency
 - [x] T2 — Settings: service charge, discount limit, cutoff
-- [ ] T3 — Location time zone, type and code
+- [x] T3 — Location time zone, type and code
 - [ ] T4 — Business day calculator

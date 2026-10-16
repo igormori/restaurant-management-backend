@@ -39,6 +39,12 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                         .HasColumnType("text")
                         .HasColumnName("city");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("code");
+
                     b.Property<string>("Country")
                         .IsRequired()
                         .HasColumnType("text")
@@ -80,6 +86,20 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("status");
 
+                    b.Property<string>("TimeZone")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("time_zone");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Store")
+                        .HasColumnName("type");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -91,8 +111,9 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                     b.HasKey("Id")
                         .HasName("pk_locations");
 
-                    b.HasIndex("OrganizationId")
-                        .HasDatabaseName("ix_locations_organization_id");
+                    b.HasIndex("OrganizationId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_locations_organization_id_code");
 
                     b.ToTable("locations", (string)null);
                 });

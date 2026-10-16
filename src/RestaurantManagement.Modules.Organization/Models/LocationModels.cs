@@ -33,10 +33,20 @@ namespace RestaurantManagement.Modules.Organization.Models
         [MaxLength(20)]
         public string PhoneNumber { get; set; } = string.Empty;
 
-        // Stubs (tester): T3 adds validation (IANA time zone; Store or CentralKitchen; code up to 10 letters and digits).
+        [Required, IanaTimeZone]
         public string? TimeZone { get; set; }
+
+        [RegularExpression("^(Store|CentralKitchen)$", ErrorMessage = "Type must be Store or CentralKitchen.")]
         public string? Type { get; set; }
-        public string? Code { get; set; }
+
+        private string? _code;
+
+        [Required, MaxLength(10), RegularExpression("^[A-Za-z0-9]+$", ErrorMessage = "Code allows letters and digits only.")]
+        public string? Code
+        {
+            get => _code;
+            set => _code = value?.Trim();
+        }
     }
 
     public class EditLocationRequest
@@ -69,12 +79,22 @@ namespace RestaurantManagement.Modules.Organization.Models
         [MaxLength(20)]
         public string PhoneNumber { get; set; } = string.Empty;
 
-        // Stubs (tester): T3 adds validation (IANA time zone; Store or CentralKitchen; code up to 10 letters and digits).
+        [Required, IanaTimeZone]
         public string? TimeZone { get; set; }
-        public string? Type { get; set; }
-        public string? Code { get; set; }
 
-        public LocationStatus Status { get; set; }
+        [RegularExpression("^(Store|CentralKitchen)$", ErrorMessage = "Type must be Store or CentralKitchen.")]
+        public string? Type { get; set; }
+
+        private string? _code;
+
+        [Required, MaxLength(10), RegularExpression("^[A-Za-z0-9]+$", ErrorMessage = "Code allows letters and digits only.")]
+        public string? Code
+        {
+            get => _code;
+            set => _code = value?.Trim();
+        }
+
+        public LocationStatus? Status { get; set; }
     }
 
     public class LocationResponse
@@ -90,7 +110,6 @@ namespace RestaurantManagement.Modules.Organization.Models
         public string PhoneNumber { get; set; } = string.Empty;
         public LocationStatus Status { get; set; }
 
-        // Stubs (tester): filled by T3.
         public string TimeZone { get; set; } = string.Empty;
         public LocationType Type { get; set; }
         public string Code { get; set; } = string.Empty;

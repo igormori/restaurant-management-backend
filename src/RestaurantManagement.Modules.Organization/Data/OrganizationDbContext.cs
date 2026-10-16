@@ -45,6 +45,15 @@ namespace RestaurantManagement.Modules.Organization.Data
                 .HasForeignKey(l => l.OrganizationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Location>(location =>
+            {
+                location.Property(l => l.TimeZone).HasMaxLength(64);
+                location.Property(l => l.Type).HasConversion<string>().HasMaxLength(20)
+                    .HasDefaultValue(LocationType.Store);
+                location.Property(l => l.Code).HasMaxLength(10);
+                location.HasIndex(l => new { l.OrganizationId, l.Code }).IsUnique();
+            });
+
             modelBuilder.Entity<OrganizationSettings>()
                 .HasOne(s => s.Organization)
                 .WithOne(o => o.Settings)
