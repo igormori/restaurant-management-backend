@@ -144,6 +144,45 @@
   <data name="LocationAccessDenied" xml:space="preserve">
     <value>You do not have access to the selected location.</value>
   </data>
+  <data name="MenuNotFound" xml:space="preserve">
+    <value>Menu not found.</value>
+  </data>
+  <data name="MenuCategoryNotFound" xml:space="preserve">
+    <value>Menu category not found.</value>
+  </data>
+  <data name="PhoneAttribute_ValidationError" xml:space="preserve">
+    <value>The {0} field is not a valid phone number.</value>
+  </data>
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>An unexpected error occurred.</value>
+  </data>
+  <data name="HexColor_ValidationError" xml:space="preserve">
+    <value>{0} must be in hex format (#RRGGBB).</value>
+  </data>
+  <data name="Currency_ValidationError" xml:space="preserve">
+    <value>{0} must be BRL, USD or CAD.</value>
+  </data>
+  <data name="RangeAttribute_ValidationError" xml:space="preserve">
+    <value>{0} must be between {1} and {2}.</value>
+  </data>
+  <data name="TwoDecimals_ValidationError" xml:space="preserve">
+    <value>{0} allows at most 2 decimals.</value>
+  </data>
+  <data name="TimeFormat_ValidationError" xml:space="preserve">
+    <value>{0} must be in HH:mm format.</value>
+  </data>
+  <data name="LocationType_ValidationError" xml:space="preserve">
+    <value>{0} must be Store or CentralKitchen.</value>
+  </data>
+  <data name="LettersAndDigits_ValidationError" xml:space="preserve">
+    <value>{0} allows letters and digits only.</value>
+  </data>
+  <data name="IanaTimeZone_ValidationError" xml:space="preserve">
+    <value>{0} must be a valid IANA time zone name.</value>
+  </data>
+  <data name="UrlAttribute_ValidationError" xml:space="preserve">
+    <value>The {0} field is not a valid URL.</value>
+  </data>
 </root>
 
 

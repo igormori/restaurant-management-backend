@@ -1,6 +1,6 @@
 # Plan: Localize All Client-Facing Messages
 
-**Spec:** docs/specs/shared/2026-10-15-localize-client-messages.md   **Date:** 2026-10-15   **Status:** Draft
+**Spec:** docs/specs/shared/2026-10-15-localize-client-messages.md   **Date:** 2026-10-15   **Status:** In progress
 **Risk:** Medium — changes shared code used by every endpoint (message catalog, error handler); no data, schema or permission change
 
 ## Summary
@@ -37,7 +37,7 @@ Terms used below:
 - [ ] No out-of-scope changes; findings in the backlog
 
 ## Checklist
-- [ ] T1 — Add missing messages to the catalog
+- [x] T1 — Add missing messages to the catalog
 - [ ] T2 — Translate the unexpected-error message
 - [ ] T3 — Translate menu and menu category "not found"
 - [ ] T4 — Translate menu and menu category field errors
