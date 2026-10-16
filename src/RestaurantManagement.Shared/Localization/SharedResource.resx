@@ -43,7 +43,7 @@
     <value>Email is already registered.</value>
   </data>
   <data name="UserNotFound" xml:space="preserve">
-    <value>User not found!.</value>
+    <value>User not found.</value>
   </data>
   <data name="UnauthorizedMessage" xml:space="preserve">
     <value>Unauthorized user.</value>

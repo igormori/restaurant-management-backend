@@ -51,6 +51,10 @@ public class SharedResourceCatalogTests : IDisposable
     [InlineData("pt", "IanaTimeZone_ValidationError", "O campo {0} deve ser um fuso horário IANA válido.")]
     [InlineData("en", "UrlAttribute_ValidationError", "The {0} field is not a valid URL.")]
     [InlineData("pt", "UrlAttribute_ValidationError", "O campo {0} não é uma URL válida.")]
+    [InlineData("en", "UserNotFound", "User not found.")]
+    [InlineData("pt", "UserNotFound", "Usuário não encontrado.")]
+    [InlineData("pt", "InvalidToken", "Token inválido.")]
+    [InlineData("pt", "TooManyRequests", "Muitas solicitações. Tente novamente mais tarde.")]
     public void Localizer_NewMessageKey_ReturnsExpectedTextInEachLanguage(string culture, string key, string expected)
     {
         // Arrange

@@ -24,7 +24,7 @@ public class AuthRateLimitingTests : IDisposable
     private const string ForwardedForHeader = "X-Forwarded-For";
     private const string PortugueseCulture = "pt-PT";
     private const string EnglishMessage = "Too many requests. Please try again later.";
-    private const string PortugueseMessage = "Demasiados pedidos. Tente novamente mais tarde.";
+    private const string PortugueseMessage = "Muitas solicitações. Tente novamente mais tarde.";
 
     private readonly AuthApiFactory _factory = new();
     private readonly List<IDisposable> _disposables = new();

@@ -43,13 +43,13 @@
     <value>E-mail já cadastrado.</value>
   </data>
   <data name="UserNotFound" xml:space="preserve">
-    <value>Usuário não encontrado..</value>
+    <value>Usuário não encontrado.</value>
   </data>
   <data name="UnauthorizedMessage" xml:space="preserve">
     <value>Usuário não autorizado!</value>
   </data>
   <data name="InvalidToken" xml:space="preserve">
-    <value>Token Invalido.</value>
+    <value>Token inválido.</value>
   </data>
   <data name="TrialOrganizationsCannotCreateNew" xml:space="preserve">
     <value>Organizações em período de teste não podem criar novas organizações. Atualize seu plano para adicionar mais.</value>
@@ -130,7 +130,7 @@
     <value>Menu desvinculado do local com sucesso.</value>
   </data>
   <data name="TooManyRequests" xml:space="preserve">
-    <value>Demasiados pedidos. Tente novamente mais tarde.</value>
+    <value>Muitas solicitações. Tente novamente mais tarde.</value>
   </data>
   <data name="TenantMismatch" xml:space="preserve">
     <value>O registro pertence a outra organização.</value>
