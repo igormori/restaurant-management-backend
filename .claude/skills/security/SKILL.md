@@ -50,6 +50,9 @@ Based on the OWASP (Open Worldwide Application Security Project) API Security To
 - Login failures return one generic message. Never say whether the email exists.
 - JWT: validate issuer, audience, lifetime and signing key. Short-lived access tokens.
 - Rate-limit login, registration and password reset endpoints.
+- Every Identity rule is a row in `docs/security/identity-matrix.md` with the test that proves
+  it. An Identity change updates its rows in the same commit; a new auth feature adds its rows
+  before it is built (root `CLAUDE.md`, "Identity security matrix").
 
 ## 6. Secrets and configuration
 - No connection strings, JWT keys, API keys or Sentry DSNs (Data Source Names) in tracked
@@ -77,3 +80,5 @@ Based on the OWASP (Open Worldwide Application Security Project) API Security To
 - [ ] No raw SQL with user input
 - [ ] Passwords hashed only through the password hashing interface; no direct BCrypt call
 - [ ] No secrets, tokens or personal data in code, logs, or responses
+- [ ] Identity change: matrix rows added or changed, each ✅ naming a passing test, and
+      `python3 .claude/scripts/check-identity-matrix.py` passes

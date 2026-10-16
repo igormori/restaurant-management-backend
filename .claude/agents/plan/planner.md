@@ -34,6 +34,7 @@ Batch: default one task per batch. Group up to 3 tasks only when they change the
 Priority: P1 blocks others or is core · P2 needed · P3 nice to have within scope.
 Dependencies: a batch starts only when every task it depends on is ticked. Otherwise stop and report which one is missing.
 Security: a task that touches an endpoint or tenant data has in its DoD a cross-tenant test (another organization's data returns not found) and one rejection test per role the spec disallows. Flag any public endpoint, role or auth change, or raw SQL.
+Identity: a task that changes Identity or authentication has in its DoD "`docs/security/identity-matrix.md` rows added or changed and ✅ with their tests; `python3 .claude/scripts/check-identity-matrix.py` passes", and lists the matrix under Files.
 Risk (whole plan): Low = no data, contract or integration change · Medium = shared code or contracts · High = data, schema, security, or hard to undo.
 5. Writing Rules
 plan.md 50–100 lines; each batch file under 80. Tables over paragraphs. Each fact once.

@@ -21,6 +21,10 @@ Test projects mirror `src/`: `tests/<ProjectName>.Tests`
 
 - Behaviour that only PostgreSQL enforces (constraints, delete rules, migrations on data) is
   tested in Web.Tests, never on SQLite
+- Identity integration tests go in `tests/RestaurantManagement.Web.Tests/Identity/` (same
+  namespace as the rest of Web.Tests), so every Identity test sits in one of two folders
+- Every Identity test is named in `docs/security/identity-matrix.md`; a new one is added to its
+  row in the same commit (root `CLAUDE.md`, "Identity security matrix")
 - Never create a new test project without flagging it first
 
 ## 3. Writing tests

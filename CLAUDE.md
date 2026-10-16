@@ -66,6 +66,21 @@ Scenarios: 1–3
   more than 10 files or more than 3 open decisions. Ship shared infrastructure and data
   backfills as their own slices, before the features that use them
 
+## Identity security matrix
+`docs/security/identity-matrix.md` records every Identity rule and the test that proves it. Its
+own "Rules for this file" section is the full rule set; in short:
+- Any change to Identity (`src/RestaurantManagement.Modules.Identity/`, or auth code in
+  Shared or Web) updates the matrix in the same commit: new rows for new behaviour, changed rows
+  for changed behaviour, and the test that covers each
+- A feature that touches authentication adds its security cases as ❌ rows before it is built
+  (tester, step 3). They turn ✅ only when the named test passes
+- No row is ✅ without a named test, and every Identity test is named in the matrix
+- New Identity tests go in `tests/RestaurantManagement.Modules.Identity.Tests/` (unit) or
+  `tests/RestaurantManagement.Web.Tests/Identity/` (endpoint and database)
+- `python3 .claude/scripts/check-identity-matrix.py` checks all of this, in CI too. Run it before
+  committing an Identity change
+- The pr-reviewer flags an Identity change that leaves the matrix behind as Fix first
+
 ## Tenant data filtering
 - Tenant data is filtered by organization automatically (EF Core global query filters). The
   organization comes only from the token's `org_id` claim, never from the URL or request body.

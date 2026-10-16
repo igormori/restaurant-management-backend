@@ -27,8 +27,9 @@ Do this before any other step.
    test project that matches its kind. Run it and confirm it fails for the right reason.
    A test that passes before your fix does not reproduce the bug.
 5. Make the smallest change that makes the test pass.
-6. Run `dotnet build` and the full `dotnet test`. Confirm the new test passes and nothing else broke.
-7. Report: the branch, the cause in two or three sentences, the fix, the test that proves it,
+6. Identity bug: add or correct the bug's row in `docs/security/identity-matrix.md`, naming the reproducing test, and run `python3 .claude/scripts/check-identity-matrix.py`.
+7. Run `dotnet build` and the full `dotnet test`. Confirm the new test passes and nothing else broke.
+8. Report: the branch, the cause in two or three sentences, the fix, the test that proves it,
    and the output of the full test run.
 
 ## Rules
