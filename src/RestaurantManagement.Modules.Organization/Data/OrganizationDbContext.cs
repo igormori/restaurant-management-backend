@@ -1,12 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Modules.Organization.Entities;
+using RestaurantManagement.Shared.Data;
 
 namespace RestaurantManagement.Modules.Organization.Data
 {
     public class OrganizationDbContext : DbContext
     {
-        public OrganizationDbContext(DbContextOptions<OrganizationDbContext> options)
-            : base(options) { }
+        private readonly ITenantContext _tenantContext;
+
+        public OrganizationDbContext(DbContextOptions<OrganizationDbContext> options, ITenantContext tenantContext)
+            : base(options)
+        {
+            _tenantContext = tenantContext;
+        }
 
         public DbSet<Entities.Organization> Organizations { get; set; }
         public DbSet<OrganizationSettings> OrganizationSettings { get; set; }
@@ -33,6 +39,7 @@ namespace RestaurantManagement.Modules.Organization.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyTenantQueryFilters(() => _tenantContext);
         }
     }
 }

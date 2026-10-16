@@ -11,6 +11,7 @@ using RestaurantManagement.Modules.Menu.Models;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
+using RestaurantManagement.Shared.Data;
 
 namespace RestaurantManagement.Modules.Menu.Services
 {
@@ -19,27 +20,32 @@ namespace RestaurantManagement.Modules.Menu.Services
         private readonly MenuDbContext _menuDb;
         private readonly IOrganizationLookup _organizationLookup;
         private readonly IUserRoleLookup _userRoleLookup;
+        private readonly ITenantContext _tenantContext;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public MenuService(
             MenuDbContext menuDb,
             IOrganizationLookup organizationLookup,
             IUserRoleLookup userRoleLookup,
+            ITenantContext tenantContext,
             IStringLocalizer<SharedResource> localizer)
         {
             _menuDb = menuDb;
             _organizationLookup = organizationLookup;
             _userRoleLookup = userRoleLookup;
+            _tenantContext = tenantContext;
             _localizer = localizer;
         }
 
         public async Task<MenuResponse> CreateMenuAsync(Guid userId, CreateMenuRequest request)
         {
+            var organizationId = GetTokenOrganizationId();
+
             // 1. Verify user permissions
-            await CheckUserPermission(userId, request.OrganizationId);
+            await CheckUserPermission(userId, organizationId);
 
             // 2. Organization check (redundant but safe)
-            var organizationExists = await _organizationLookup.OrganizationExistsAsync(request.OrganizationId);
+            var organizationExists = await _organizationLookup.OrganizationExistsAsync(organizationId);
             if (!organizationExists)
                 throw new BusinessException(_localizer["OrganizationNotFound"].Value, 404);
 
@@ -47,7 +53,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             var menu = new Entities.Menu
             {
                 Id = Guid.NewGuid(),
-                OrganizationId = request.OrganizationId,
+                OrganizationId = organizationId,
                 Name = request.Name,
                 Description = request.Description,
                 IsActive = true,
@@ -64,7 +70,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (request.LocationIds != null && request.LocationIds.Any())
             {
                 // Verify locations belong to organization
-                var validLocations = await _organizationLookup.GetLocationIdsInOrganizationAsync(request.OrganizationId, request.LocationIds);
+                var validLocations = await _organizationLookup.GetLocationIdsInOrganizationAsync(organizationId, request.LocationIds);
 
                 foreach (var locationId in validLocations)
                 {
@@ -164,8 +170,9 @@ namespace RestaurantManagement.Modules.Menu.Services
             }
         }
 
-        public async Task<List<MenuResponse>> GetMenusByOrganizationAsync(Guid userId, Guid organizationId)
+        public async Task<List<MenuResponse>> GetMenusAsync(Guid userId)
         {
+            var organizationId = GetTokenOrganizationId();
             await CheckReadPermission(userId, organizationId);
 
             var menus = await _menuDb.Menus
@@ -208,6 +215,12 @@ namespace RestaurantManagement.Modules.Menu.Services
                 IsActive = m.IsActive,
                 LocationIds = m.LocationMenus.Select(lm => lm.LocationId).ToList()
             }).ToList();
+        }
+
+        private Guid GetTokenOrganizationId()
+        {
+            return _tenantContext.OrganizationId
+                ?? throw new BusinessException(_localizer["OrganizationRequired"].Value, 403);
         }
 
         private async Task CheckUserPermission(Guid userId, Guid organizationId)

@@ -6,6 +6,7 @@ using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
+using RestaurantManagement.Shared.Data;
 
 namespace RestaurantManagement.Modules.Organization.Services
 {
@@ -13,20 +14,25 @@ namespace RestaurantManagement.Modules.Organization.Services
     {
         private readonly OrganizationDbContext _orgDb;
         private readonly IUserRoleLookup _userRoleLookup;
+        private readonly ITenantContext _tenantContext;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public LocationService(
             OrganizationDbContext orgDb,
             IUserRoleLookup userRoleLookup,
+            ITenantContext tenantContext,
             IStringLocalizer<SharedResource> localizer)
         {
             _orgDb = orgDb;
             _userRoleLookup = userRoleLookup;
+            _tenantContext = tenantContext;
             _localizer = localizer;
         }
 
-        public async Task<LocationResponse> CreateLocationAsync(Guid userId, Guid organizationId, CreateLocationRequest request)
+        public async Task<LocationResponse> CreateLocationAsync(Guid userId, CreateLocationRequest request)
         {
+            var organizationId = RequireOrganizationId();
+
             // 1. Verify User is Owner or Admin of the Organization
             var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
 
@@ -108,8 +114,10 @@ namespace RestaurantManagement.Modules.Organization.Services
             await _orgDb.SaveChangesAsync();
         }
 
-        public async Task<List<LocationResponse>> GetLocationsByOrganizationAsync(Guid userId, Guid organizationId)
+        public async Task<List<LocationResponse>> GetLocationsAsync(Guid userId)
         {
+            var organizationId = RequireOrganizationId();
+
             // Verify User belongs to Organization (any role)
             var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
 
@@ -117,12 +125,15 @@ namespace RestaurantManagement.Modules.Organization.Services
                 throw new BusinessException(_localizer["UserNotMemberOfOrganization"].Value, 403);
 
             var locations = await _orgDb.Locations
-                .Where(l => l.OrganizationId == organizationId)
                 .OrderBy(l => l.Name)
                 .ToListAsync();
 
             return locations.Select(MapToResponse).ToList();
         }
+
+        private Guid RequireOrganizationId()
+            => _tenantContext.OrganizationId
+                ?? throw new BusinessException(_localizer["OrganizationRequired"].Value, 403);
 
         private static LocationResponse MapToResponse(Location location)
         {

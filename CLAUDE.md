@@ -62,6 +62,16 @@ Scenarios: 1–3
   more than 10 files or more than 3 open decisions. Ship shared infrastructure and data
   backfills as their own slices, before the features that use them
 
+## Tenant data filtering
+- Tenant data is filtered by organization automatically (EF Core global query filters). The
+  organization comes only from the token's `org_id` claim, never from the URL or request body.
+- `IgnoreQueryFilters` is allowed in `src/` only in the places below. Adding a place requires
+  updating this list in the same change. (Test files may use it to read back stored rows.)
+  - `OrganizationService.CreateOrganizationAsync`: trial check across all of the user's
+    memberships, which may have no token organization yet
+  - `OrganizationService.GetOrganizationsAsync`: plan details for every one of the user's
+    memberships
+
 ## Workflow
 Test-first, with three human gates (⏸). Reviewer agents run automatically between steps and only
 stop the flow when something is wrong.

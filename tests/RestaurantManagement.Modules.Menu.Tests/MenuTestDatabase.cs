@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using RestaurantManagement.Modules.Menu.Data;
+using RestaurantManagement.Shared.Data;
 
 namespace RestaurantManagement.Modules.Menu.Tests
 {
@@ -23,23 +24,21 @@ namespace RestaurantManagement.Modules.Menu.Tests
             context.Database.EnsureCreated();
         }
 
-        public MenuDbContext CreateContext()
+        /// <summary>
+        /// A context with no organization: use it to seed rows. Its reads see no tenant rows once
+        /// the query filters apply; read back with a tenant or with IgnoreQueryFilters().
+        /// </summary>
+        public MenuDbContext CreateContext() => CreateContext(TestTenant.None);
+
+        public MenuDbContext CreateContext(IInterceptor interceptor) => CreateContext(TestTenant.None, interceptor);
+
+        public MenuDbContext CreateContext(ITenantContext tenantContext, IInterceptor? interceptor = null)
         {
-            var options = new DbContextOptionsBuilder<MenuDbContext>()
-                .UseSqlite(_connection)
-                .Options;
+            var builder = new DbContextOptionsBuilder<MenuDbContext>().UseSqlite(_connection);
+            if (interceptor is not null)
+                builder.AddInterceptors(interceptor);
 
-            return new MenuDbContext(options);
-        }
-
-        public MenuDbContext CreateContext(IInterceptor interceptor)
-        {
-            var options = new DbContextOptionsBuilder<MenuDbContext>()
-                .UseSqlite(_connection)
-                .AddInterceptors(interceptor)
-                .Options;
-
-            return new MenuDbContext(options);
+            return new MenuDbContext(builder.Options, tenantContext);
         }
 
         /// <summary>

@@ -1,8 +1,3 @@
----
-name: architecture
-description: Architecture and code-structure rules for the RestaurantManagement backend. Use when planning, implementing or reviewing anything that adds or changes modules, folders, classes, services, controllers, entities, DbContexts, migrations or cross-module access.
----
-
 # Architecture and patterns
 
 ## 1. Modular monolith
@@ -23,7 +18,9 @@ description: Architecture and code-structure rules for the RestaurantManagement 
 
 ## 3. Multi-tenancy and roles
 - Data belongs to an organization; always scope queries by `OrganizationId`
-- Roles: Owner, Admin, Staff
+- Roles: Owner, Admin, Manager, Cashier, Waiter, Kitchen (fixed, in code). Access is decided by
+  **permissions** through the authorization policies, never by checking a role name in code. A user
+  can hold several role assignments, per location or for all locations of an organization
 
 ## 4. Module folders
 Every module uses the same folders:

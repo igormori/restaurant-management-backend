@@ -68,7 +68,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         {
             // Arrange
             using var database = new MenuTestDatabase();
-            using var context = database.CreateContext(CreateInterceptor(CreationTime, MariaId, OrgA));
+            using var context = database.CreateContext(TestTenant.Of(OrgA), CreateInterceptor(CreationTime, MariaId, OrgA));
             var menu = new Entities.Menu { Name = "Cardápio de Almoço" };
             context.Menus.Add(menu);
 
@@ -76,7 +76,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             await context.SaveChangesAsync();
 
             // Assert
-            using var readContext = database.CreateContext();
+            using var readContext = database.CreateContext(TestTenant.Of(OrgA));
             var stored = await readContext.Menus.SingleAsync();
             stored.OrganizationId.ShouldBe(OrgA);
             stored.CreatedByUserId.ShouldBe(MariaId);
@@ -92,7 +92,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Arrange
             using var database = new MenuTestDatabase();
             var menuId = await SeedMenuAsync(database, OrgA);
-            using var context = database.CreateContext(CreateInterceptor(UpdateTime, CarlosId, OrgA));
+            using var context = database.CreateContext(TestTenant.Of(OrgA), CreateInterceptor(UpdateTime, CarlosId, OrgA));
             var menu = await context.Menus.SingleAsync(m => m.Id == menuId);
             menu.Name = "Cardápio de Jantar Atualizado";
 
@@ -100,7 +100,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             await context.SaveChangesAsync();
 
             // Assert
-            using var readContext = database.CreateContext();
+            using var readContext = database.CreateContext(TestTenant.Of(OrgA));
             var stored = await readContext.Menus.SingleAsync();
             stored.UpdatedAt.ShouldBe(UpdateTime.UtcDateTime);
             stored.UpdatedByUserId.ShouldBe(CarlosId);
@@ -114,7 +114,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         {
             // Arrange
             using var database = new MenuTestDatabase();
-            using var context = database.CreateContext(CreateInterceptor(CreationTime, MariaId, OrgA));
+            using var context = database.CreateContext(TestTenant.Of(OrgA), CreateInterceptor(CreationTime, MariaId, OrgA));
             context.Menus.Add(new Entities.Menu { Name = "Cardápio de Almoço", OrganizationId = OrgB });
 
             // Act
@@ -123,8 +123,8 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Assert
             thrown.StatusCode.ShouldBe(ForbiddenStatusCode);
             thrown.Message.ShouldBe(TenantMismatchKey);
-            using var readContext = database.CreateContext();
-            (await readContext.Menus.CountAsync()).ShouldBe(0);
+            using var readContext = database.CreateContext(TestTenant.Of(OrgA));
+            (await readContext.Menus.IgnoreQueryFilters().CountAsync()).ShouldBe(0);
         }
 
         // Scenario 4
@@ -134,9 +134,9 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Arrange
             using var database = new MenuTestDatabase();
             var menuId = await SeedMenuAsync(database, OrgA);
-            using var context = database.CreateContext(CreateInterceptor(UpdateTime, CarlosId, OrgB));
-            var menu = await context.Menus.SingleAsync(m => m.Id == menuId);
-            menu.Name = "Cardápio Invadido";
+            using var context = database.CreateContext(TestTenant.Of(OrgB), CreateInterceptor(UpdateTime, CarlosId, OrgB));
+            // The query filter hides the Org A menu from an Org B user, so the change arrives as a detached entity.
+            context.Menus.Update(new Entities.Menu { Id = menuId, OrganizationId = OrgA, Name = "Cardápio Invadido" });
 
             // Act
             var thrown = await Should.ThrowAsync<BusinessException>(() => context.SaveChangesAsync());
@@ -144,7 +144,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Assert
             thrown.StatusCode.ShouldBe(ForbiddenStatusCode);
             thrown.Message.ShouldBe(TenantMismatchKey);
-            using var readContext = database.CreateContext();
+            using var readContext = database.CreateContext(TestTenant.Of(OrgA));
             var stored = await readContext.Menus.SingleAsync();
             stored.Name.ShouldBe("Cardápio de Jantar");
             stored.UpdatedByUserId.ShouldBe(MariaId);
@@ -157,7 +157,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Arrange
             using var database = new MenuTestDatabase();
             var menuId = await SeedMenuAsync(database, OrgA);
-            using var context = database.CreateContext(CreateInterceptor(UpdateTime, MariaId, OrgA));
+            using var context = database.CreateContext(TestTenant.Of(OrgA), CreateInterceptor(UpdateTime, MariaId, OrgA));
             var menu = await context.Menus.SingleAsync(m => m.Id == menuId);
             menu.OrganizationId = OrgB;
 
@@ -167,7 +167,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Assert
             thrown.StatusCode.ShouldBe(ForbiddenStatusCode);
             thrown.Message.ShouldBe(TenantMismatchKey);
-            using var readContext = database.CreateContext();
+            using var readContext = database.CreateContext(TestTenant.Of(OrgA));
             (await readContext.Menus.SingleAsync()).OrganizationId.ShouldBe(OrgA);
         }
 
@@ -177,7 +177,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         {
             // Arrange
             using var database = new MenuTestDatabase();
-            using var context = database.CreateContext(CreateInterceptor(CreationTime, MariaId, organizationId: null));
+            using var context = database.CreateContext(TestTenant.None, CreateInterceptor(CreationTime, MariaId, organizationId: null));
             context.Menus.Add(new Entities.Menu { Name = "Cardápio de Almoço" });
 
             // Act
@@ -186,8 +186,8 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Assert
             thrown.StatusCode.ShouldBe(ForbiddenStatusCode);
             thrown.Message.ShouldBe(OrganizationRequiredKey);
-            using var readContext = database.CreateContext();
-            (await readContext.Menus.CountAsync()).ShouldBe(0);
+            using var readContext = database.CreateContext(TestTenant.Of(OrgA));
+            (await readContext.Menus.IgnoreQueryFilters().CountAsync()).ShouldBe(0);
         }
 
         // Scenario 7
@@ -197,14 +197,14 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Arrange
             using var database = new MenuTestDatabase();
             var menuId = await SeedMenuAsync(database, OrgA);
-            using var context = database.CreateContext(CreateInterceptor(CreationTime, MariaId, OrgA));
+            using var context = database.CreateContext(TestTenant.Of(OrgA), CreateInterceptor(CreationTime, MariaId, OrgA));
             context.MenuCategories.Add(new MenuCategory { MenuId = menuId, Name = "Massas", SortOrder = 1 });
 
             // Act
             await context.SaveChangesAsync();
 
             // Assert
-            using var readContext = database.CreateContext();
+            using var readContext = database.CreateContext(TestTenant.Of(OrgA));
             var stored = await readContext.MenuCategories.SingleAsync();
             stored.OrganizationId.ShouldBe(OrgA);
             stored.CreatedAt.ShouldBe(CreationTime.UtcDateTime);
@@ -219,14 +219,14 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Arrange
             using var database = new MenuTestDatabase();
             var menuId = await SeedMenuAsync(database, OrgA);
-            using var context = database.CreateContext(CreateInterceptor(CreationTime, MariaId, OrgA));
+            using var context = database.CreateContext(TestTenant.Of(OrgA), CreateInterceptor(CreationTime, MariaId, OrgA));
             context.MenuCategories.Add(new MenuCategory { MenuId = menuId, Name = "Sobremesas", LocationId = null });
 
             // Act
             await context.SaveChangesAsync();
 
             // Assert
-            using var readContext = database.CreateContext();
+            using var readContext = database.CreateContext(TestTenant.Of(OrgA));
             (await readContext.MenuCategories.SingleAsync()).LocationId.ShouldBeNull();
         }
 
@@ -237,14 +237,14 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Arrange
             using var database = new MenuTestDatabase();
             var menuId = await SeedMenuAsync(database, OrgA);
-            using var context = database.CreateContext(CreateInterceptor(CreationTime, MariaId, OrgA));
+            using var context = database.CreateContext(TestTenant.Of(OrgA), CreateInterceptor(CreationTime, MariaId, OrgA));
             context.LocationMenus.Add(new LocationMenu { MenuId = menuId, LocationId = CentroLocationId });
 
             // Act
             await context.SaveChangesAsync();
 
             // Assert
-            using var readContext = database.CreateContext();
+            using var readContext = database.CreateContext(TestTenant.Of(OrgA));
             var stored = await readContext.LocationMenus.SingleAsync();
             stored.OrganizationId.ShouldBe(OrgA);
             stored.UpdatedAt.ShouldBe(CreationTime.UtcDateTime);
@@ -258,12 +258,12 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Arrange
             using var database = new MenuTestDatabase();
             var menuId = await SeedMenuAsync(database, OrgA);
-            using (var seedContext = database.CreateContext(CreateInterceptor(CreationTime, MariaId, OrgA)))
+            using (var seedContext = database.CreateContext(TestTenant.Of(OrgA), CreateInterceptor(CreationTime, MariaId, OrgA)))
             {
                 seedContext.MenuCategories.Add(new MenuCategory { MenuId = menuId, Name = "Massas", SortOrder = 1 });
                 await seedContext.SaveChangesAsync();
             }
-            using var context = database.CreateContext(CreateInterceptor(UpdateTime, CarlosId, OrgA));
+            using var context = database.CreateContext(TestTenant.Of(OrgA), CreateInterceptor(UpdateTime, CarlosId, OrgA));
             var category = await context.MenuCategories.SingleAsync();
             category.SortOrder = 2;
 
@@ -271,7 +271,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             await context.SaveChangesAsync();
 
             // Assert
-            using var readContext = database.CreateContext();
+            using var readContext = database.CreateContext(TestTenant.Of(OrgA));
             var stored = await readContext.MenuCategories.SingleAsync();
             stored.UpdatedAt.ShouldBe(UpdateTime.UtcDateTime);
             stored.UpdatedByUserId.ShouldBe(CarlosId);

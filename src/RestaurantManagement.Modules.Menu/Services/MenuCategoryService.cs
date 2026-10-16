@@ -4,6 +4,7 @@ using RestaurantManagement.Modules.Menu.Data;
 using RestaurantManagement.Modules.Menu.Entities;
 using RestaurantManagement.Modules.Menu.Models;
 using RestaurantManagement.Shared;
+using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Exceptions;
@@ -15,29 +16,33 @@ namespace RestaurantManagement.Modules.Menu.Services
         private readonly MenuDbContext _context;
         private readonly IOrganizationLookup _organizationLookup;
         private readonly IUserRoleLookup _userRoleLookup;
+        private readonly ITenantContext _tenantContext;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public MenuCategoryService(
             MenuDbContext context,
             IOrganizationLookup organizationLookup,
             IUserRoleLookup userRoleLookup,
+            ITenantContext tenantContext,
             IStringLocalizer<SharedResource> localizer)
         {
             _context = context;
             _organizationLookup = organizationLookup;
             _userRoleLookup = userRoleLookup;
+            _tenantContext = tenantContext;
             _localizer = localizer;
         }
 
         public async Task<MenuCategoryResponse> CreateAsync(Guid userId, CreateMenuCategoryRequest request)
         {
-            await CheckUserPermission(userId, request.OrganizationId);
+            var organizationId = GetTokenOrganizationId();
+            await CheckUserPermission(userId, organizationId);
 
             var category = new MenuCategory
             {
                 Id = Guid.NewGuid(),
                 MenuId = request.MenuId,
-                OrganizationId = request.OrganizationId,
+                OrganizationId = organizationId,
                 LocationId = request.LocationId,
                 Name = request.Name,
                 Description = request.Description,
@@ -81,8 +86,9 @@ namespace RestaurantManagement.Modules.Menu.Services
             return categories.Select(MapToResponse);
         }
 
-        public async Task<IEnumerable<MenuCategoryResponse>> GetByOrganizationIdAsync(Guid userId, Guid organizationId)
+        public async Task<IEnumerable<MenuCategoryResponse>> GetAllAsync(Guid userId)
         {
+            var organizationId = GetTokenOrganizationId();
             await CheckUserPermission(userId, organizationId);
 
             var categories = await _context.MenuCategories
@@ -113,7 +119,7 @@ namespace RestaurantManagement.Modules.Menu.Services
 
         public async Task<MenuCategoryResponse?> UpdateAsync(Guid userId, Guid id, UpdateMenuCategoryRequest request)
         {
-            var category = await _context.MenuCategories.FindAsync(id);
+            var category = await _context.MenuCategories.FirstOrDefaultAsync(c => c.Id == id);
             if (category == null)
                 return null;
 
@@ -130,7 +136,7 @@ namespace RestaurantManagement.Modules.Menu.Services
 
         public async Task<bool> DeleteAsync(Guid userId, Guid id)
         {
-            var category = await _context.MenuCategories.FindAsync(id);
+            var category = await _context.MenuCategories.FirstOrDefaultAsync(c => c.Id == id);
             if (category == null)
                 return false;
 
@@ -140,6 +146,12 @@ namespace RestaurantManagement.Modules.Menu.Services
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        private Guid GetTokenOrganizationId()
+        {
+            return _tenantContext.OrganizationId
+                ?? throw new BusinessException(_localizer["OrganizationRequired"].Value, 403);
         }
 
         private async Task CheckUserPermission(Guid userId, Guid organizationId)

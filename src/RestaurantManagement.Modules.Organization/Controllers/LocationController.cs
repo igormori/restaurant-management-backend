@@ -19,21 +19,21 @@ namespace RestaurantManagement.Modules.Organization.Controllers
             _locationService = locationService;
         }
 
-        // GET api/locations/{organizationId}
-        [HttpGet("{organizationId:guid}")]
-        public async Task<ActionResult<List<LocationResponse>>> GetLocations(Guid organizationId)
+        // GET api/locations
+        [HttpGet]
+        public async Task<ActionResult<List<LocationResponse>>> GetLocations()
         {
             var userId = GetCurrentUserId();
-            var response = await _locationService.GetLocationsByOrganizationAsync(userId, organizationId);
+            var response = await _locationService.GetLocationsAsync(userId);
             return Ok(response);
         }
 
-        // POST api/locations/{organizationId}
-        [HttpPost("{organizationId:guid}")]
-        public async Task<ActionResult<LocationResponse>> CreateLocation(Guid organizationId, [FromBody] CreateLocationRequest request)
+        // POST api/locations
+        [HttpPost]
+        public async Task<ActionResult<LocationResponse>> CreateLocation([FromBody] CreateLocationRequest request)
         {
             var userId = GetCurrentUserId();
-            var response = await _locationService.CreateLocationAsync(userId, organizationId, request);
+            var response = await _locationService.CreateLocationAsync(userId, request);
             return Ok(response);
         }
 

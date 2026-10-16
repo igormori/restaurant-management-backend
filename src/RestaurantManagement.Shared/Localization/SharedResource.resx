@@ -135,6 +135,12 @@
   <data name="OrganizationRequired" xml:space="preserve">
     <value>An organization is required to save this record.</value>
   </data>
+  <data name="InvalidLocationId" xml:space="preserve">
+    <value>The selected location is not valid.</value>
+  </data>
+  <data name="LocationAccessDenied" xml:space="preserve">
+    <value>You do not have access to the selected location.</value>
+  </data>
 </root>
 
 

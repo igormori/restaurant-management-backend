@@ -20,6 +20,7 @@ namespace RestaurantManagement.Modules.Organization.Services
         private readonly IUserRoleLookup _userRoleLookup;
         private readonly IUserRoleAssigner _userRoleAssigner;
         private readonly ITenantScope _tenantScope;
+        private readonly ITenantContext _tenantContext;
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly ILogger<OrganizationService> _logger;
 
@@ -28,6 +29,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             IUserRoleLookup userRoleLookup,
             IUserRoleAssigner userRoleAssigner,
             ITenantScope tenantScope,
+            ITenantContext tenantContext,
             IStringLocalizer<SharedResource> localizer,
             ILogger<OrganizationService> logger)
         {
@@ -35,6 +37,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             _userRoleLookup = userRoleLookup;
             _userRoleAssigner = userRoleAssigner;
             _tenantScope = tenantScope;
+            _tenantContext = tenantContext;
             _localizer = localizer;
             _logger = logger;
         }
@@ -51,6 +54,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             // Get organizations with settings from Organization module
             var userOrgs = await _orgDb.Organizations
                 .Where(o => userOrgIds.Contains(o.Id))
+                .IgnoreQueryFilters() // Filter-bypass rule: the user's own memberships may have no token organization yet
                 .Include(o => o.Settings)
                 .ToListAsync();
 
@@ -189,8 +193,10 @@ namespace RestaurantManagement.Modules.Organization.Services
             }
         }
 
-        public async Task<OrganizationResponse> EditOrganizationAsync(Guid userId, Guid organizationId, EditOrganizationRequest request)
+        public async Task<OrganizationResponse> EditOrganizationAsync(Guid userId, EditOrganizationRequest request)
         {
+            var organizationId = _tenantContext.OrganizationId
+                ?? throw new BusinessException(_localizer["OrganizationRequired"].Value, 403);
 
             // 1. check if organiztion exists and get it
             var organization = await _orgDb.Organizations.FirstOrDefaultAsync(org => org.Id == organizationId);
@@ -246,6 +252,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             // Get organizations with settings from Organization module
             var organizations = await _orgDb.Organizations
                 .Where(o => orgIds.Contains(o.Id))
+                .IgnoreQueryFilters() // Filter-bypass rule: lists plan details for every one of the user's memberships
                 .Include(o => o.Settings)
                 .Select(o => new OrganizationResponse
                 {

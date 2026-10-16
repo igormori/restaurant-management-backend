@@ -7,9 +7,6 @@ namespace RestaurantManagement.Modules.Menu.Models
         [Required(ErrorMessage = "Menu ID is required")]
         public Guid MenuId { get; set; }
 
-        [Required(ErrorMessage = "Organization ID is required")]
-        public Guid OrganizationId { get; set; }
-
         public Guid? LocationId { get; set; }
 
         [Required(ErrorMessage = "Name is required")]

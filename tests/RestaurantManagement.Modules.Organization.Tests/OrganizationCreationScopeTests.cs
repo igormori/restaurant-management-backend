@@ -37,6 +37,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             public IUserRoleAssigner RoleAssigner { get; } = Substitute.For<IUserRoleAssigner>();
             public IUserRoleLookup RoleLookup { get; } = Substitute.For<IUserRoleLookup>();
             public AuditSaveChangesInterceptor Interceptor { get; }
+            public ITenantContext Tenant { get; }
 
             public Harness(Guid? currentUserOrganizationId)
             {
@@ -49,10 +50,11 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
                 Interceptor = new AuditSaveChangesInterceptor(
                     currentUser, TenantScope, new FixedTimeProvider(CreationTime), TestLocalizer.Create());
+                Tenant = new TenantContext(TenantScope, currentUser, new SelectedLocation());
             }
 
             public OrganizationService CreateService(OrganizationDbContext context) => new(
-                context, RoleLookup, RoleAssigner, TenantScope, TestLocalizer.Create(),
+                context, RoleLookup, RoleAssigner, TenantScope, Tenant, TestLocalizer.Create(),
                 Substitute.For<ILogger<OrganizationService>>());
         }
 
@@ -63,7 +65,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Arrange
             using var database = new OrganizationTestDatabase();
             var harness = new Harness(currentUserOrganizationId: null);
-            using var context = database.CreateContext(harness.Interceptor);
+            using var context = database.CreateContext(harness.Tenant, harness.Interceptor);
             var sut = harness.CreateService(context);
 
             // Act
@@ -71,7 +73,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             // Assert
             using var readContext = database.CreateContext();
-            var settings = await readContext.OrganizationSettings.SingleAsync();
+            var settings = await readContext.OrganizationSettings.IgnoreQueryFilters().SingleAsync();
             settings.OrganizationId.ShouldBe(response.Id);
         }
 
@@ -82,7 +84,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Arrange
             using var database = new OrganizationTestDatabase();
             var harness = new Harness(currentUserOrganizationId: ExistingOrgA);
-            using var context = database.CreateContext(harness.Interceptor);
+            using var context = database.CreateContext(harness.Tenant, harness.Interceptor);
             var sut = harness.CreateService(context);
 
             // Act
@@ -90,7 +92,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             // Assert
             using var readContext = database.CreateContext();
-            var settings = await readContext.OrganizationSettings.SingleAsync();
+            var settings = await readContext.OrganizationSettings.IgnoreQueryFilters().SingleAsync();
             settings.OrganizationId.ShouldBe(response.Id);
             settings.OrganizationId.ShouldNotBe(ExistingOrgA);
         }
@@ -102,7 +104,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Arrange
             using var database = new OrganizationTestDatabase();
             var harness = new Harness(currentUserOrganizationId: null);
-            using var context = database.CreateContext(harness.Interceptor);
+            using var context = database.CreateContext(harness.Tenant, harness.Interceptor);
             var sut = harness.CreateService(context);
 
             // Act
@@ -111,7 +113,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Assert
             using var readContext = database.CreateContext();
             var organization = await readContext.Organizations.SingleAsync(o => o.Id == response.Id);
-            var settings = await readContext.OrganizationSettings.SingleAsync();
+            var settings = await readContext.OrganizationSettings.IgnoreQueryFilters().SingleAsync();
             organization.CreatedByUserId.ShouldBe(MariaId);
             organization.CreatedAt.ShouldBe(CreationTime.UtcDateTime);
             settings.CreatedByUserId.ShouldBe(MariaId);
@@ -133,7 +135,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
                     scopeDuringAssignment = harness.TenantScope.OrganizationId;
                     return Task.CompletedTask;
                 });
-            using var context = database.CreateContext(harness.Interceptor);
+            using var context = database.CreateContext(harness.Tenant, harness.Interceptor);
             var sut = harness.CreateService(context);
 
             // Act
@@ -151,7 +153,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Arrange
             using var database = new OrganizationTestDatabase();
             var harness = new Harness(currentUserOrganizationId: null);
-            using var context = database.CreateContext(harness.Interceptor);
+            using var context = database.CreateContext(harness.Tenant, harness.Interceptor);
             var sut = harness.CreateService(context);
 
             // Act
@@ -171,7 +173,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             harness.RoleAssigner
                 .AssignRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
                 .Returns(Task.FromException(new InvalidOperationException("Role assignment unavailable")));
-            using var context = database.CreateContext(harness.Interceptor);
+            using var context = database.CreateContext(harness.Tenant, harness.Interceptor);
             var sut = harness.CreateService(context);
 
             // Act
@@ -181,7 +183,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             harness.TenantScope.OrganizationId.ShouldBeNull();
             using var readContext = database.CreateContext();
             (await readContext.Organizations.CountAsync()).ShouldBe(0);
-            (await readContext.OrganizationSettings.CountAsync()).ShouldBe(0);
+            (await readContext.OrganizationSettings.IgnoreQueryFilters().CountAsync()).ShouldBe(0);
         }
     }
 }

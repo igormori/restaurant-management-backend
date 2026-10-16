@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using RestaurantManagement.Modules.Organization.Data;
+using RestaurantManagement.Shared.Data;
 
 namespace RestaurantManagement.Modules.Organization.Tests
 {
@@ -23,23 +24,21 @@ namespace RestaurantManagement.Modules.Organization.Tests
             context.Database.EnsureCreated();
         }
 
-        public OrganizationDbContext CreateContext()
+        /// <summary>
+        /// A context with no organization: use it to seed rows. Its reads see no tenant rows once
+        /// the query filters apply; read back with a tenant or with IgnoreQueryFilters().
+        /// </summary>
+        public OrganizationDbContext CreateContext() => CreateContext(TestTenant.None);
+
+        public OrganizationDbContext CreateContext(IInterceptor interceptor) => CreateContext(TestTenant.None, interceptor);
+
+        public OrganizationDbContext CreateContext(ITenantContext tenantContext, IInterceptor? interceptor = null)
         {
-            var options = new DbContextOptionsBuilder<OrganizationDbContext>()
-                .UseSqlite(_connection)
-                .Options;
+            var builder = new DbContextOptionsBuilder<OrganizationDbContext>().UseSqlite(_connection);
+            if (interceptor is not null)
+                builder.AddInterceptors(interceptor);
 
-            return new OrganizationDbContext(options);
-        }
-
-        public OrganizationDbContext CreateContext(IInterceptor interceptor)
-        {
-            var options = new DbContextOptionsBuilder<OrganizationDbContext>()
-                .UseSqlite(_connection)
-                .AddInterceptors(interceptor)
-                .Options;
-
-            return new OrganizationDbContext(options);
+            return new OrganizationDbContext(builder.Options, tenantContext);
         }
 
         /// <summary>

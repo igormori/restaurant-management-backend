@@ -121,8 +121,9 @@ High level only: what to change, where, in which order, and which pattern to fol
 1. Run tests **only** through the summary script; never call `dotnet test` directly:
    `.claude/scripts/test-summary.sh <test-project> "FullyQualifiedName~<ClassName>"` for your new classes,
    and `.claude/scripts/test-summary.sh all` **once**, at the end.
-   **Run limit:** at most 6 test runs in total. If tests still do not fail for the right reason
-   after that, stop and report which ones under [Blocking]. Never loop.
+   **Run limit:** at most 6 runs of your new classes, **plus** the one final full-suite run, which
+   is always allowed and always required. If tests still do not fail for the right reason after
+   6 runs, stop and report which ones under [Blocking]. Never loop.
 2. Every new test, except guards, must **fail for the right reason** (`NotImplementedException`, a failed assertion, or a 500 for an integration test), never a compile error or a broken fixture. Guards and existing tests must pass.
 3. Out-of-scope findings: write the backlog file yourself (`backlog/<features|bugs|improvements|tech-debt>/<YYYY-MM-DD>-<title>.md`).
 

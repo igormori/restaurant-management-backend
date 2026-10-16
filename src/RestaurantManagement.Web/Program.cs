@@ -160,6 +160,8 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<ITenantScope, TenantScope>();
 builder.Services.AddScoped<ICurrentUser, ClaimsCurrentUser>();
+builder.Services.AddScoped<SelectedLocation>();
+builder.Services.AddScoped<ITenantContext, TenantContext>();
 builder.Services.AddScoped<AuditSaveChangesInterceptor>();
 
 builder.Services.AddDbContext<IdentityDbContext>((serviceProvider, options) =>
@@ -285,6 +287,7 @@ app.UseCors("DefaultCorsPolicy");
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<LocationAccessMiddleware>();
 app.MapControllers();
 app.Run();
 

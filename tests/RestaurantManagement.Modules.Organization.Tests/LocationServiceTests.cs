@@ -5,8 +5,10 @@ using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Modules.Organization.Services;
 using RestaurantManagement.Shared;
+using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
+using Shouldly;
 using Xunit;
 
 namespace RestaurantManagement.Modules.Organization.Tests
@@ -94,11 +96,11 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Admin);
 
-            using var context = database.CreateContext();
-            var sut = new LocationService(context, userRoleLookup, TestLocalizer.Create());
+            using var context = database.CreateContext(TestTenant.Of(organizationId));
+            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
 
             // Act
-            var response = await sut.CreateLocationAsync(userId, organizationId, ValidCreateRequest);
+            var response = await sut.CreateLocationAsync(userId, ValidCreateRequest);
 
             // Assert
             response.Should().NotBeNull();
@@ -114,11 +116,11 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
 
-            using var context = database.CreateContext();
-            var sut = new LocationService(context, userRoleLookup, TestLocalizer.Create());
+            using var context = database.CreateContext(TestTenant.Of(organizationId));
+            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
 
             // Act
-            var response = await sut.CreateLocationAsync(userId, organizationId, ValidCreateRequest);
+            var response = await sut.CreateLocationAsync(userId, ValidCreateRequest);
 
             // Assert
             response.Should().NotBeNull();
@@ -134,17 +136,17 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             var waiterUserId = Guid.NewGuid();
             var waiterUserRoleLookup = CreateUserRoleLookup(waiterUserId, organizationId, Roles.Waiter);
-            using var waiterContext = database.CreateContext();
-            var waiterSut = new LocationService(waiterContext, waiterUserRoleLookup, TestLocalizer.Create());
+            using var waiterContext = database.CreateContext(TestTenant.Of(organizationId));
+            var waiterSut = new LocationService(waiterContext, waiterUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
 
             var noRoleUserId = Guid.NewGuid();
             var noRoleUserRoleLookup = CreateUserRoleLookup(noRoleUserId, organizationId, role: null);
-            using var noRoleContext = database.CreateContext();
-            var noRoleSut = new LocationService(noRoleContext, noRoleUserRoleLookup, TestLocalizer.Create());
+            using var noRoleContext = database.CreateContext(TestTenant.Of(organizationId));
+            var noRoleSut = new LocationService(noRoleContext, noRoleUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
 
             // Act
-            var waiterAct = () => waiterSut.CreateLocationAsync(waiterUserId, organizationId, ValidCreateRequest);
-            var noRoleAct = () => noRoleSut.CreateLocationAsync(noRoleUserId, organizationId, ValidCreateRequest);
+            var waiterAct = () => waiterSut.CreateLocationAsync(waiterUserId, ValidCreateRequest);
+            var noRoleAct = () => noRoleSut.CreateLocationAsync(noRoleUserId, ValidCreateRequest);
 
             // Assert
             await waiterAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
@@ -161,8 +163,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Admin);
 
-            using var context = database.CreateContext();
-            var sut = new LocationService(context, userRoleLookup, TestLocalizer.Create());
+            using var context = database.CreateContext(TestTenant.Of(organizationId));
+            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
 
             // Act
             var response = await sut.EditLocationAsync(userId, locationId, ValidEditRequest);
@@ -182,8 +184,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
 
-            using var context = database.CreateContext();
-            var sut = new LocationService(context, userRoleLookup, TestLocalizer.Create());
+            using var context = database.CreateContext(TestTenant.Of(organizationId));
+            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
 
             // Act
             var response = await sut.EditLocationAsync(userId, locationId, ValidEditRequest);
@@ -203,13 +205,13 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             var waiterUserId = Guid.NewGuid();
             var waiterUserRoleLookup = CreateUserRoleLookup(waiterUserId, organizationId, Roles.Waiter);
-            using var waiterContext = database.CreateContext();
-            var waiterSut = new LocationService(waiterContext, waiterUserRoleLookup, TestLocalizer.Create());
+            using var waiterContext = database.CreateContext(TestTenant.Of(organizationId));
+            var waiterSut = new LocationService(waiterContext, waiterUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
 
             var noRoleUserId = Guid.NewGuid();
             var noRoleUserRoleLookup = CreateUserRoleLookup(noRoleUserId, organizationId, role: null);
-            using var noRoleContext = database.CreateContext();
-            var noRoleSut = new LocationService(noRoleContext, noRoleUserRoleLookup, TestLocalizer.Create());
+            using var noRoleContext = database.CreateContext(TestTenant.Of(organizationId));
+            var noRoleSut = new LocationService(noRoleContext, noRoleUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
 
             // Act
             var waiterAct = () => waiterSut.EditLocationAsync(waiterUserId, locationId, ValidEditRequest);
@@ -230,14 +232,14 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Admin);
 
-            using var context = database.CreateContext();
-            var sut = new LocationService(context, userRoleLookup, TestLocalizer.Create());
+            using var context = database.CreateContext(TestTenant.Of(organizationId));
+            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
 
             // Act
             await sut.DeleteLocationAsync(userId, locationId);
 
             // Assert
-            using var verifyContext = database.CreateContext();
+            using var verifyContext = database.CreateContext(TestTenant.Of(organizationId));
             var location = await verifyContext.Locations.FirstAsync(l => l.Id == locationId);
             location.Status.Should().Be(LocationStatus.Closed);
         }
@@ -252,14 +254,14 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
 
-            using var context = database.CreateContext();
-            var sut = new LocationService(context, userRoleLookup, TestLocalizer.Create());
+            using var context = database.CreateContext(TestTenant.Of(organizationId));
+            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
 
             // Act
             await sut.DeleteLocationAsync(userId, locationId);
 
             // Assert
-            using var verifyContext = database.CreateContext();
+            using var verifyContext = database.CreateContext(TestTenant.Of(organizationId));
             var location = await verifyContext.Locations.FirstAsync(l => l.Id == locationId);
             location.Status.Should().Be(LocationStatus.Closed);
         }
@@ -274,13 +276,13 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             var waiterUserId = Guid.NewGuid();
             var waiterUserRoleLookup = CreateUserRoleLookup(waiterUserId, organizationId, Roles.Waiter);
-            using var waiterContext = database.CreateContext();
-            var waiterSut = new LocationService(waiterContext, waiterUserRoleLookup, TestLocalizer.Create());
+            using var waiterContext = database.CreateContext(TestTenant.Of(organizationId));
+            var waiterSut = new LocationService(waiterContext, waiterUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
 
             var noRoleUserId = Guid.NewGuid();
             var noRoleUserRoleLookup = CreateUserRoleLookup(noRoleUserId, organizationId, role: null);
-            using var noRoleContext = database.CreateContext();
-            var noRoleSut = new LocationService(noRoleContext, noRoleUserRoleLookup, TestLocalizer.Create());
+            using var noRoleContext = database.CreateContext(TestTenant.Of(organizationId));
+            var noRoleSut = new LocationService(noRoleContext, noRoleUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
 
             // Act
             var waiterAct = () => waiterSut.DeleteLocationAsync(waiterUserId, locationId);
@@ -289,6 +291,32 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Assert
             await waiterAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
             await noRoleAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
+        }
+
+        // Scenario 27
+        [Theory]
+        [InlineData(Roles.Manager)]
+        [InlineData(Roles.Cashier)]
+        [InlineData(Roles.Waiter)]
+        [InlineData(Roles.Kitchen)]
+        public async Task CreateLocationAsync_RoleOtherThanOwnerOrAdmin_ThrowsForbiddenAndCreatesNothing(string role)
+        {
+            // Arrange
+            using var database = new OrganizationTestDatabase();
+            var organizationId = await SeedOrganizationAsync(database);
+            var userId = Guid.NewGuid();
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = new LocationService(context, CreateUserRoleLookup(userId, organizationId, role), tenant, TestLocalizer.Create());
+
+            // Act
+            var act = () => sut.CreateLocationAsync(userId, ValidCreateRequest);
+
+            // Assert
+            var exception = await act.ShouldThrowAsync<BusinessException>();
+            exception.StatusCode.ShouldBe(403);
+            using var verifyContext = database.CreateContext(tenant);
+            (await verifyContext.Locations.IgnoreQueryFilters().CountAsync()).ShouldBe(0);
         }
     }
 }

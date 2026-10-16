@@ -70,10 +70,10 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         }
 
         /// <summary>
-        /// Get all categories for an organization
+        /// Get all categories of the signed-in organization
         /// </summary>
-        [HttpGet("organizations/{organizationId}/menu-categories")]
-        public async Task<ActionResult<IEnumerable<MenuCategoryResponse>>> GetCategoriesByOrganization(Guid organizationId)
+        [HttpGet("menu-categories")]
+        public async Task<ActionResult<IEnumerable<MenuCategoryResponse>>> GetCategories()
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!Guid.TryParse(userIdStr, out var userId))
@@ -81,7 +81,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
                 return Unauthorized();
             }
 
-            var categories = await _categoryService.GetByOrganizationIdAsync(userId, organizationId);
+            var categories = await _categoryService.GetAllAsync(userId);
             return Ok(categories);
         }
 

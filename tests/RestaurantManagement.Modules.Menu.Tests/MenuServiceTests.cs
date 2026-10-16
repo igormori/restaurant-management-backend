@@ -1,6 +1,7 @@
 using FluentAssertions;
 using NSubstitute;
 using RestaurantManagement.Modules.Menu.Services;
+using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Exceptions;
@@ -40,17 +41,19 @@ namespace RestaurantManagement.Modules.Menu.Tests
         private static MenuService CreateSut(
             Data.MenuDbContext context,
             IUserRoleLookup userRoleLookup,
+            ITenantContext tenantContext,
             IOrganizationLookup? organizationLookup = null)
         {
             return new MenuService(
                 context,
                 organizationLookup ?? Substitute.For<IOrganizationLookup>(),
                 userRoleLookup,
+                tenantContext,
                 TestLocalizer.Create());
         }
 
         [Fact]
-        public async Task GetMenusByOrganizationAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
+        public async Task GetMenusAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
         {
             // Arrange
             using var database = new MenuTestDatabase();
@@ -58,11 +61,12 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var userId = Guid.NewGuid();
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, role: null);
 
-            using var context = database.CreateContext();
-            var sut = CreateSut(context, userRoleLookup);
+            var tenant = TestTenant.Of(organizationId);
+            using var context = database.CreateContext(tenant);
+            var sut = CreateSut(context, userRoleLookup, tenant);
 
             // Act
-            var act = () => sut.GetMenusByOrganizationAsync(userId, organizationId);
+            var act = () => sut.GetMenusAsync(userId);
 
             // Assert
             await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);

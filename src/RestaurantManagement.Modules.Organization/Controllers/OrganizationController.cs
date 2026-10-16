@@ -39,10 +39,10 @@ namespace RestaurantManagement.Modules.Organization.Controllers
             return Ok(response);
         }
 
-        // PUT api/organizations/edit/{organizationId}
-        [HttpPut("edit/{organizationId:guid}")]
+        // PUT api/organizations/edit
+        [HttpPut("edit")]
         [Authorize]
-        public async Task<ActionResult<OrganizationResponse>> Edit(Guid organizationId, [FromBody] EditOrganizationRequest request)
+        public async Task<ActionResult<OrganizationResponse>> Edit([FromBody] EditOrganizationRequest request)
         {
             var subject = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -51,7 +51,7 @@ namespace RestaurantManagement.Modules.Organization.Controllers
                 return Unauthorized();
             }
 
-            var response = await _organizationService.EditOrganizationAsync(userId, organizationId, request);
+            var response = await _organizationService.EditOrganizationAsync(userId, request);
             return Ok(response);
         }
 
