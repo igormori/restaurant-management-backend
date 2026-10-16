@@ -45,7 +45,7 @@ public class RequiredIdFieldEndpointTests : IDisposable
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        (await FieldErrorsAsync(response, field)).ShouldContain(expected);
     }
 
     [Theory]

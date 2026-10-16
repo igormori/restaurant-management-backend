@@ -38,4 +38,11 @@ public static class LocalizedResponses
         return errors?.SelectMany(field => field.Value!.AsArray().Select(message => message!.GetValue<string>())).ToList()
             ?? new List<string>();
     }
+
+    /// <summary>The field errors of a validation (400) body reported under one field.</summary>
+    public static async Task<List<string>> FieldErrorsAsync(HttpResponseMessage response, string field)
+    {
+        var messages = JsonNode.Parse(await response.Content.ReadAsStringAsync())?["errors"]?[field]?.AsArray();
+        return messages?.Select(message => message!.GetValue<string>()).ToList() ?? new List<string>();
+    }
 }
