@@ -17,12 +17,10 @@ public class StartupConfigurationTests : IDisposable
 
     private readonly TestHttpsCertificate _certificate = new();
     private readonly List<IDisposable> _disposables = new();
-    private readonly List<string> _environmentKeys = new();
 
     public void Dispose()
     {
         _disposables.ForEach(d => d.Dispose());
-        _environmentKeys.ForEach(key => Environment.SetEnvironmentVariable(key, null));
         _certificate.Dispose();
     }
 
@@ -36,19 +34,13 @@ public class StartupConfigurationTests : IDisposable
 
     private WebApplicationFactory<Program> CreateFactory(string environment, Dictionary<string, string?> settings)
     {
-        // Program.cs reads Https:* while building, before factory configuration is applied, so it must come from the environment.
+        // Program.cs reads Https:* while building, before factory configuration is applied, so it must come in as host settings.
         var httpsSettings = settings.Where(s => s.Key.StartsWith("Https:")).ToList();
-        foreach (var (key, value) in httpsSettings)
-        {
-            var name = key.Replace(":", "__");
-            Environment.SetEnvironmentVariable(name, value);
-            _environmentKeys.Add(name);
-        }
-
         var otherSettings = settings.Except(httpsSettings);
         var factory = new AuthApiFactory().WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment(environment);
+            httpsSettings.ForEach(s => builder.UseSetting(s.Key, s.Value));
             builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(otherSettings));
         });
         _disposables.Add(factory);
