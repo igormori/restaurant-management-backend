@@ -391,5 +391,64 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var maria = await readContext.Users.SingleAsync();
             maria.LockedUntil.ShouldBeNull();
         }
+
+        [Fact]
+        public async Task LoginAsync_CorrectPasswordAfterFailures_ResetsCounterAndRecordsLoginTime()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            seedContext.Users.Add(new User
+            {
+                Email = "marina@cantinadanonna.com.br",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "Marina",
+                LastName = "Souza",
+                IsVerified = true,
+                FailedAttempts = 3
+            });
+            await seedContext.SaveChangesAsync();
+
+            using var context = database.CreateContext();
+            var sut = CreateSut(context);
+
+            // Act
+            await sut.LoginAsync(new LoginRequest { Email = "marina@cantinadanonna.com.br", Password = Password }, TestClients.KitchenTablet);
+
+            // Assert
+            using var readContext = database.CreateContext();
+            var marina = await readContext.Users.SingleAsync();
+            marina.FailedAttempts.ShouldBe(0);
+            marina.LockedUntil.ShouldBeNull();
+            marina.LastLoginAt.ShouldNotBeNull();
+            marina.LastLoginAt.Value.ShouldBe(DateTime.UtcNow, TimeSpan.FromMinutes(1));
+        }
+
+        [Fact]
+        public async Task LoginAsync_UserWithPhoneNumber_ResponseHasNoPhoneNumber()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            seedContext.Users.Add(new User
+            {
+                Email = "marina@cantinadanonna.com.br",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "Marina",
+                LastName = "Souza",
+                PhoneNumber = "+5541999990000",
+                IsVerified = true
+            });
+            await seedContext.SaveChangesAsync();
+
+            using var context = database.CreateContext();
+            var sut = CreateSut(context);
+
+            // Act
+            var response = await sut.LoginAsync(new LoginRequest { Email = "marina@cantinadanonna.com.br", Password = Password }, TestClients.KitchenTablet);
+
+            // Assert
+            response.Auth.PhoneNumber.ShouldBeNull();
+        }
     }
 }
