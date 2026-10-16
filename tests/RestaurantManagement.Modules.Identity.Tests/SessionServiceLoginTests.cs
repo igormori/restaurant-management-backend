@@ -11,6 +11,7 @@ using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Modules.Identity.Services;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Utils.Exceptions;
+using Shouldly;
 using Xunit;
 
 namespace RestaurantManagement.Modules.Identity.Tests
@@ -331,6 +332,38 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             hasher.Received(1).Verify(Password, Arg.Is<string>(hash => hash.StartsWith("$2a$12$")));
+        }
+
+        [Fact]
+        public async Task LoginAsync_LockExpiredCorrectPassword_IssuesTokensAndClearsLock()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            seedContext.Users.Add(new User
+            {
+                Email = "maria@cantinadanonna.com.br",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "Maria",
+                LastName = "Souza",
+                IsVerified = true,
+                FailedAttempts = 0,
+                LockedUntil = DateTime.UtcNow.AddMinutes(-1)
+            });
+            await seedContext.SaveChangesAsync();
+
+            using var context = database.CreateContext();
+            var sut = CreateSut(context);
+
+            // Act
+            var response = await sut.LoginAsync(new LoginRequest { Email = "maria@cantinadanonna.com.br", Password = Password }, TestClients.KitchenTablet);
+
+            // Assert
+            response.Auth.Token.ShouldNotBeNullOrEmpty();
+            response.RefreshToken.ShouldNotBeNullOrEmpty();
+            using var readContext = database.CreateContext();
+            var maria = await readContext.Users.SingleAsync();
+            maria.LockedUntil.ShouldBeNull();
         }
     }
 }
