@@ -115,7 +115,8 @@ looks wrong, stop and say why.
 Rules in `.claude/skills/backlog/SKILL.md`, read only when about to write an item. In short: a
 finding that breaks the current task blocks it; a tiny fix in a file already being changed is made
 inline; anything else becomes a backlog item written by the agent that found it, after searching
-for duplicates. Agents write items as `proposed`; only the user accepts, merges or deletes them.
+for duplicates. Agents write items as `proposed`; only the user accepts or merges them.
+A commit that fully solves an item deletes it in that same commit; agents commit it and never push.
 
 ### Terminal output
 The reviewer reads the files in `docs/`, not the terminal. When a step finishes, show the
