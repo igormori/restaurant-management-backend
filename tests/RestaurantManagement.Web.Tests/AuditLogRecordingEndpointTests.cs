@@ -13,7 +13,7 @@ namespace RestaurantManagement.Web.Tests;
 /// through the API shows up in GET api/audit-log for the same organization.
 /// Ana is Owner of both Cantina da Nonna and Trattoria do Sol.
 /// </summary>
-public class AuditLogRecordingEndpointTests : IClassFixture<AuditFieldsPostgresFixture>
+public class AuditLogRecordingEndpointTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string AuditLogUrl = "/api/audit-log";
 
@@ -31,9 +31,9 @@ public class AuditLogRecordingEndpointTests : IClassFixture<AuditFieldsPostgresF
         businessDayCutoff = "04:00"
     };
 
-    private readonly AuditFieldsPostgresFixture _postgres;
+    private readonly PostgresDatabaseFixture _postgres;
 
-    public AuditLogRecordingEndpointTests(AuditFieldsPostgresFixture postgres) => _postgres = postgres;
+    public AuditLogRecordingEndpointTests(PostgresDatabaseFixture postgres) => _postgres = postgres;
 
     private sealed record EntryRow(Guid Id, Guid? LocationId, string Action, string EntityType, Guid EntityId, string? Before, string? After);
 

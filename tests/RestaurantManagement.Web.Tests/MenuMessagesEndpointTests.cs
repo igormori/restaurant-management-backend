@@ -12,7 +12,7 @@ namespace RestaurantManagement.Web.Tests;
 /// Ana owns Cantina da Nonna and is signed in to it; Trattoria do Sol belongs to Bruno.
 /// Not-found cases run on PostgreSQL; field errors are answered before any database work.
 /// </summary>
-public class MenuMessagesEndpointTests : IClassFixture<AuditFieldsPostgresFixture>
+public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
 {
     private static readonly Guid AnaId = Guid.Parse("11111111-aaaa-4aaa-8aaa-00000000000a");
     private static readonly Guid BrunoId = Guid.Parse("22222222-bbbb-4bbb-8bbb-00000000000b");
@@ -24,9 +24,9 @@ public class MenuMessagesEndpointTests : IClassFixture<AuditFieldsPostgresFixtur
     private static readonly Guid CantinaPastaCategoryId = Guid.Parse("66666666-0000-4000-8000-000000000001");
     private static readonly Guid DeletedMenuId = Guid.Parse("55555555-0000-4000-8000-0000000000ff");
 
-    private readonly AuditFieldsPostgresFixture _postgres;
+    private readonly PostgresDatabaseFixture _postgres;
 
-    public MenuMessagesEndpointTests(AuditFieldsPostgresFixture postgres) => _postgres = postgres;
+    public MenuMessagesEndpointTests(PostgresDatabaseFixture postgres) => _postgres = postgres;
 
     private async Task<TenantApiFactory> CreateFactoryAsync()
     {

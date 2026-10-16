@@ -52,6 +52,7 @@ Scenarios: 1–3
 - Summary: lowercase, imperative, no trailing period, 72 characters max for the whole line;
   says what changed and its effect, e.g.
   `fix(identity): return a generic 401 for locked accounts`
+- Branches start from `development`, and pull requests always target `development`, never `main`
 - Body only when the why isn't obvious. Scenario numbers and ticket IDs (`Refs: ABC-123`) go
   in the body, never in the summary
 

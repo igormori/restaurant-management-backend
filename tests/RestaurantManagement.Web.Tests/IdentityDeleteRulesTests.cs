@@ -13,7 +13,7 @@ namespace RestaurantManagement.Web.Tests;
 /// Delete rules between users and their roles and verification codes, enforced by PostgreSQL.
 /// Deletes use raw SQL on purpose: the database must enforce them whatever the write path.
 /// </summary>
-public class IdentityDeleteRulesTests : IClassFixture<AuditFieldsPostgresFixture>
+public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string RestrictMigrationSuffix = "_RestrictUserRoleCascadeDelete";
     private const string AuditMigrationSuffix = "_AddAuditFields";
@@ -38,9 +38,9 @@ public class IdentityDeleteRulesTests : IClassFixture<AuditFieldsPostgresFixture
     private static readonly DateTime CreationTime = new(2026, 3, 14, 18, 30, 0, DateTimeKind.Utc);
     private static readonly DateTime CodeExpiry = new(2026, 3, 14, 18, 45, 0, DateTimeKind.Utc);
 
-    private readonly AuditFieldsPostgresFixture _fixture;
+    private readonly PostgresDatabaseFixture _fixture;
 
-    public IdentityDeleteRulesTests(AuditFieldsPostgresFixture fixture) => _fixture = fixture;
+    public IdentityDeleteRulesTests(PostgresDatabaseFixture fixture) => _fixture = fixture;
 
     private async Task<DbContextOptions<IdentityDbContext>> CreateOptionsAsync()
         => new DbContextOptionsBuilder<IdentityDbContext>()

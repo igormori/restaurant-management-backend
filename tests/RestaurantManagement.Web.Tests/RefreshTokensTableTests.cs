@@ -18,7 +18,7 @@ namespace RestaurantManagement.Web.Tests;
 /// the migration on existing users, and parallel rotation of one token.
 /// User deletes use raw SQL on purpose: the database must enforce them whatever the write path.
 /// </summary>
-public class RefreshTokensTableTests : IClassFixture<AuditFieldsPostgresFixture>
+public class RefreshTokensTableTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string RetireMigrationSuffix = "_RetireUnhashedVerificationCodes";
     private const string RefreshTokensMigrationSuffix = "_AddRefreshTokensTable";
@@ -39,9 +39,9 @@ public class RefreshTokensTableTests : IClassFixture<AuditFieldsPostgresFixture>
 
     private static readonly DateTime CreationTime = new(2026, 10, 15, 18, 30, 0, DateTimeKind.Utc);
 
-    private readonly AuditFieldsPostgresFixture _fixture;
+    private readonly PostgresDatabaseFixture _fixture;
 
-    public RefreshTokensTableTests(AuditFieldsPostgresFixture fixture) => _fixture = fixture;
+    public RefreshTokensTableTests(PostgresDatabaseFixture fixture) => _fixture = fixture;
 
     private async Task<DbContextOptions<IdentityDbContext>> CreateOptionsAsync()
         => new DbContextOptionsBuilder<IdentityDbContext>()

@@ -10,7 +10,7 @@ namespace RestaurantManagement.Web.Tests;
 /// same shape as verification codes, and two reset counters on users, kept apart from login and
 /// verification counters. The delete rule (codes go with their user) is checked in IdentityDeleteRulesTests.
 /// </summary>
-public class PasswordResetCodesTableTests : IClassFixture<AuditFieldsPostgresFixture>
+public class PasswordResetCodesTableTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string ResetColumnsSql = """
         SELECT coalesce(string_agg(table_name || '.' || column_name, ',' ORDER BY table_name, column_name), '')
@@ -24,9 +24,9 @@ public class PasswordResetCodesTableTests : IClassFixture<AuditFieldsPostgresFix
         WHERE tablename = 'password_reset_codes'
         """;
 
-    private readonly AuditFieldsPostgresFixture _fixture;
+    private readonly PostgresDatabaseFixture _fixture;
 
-    public PasswordResetCodesTableTests(AuditFieldsPostgresFixture fixture) => _fixture = fixture;
+    public PasswordResetCodesTableTests(PostgresDatabaseFixture fixture) => _fixture = fixture;
 
     private async Task<IdentityDbContext> CreateFullyMigratedContextAsync()
     {

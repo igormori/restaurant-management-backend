@@ -14,7 +14,7 @@ namespace RestaurantManagement.Web.Tests;
 /// the sign-in token (Rule 3) and another organization's location answers 404 (Rule 5).
 /// Ana is Owner of both Cantina da Nonna and Trattoria do Sol, and is signed in to Cantina.
 /// </summary>
-public class OrganizationTenantEndpointTests : IClassFixture<AuditFieldsPostgresFixture>
+public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string Cantina = "a1a1a1a1-0000-4000-8000-000000000001";
 
@@ -53,9 +53,9 @@ public class OrganizationTenantEndpointTests : IClassFixture<AuditFieldsPostgres
         businessDayCutoff = "04:00"
     };
 
-    private readonly AuditFieldsPostgresFixture _postgres;
+    private readonly PostgresDatabaseFixture _postgres;
 
-    public OrganizationTenantEndpointTests(AuditFieldsPostgresFixture postgres) => _postgres = postgres;
+    public OrganizationTenantEndpointTests(PostgresDatabaseFixture postgres) => _postgres = postgres;
 
     private sealed record Row(Guid Id, Guid OrganizationId);
 
