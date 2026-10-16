@@ -40,7 +40,7 @@ The business-day rule is a pure calculator with no database access, unit-tested 
 
 ## Overall Definition of Done
 - [x] All tasks done, tests passing
-- [ ] All spec Outcomes met
+- [x] All spec Outcomes met
 - [x] Full test suite green after the last batch
 - [x] No out-of-scope changes; findings in the backlog
 - [x] No country default for currency or time zone anywhere in code, migrations or test seed helpers
@@ -48,7 +48,7 @@ The business-day rule is a pure calculator with no database access, unit-tested 
 - [x] Migrations generated following `.claude/skills/ef-migration/SKILL.md`, never hand-edited
 
 ## Checklist
-- [x] T1 — Organization currency
-- [x] T2 — Settings: service charge, discount limit, cutoff
-- [x] T3 — Location time zone, type and code
-- [x] T4 — Business day calculator
+- [x] T1 — Organization currency (`3e49c8e`)
+- [x] T2 — Settings: service charge, discount limit, cutoff (`f8bec07`)
+- [x] T3 — Location time zone, type and code (`cb03adf`)
+- [x] T4 — Business day calculator (`05f3405`)
