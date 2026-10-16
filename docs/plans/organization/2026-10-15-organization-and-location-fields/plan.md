@@ -1,6 +1,6 @@
 # Plan: Organization and Location Fields
 
-**Spec:** docs/specs/organization/2026-10-15-organization-and-location-fields.md   **Date:** 2026-10-15   **Status:** Approved
+**Spec:** docs/specs/organization/2026-10-15-organization-and-location-fields.md   **Date:** 2026-10-15   **Status:** In progress
 **Risk:** Medium — three schema-only migrations (new required columns and a unique index) on Organization tables; no real data, no backfill
 
 ## Summary
@@ -48,7 +48,7 @@ The business-day rule is a pure calculator with no database access, unit-tested 
 - [ ] Migrations generated following `.claude/skills/ef-migration/SKILL.md`, never hand-edited
 
 ## Checklist
-- [ ] T1 — Organization currency
+- [x] T1 — Organization currency
 - [ ] T2 — Settings: service charge, discount limit, cutoff
 - [ ] T3 — Location time zone, type and code
 - [ ] T4 — Business day calculator

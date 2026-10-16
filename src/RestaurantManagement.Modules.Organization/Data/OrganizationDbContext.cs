@@ -26,6 +26,11 @@ namespace RestaurantManagement.Modules.Organization.Data
                 .Property(o => o.IsActive)
                 .HasDefaultValue(true);
 
+            modelBuilder.Entity<Entities.Organization>()
+                .Property(o => o.Currency)
+                .HasConversion<string>()
+                .HasMaxLength(3);
+
             modelBuilder.Entity<Location>()
                 .HasOne(l => l.Organization)
                 .WithMany(o => o.Locations)

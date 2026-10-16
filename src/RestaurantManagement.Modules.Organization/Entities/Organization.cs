@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations.Schema;
 using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Modules.Organization.Entities;
 
@@ -14,8 +13,6 @@ namespace RestaurantManagement.Modules.Organization.Entities
         public string? AccentColor { get; set; }
         public bool IsActive { get; set; } = true;
 
-        // Stub (tester): not mapped yet; T1 maps it and adds the migration. Remove [NotMapped] then.
-        [NotMapped]
         public Currency Currency { get; set; }
 
         // Navigation Properties

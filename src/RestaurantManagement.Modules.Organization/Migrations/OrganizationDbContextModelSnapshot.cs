@@ -116,6 +116,12 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("created_by_user_id");
 
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
                     b.Property<string>("Description")
                         .HasColumnType("text")
                         .HasColumnName("description");

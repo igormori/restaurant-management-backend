@@ -86,6 +86,7 @@ namespace RestaurantManagement.Modules.Organization.Services
                 PrimaryColor = request.PrimaryColor,
                 SecondaryColor = request.SecondaryColor,
                 AccentColor = request.AccentColor,
+                Currency = Enum.Parse<Currency>(request.Currency!),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -162,6 +163,7 @@ namespace RestaurantManagement.Modules.Organization.Services
                 PrimaryColor = org.PrimaryColor,
                 SecondaryColor = org.SecondaryColor,
                 AccentColor = org.AccentColor,
+                Currency = org.Currency,
                 PlanType = settings.PlanType,
                 MaxLocations = settings.MaxLocations,
                 TrialEndDate = settings.TrialEndDate,
@@ -234,6 +236,7 @@ namespace RestaurantManagement.Modules.Organization.Services
                 PrimaryColor = organization.PrimaryColor,
                 SecondaryColor = organization.SecondaryColor,
                 AccentColor = organization.AccentColor,
+                Currency = organization.Currency,
                 PlanType = organizationSettings.PlanType,
                 MaxLocations = organizationSettings.MaxLocations,
                 TrialEndDate = organizationSettings.TrialEndDate,
@@ -263,6 +266,7 @@ namespace RestaurantManagement.Modules.Organization.Services
                     PrimaryColor = o.PrimaryColor,
                     SecondaryColor = o.SecondaryColor,
                     AccentColor = o.AccentColor,
+                    Currency = o.Currency,
                     PlanType = o.Settings != null ? o.Settings.PlanType : "UNKNOWN",
                     MaxLocations = o.Settings != null ? o.Settings.MaxLocations : 0,
                     TrialEndDate = o.Settings != null ? o.Settings.TrialEndDate : (DateTime?)null,

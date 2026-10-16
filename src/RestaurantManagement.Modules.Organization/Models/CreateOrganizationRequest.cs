@@ -54,8 +54,7 @@ namespace RestaurantManagement.Modules.Organization.Models
             set => _accentColor = value?.Trim();
         }
 
-        // Stub (tester): T1 adds validation (required; BRL, USD or CAD only).
+        [Required, RegularExpression("^(BRL|USD|CAD)$", ErrorMessage = "Currency must be BRL, USD or CAD.")]
         public string? Currency { get; set; }
-
     }
 }
