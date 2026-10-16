@@ -23,12 +23,18 @@ public static class TestAccessTokens
     /// claim. No organization mimics a user of several organizations who has not selected one.
     /// </summary>
     public static string Create(IServiceProvider services, Guid userId, Guid? organizationId, params string[] roles)
+        => CreateWithSubject(services, userId.ToString(), organizationId, roles);
+
+    /// <summary>
+    /// Signs a valid pass whose user identifier is any text, for example one that is not a user ID.
+    /// </summary>
+    public static string CreateWithSubject(IServiceProvider services, string subject, Guid? organizationId, params string[] roles)
     {
         var jwt = services.GetRequiredService<IOptions<JwtOptions>>().Value;
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, userId.ToString()),
-            new(JwtRegisteredClaimNames.Sub, userId.ToString())
+            new(ClaimTypes.NameIdentifier, subject),
+            new(JwtRegisteredClaimNames.Sub, subject)
         };
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
         if (organizationId.HasValue)
