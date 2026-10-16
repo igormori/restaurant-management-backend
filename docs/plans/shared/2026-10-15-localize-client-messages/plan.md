@@ -39,8 +39,8 @@ Terms used below:
 ## Checklist
 - [x] T1 — Add missing messages to the catalog
 - [x] T2 — Translate the unexpected-error message
-- [ ] T3 — Translate menu and menu category "not found"
-- [ ] T4 — Translate menu and menu category field errors
+- [x] T3 — Translate menu and menu category "not found"
+- [x] T4 — Translate menu and menu category field errors
 - [ ] T5 — Translate registration phone, login and organization-selection field errors
 - [ ] T6 — Translate organization create/edit field errors
 - [ ] T7 — Translate location create/edit field errors
