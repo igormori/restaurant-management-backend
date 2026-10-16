@@ -46,7 +46,7 @@
     <value>User not found!.</value>
   </data>
   <data name="UnauthorizedMessage" xml:space="preserve">
-    <value>Unautorized user.</value>
+    <value>Unauthorized user.</value>
   </data>
   <data name="InvalidToken" xml:space="preserve">
     <value>Invalid token.</value>

@@ -17,7 +17,7 @@ namespace RestaurantManagement.Web.Tests;
 public class PrivateByDefaultTests : IDisposable
 {
     private const string UndeclaredUrl = "/api/test-probe/undeclared";
-    private const string EnglishUnauthorizedMessage = "Unautorized user.";
+    private const string EnglishUnauthorizedMessage = "Unauthorized user.";
 
     private static readonly Guid MariaId = Guid.Parse("11111111-aaaa-4aaa-8aaa-00000000000a");
 
