@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using RestaurantManagement.Shared;
 using RestaurantManagement.Modules.Menu.Models;
 using RestaurantManagement.Modules.Menu.Services;
 
@@ -13,9 +15,12 @@ namespace RestaurantManagement.Modules.Menu.Controllers
     {
         private readonly IMenuCategoryService _categoryService;
 
-        public MenuCategoryController(IMenuCategoryService categoryService)
+        private readonly IStringLocalizer<SharedResource> _localizer;
+
+        public MenuCategoryController(IMenuCategoryService categoryService, IStringLocalizer<SharedResource> localizer)
         {
             _categoryService = categoryService;
+            _localizer = localizer;
         }
 
         /// <summary>
@@ -48,7 +53,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
 
             var category = await _categoryService.GetByIdAsync(userId, id);
             if (category == null)
-                return NotFound(new { message = "Menu category not found" });
+                return NotFound(new { message = _localizer["MenuCategoryNotFound"].Value });
 
             return Ok(category);
         }
@@ -115,7 +120,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
 
             var category = await _categoryService.UpdateAsync(userId, id, request);
             if (category == null)
-                return NotFound(new { message = "Menu category not found" });
+                return NotFound(new { message = _localizer["MenuCategoryNotFound"].Value });
 
             return Ok(category);
         }
@@ -134,7 +139,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
 
             var result = await _categoryService.DeleteAsync(userId, id);
             if (!result)
-                return NotFound(new { message = "Menu category not found" });
+                return NotFound(new { message = _localizer["MenuCategoryNotFound"].Value });
 
             return NoContent();
         }

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
@@ -25,7 +26,10 @@ namespace RestaurantManagement.Shared.Tests
                 NullLogger<ExceptionHandlingMiddleware>.Instance,
                 environment);
 
-            var context = new DefaultHttpContext();
+            var services = new ServiceCollection();
+            services.AddLogging();
+            services.AddLocalization(options => options.ResourcesPath = "Localization");
+            var context = new DefaultHttpContext { RequestServices = services.BuildServiceProvider() };
             context.Response.Body = new MemoryStream();
 
             await middleware.InvokeAsync(context);

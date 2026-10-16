@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Localization;
+using RestaurantManagement.Shared;
 
 namespace RestaurantManagement.Modules.Organization.Models
 {
@@ -9,7 +11,18 @@ namespace RestaurantManagement.Modules.Organization.Models
     [AttributeUsage(AttributeTargets.Property)]
     public sealed class IanaTimeZoneAttribute : ValidationAttribute
     {
-        public IanaTimeZoneAttribute() : base("TimeZone must be a valid IANA time zone name.") { }
+        public IanaTimeZoneAttribute() => ErrorMessage = "IanaTimeZone_ValidationError";
+
+        // The platform only translates the messages of its own attributes, so the catalog text is read here.
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        {
+            if (IsValid(value)) return ValidationResult.Success;
+
+            var localizer = (IStringLocalizer<SharedResource>?)validationContext.GetService(typeof(IStringLocalizer<SharedResource>));
+            var field = validationContext.MemberName ?? validationContext.DisplayName;
+            var message = localizer is null ? $"{field} must be a valid IANA time zone name." : localizer[ErrorMessageString, field].Value;
+            return new ValidationResult(message, validationContext.MemberName is null ? null : new[] { validationContext.MemberName });
+        }
 
         public override bool IsValid(object? value)
         {

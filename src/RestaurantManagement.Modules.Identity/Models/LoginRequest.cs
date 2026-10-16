@@ -6,14 +6,19 @@ namespace RestaurantManagement.Modules.Identity.Models
     {
         private string _email = string.Empty;
 
-        [Required, EmailAddress, MaxLength(320)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [EmailAddress(ErrorMessage = "EmailAddressAttribute_ValidationError")]
+        [MaxLength(320, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string Email
         {
             get => _email;
             set => _email = value?.Trim().ToLowerInvariant() ?? string.Empty;
         }
 
-        [Required, MinLength(8), MaxLength(128), DataType(DataType.Password)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MinLength(8, ErrorMessage = "MinLengthAttribute_ValidationError")]
+        [MaxLength(128, ErrorMessage = "MaxLengthAttribute_ValidationError")]
+        [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
     }
 }

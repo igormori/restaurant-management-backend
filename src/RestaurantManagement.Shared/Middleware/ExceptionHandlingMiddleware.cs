@@ -1,7 +1,9 @@
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Sentry;
 using RestaurantManagement.Shared.Utils.Exceptions;
@@ -47,9 +49,11 @@ namespace RestaurantManagement.Shared.Middleware
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 context.Response.ContentType = "application/json";
 
+                // The last-resort handler must not throw, so fall back to English without a localizer.
+                var localizer = context.RequestServices?.GetService<IStringLocalizer<SharedResource>>();
                 var errorResponse = new
                 {
-                    message = "An unexpected error occurred.",
+                    message = localizer?["UnexpectedError"].Value ?? "An unexpected error occurred.",
                     detail = _env.IsDevelopment() ? ex.Message : null
                 };
 

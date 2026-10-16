@@ -4,7 +4,7 @@ namespace RestaurantManagement.Modules.Identity.Models
 {
     public class SelectOrganizationRequest
     {
-        [Required]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
         public Guid OrganizationId { get; set; }
     }
 }

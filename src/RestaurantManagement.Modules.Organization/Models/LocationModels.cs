@@ -5,43 +5,43 @@ namespace RestaurantManagement.Modules.Organization.Models
 {
     public class CreateLocationRequest
     {
-        [Required]
-        [MaxLength(100)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(100, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string Name { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(255)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(255, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string Address { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(100)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(100, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string City { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(100)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(100, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string State { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(20)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(20, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string PostalCode { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(100)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(100, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string Country { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(20)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(20, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string PhoneNumber { get; set; } = string.Empty;
 
-        [Required, IanaTimeZone]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError"), IanaTimeZone]
         public string? TimeZone { get; set; }
 
-        [RegularExpression("^(Store|CentralKitchen)$", ErrorMessage = "Type must be Store or CentralKitchen.")]
+        [RegularExpression("^(Store|CentralKitchen)$", ErrorMessage = "LocationType_ValidationError")]
         public string? Type { get; set; }
 
         private string? _code;
 
-        [Required, MaxLength(10), RegularExpression("^[A-Za-z0-9]+$", ErrorMessage = "Code allows letters and digits only.")]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError"), MaxLength(10, ErrorMessage = "MaxLengthAttribute_ValidationError"), RegularExpression("^[A-Za-z0-9]+$", ErrorMessage = "LettersAndDigits_ValidationError")]
         public string? Code
         {
             get => _code;
@@ -51,43 +51,43 @@ namespace RestaurantManagement.Modules.Organization.Models
 
     public class EditLocationRequest
     {
-        [Required]
-        [MaxLength(100)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(100, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string Name { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(255)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(255, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string Address { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(100)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(100, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string City { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(100)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(100, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string State { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(20)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(20, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string PostalCode { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(100)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(100, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string Country { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(20)]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(20, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string PhoneNumber { get; set; } = string.Empty;
 
-        [Required, IanaTimeZone]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError"), IanaTimeZone]
         public string? TimeZone { get; set; }
 
-        [RegularExpression("^(Store|CentralKitchen)$", ErrorMessage = "Type must be Store or CentralKitchen.")]
+        [RegularExpression("^(Store|CentralKitchen)$", ErrorMessage = "LocationType_ValidationError")]
         public string? Type { get; set; }
 
         private string? _code;
 
-        [Required, MaxLength(10), RegularExpression("^[A-Za-z0-9]+$", ErrorMessage = "Code allows letters and digits only.")]
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError"), MaxLength(10, ErrorMessage = "MaxLengthAttribute_ValidationError"), RegularExpression("^[A-Za-z0-9]+$", ErrorMessage = "LettersAndDigits_ValidationError")]
         public string? Code
         {
             get => _code;

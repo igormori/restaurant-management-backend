@@ -1,6 +1,8 @@
 using RestaurantManagement.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using RestaurantManagement.Shared.Utils.Exceptions;
 using System.Security.Claims;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Modules.Organization.Services;
@@ -14,9 +16,12 @@ namespace RestaurantManagement.Modules.Organization.Controllers
     {
         private readonly ILocationService _locationService;
 
-        public LocationController(ILocationService locationService)
+        private readonly IStringLocalizer<SharedResource> _localizer;
+
+        public LocationController(ILocationService locationService, IStringLocalizer<SharedResource> localizer)
         {
             _locationService = locationService;
+            _localizer = localizer;
         }
 
         // GET api/locations
@@ -62,7 +67,7 @@ namespace RestaurantManagement.Modules.Organization.Controllers
             {
                 return userId;
             }
-            throw new UnauthorizedAccessException("Invalid User ID");
+            throw new BusinessException(_localizer["UnauthorizedMessage"].Value, 401);
         }
     }
 }
