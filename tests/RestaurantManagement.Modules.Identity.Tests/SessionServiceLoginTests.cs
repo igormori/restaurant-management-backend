@@ -494,5 +494,23 @@ namespace RestaurantManagement.Modules.Identity.Tests
             marina.FailedAttempts.ShouldBe(4);
             marina.LockedUntil.ShouldBeNull();
         }
+
+        [Fact]
+        public async Task LoginAsync_FifthWrongPassword_LocksFor15MinutesAndResetsCounter()
+        {
+            // Arrange
+            var (database, email) = await SeedMarinaAsync();
+            using var _ = database;
+
+            // Act
+            await FailLoginsAsync(database, email, 5);
+
+            // Assert
+            using var readContext = database.CreateContext();
+            var marina = await readContext.Users.SingleAsync();
+            marina.LockedUntil.ShouldNotBeNull();
+            marina.LockedUntil.Value.ShouldBe(DateTime.UtcNow.AddMinutes(15), TimeSpan.FromMinutes(1));
+            marina.FailedAttempts.ShouldBe(0);
+        }
     }
 }
