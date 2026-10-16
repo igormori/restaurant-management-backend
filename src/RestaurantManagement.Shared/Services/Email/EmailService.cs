@@ -50,7 +50,6 @@ namespace RestaurantManagement.Shared.Services.Email
                 {
                     _logger.LogWarning($"[DEV MODE] Email to {to}");
                     _logger.LogWarning($"[Subject]: {subject}");
-                    _logger.LogWarning($"[Body]: {body}");
                     return;
                 }
 
@@ -84,10 +83,9 @@ namespace RestaurantManagement.Shared.Services.Email
             await SendEmailAsync(to, VerificationEmailTemplate.Subject, VerificationEmailTemplate.Build(to, firstName, code, expiryMinutes));
         }
 
-        // Stub (tester): implemented in T1.
-        public Task SendPasswordResetEmailAsync(string to, string firstName, string code, int expiryMinutes)
+        public async Task SendPasswordResetEmailAsync(string to, string firstName, string code, int expiryMinutes)
         {
-            throw new NotImplementedException();
+            await SendEmailAsync(to, PasswordResetEmailTemplate.Subject, PasswordResetEmailTemplate.Build(to, firstName, code, expiryMinutes));
         }
     }
 }

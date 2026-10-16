@@ -1,6 +1,6 @@
 # Plan: Forgot and change password
 
-**Spec:** docs/specs/identity/2026-10-16-password-reset.md   **Date:** 2026-10-16   **Status:** Draft
+**Spec:** docs/specs/identity/2026-10-16-password-reset.md   **Date:** 2026-10-16   **Status:** In progress
 **Risk:** High — new table and migration, two new public endpoints, password and session changes, Shared contract changes
 
 ## Summary
@@ -41,7 +41,7 @@ Decided: audit entries go to each organization the user holds a role in; a user 
 - [ ] No out-of-scope changes; findings in the backlog
 
 ## Checklist
-- [ ] T1 — Password reset email
+- [x] T1 — Password reset email
 - [ ] T2 — Rate limit policies for the three endpoints
 - [ ] T3 — Reset code storage and migration
 - [ ] T4 — Reusable registration password rules
