@@ -4,6 +4,7 @@ using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Modules.Organization.Services;
 using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Shouldly;
@@ -66,7 +67,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         private static OrganizationService CreateService(Data.OrganizationDbContext context, IUserRoleLookup userRoleLookup, ITenantContext tenant)
             => new(context, userRoleLookup, Substitute.For<IUserRoleAssigner>(), new TenantScope(), tenant,
-                TestLocalizer.Create(), Substitute.For<ILogger<OrganizationService>>());
+                TestLocalizer.Create(), Substitute.For<ILogger<OrganizationService>>(), Substitute.For<IAuditLog>());
 
         private static IUserRoleLookup AnaBelongsTo(params Guid[] organizationIds)
         {

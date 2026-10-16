@@ -10,6 +10,7 @@ using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
@@ -24,6 +25,7 @@ namespace RestaurantManagement.Modules.Organization.Services
         private readonly ITenantContext _tenantContext;
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly ILogger<OrganizationService> _logger;
+        private readonly IAuditLog _auditLog;
 
         public OrganizationService(
             OrganizationDbContext orgDb,
@@ -32,7 +34,8 @@ namespace RestaurantManagement.Modules.Organization.Services
             ITenantScope tenantScope,
             ITenantContext tenantContext,
             IStringLocalizer<SharedResource> localizer,
-            ILogger<OrganizationService> logger)
+            ILogger<OrganizationService> logger,
+            IAuditLog auditLog)
         {
             _orgDb = orgDb;
             _userRoleLookup = userRoleLookup;
@@ -41,6 +44,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             _tenantContext = tenantContext;
             _localizer = localizer;
             _logger = logger;
+            _auditLog = auditLog;
         }
 
         public async Task<OrganizationResponse> CreateOrganizationAsync(Guid ownerUserId, CreateOrganizationRequest request)

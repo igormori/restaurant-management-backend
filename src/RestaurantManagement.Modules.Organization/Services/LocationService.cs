@@ -1,6 +1,7 @@
 using RestaurantManagement.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Modules.Organization.Entities;
@@ -8,6 +9,7 @@ using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Services.AuditLog;
 
 namespace RestaurantManagement.Modules.Organization.Services
 {
@@ -17,17 +19,23 @@ namespace RestaurantManagement.Modules.Organization.Services
         private readonly IUserRoleLookup _userRoleLookup;
         private readonly ITenantContext _tenantContext;
         private readonly IStringLocalizer<SharedResource> _localizer;
+        private readonly IAuditLog _auditLog;
+        private readonly ILogger<LocationService> _logger;
 
         public LocationService(
             OrganizationDbContext orgDb,
             IUserRoleLookup userRoleLookup,
             ITenantContext tenantContext,
-            IStringLocalizer<SharedResource> localizer)
+            IStringLocalizer<SharedResource> localizer,
+            IAuditLog auditLog,
+            ILogger<LocationService> logger)
         {
             _orgDb = orgDb;
             _userRoleLookup = userRoleLookup;
             _tenantContext = tenantContext;
             _localizer = localizer;
+            _auditLog = auditLog;
+            _logger = logger;
         }
 
         public async Task<LocationResponse> CreateLocationAsync(Guid userId, CreateLocationRequest request)

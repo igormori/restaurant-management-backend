@@ -14,6 +14,7 @@ using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Middleware;
 using RestaurantManagement.Shared.Options;
+using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Services.Email;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Services.Organization;
@@ -177,6 +178,10 @@ builder.Services.AddDbContext<OrganizationDbContext>((serviceProvider, options) 
     options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
         .AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>()));
 
+builder.Services.AddDbContext<AuditLogDbContext>((serviceProvider, options) =>
+    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
+        .AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>()));
+
 // ---------------------------------------------
 // Sentry for error tracking
 // ---------------------------------------------
@@ -227,6 +232,7 @@ builder.Services.AddSwaggerGen(c =>
 // ---------------------------------------------
 // Shared Services
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAuditLog, AuditLogWriter>();
 
 // Identity Module Services
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();

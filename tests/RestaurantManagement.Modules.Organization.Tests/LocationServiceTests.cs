@@ -10,6 +10,8 @@ using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Shouldly;
 using Xunit;
+using RestaurantManagement.Shared.Services.AuditLog;
+using Microsoft.Extensions.Logging;
 
 namespace RestaurantManagement.Modules.Organization.Tests
 {
@@ -104,7 +106,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Admin);
 
             using var context = database.CreateContext(TestTenant.Of(organizationId));
-            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
+            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
 
             // Act
             var response = await sut.CreateLocationAsync(userId, ValidCreateRequest);
@@ -124,7 +126,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
 
             using var context = database.CreateContext(TestTenant.Of(organizationId));
-            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
+            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
 
             // Act
             var response = await sut.CreateLocationAsync(userId, ValidCreateRequest);
@@ -144,12 +146,12 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var waiterUserId = Guid.NewGuid();
             var waiterUserRoleLookup = CreateUserRoleLookup(waiterUserId, organizationId, Roles.Waiter);
             using var waiterContext = database.CreateContext(TestTenant.Of(organizationId));
-            var waiterSut = new LocationService(waiterContext, waiterUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
+            var waiterSut = new LocationService(waiterContext, waiterUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
 
             var noRoleUserId = Guid.NewGuid();
             var noRoleUserRoleLookup = CreateUserRoleLookup(noRoleUserId, organizationId, role: null);
             using var noRoleContext = database.CreateContext(TestTenant.Of(organizationId));
-            var noRoleSut = new LocationService(noRoleContext, noRoleUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
+            var noRoleSut = new LocationService(noRoleContext, noRoleUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
 
             // Act
             var waiterAct = () => waiterSut.CreateLocationAsync(waiterUserId, ValidCreateRequest);
@@ -171,7 +173,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Admin);
 
             using var context = database.CreateContext(TestTenant.Of(organizationId));
-            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
+            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
 
             // Act
             var response = await sut.EditLocationAsync(userId, locationId, ValidEditRequest);
@@ -192,7 +194,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
 
             using var context = database.CreateContext(TestTenant.Of(organizationId));
-            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
+            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
 
             // Act
             var response = await sut.EditLocationAsync(userId, locationId, ValidEditRequest);
@@ -213,12 +215,12 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var waiterUserId = Guid.NewGuid();
             var waiterUserRoleLookup = CreateUserRoleLookup(waiterUserId, organizationId, Roles.Waiter);
             using var waiterContext = database.CreateContext(TestTenant.Of(organizationId));
-            var waiterSut = new LocationService(waiterContext, waiterUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
+            var waiterSut = new LocationService(waiterContext, waiterUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
 
             var noRoleUserId = Guid.NewGuid();
             var noRoleUserRoleLookup = CreateUserRoleLookup(noRoleUserId, organizationId, role: null);
             using var noRoleContext = database.CreateContext(TestTenant.Of(organizationId));
-            var noRoleSut = new LocationService(noRoleContext, noRoleUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
+            var noRoleSut = new LocationService(noRoleContext, noRoleUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
 
             // Act
             var waiterAct = () => waiterSut.EditLocationAsync(waiterUserId, locationId, ValidEditRequest);
@@ -240,7 +242,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Admin);
 
             using var context = database.CreateContext(TestTenant.Of(organizationId));
-            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
+            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
 
             // Act
             await sut.DeleteLocationAsync(userId, locationId);
@@ -262,7 +264,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
 
             using var context = database.CreateContext(TestTenant.Of(organizationId));
-            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
+            var sut = new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
 
             // Act
             await sut.DeleteLocationAsync(userId, locationId);
@@ -284,12 +286,12 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var waiterUserId = Guid.NewGuid();
             var waiterUserRoleLookup = CreateUserRoleLookup(waiterUserId, organizationId, Roles.Waiter);
             using var waiterContext = database.CreateContext(TestTenant.Of(organizationId));
-            var waiterSut = new LocationService(waiterContext, waiterUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
+            var waiterSut = new LocationService(waiterContext, waiterUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
 
             var noRoleUserId = Guid.NewGuid();
             var noRoleUserRoleLookup = CreateUserRoleLookup(noRoleUserId, organizationId, role: null);
             using var noRoleContext = database.CreateContext(TestTenant.Of(organizationId));
-            var noRoleSut = new LocationService(noRoleContext, noRoleUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create());
+            var noRoleSut = new LocationService(noRoleContext, noRoleUserRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
 
             // Act
             var waiterAct = () => waiterSut.DeleteLocationAsync(waiterUserId, locationId);
@@ -314,7 +316,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var userId = Guid.NewGuid();
             var tenant = TestTenant.Of(organizationId);
             using var context = database.CreateContext(tenant);
-            var sut = new LocationService(context, CreateUserRoleLookup(userId, organizationId, role), tenant, TestLocalizer.Create());
+            var sut = new LocationService(context, CreateUserRoleLookup(userId, organizationId, role), tenant, TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
 
             // Act
             var act = () => sut.CreateLocationAsync(userId, ValidCreateRequest);

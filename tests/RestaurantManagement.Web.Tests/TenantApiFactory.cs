@@ -38,6 +38,7 @@ public sealed class TenantApiFactory : AuthApiFactory
         await scope.ServiceProvider.GetRequiredService<IdentityDbContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<OrganizationDbContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<MenuDbContext>().Database.MigrateAsync();
+        await scope.ServiceProvider.GetRequiredService<AuditLogDbContext>().Database.MigrateAsync();
         return factory;
     }
 
@@ -138,6 +139,21 @@ public sealed class TenantApiFactory : AuthApiFactory
             db.MenuCategories.Add(new MenuCategory { Id = categoryId, MenuId = menuId, OrganizationId = organizationId, Name = name, SortOrder = 1 });
             await db.SaveChangesAsync();
         });
+    }
+
+    /// <summary>
+    /// Stores audit log entries exactly as given (organization, user and time included), through a
+    /// context without the audit interceptor, so tests can place entries at chosen times.
+    /// </summary>
+    public async Task SeedAuditEntriesAsync(params AuditLogEntry[] entries)
+    {
+        var options = new DbContextOptionsBuilder<AuditLogDbContext>()
+            .UseNpgsql(_connectionString)
+            .UseSnakeCaseNamingConvention()
+            .Options;
+        await using var db = new AuditLogDbContext(options, NoTenant.Context);
+        db.AuditLogEntries.AddRange(entries);
+        await db.SaveChangesAsync();
     }
 
     /// <summary>Runs work against a fresh DbContext while a tenant scope for the organization is open.</summary>
