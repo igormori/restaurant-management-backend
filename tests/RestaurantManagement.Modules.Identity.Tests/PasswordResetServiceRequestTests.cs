@@ -187,5 +187,28 @@ namespace RestaurantManagement.Modules.Identity.Tests
             using var context = database.CreateContext();
             (await context.Set<PasswordResetCode>().CountAsync()).ShouldBe(1);
         }
+
+        [Fact]
+        public async Task RequestResetCodeAsync_ResetLocked_SameAcknowledgementAsUnknownEmailAndNoCode()
+        {
+            // Arrange
+            using var database = await CreateDatabaseAsync();
+            var unknown = await RequestAsync(database, UnknownEmail);
+            using (var context = database.CreateContext())
+            {
+                var maria = await context.Users.SingleAsync(u => u.Id == MariaId);
+                maria.PasswordResetLockedUntil = DateTime.UtcNow.AddMinutes(10);
+                await context.SaveChangesAsync();
+            }
+
+            // Act
+            var response = await RequestAsync(database, MariaEmail);
+
+            // Assert
+            response.Message.ShouldBe(unknown.Message);
+            await _emailService.DidNotReceiveWithAnyArgs().SendPasswordResetEmailAsync(default!, default!, default!, default);
+            using var check = database.CreateContext();
+            (await check.Set<PasswordResetCode>().CountAsync()).ShouldBe(0);
+        }
     }
 }
