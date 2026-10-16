@@ -70,6 +70,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 53
         [Fact]
+        [Trait("Rule", "O1")]
         public async Task LogoutAsync_NoCookie_CompletesAndChangesNothing()
         {
             // Arrange
@@ -85,6 +86,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 54
         [Fact]
+        [Trait("Rule", "O1")]
         public async Task LogoutAsync_UnknownToken_CompletesAndChangesNothing()
         {
             // Arrange
@@ -100,6 +102,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 55
         [Fact]
+        [Trait("Rule", "O2")]
         public async Task LogoutAsync_OneOfTwoDevices_OnlyThatDevicesTokenRevoked()
         {
             // Arrange
@@ -118,6 +121,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 56
         [Fact]
+        [Trait("Rule", "O2")]
         public async Task LogoutAsync_OneOfTwoDevices_OtherDeviceStillRefreshes()
         {
             // Arrange
@@ -137,6 +141,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 57
         [Fact]
+        [Trait("Rule", "O2")]
         public async Task LogoutAsync_CookieOfUserInAnotherOrganization_OtherUsersTokensStayActive()
         {
             // Arrange
@@ -154,6 +159,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 58
         [Fact]
+        [Trait("Rule", "O5")]
         public async Task LogoutAllAsync_UserOnTwoDevices_NoActiveTokenLeft()
         {
             // Arrange
@@ -172,6 +178,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 59
         [Fact]
+        [Trait("Rule", "O5")]
         public async Task LogoutAllAsync_UserOfOrganizationA_UserOfOrganizationBKeepsActiveToken()
         {
             // Arrange
@@ -188,6 +195,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 76
         [Fact]
+        [Trait("Rule", "O3")]
         public async Task LogoutAsync_AlreadyRotatedToken_CompletesAndRevokesThatDevicesFamily()
         {
             // Arrange

@@ -63,6 +63,7 @@ public class StartupConfigurationTests : IDisposable
     [Theory]
     [InlineData("")]
     [InlineData("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")]
+    [Trait("Rule", "T4")]
     public void Startup_JwtKeyMissingOrUnder32Bytes_FailsNamingJwtKey(string key)
     {
         // Arrange
@@ -77,6 +78,7 @@ public class StartupConfigurationTests : IDisposable
 
     // Scenario 15
     [Fact]
+    [Trait("Rule", "T4")]
     public void Startup_PlaceholderJwtKeyInProduction_FailsNamingJwtKey()
     {
         // Arrange
@@ -108,6 +110,7 @@ public class StartupConfigurationTests : IDisposable
     [Theory]
     [InlineData("0")]
     [InlineData("-3")]
+    [Trait("Rule", "T4")]
     public void Startup_NonPositiveJwtExpireMinutes_FailsNamingJwtExpireMinutes(string expireMinutes)
     {
         // Arrange
@@ -208,6 +211,7 @@ public class StartupConfigurationTests : IDisposable
 
     // Scenario 23
     [Fact]
+    [Trait("Rule", "L19")]
     public void Startup_DefaultConfiguration_JwtExpireMinutesIs15()
     {
         // Arrange
@@ -222,6 +226,7 @@ public class StartupConfigurationTests : IDisposable
 
     // Hash verification codes: Scenario 4
     [Fact]
+    [Trait("Rule", "T5")]
     public void Startup_VerificationHashKeyEmpty_FailsNamingHashKey()
     {
         // Arrange
@@ -236,6 +241,7 @@ public class StartupConfigurationTests : IDisposable
 
     // Hash verification codes: Scenario 5
     [Fact]
+    [Trait("Rule", "T5")]
     public void Startup_VerificationHashKeyEmptyInProduction_FailsNamingHashKey()
     {
         // Arrange
@@ -250,6 +256,7 @@ public class StartupConfigurationTests : IDisposable
 
     // Hash verification codes: Scenario 6
     [Fact]
+    [Trait("Rule", "T5")]
     public void Startup_VerificationHashKeyOf31Bytes_FailsNamingHashKey()
     {
         // Arrange

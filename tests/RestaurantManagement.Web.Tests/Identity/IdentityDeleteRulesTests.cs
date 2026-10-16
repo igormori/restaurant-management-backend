@@ -112,6 +112,7 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 7
     [Fact]
+    [Trait("Rule", "T12")]
     public async Task DeleteUser_HasRole_IsRefusedAndRoleKept()
     {
         // Arrange
@@ -130,6 +131,7 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 8
     [Fact]
+    [Trait("Rule", "T12")]
     public async Task DeleteUser_DeactivatedUserHasRole_IsRefusedAndRoleKept()
     {
         // Arrange
@@ -148,6 +150,7 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 9
     [Fact]
+    [Trait("Rule", "T12")]
     public async Task DeleteUser_HasVerificationCodesAndNoRoles_UserAndCodesDeleted()
     {
         // Arrange
@@ -166,6 +169,7 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 10
     [Fact]
+    [Trait("Rule", "T12")]
     public async Task DeleteUser_AnotherUserHasVerificationCode_OtherUsersCodeKept()
     {
         // Arrange
@@ -187,6 +191,7 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
     // Scenario 11; refresh-tokens-own-table Scenario 4 adds the refresh token cascade;
     // password reset Scenario 6 adds the reset code cascade
     [Fact]
+    [Trait("Rule", "D8")]
     public async Task Migrate_IdentityForeignKeys_RolesRestrictCodesResetCodesAndRefreshTokensCascade()
     {
         // Arrange
@@ -205,6 +210,7 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 12
     [Fact]
+    [Trait("Rule", "D9")]
     public async Task Migrate_IdentityTablesWithRows_NoRowAddedChangedOrRemoved()
     {
         // Arrange

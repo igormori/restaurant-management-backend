@@ -57,6 +57,7 @@ public class AccessTokenValidationEndpointTests : IDisposable
     // Matrix T1: Program.cs sets no ClockSkew, so the framework's 5-minute allowance applies;
     // 10 minutes past expiry is clearly outside it.
     [Fact]
+    [Trait("Rule", "T1")]
     public async Task LogoutAll_AccessTokenExpiredTenMinutesAgo_ReturnsUnauthorized()
     {
         // Arrange
@@ -100,6 +101,7 @@ public class AccessTokenValidationEndpointTests : IDisposable
     [InlineData("wrong-issuer")]
     [InlineData("wrong-audience")]
     [InlineData("alg-none")]
+    [Trait("Rule", "T2")]
     public async Task LogoutAll_ForgedAccessToken_ReturnsUnauthorized(string forgery)
     {
         // Arrange

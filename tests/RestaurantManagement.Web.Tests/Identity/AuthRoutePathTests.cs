@@ -24,6 +24,7 @@ public class AuthRoutePathTests : IDisposable
     [InlineData("refresh")]
     [InlineData("logout")]
     [InlineData("select-organization")]
+    [Trait("Rule", "T10")]
     public void AuthEndpoint_RouteTemplate_StartsWithRefreshCookiePathExactly(string action)
     {
         // Arrange

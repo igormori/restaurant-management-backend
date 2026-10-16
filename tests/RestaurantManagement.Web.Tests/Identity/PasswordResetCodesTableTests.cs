@@ -51,6 +51,7 @@ public class PasswordResetCodesTableTests : IClassFixture<PostgresDatabaseFixtur
 
     // Scenario 5
     [Fact]
+    [Trait("Rule", "D4")]
     public async Task Migrate_CleanDatabase_CreatesResetCodeTableIndexAndUserCounters()
     {
         // Arrange

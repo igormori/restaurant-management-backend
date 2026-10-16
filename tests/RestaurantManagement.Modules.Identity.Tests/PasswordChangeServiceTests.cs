@@ -75,6 +75,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         [InlineData("99999999-9999-4999-8999-999999999999")]   // no such user
         [InlineData("33333333-cccc-4ccc-8ccc-00000000000c")]   // Pedro, inactive
         [InlineData("55555555-eeee-4eee-8eee-00000000000e")]   // Lucia, email not verified
+        [Trait("Rule", "C8")]
         public async Task ChangePasswordAsync_UnknownInactiveOrUnverifiedUser_RejectedAsInvalidSession(string userId)
         {
             // Arrange
@@ -90,6 +91,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 29
         [Fact]
+        [Trait("Rule", "C2")]
         public async Task ChangePasswordAsync_WrongCurrentPassword_RejectedAndNothingChanges()
         {
             // Arrange
@@ -107,6 +109,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 30
         [Fact]
+        [Trait("Rule", "C4")]
         public async Task ChangePasswordAsync_NewPasswordSameAsCurrent_RejectedAndSessionsKept()
         {
             // Arrange
@@ -122,6 +125,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 31
         [Fact]
+        [Trait("Rule", "C5")]
         public async Task ChangePasswordAsync_CorrectCurrentPassword_NewPasswordVerifiesAndOldDoesNot()
         {
             // Arrange
@@ -138,6 +142,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 32
         [Fact]
+        [Trait("Rule", "C5")]
         public async Task ChangePasswordAsync_CorrectCurrentPassword_RevokesEveryRefreshTokenAsPasswordChanged()
         {
             // Arrange
@@ -154,6 +159,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 33
         [Fact]
+        [Trait("Rule", "C5")]
         public async Task ChangePasswordAsync_CorrectCurrentPassword_RecordsPasswordChangedAuditOnce()
         {
             // Arrange
@@ -168,6 +174,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "C3")]
         public async Task ChangePasswordAsync_WrongCurrentPasswordRepeatedly_NeverCountsTowardLoginLock()
         {
             // Arrange

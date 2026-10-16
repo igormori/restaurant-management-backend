@@ -87,6 +87,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 9
         [Fact]
+        [Trait("Rule", "F2")]
         public async Task RotateAsync_UnknownToken_ReturnsNullAndChangesNothing()
         {
             // Arrange
@@ -103,6 +104,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 10
         [Fact]
+        [Trait("Rule", "F2")]
         public async Task RotateAsync_ExpiredToken_ReturnsNullWithoutRevokingIt()
         {
             // Arrange
@@ -121,6 +123,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 11
         [Fact]
+        [Trait("Rule", "F3")]
         public async Task RotateAsync_AlreadyRotatedToken_ReturnsNull()
         {
             // Arrange
@@ -137,6 +140,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 12
         [Fact]
+        [Trait("Rule", "F3")]
         public async Task RotateAsync_AlreadyRotatedToken_RevokesWholeFamilyAsReuseDetected()
         {
             // Arrange
@@ -156,6 +160,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 13
         [Fact]
+        [Trait("Rule", "F3")]
         public async Task RotateAsync_ReuseInOneFamily_OtherDeviceOfSameUserStaysActive()
         {
             // Arrange
@@ -174,6 +179,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 14
         [Fact]
+        [Trait("Rule", "O1")]
         public async Task RevokeAsync_UnknownToken_ReturnsFalseAndChangesNothing()
         {
             // Arrange
@@ -190,6 +196,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 15
         [Fact]
+        [Trait("Rule", "L15")]
         public async Task IssueAsync_NewSignIn_StoresOneActiveTokenWithDeviceIpAndExpiry()
         {
             // Arrange
@@ -212,6 +219,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 16
         [Fact]
+        [Trait("Rule", "T8")]
         public async Task IssueAsync_NewSignIn_StoredFingerprintDiffersFromIssuedToken()
         {
             // Arrange
@@ -229,6 +237,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 17
         [Fact]
+        [Trait("Rule", "L15")]
         public async Task IssueAsync_SameUserOnTwoDevices_StartsTwoActiveFamilies()
         {
             // Arrange
@@ -246,6 +255,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 18
         [Fact]
+        [Trait("Rule", "L15")]
         public async Task IssueAsync_DeviceDescriptionLongerThan512Characters_StoresFirst512()
         {
             // Arrange
@@ -262,6 +272,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 19
         [Fact]
+        [Trait("Rule", "F1")]
         public async Task RotateAsync_ActiveToken_OldTokenRevokedAsRotatedAndPointsToReplacement()
         {
             // Arrange
@@ -281,6 +292,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 20
         [Fact]
+        [Trait("Rule", "F1")]
         public async Task RotateAsync_ActiveToken_ReturnsNewTokenActiveInSameFamilyWithRenewedExpiry()
         {
             // Arrange
@@ -302,6 +314,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 21
         [Fact]
+        [Trait("Rule", "S7")]
         public async Task RotateAsync_WithChosenOrganization_ReplacementCarriesThatOrganization()
         {
             // Arrange
@@ -319,6 +332,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 22
         [Fact]
+        [Trait("Rule", "F6")]
         public async Task RotateAsync_WithoutOrganization_ReplacementKeepsTokenOrganization()
         {
             // Arrange
@@ -335,6 +349,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 23
         [Fact]
+        [Trait("Rule", "F7")]
         public async Task RotateAsync_TwoDevicesOfOneUser_BothRotateIndependently()
         {
             // Arrange
@@ -355,6 +370,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 24
         [Fact]
+        [Trait("Rule", "O2")]
         public async Task RevokeAsync_OneOfTwoDevices_OnlyThatTokenRevokedAsLogout()
         {
             // Arrange
@@ -373,6 +389,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 25
         [Fact]
+        [Trait("Rule", "O5")]
         public async Task RevokeAllForUserAsync_UserOnTwoDevices_NoActiveTokenLeftAndReasonLogoutEverywhere()
         {
             // Arrange
@@ -391,6 +408,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 26
         [Fact]
+        [Trait("Rule", "O5")]
         public async Task RevokeAllForUserAsync_AnotherUserInAnotherOrganization_KeepsActiveToken()
         {
             // Arrange
@@ -408,6 +426,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 75
         [Fact]
+        [Trait("Rule", "O3")]
         public async Task RevokeAsync_AlreadyRotatedToken_RevokesWholeFamilyAsReuseDetected()
         {
             // Arrange
@@ -428,6 +447,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 78
         [Fact]
+        [Trait("Rule", "F9")]
         public async Task RotateAsync_TokenOfAnotherUser_ReturnsNullAndLeavesItActiveAndUnreplaced()
         {
             // Arrange

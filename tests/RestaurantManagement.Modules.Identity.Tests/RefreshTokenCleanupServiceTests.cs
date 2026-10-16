@@ -50,6 +50,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "T9")]
         public async Task PurgeExpiredAsync_TokenExpiredLongerThanRetention_DeletesIt()
         {
             var old = Token(Now.AddDays(-RefreshTokenCleanupService.RetentionDays - 1));
@@ -62,6 +63,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "T9")]
         public async Task PurgeExpiredAsync_TokenExpiredWithinRetention_KeepsIt()
         {
             var recent = Token(Now.AddDays(-RefreshTokenCleanupService.RetentionDays + 1));
@@ -74,6 +76,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "T9")]
         public async Task PurgeExpiredAsync_ActiveToken_KeepsIt()
         {
             var active = Token(Now.AddDays(10));
@@ -85,6 +88,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "T9")]
         public async Task PurgeExpiredAsync_RevokedLongAgoButNotExpired_KeepsItForReuseDetection()
         {
             var revoked = Token(Now.AddDays(1), revokedAt: Now.AddDays(-RefreshTokenCleanupService.RetentionDays - 1));
@@ -96,6 +100,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "T9")]
         public async Task PurgeExpiredAsync_MixedTokens_DeletesOnlyTheOldOnes()
         {
             var old = Token(Now.AddDays(-RefreshTokenCleanupService.RetentionDays - 5));

@@ -59,6 +59,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 29
         [Fact]
+        [Trait("Rule", "L14")]
         public async Task LoginAsync_UserWithRolesInTwoOrganizations_TokenHasNoOrganizationClaim()
         {
             // Arrange
@@ -76,6 +77,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 30
         [Fact]
+        [Trait("Rule", "L14")]
         public async Task LoginAsync_UserWithNoRoles_TokenHasNoOrganizationClaim()
         {
             // Arrange
@@ -91,6 +93,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 32
         [Fact]
+        [Trait("Rule", "L14")]
         public async Task LoginAsync_UserWithOneRoleInOneOrganization_TokenCarriesThatOrganizationId()
         {
             // Arrange
@@ -106,6 +109,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 33
         [Fact]
+        [Trait("Rule", "L14")]
         public async Task LoginAsync_UserWithTwoRolesInSameOrganization_TokenCarriesThatOrganizationId()
         {
             // Arrange
@@ -123,6 +127,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 34
         [Fact]
+        [Trait("Rule", "F6")]
         public async Task RefreshTokenAsync_UserWithOneOrganization_NewTokenCarriesThatOrganizationId()
         {
             // Arrange

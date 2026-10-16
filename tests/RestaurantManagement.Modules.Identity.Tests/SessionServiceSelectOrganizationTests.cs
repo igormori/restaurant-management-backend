@@ -123,6 +123,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 1
         [Fact]
+        [Trait("Rule", "S2")]
         public async Task SelectOrganizationAsync_EmptyOrganizationId_ThrowsOrganizationRequiredWith400()
         {
             // Arrange
@@ -141,6 +142,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 2
         [Fact]
+        [Trait("Rule", "S3")]
         public async Task SelectOrganizationAsync_UserWithNoRoleInOrganization_ThrowsNotMemberWith403()
         {
             // Arrange
@@ -159,6 +161,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 3
         [Fact]
+        [Trait("Rule", "S3")]
         public async Task SelectOrganizationAsync_OrganizationDoesNotExist_ThrowsSameRejectionAsNonMember()
         {
             // Arrange
@@ -177,6 +180,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 4
         [Fact]
+        [Trait("Rule", "S3")]
         public async Task SelectOrganizationAsync_UserHasRoleButOrganizationNoLongerExists_ThrowsSameRejectionAsNonMember()
         {
             // Arrange
@@ -199,6 +203,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 5
         [Fact]
+        [Trait("Rule", "S3")]
         public async Task SelectOrganizationAsync_MemberOfInactiveOrganization_ThrowsSameRejectionAsNonMember()
         {
             // Arrange
@@ -217,6 +222,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 6
         [Fact]
+        [Trait("Rule", "S3")]
         public async Task SelectOrganizationAsync_OrganizationBelongsToAnotherUser_ThrowsNotMemberWith403()
         {
             // Arrange
@@ -236,6 +242,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 7
         [Fact]
+        [Trait("Rule", "S4")]
         public async Task SelectOrganizationAsync_UserIdDoesNotExist_ThrowsUnauthorized()
         {
             // Arrange
@@ -253,6 +260,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 8
         [Fact]
+        [Trait("Rule", "S4")]
         public async Task SelectOrganizationAsync_DeactivatedUser_ThrowsUnauthorized()
         {
             // Arrange
@@ -270,6 +278,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 9
         [Fact]
+        [Trait("Rule", "S4")]
         public async Task SelectOrganizationAsync_UnverifiedUser_ThrowsUnauthorized()
         {
             // Arrange
@@ -287,6 +296,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 10
         [Fact]
+        [Trait("Rule", "S4")]
         public async Task SelectOrganizationAsync_LockedUser_ThrowsUnauthorized()
         {
             // Arrange
@@ -304,6 +314,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 11
         [Fact]
+        [Trait("Rule", "S5")]
         public async Task SelectOrganizationAsync_MemberOrganization_TokenCarriesThatOrganizationId()
         {
             // Arrange
@@ -320,6 +331,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 12
         [Fact]
+        [Trait("Rule", "S5")]
         public async Task SelectOrganizationAsync_OwnerInCantinaStaffInTrattoria_TokenHasOnlyRolesOfSelectedOrganization()
         {
             // Arrange
@@ -336,6 +348,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 13
         [Fact]
+        [Trait("Rule", "S5")]
         public async Task SelectOrganizationAsync_TwoRolesInSelectedOrganization_TokenHasBothRolesAndNoneFromOthers()
         {
             // Arrange
@@ -357,6 +370,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 14
         [Fact]
+        [Trait("Rule", "S5")]
         public async Task SelectOrganizationAsync_UserWithOnlyOneOrganization_ReissuesTokenForThatOrganization()
         {
             // Arrange
@@ -373,6 +387,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 15
         [Fact]
+        [Trait("Rule", "S7")]
         public async Task SelectOrganizationAsync_MemberOrganization_ReturnsUsableRefreshTokenForSelectedOrganization()
         {
             // Arrange
@@ -390,6 +405,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 16
         [Fact]
+        [Trait("Rule", "S7")]
         public async Task SelectOrganizationAsync_AfterLogin_PreviousRefreshTokenIsRejected()
         {
             // Arrange
@@ -409,6 +425,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 17
         [Fact]
+        [Trait("Rule", "S5")]
         public async Task SelectOrganizationAsync_SecondOrganization_TokenCarriesSecondOrganizationAndRefreshKeepsIt()
         {
             // Arrange
@@ -428,6 +445,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 18
         [Fact]
+        [Trait("Rule", "F6")]
         public async Task RefreshTokenAsync_AfterSelectingOrganization_KeepsSelectedOrganizationAndItsRolesOnly()
         {
             // Arrange
@@ -446,6 +464,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 19
         [Fact]
+        [Trait("Rule", "F5")]
         public async Task RefreshTokenAsync_MembershipOfSelectedOrganizationRemoved_ThrowsUnauthorized()
         {
             // Arrange
@@ -470,6 +489,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 20
         [Fact]
+        [Trait("Rule", "L14")]
         public async Task LoginAsync_UserWithTwoOrganizations_ListsBothChoicesWithNamesAndNoOrganizationClaim()
         {
             // Arrange
@@ -489,6 +509,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 21
         [Fact]
+        [Trait("Rule", "L14")]
         public async Task LoginAsync_OneOfTwoOrganizationsIsInactive_ListsOnlyTheActiveOne()
         {
             // Arrange
@@ -506,6 +527,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 22
         [Fact]
+        [Trait("Rule", "L14")]
         public async Task LoginAsync_OtherUserBelongsToThirdOrganization_ListsOnlyOrganizationsOfTheLoggingInUser()
         {
             // Arrange
@@ -526,6 +548,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 23
         [Fact]
+        [Trait("Rule", "L14")]
         public async Task LoginAsync_UserWithNoOrganizations_HasNoOrganizationClaimAndNoChoices()
         {
             // Arrange
@@ -544,6 +567,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 24
         [Fact]
+        [Trait("Rule", "S9")]
         public async Task LoginAsync_AfterSelectingOrganization_TokenHasNoOrganizationClaimAgain()
         {
             // Arrange
@@ -561,6 +585,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 25
         [Fact]
+        [Trait("Rule", "S9")]
         public async Task RefreshTokenAsync_AfterNewLoginFollowingSelection_DoesNotRestorePreviousOrganization()
         {
             // Arrange
@@ -585,6 +610,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // refresh-tokens-own-table Scenario 42
         [Fact]
+        [Trait("Rule", "S7")]
         public async Task SelectOrganizationAsync_WithValidCookie_RotatesIntoSameFamilyWithChosenOrganization()
         {
             // Arrange
@@ -608,6 +634,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // refresh-tokens-own-table Scenario 43
         [Fact]
+        [Trait("Rule", "S8")]
         public async Task SelectOrganizationAsync_WithoutCookie_StartsNewFamilyWithChosenOrganizationAndDevice()
         {
             // Arrange
@@ -630,6 +657,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // refresh-tokens-own-table Scenario 44
         [Fact]
+        [Trait("Rule", "S8")]
         public async Task SelectOrganizationAsync_WithExpiredCookie_StartsNewFamilyAndLeavesExpiredTokenUnchanged()
         {
             // Arrange
@@ -658,6 +686,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // refresh-tokens-own-table Scenario 45
         [Fact]
+        [Trait("Rule", "S10")]
         public async Task RefreshTokenAsync_LaptopSelectedTrattoria_TabletStillRefreshesIntoCantina()
         {
             // Arrange
@@ -679,6 +708,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // refresh-tokens-own-table Scenario 70
         [Fact]
+        [Trait("Rule", "S6")]
         public async Task SelectOrganizationAsync_CookieOfAnotherUser_LeavesTheirTokenUntouchedAndStartsCallerFamily()
         {
             // Arrange: Paolo's cookie is sent with Maria's access pass

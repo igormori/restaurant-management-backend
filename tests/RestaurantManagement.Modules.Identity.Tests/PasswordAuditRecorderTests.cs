@@ -66,6 +66,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 12
         [Fact]
+        [Trait("Rule", "P6")]
         public async Task RecordAsync_UserWithoutOrganization_RecordsNothing()
         {
             // Arrange
@@ -80,6 +81,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 11
         [Fact]
+        [Trait("Rule", "P6")]
         public async Task RecordAsync_AnotherUserInAnotherOrganization_NoEntryInThatOrganization()
         {
             // Arrange
@@ -98,6 +100,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         [Theory]
         [InlineData(AuditActions.PasswordReset)]
         [InlineData(AuditActions.PasswordChanged)]
+        [Trait("Rule", "P6")]
         public async Task RecordAsync_UserInTwoOrganizations_OneEntryPerOrganizationWithoutValues(string action)
         {
             // Arrange

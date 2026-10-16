@@ -28,6 +28,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "R5")]
         public async Task RegisterAsync_TwoConcurrentRequestsSameEmail_CreatesOneUserAndRejectsOther()
         {
             // Arrange
@@ -59,6 +60,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "D3")]
         public async Task Migrate_DatabaseWithDistinctEmails_SucceedsAndKeepsRows()
         {
             // Arrange: a fresh database migrated up to just before the unique email index,

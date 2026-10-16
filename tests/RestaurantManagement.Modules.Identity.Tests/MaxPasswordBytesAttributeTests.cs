@@ -16,6 +16,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             => new MaxPasswordBytesAttribute().GetValidationResult(value, new ValidationContext(new object()) { MemberName = "Password" });
 
         [Fact]
+        [Trait("Rule", "L13")]
         public void GetValidationResult_PasswordOver72Bytes_ReturnsError()
         {
             // Act
@@ -26,6 +27,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L13")]
         public void GetValidationResult_PasswordOf72Bytes_ReturnsSuccess()
         {
             // Act
@@ -36,6 +38,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L13")]
         public void GetValidationResult_NullValue_ReturnsSuccess()
         {
             // Act

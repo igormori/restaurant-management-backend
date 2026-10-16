@@ -54,6 +54,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L5")]
         public async Task AuthFailures_AcrossFoldedCases_UseOneMessagePerEndpoint()
         {
             // Arrange

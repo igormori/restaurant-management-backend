@@ -22,6 +22,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "R3")]
         public async Task RegisterAsync_EmailAlreadyRegistered_ThrowsBusinessExceptionAndSendsNoEmail()
         {
             // Arrange
@@ -60,6 +61,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "R1")]
         public async Task RegisterAsync_ValidRequest_SendsVerificationEmailWithFirstNameAndConfiguredExpiry()
         {
             // Arrange
@@ -96,6 +98,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "R1")]
+        [Trait("Rule", "R12")]
         public async Task RegisterAsync_EmailSendingFails_StillCreatesUnverifiedUser()
         {
             // Arrange
@@ -129,6 +133,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "R4")]
         public async Task RegisterAsync_ExistingEmailDifferentCasing_RejectsDuplicate()
         {
             // Arrange: seed a row with mixed-case email directly, bypassing RegisterRequest's
@@ -171,6 +176,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "R5")]
         public async Task RegisterAsync_UniqueViolationOnSave_ThrowsBusinessExceptionWithPreCheckMessage()
         {
             // Arrange: same setup as the casing test above, which bypasses the AnyAsync
@@ -210,6 +216,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 27
         [Fact]
+        [Trait("Rule", "R13")]
         public async Task RegisterAsync_ValidRequest_StoresFingerprintOfEmailedCodeNotTheCode()
         {
             // Arrange

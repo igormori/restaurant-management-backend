@@ -104,6 +104,7 @@ public class RetireVerificationCodesMigrationTests : IClassFixture<PostgresDatab
 
     // Hash verification codes: Scenario 36
     [Fact]
+    [Trait("Rule", "T6")]
     public async Task VerifyEmailAsync_CodeStoredBeforeRelease_IsRejected()
     {
         // Arrange
@@ -123,6 +124,7 @@ public class RetireVerificationCodesMigrationTests : IClassFixture<PostgresDatab
 
     // Hash verification codes: Scenario 37
     [Fact]
+    [Trait("Rule", "D16")]
     public async Task Migrate_CodesStoredBeforeRelease_MarksEveryCodeUsed()
     {
         // Arrange
@@ -139,6 +141,7 @@ public class RetireVerificationCodesMigrationTests : IClassFixture<PostgresDatab
 
     // Hash verification codes: Scenario 38
     [Fact]
+    [Trait("Rule", "D15")]
     public async Task Migrate_CodesStoredBeforeRelease_BlanksEveryStoredCode()
     {
         // Arrange
@@ -155,6 +158,7 @@ public class RetireVerificationCodesMigrationTests : IClassFixture<PostgresDatab
 
     // Hash verification codes: Scenario 39
     [Fact]
+    [Trait("Rule", "D17")]
     public async Task Migrate_CodesStoredBeforeRelease_KeepsCreatedAt()
     {
         // Arrange

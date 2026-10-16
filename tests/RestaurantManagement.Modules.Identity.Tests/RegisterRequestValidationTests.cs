@@ -36,6 +36,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         [Theory]
         [MemberData(nameof(InvalidFields))]
+        [Trait("Rule", "R10")]
         public void Validate_MissingOrTooLongField_ReturnsErrorOnThatField(string field, Action<RegisterRequest> breakField)
         {
             // Arrange
@@ -50,6 +51,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "R10")]
         public void Validate_NamesOfExactly100Characters_ReturnsNoError()
         {
             // Arrange

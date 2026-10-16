@@ -60,6 +60,7 @@ public class LogoutEndpointTests : IDisposable
 
     // Scenario 60
     [Fact]
+    [Trait("Rule", "O4")]
     public async Task LogoutAll_NoAccessToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -75,6 +76,7 @@ public class LogoutEndpointTests : IDisposable
 
     // Scenario 61
     [Fact]
+    [Trait("Rule", "O1")]
     public async Task Logout_NoCookie_ReturnsNoContent()
     {
         // Arrange
@@ -90,6 +92,7 @@ public class LogoutEndpointTests : IDisposable
 
     // Scenario 62
     [Fact]
+    [Trait("Rule", "O2")]
     public async Task Logout_WithCookie_SendsCookieTokenToSessionAndReturnsNoContent()
     {
         // Arrange
@@ -105,6 +108,7 @@ public class LogoutEndpointTests : IDisposable
 
     // Scenario 63
     [Fact]
+    [Trait("Rule", "O2")]
     public async Task Logout_WithCookie_ClearsRefreshCookie()
     {
         // Arrange
@@ -122,6 +126,7 @@ public class LogoutEndpointTests : IDisposable
     [InlineData("Owner")]
     [InlineData("Admin")]
     [InlineData("Staff")]
+    [Trait("Rule", "O5")]
     public async Task LogoutAll_SignedInWithAnyRole_ReturnsNoContent(string role)
     {
         // Arrange
@@ -136,6 +141,7 @@ public class LogoutEndpointTests : IDisposable
 
     // Scenario 65
     [Fact]
+    [Trait("Rule", "O5")]
     public async Task LogoutAll_SignedIn_RevokesTokensOfTheCallerOnly()
     {
         // Arrange
@@ -151,6 +157,7 @@ public class LogoutEndpointTests : IDisposable
 
     // Scenario 66
     [Fact]
+    [Trait("Rule", "O5")]
     public async Task LogoutAll_SignedIn_ClearsRefreshCookie()
     {
         // Arrange
@@ -165,6 +172,7 @@ public class LogoutEndpointTests : IDisposable
 
     // Scenario 77
     [Fact]
+    [Trait("Rule", "O6")]
     public async Task Logout_RefreshLimitExceeded_ReturnsTooManyRequests()
     {
         // Arrange: the Refresh policy allows one call per minute per address

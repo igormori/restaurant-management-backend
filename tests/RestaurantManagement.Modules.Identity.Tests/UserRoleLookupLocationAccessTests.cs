@@ -47,6 +47,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 29
         [Fact]
+        [Trait("Rule", "T14")]
         public async Task HasLocationAccessAsync_RoleForAllLocations_ReturnsTrueForAnyLocation()
         {
             // Arrange
@@ -63,6 +64,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 30
         [Fact]
+        [Trait("Rule", "T14")]
         public async Task HasLocationAccessAsync_RolesOnlyInAnotherOrganization_ReturnsFalse()
         {
             // Arrange
@@ -83,6 +85,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         [InlineData(BatelLocation, true)]
         [InlineData(CentroLocation, true)]
         [InlineData(MercadoMunicipalLocation, false)]
+        [Trait("Rule", "T14")]
         public async Task HasLocationAccessAsync_RolesForTwoLocations_AllowsOnlyThoseTwo(string location, bool expected)
         {
             // Arrange

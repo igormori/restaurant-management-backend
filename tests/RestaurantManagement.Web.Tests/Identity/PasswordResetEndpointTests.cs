@@ -99,6 +99,7 @@ public class PasswordResetEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 36
     [Fact]
+    [Trait("Rule", "P1")]
     public async Task ForgotPassword_KnownAndUnknownEmail_IdenticalStatusAndBody()
     {
         // Arrange
@@ -119,6 +120,7 @@ public class PasswordResetEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 37
     [Fact]
+    [Trait("Rule", "P6")]
     public async Task ResetPassword_ValidCode_ReturnsOkWithoutSecretsAndEarlierRefreshTokensRefused()
     {
         // Arrange
@@ -143,6 +145,7 @@ public class PasswordResetEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 38
     [Fact]
+    [Trait("Rule", "P6")]
     public async Task ResetPassword_ValidCode_AuditEntryInUsersOrganizationWithoutPasswordData()
     {
         // Arrange

@@ -19,6 +19,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "V1")]
         public async Task VerifyEmail_ValidRequest_ReturnsOkWithMessageBody()
         {
             // Arrange
@@ -37,6 +38,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "RS2")]
         public async Task ResendVerification_ValidRequest_ReturnsOkWithMessageBody()
         {
             // Arrange

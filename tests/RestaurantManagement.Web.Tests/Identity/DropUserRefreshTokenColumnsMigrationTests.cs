@@ -96,6 +96,7 @@ public class DropUserRefreshTokenColumnsMigrationTests : IClassFixture<PostgresD
 
     // Scenario 67
     [Fact]
+    [Trait("Rule", "D11")]
     public async Task Migrate_UsersHoldingOldToken_EveryOtherUserColumnUnchanged()
     {
         // Arrange
@@ -112,6 +113,7 @@ public class DropUserRefreshTokenColumnsMigrationTests : IClassFixture<PostgresD
 
     // Scenario 68
     [Fact]
+    [Trait("Rule", "D10")]
     public async Task Migrate_DropUserRefreshTokenColumns_UsersHasNoOldTokenColumns()
     {
         // Arrange
@@ -127,6 +129,7 @@ public class DropUserRefreshTokenColumnsMigrationTests : IClassFixture<PostgresD
 
     // Scenario 69
     [Fact]
+    [Trait("Rule", "D12")]
     public async Task Migrate_RefreshTokensWithRows_RowsUnchanged()
     {
         // Arrange

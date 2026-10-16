@@ -72,6 +72,7 @@ public class DropUserSelectedOrganizationMigrationTests : IClassFixture<Postgres
     }
 
     [Fact]
+    [Trait("Rule", "D13")]
     public async Task Migrate_DropUserSelectedOrganization_UsersHasNoSelectedOrganizationColumn()
     {
         // Arrange
@@ -86,6 +87,7 @@ public class DropUserSelectedOrganizationMigrationTests : IClassFixture<Postgres
     }
 
     [Fact]
+    [Trait("Rule", "D14")]
     public async Task Migrate_UsersWithSelectedOrganization_EveryOtherUserColumnUnchanged()
     {
         // Arrange

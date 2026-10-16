@@ -21,6 +21,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
     public class PendingMigrationTests
     {
         [Fact]
+        [Trait("Rule", "D1")]
         public async Task RegisterAsync_DatabaseMissingAddVerificationAttemptTrackingMigration_ThrowsDbUpdateException()
         {
             // Arrange: a database migrated only up to InitialCreate, one migration behind
@@ -62,6 +63,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "D2")]
         public async Task RegisterAsync_DatabaseFullyMigrated_Succeeds()
         {
             // Arrange: same starting point as above, but with every migration applied.

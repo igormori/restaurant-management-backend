@@ -36,6 +36,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "V2")]
         public async Task VerifyEmailAsync_CodeDoesNotMatch_ThrowsBusinessException()
         {
             // Arrange
@@ -69,6 +70,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 23
         [Fact]
+        [Trait("Rule", "V2")]
         public async Task VerifyEmailAsync_CodeExpired_ThrowsBusinessException()
         {
             // Arrange
@@ -98,6 +100,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 24
         [Fact]
+        [Trait("Rule", "V2")]
         public async Task VerifyEmailAsync_CodeAlreadyUsed_ThrowsBusinessException()
         {
             // Arrange
@@ -127,6 +130,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 25
         [Fact]
+        [Trait("Rule", "V2")]
         public async Task VerifyEmailAsync_CodeBelongsToDifferentAccount_ThrowsBusinessException()
         {
             // Arrange
@@ -160,6 +164,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "V1")]
         public async Task VerifyEmailAsync_CodeNotYetExpired_MarksUserVerified()
         {
             // Arrange: code expires a couple of seconds in the future, i.e. still valid right now
@@ -189,6 +194,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "V8")]
         public async Task VerifyEmailAsync_SameCodeSubmittedTwice_SecondAttemptThrowsBusinessException()
         {
             // Arrange
@@ -225,6 +231,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "V3")]
         public async Task VerifyEmailAsync_UserNotFound_ThrowsBusinessExceptionWithGenericMessage()
         {
             // Arrange
@@ -242,6 +249,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "RS1")]
         public async Task ResendVerificationCodeAsync_UserNotFound_ReturnsAcknowledgementWithoutSendingEmail()
         {
             // Arrange
@@ -259,6 +267,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "RS1")]
         public async Task ResendVerificationCodeAsync_UserAlreadyVerified_ReturnsAcknowledgementWithoutSendingEmail()
         {
             // Arrange
@@ -281,6 +290,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 32
         [Fact]
+        [Trait("Rule", "RS1")]
         public async Task ResendVerificationCodeAsync_WithinCooldown_ReturnsAcknowledgementWithoutSendingEmail()
         {
             // Arrange
@@ -314,6 +324,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "RS1")]
         public async Task ResendVerificationCodeAsync_UnknownEmailAndVerifiedAccount_ReturnSameMessage()
         {
             // Arrange
@@ -342,6 +353,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 33
         [Fact]
+        [Trait("Rule", "V3")]
         public async Task VerifyEmailAsync_UnknownEmailAndInvalidCode_ReturnSameStatusAndMessage()
         {
             // Arrange
@@ -376,6 +388,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "RS2")]
         public async Task ResendVerificationCodeAsync_CooldownJustElapsed_SendsNewCode()
         {
             // Arrange: last code was created just over the cooldown window ago
@@ -406,6 +419,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 26
         [Fact]
+        [Trait("Rule", "V7")]
         public async Task VerifyEmailAsync_WithCodeInvalidatedByResend_ThrowsBusinessException()
         {
             // Arrange: an unused code exists, then a resend invalidates it in favor of a new one
@@ -446,6 +460,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 29
         [Fact]
+        [Trait("Rule", "V1")]
         public async Task VerifyEmailAsync_ValidCode_MarksUserVerifiedAndCodeUsed()
         {
             // Arrange
@@ -481,6 +496,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 34
         [Fact]
+        [Trait("Rule", "RS2")]
         public async Task ResendVerificationCodeAsync_OutsideCooldown_MarksEarlierCodesUsedAndEmailsNewCode()
         {
             // Arrange
@@ -524,6 +540,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "RS6")]
         public async Task ResendVerificationCodeAsync_EmailSendingFails_ThrowsBusinessException()
         {
             // Arrange
@@ -552,6 +569,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 20
         [Fact]
+        [Trait("Rule", "V2")]
         public async Task VerifyEmailAsync_IncorrectCode_IncrementsVerificationFailedAttempts()
         {
             // Arrange
@@ -585,6 +603,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 22
         [Fact]
+        [Trait("Rule", "V4")]
         public async Task VerifyEmailAsync_FinalFailedAttemptReachesMax_InvalidatesCodeAndSetsLockout()
         {
             // Arrange: user has already failed twice, so the next failure is the third and final attempt
@@ -630,6 +649,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 21
         [Fact]
+        [Trait("Rule", "V5")]
         public async Task VerifyEmailAsync_AccountLockedWithCorrectCode_ThrowsAndLeavesUserUnverified()
         {
             // Arrange
@@ -671,6 +691,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 35
         [Fact]
+        [Trait("Rule", "RS3")]
         public async Task ResendVerificationCodeAsync_AccountLocked_ThrowsAndSendsNoEmail()
         {
             // Arrange
@@ -714,6 +735,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 31
         [Fact]
+        [Trait("Rule", "V6")]
         public async Task VerifyEmailAsync_LockoutExpired_EvaluatesCodeAndVerifiesUser()
         {
             // Arrange: the lockout timestamp is in the past, i.e. no longer in effect
@@ -751,6 +773,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "V1")]
         public async Task VerifyEmailAsync_CorrectCodeAfterFailuresBelowMax_MarksUserVerified()
         {
             // Arrange: user has failed max-1 times already; this attempt uses the correct code
@@ -788,6 +811,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "V1")]
         public async Task VerifyEmailAsync_SuccessAfterPriorFailures_ResetsVerificationFailedAttempts()
         {
             // Arrange
@@ -826,6 +850,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "RS2")]
         public async Task ResendVerificationCodeAsync_OutsideLockout_ResetsVerificationFailedAttempts()
         {
             // Arrange
@@ -867,6 +892,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "V1")]
         public async Task VerifyEmailAsync_CorrectCodeOnFirstAttempt_MarksUserVerified()
         {
             // Arrange
@@ -897,6 +923,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "RS4")]
         public async Task ResendVerificationCodeAsync_LockoutExpired_SendsNewCodeAndResetsAttempts()
         {
             // Arrange: the lockout timestamp is in the past, i.e. no longer in effect
@@ -939,6 +966,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 28
         [Fact]
+        [Trait("Rule", "RS2")]
         public async Task ResendVerificationCodeAsync_OutsideCooldown_StoresFingerprintOfEmailedCodeNotTheCode()
         {
             // Arrange
@@ -967,6 +995,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 30
         [Fact]
+        [Trait("Rule", "V7")]
         public async Task VerifyEmailAsync_NewestCodeAfterResend_MarksUserVerified()
         {
             // Arrange: an earlier code exists, then a resend emails a newer one

@@ -65,6 +65,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "C9")]
         public async Task ChangePasswordAsync_AuditWriteFails_SucceedsAndLogsError()
         {
             // Arrange
@@ -84,6 +85,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "P12")]
         public async Task ResetPasswordAsync_AuditWriteFails_SucceedsAndLogsError()
         {
             // Arrange

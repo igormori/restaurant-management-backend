@@ -92,6 +92,7 @@ public class AuthRateLimitingTests : IDisposable
     }
 
     [Fact]
+    [Trait("Rule", "L16")]
     public async Task Login_LimitExceeded_Returns429WithRetryAfter()
     {
         var client = CreateClient(LoginLimit(2));
@@ -104,6 +105,7 @@ public class AuthRateLimitingTests : IDisposable
     }
 
     [Fact]
+    [Trait("Rule", "L16")]
     public async Task Login_LimitExceededWithPortugueseCulture_ReturnsLocalizedMessage()
     {
         var client = CreateClient(LoginLimit(1));
@@ -116,6 +118,7 @@ public class AuthRateLimitingTests : IDisposable
     }
 
     [Fact]
+    [Trait("Rule", "L16")]
     public async Task Login_LimitExceededWithoutCulture_ReturnsEnglishMessage()
     {
         var client = CreateClient(LoginLimit(1));
@@ -128,6 +131,7 @@ public class AuthRateLimitingTests : IDisposable
     }
 
     [Fact]
+    [Trait("Rule", "L16")]
     public async Task Register_LoginLimitExhausted_ReturnsOk()
     {
         var client = CreateClient(LoginLimit(1));
@@ -150,6 +154,7 @@ public class AuthRateLimitingTests : IDisposable
     }
 
     [Fact]
+    [Trait("Rule", "L16")]
     public async Task Login_OtherIpExhaustedLimit_ReturnsOk()
     {
         var client = CreateClient(LoginLimit(1));
@@ -161,6 +166,7 @@ public class AuthRateLimitingTests : IDisposable
     }
 
     [Fact]
+    [Trait("Rule", "L17")]
     public async Task Login_ForwardedForFromUntrustedSender_PartitionsByRemoteIp()
     {
         var client = CreateClient(LoginLimit(1));
@@ -172,6 +178,7 @@ public class AuthRateLimitingTests : IDisposable
     }
 
     [Fact]
+    [Trait("Rule", "L17")]
     public async Task Login_ForwardedForFromTrustedProxy_PartitionsByForwardedIp()
     {
         var settings = LoginLimit(1);
@@ -187,6 +194,7 @@ public class AuthRateLimitingTests : IDisposable
     }
 
     [Fact]
+    [Trait("Rule", "L16")]
     public async Task Login_RateLimited_DoesNotCallLoginService()
     {
         var client = CreateClient(LoginLimit(1));
@@ -199,6 +207,7 @@ public class AuthRateLimitingTests : IDisposable
     }
 
     [Fact]
+    [Trait("Rule", "L16")]
     public async Task Login_RepeatedRejectionsInWindow_SendsOneSentryWarning()
     {
         var hub = Substitute.For<IHub>();
@@ -214,6 +223,7 @@ public class AuthRateLimitingTests : IDisposable
     }
 
     [Fact]
+    [Trait("Rule", "L16")]
     public async Task Login_Rejected_SentryEventHasOnlyEndpointAndIp()
     {
         var hub = Substitute.For<IHub>();
@@ -235,6 +245,7 @@ public class AuthRateLimitingTests : IDisposable
     }
 
     [Fact]
+    [Trait("Rule", "L16")]
     public async Task Login_WithinLimit_ReturnsServiceResponse()
     {
         var client = CreateClient(LoginLimit(2));
@@ -247,6 +258,7 @@ public class AuthRateLimitingTests : IDisposable
     }
 
     [Fact]
+    [Trait("Rule", "L16")]
     public async Task Login_ConfiguredLimitOverride_RejectsAfterConfiguredCount()
     {
         var client = CreateClient(LoginLimit(3));
@@ -275,6 +287,8 @@ public class AuthRateLimitingTests : IDisposable
     [InlineData("/api/auth/forgot-password", "ForgotPassword")]
     [InlineData("/api/auth/reset-password", "ResetPassword")]
     [InlineData("/api/auth/change-password", "ChangePassword")]
+    [Trait("Rule", "C10")]
+    [Trait("Rule", "P13")]
     public async Task PasswordEndpoint_LimitExceeded_ReturnsTooManyRequests(string url, string policy)
     {
         // Arrange: one request per 10 minutes; the password services are substituted
@@ -331,6 +345,10 @@ public class AuthRateLimitingTests : IDisposable
     [InlineData("/api/auth/verify", "Verify")]
     [InlineData("/api/auth/resend-verification", "ResendVerification")]
     [InlineData("/api/auth/refresh", "Refresh")]
+    [Trait("Rule", "F8")]
+    [Trait("Rule", "R14")]
+    [Trait("Rule", "RS5")]
+    [Trait("Rule", "V10")]
     public async Task PublicAuthEndpoint_LimitExceeded_ReturnsTooManyRequestsWithRetryAfter(string url, string policy)
     {
         // Arrange: one request per 10 minutes; the services are substituted

@@ -70,6 +70,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 13
         [Fact]
+        [Trait("Rule", "P1")]
         public async Task RequestResetCodeAsync_UnknownEmail_SameAcknowledgementAsKnownEmailAndNoEmail()
         {
             // Arrange
@@ -89,6 +90,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         [Theory]
         [InlineData("pedro@cantinadanonna.com.br")]    // inactive
         [InlineData("lucia@cantinadanonna.com.br")]    // email not verified
+        [Trait("Rule", "P1")]
         public async Task RequestResetCodeAsync_InactiveOrUnverifiedUser_NoEmailAndUnknownEmailAcknowledgement(string email)
         {
             // Arrange
@@ -107,6 +109,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 15
         [Fact]
+        [Trait("Rule", "P5")]
         public async Task RequestResetCodeAsync_EmailSendFails_SameAcknowledgementAndCodeNotLogged()
         {
             // Arrange
@@ -132,6 +135,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 16
         [Fact]
+        [Trait("Rule", "P2")]
         public async Task RequestResetCodeAsync_ActiveVerifiedUser_EmailsSixDigitCodeWithNameAndExpiry()
         {
             // Arrange
@@ -147,6 +151,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 17
         [Fact]
+        [Trait("Rule", "P2")]
         public async Task RequestResetCodeAsync_ActiveVerifiedUser_StoresOnlyProtectedFormOfCode()
         {
             // Arrange
@@ -172,6 +177,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "P3")]
         public async Task RequestResetCodeAsync_SecondRequestWithinResendWait_SameAcknowledgementAndNoNewCode()
         {
             // Arrange
@@ -189,6 +195,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "P4")]
         public async Task RequestResetCodeAsync_ResetLocked_SameAcknowledgementAsUnknownEmailAndNoCode()
         {
             // Arrange

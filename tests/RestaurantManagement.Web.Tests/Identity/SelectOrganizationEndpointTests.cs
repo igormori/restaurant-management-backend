@@ -19,6 +19,7 @@ public class SelectOrganizationEndpointTests : IDisposable
 
     // Scenario 31
     [Fact]
+    [Trait("Rule", "S1")]
     public async Task SelectOrganization_NoAuthenticationToken_ReturnsUnauthorized()
     {
         // Arrange

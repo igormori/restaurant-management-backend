@@ -19,6 +19,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         [InlineData(null)]
         [InlineData("")]
         [InlineData("1234567")]
+        [Trait("Rule", "V9")]
         public void Validate_VerifyCodeMissingOrOverSixCharacters_ReturnsErrorOnCode(string? code)
         {
             // Arrange
@@ -32,6 +33,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "V9")]
         public void Validate_VerifyCodeOfSixCharacters_ReturnsNoErrorOnCode()
         {
             // Arrange
@@ -48,6 +50,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         [InlineData(null)]
         [InlineData("")]
         [InlineData("1234567")]
+        [Trait("Rule", "V9")]
         public void Validate_ResetCodeMissingOrOverSixCharacters_ReturnsErrorOnCode(string? code)
         {
             // Arrange

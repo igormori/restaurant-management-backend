@@ -23,6 +23,7 @@ public class RegisterEndpointTests : IClassFixture<PostgresDatabaseFixture>
     public RegisterEndpointTests(PostgresDatabaseFixture postgres) => _postgres = postgres;
 
     [Fact]
+    [Trait("Rule", "R2")]
     public async Task Register_ValidRequest_ResponseHasNoAccessTokenNoPasswordDataAndNoCookie()
     {
         // Arrange

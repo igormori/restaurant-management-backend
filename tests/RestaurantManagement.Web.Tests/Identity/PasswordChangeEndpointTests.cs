@@ -84,6 +84,7 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
 
     // Scenario 34
     [Fact]
+    [Trait("Rule", "C1")]
     public async Task ChangePassword_NoAccessToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -99,6 +100,7 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
 
     // Scenario 35
     [Fact]
+    [Trait("Rule", "C6")]
     public async Task ChangePassword_BodyNamesAnotherUser_ChangesOnlyCallerAndOtherSessionsStayActive()
     {
         // Arrange
@@ -120,6 +122,7 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
 
     // Scenario 39
     [Fact]
+    [Trait("Rule", "C5")]
     public async Task ChangePassword_CorrectCurrentPassword_ClearsRefreshCookieAndEarlierTokenRefused()
     {
         // Arrange
@@ -149,6 +152,7 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
     [Theory]
     [InlineData("en", "The field CurrentPassword must be a maximum of 72 bytes. Special characters and emoji take more than one byte, so use fewer of them.")]
     [InlineData("pt-BR", "O campo CurrentPassword deve ter no máximo 72 bytes. Caracteres especiais e emojis ocupam mais de um byte; use menos deles.")]
+    [Trait("Rule", "C7")]
     public async Task ChangePassword_CurrentPasswordOver72Bytes_ReturnsBadRequestWithTranslatedMessage(string culture, string expected)
     {
         // Arrange
@@ -166,6 +170,7 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
     }
 
     [Fact]
+    [Trait("Rule", "C7")]
     public async Task ChangePassword_CurrentPasswordOf72Bytes_IsNotRejectedByValidation()
     {
         // Arrange

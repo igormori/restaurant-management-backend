@@ -111,6 +111,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L5")]
         public async Task LoginAsync_InactiveUserCorrectPassword_ThrowsGeneric401()
         {
             // Arrange
@@ -128,6 +129,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 27
         [Fact]
+        [Trait("Rule", "F2")]
         public async Task RefreshTokenAsync_NoCookie_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange
@@ -140,6 +142,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 28
         [Fact]
+        [Trait("Rule", "F2")]
         public async Task RefreshTokenAsync_UnknownToken_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange
@@ -153,6 +156,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 29
         [Fact]
+        [Trait("Rule", "F2")]
         public async Task RefreshTokenAsync_ExpiredToken_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange
@@ -172,6 +176,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 30
         [Fact]
+        [Trait("Rule", "F3")]
         public async Task RefreshTokenAsync_ReusedRotatedToken_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange
@@ -186,6 +191,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 31
         [Fact]
+        [Trait("Rule", "F3")]
         public async Task RefreshTokenAsync_ReusedRotatedToken_NewestTokenOfThatDeviceIsRefusedToo()
         {
             // Arrange
@@ -201,6 +207,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 32
         [Fact]
+        [Trait("Rule", "F4")]
         public async Task RefreshTokenAsync_InactiveUser_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange
@@ -214,6 +221,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 33
         [Fact]
+        [Trait("Rule", "F4")]
         public async Task RefreshTokenAsync_UnverifiedUser_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange
@@ -227,6 +235,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 34
         [Fact]
+        [Trait("Rule", "F4")]
         public async Task RefreshTokenAsync_LockedUser_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange
@@ -240,6 +249,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 35
         [Fact]
+        [Trait("Rule", "F5")]
         public async Task RefreshTokenAsync_TokenForOrganizationUserIsNotMemberOf_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange: Maria is Owner of Cantina only; the token claims Trattoria
@@ -253,6 +263,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 36
         [Fact]
+        [Trait("Rule", "L1")]
         public async Task LoginAsync_ValidCredentials_CreatesOneActiveTokenForThisDevice()
         {
             // Arrange
@@ -275,6 +286,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 37
         [Fact]
+        [Trait("Rule", "L15")]
         public async Task LoginAsync_SecondDevice_FirstDeviceTokenStaysActive()
         {
             // Arrange
@@ -294,6 +306,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 38
         [Fact]
+        [Trait("Rule", "F7")]
         public async Task RefreshTokenAsync_TwoDevicesSignedIn_BothRefreshSucceed()
         {
             // Arrange
@@ -313,6 +326,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 39
         [Fact]
+        [Trait("Rule", "F1")]
         public async Task RefreshTokenAsync_ActiveToken_ReplacesItWithNewTokenInSameFamily()
         {
             // Arrange
@@ -333,6 +347,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 40
         [Fact]
+        [Trait("Rule", "F1")]
         public async Task RefreshTokenAsync_ActiveToken_NewTokenExpiresInRefreshTokenExpireDays()
         {
             // Arrange
@@ -348,6 +363,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "F6")]
         public async Task RefreshTokenAsync_UserWithRole_JwtContainsRoleClaim()
         {
             // Arrange
@@ -365,6 +381,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "F1")]
         public async Task RefreshTokenAsync_ActiveVerifiedUnlockedUser_ReturnsNewTokens()
         {
             // Arrange
@@ -382,6 +399,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 71
         [Fact]
+        [Trait("Rule", "L12")]
         public async Task LoginAsync_WrongPassword_StoresNoToken()
         {
             // Arrange
@@ -397,6 +415,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 72
         [Fact]
+        [Trait("Rule", "L9")]
         public async Task LoginAsync_LockedAccountCorrectPassword_StoresNoToken()
         {
             // Arrange
@@ -412,6 +431,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 73
         [Fact]
+        [Trait("Rule", "L12")]
         public async Task LoginAsync_InactiveUserCorrectPassword_StoresNoToken()
         {
             // Arrange
@@ -427,6 +447,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 74
         [Fact]
+        [Trait("Rule", "F4")]
         public async Task RefreshTokenAsync_InactiveUser_LeavesNoActiveTokenBehind()
         {
             // Arrange

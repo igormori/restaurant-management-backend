@@ -92,6 +92,7 @@ public class RefreshTokenCookieEndpointTests : IDisposable
 
     // Scenario 46
     [Fact]
+    [Trait("Rule", "F2")]
     public async Task Refresh_NoCookie_ReturnsUnauthorized()
     {
         // Arrange
@@ -108,6 +109,7 @@ public class RefreshTokenCookieEndpointTests : IDisposable
 
     // Scenario 47
     [Fact]
+    [Trait("Rule", "L2")]
     public async Task Login_ValidCredentials_SetsHttpOnlySecureStrictCookieOnAuthPath()
     {
         // Arrange
@@ -124,6 +126,7 @@ public class RefreshTokenCookieEndpointTests : IDisposable
 
     // Scenario 48
     [Fact]
+    [Trait("Rule", "L1")]
     public async Task Login_ValidCredentials_ResponseBodyHasNoRefreshToken()
     {
         // Arrange
@@ -143,6 +146,7 @@ public class RefreshTokenCookieEndpointTests : IDisposable
 
     // Scenario 49
     [Fact]
+    [Trait("Rule", "L15")]
     public async Task Login_FromKitchenTablet_PassesUserAgentAndIpAddressToSession()
     {
         // Arrange
@@ -163,6 +167,7 @@ public class RefreshTokenCookieEndpointTests : IDisposable
 
     // Scenario 50
     [Fact]
+    [Trait("Rule", "F1")]
     public async Task Refresh_WithCookie_SendsCookieTokenToSessionAndSetsReplacementCookie()
     {
         // Arrange
@@ -180,6 +185,7 @@ public class RefreshTokenCookieEndpointTests : IDisposable
 
     // Scenario 51
     [Fact]
+    [Trait("Rule", "S7")]
     public async Task SelectOrganization_SignedInWithCookie_SendsCookieTokenToSessionAndSetsReplacementCookie()
     {
         // Arrange
@@ -205,6 +211,7 @@ public class RefreshTokenCookieEndpointTests : IDisposable
 
     // Scenario 52
     [Fact]
+    [Trait("Rule", "T11")]
     public async Task Cors_PreflightFromAllowedOrigin_AllowsCredentials()
     {
         // Arrange

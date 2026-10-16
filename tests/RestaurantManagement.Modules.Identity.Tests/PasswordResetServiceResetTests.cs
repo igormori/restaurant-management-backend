@@ -109,6 +109,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 18
         [Fact]
+        [Trait("Rule", "P7")]
         public async Task ResetPasswordAsync_UnknownEmail_SameRejectionAsWrongCode()
         {
             // Arrange
@@ -127,6 +128,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 19
         [Fact]
+        [Trait("Rule", "P7")]
         public async Task ResetPasswordAsync_WrongCode_RejectedAndNothingChanges()
         {
             // Arrange
@@ -145,6 +147,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 20
         [Fact]
+        [Trait("Rule", "P7")]
         public async Task ResetPasswordAsync_ExpiredCode_RejectedAndPasswordUnchanged()
         {
             // Arrange
@@ -166,6 +169,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 21
         [Fact]
+        [Trait("Rule", "P7")]
         public async Task ResetPasswordAsync_CodeAlreadyUsed_SecondResetRejected()
         {
             // Arrange
@@ -183,6 +187,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 22
         [Fact]
+        [Trait("Rule", "P8")]
         public async Task ResetPasswordAsync_TooManyWrongCodes_CorrectCodeRejectedAfterwards()
         {
             // Arrange: the limit is three wrong codes
@@ -202,6 +207,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 23
         [Fact]
+        [Trait("Rule", "P7")]
         public async Task ResetPasswordAsync_FirstCodeAfterSecondRequest_Rejected()
         {
             // Arrange
@@ -219,6 +225,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 25
         [Fact]
+        [Trait("Rule", "P6")]
         public async Task ResetPasswordAsync_ValidCode_NewPasswordVerifiesAndOldDoesNot()
         {
             // Arrange
@@ -236,6 +243,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 26
         [Fact]
+        [Trait("Rule", "P6")]
         public async Task ResetPasswordAsync_ValidCode_RevokesEveryRefreshTokenAsPasswordChanged()
         {
             // Arrange
@@ -253,6 +261,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 27
         [Fact]
+        [Trait("Rule", "P6")]
         public async Task ResetPasswordAsync_ValidCode_RecordsPasswordResetAuditOnce()
         {
             // Arrange
@@ -268,6 +277,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "P10")]
         public async Task ResetPasswordAsync_ValidCodeOnLockedAccount_ClearsLoginLockAndFailedAttempts()
         {
             // Arrange
@@ -291,6 +301,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "P14")]
         public async Task ResetPasswordAsync_LockExpired_NewCodeCanBeRequestedAndUsed()
         {
             // Arrange

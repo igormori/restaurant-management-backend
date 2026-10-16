@@ -11,6 +11,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 11
         [Fact]
+        [Trait("Rule", "T6")]
         public void IsMatch_WrongCode_ReturnsFalse()
         {
             // Arrange
@@ -26,6 +27,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 12
         [Fact]
+        [Trait("Rule", "T6")]
         public void IsMatch_SameCodeForAnotherUser_ReturnsFalse()
         {
             // Arrange
@@ -41,6 +43,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 13
         [Fact]
+        [Trait("Rule", "T6")]
         public void IsMatch_HashMadeWithDifferentKey_ReturnsFalse()
         {
             // Arrange
@@ -57,6 +60,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 14
         [Fact]
+        [Trait("Rule", "T6")]
         public void IsMatch_EmptyStoredHash_ReturnsFalse()
         {
             // Arrange
@@ -71,6 +75,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 15
         [Fact]
+        [Trait("Rule", "T6")]
         public void IsMatch_ReadableCodeStoredInsteadOfHash_ReturnsFalse()
         {
             // Arrange: a row written before release holds the readable code itself
@@ -85,6 +90,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 16
         [Fact]
+        [Trait("Rule", "T6")]
         public void ComputeHash_SixDigitCode_DoesNotContainTheCode()
         {
             // Arrange
@@ -99,6 +105,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 17
         [Fact]
+        [Trait("Rule", "T6")]
         public void ComputeHash_SixDigitCode_Returns64LowercaseHexCharacters()
         {
             // Arrange
@@ -113,6 +120,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Hash verification codes: Scenario 18
         [Fact]
+        [Trait("Rule", "T6")]
         public void IsMatch_SameUserAndCode_ReturnsTrue()
         {
             // Arrange

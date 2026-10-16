@@ -100,6 +100,7 @@ public class RefreshTokensTableTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 1
     [Fact]
+    [Trait("Rule", "T8")]
     public async Task InsertRefreshToken_SameFingerprintTwice_IsRejectedByUniqueIndex()
     {
         // Arrange
@@ -117,6 +118,7 @@ public class RefreshTokensTableTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 2
     [Fact]
+    [Trait("Rule", "T12")]
     public async Task DeleteUser_HasRefreshTokens_UserAndTokensDeleted()
     {
         // Arrange
@@ -134,6 +136,7 @@ public class RefreshTokensTableTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 3
     [Fact]
+    [Trait("Rule", "T12")]
     public async Task DeleteUser_AnotherUserHasRefreshToken_OtherUsersTokenKept()
     {
         // Arrange
@@ -152,6 +155,7 @@ public class RefreshTokensTableTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 5
     [Fact]
+    [Trait("Rule", "D5")]
     public async Task Migrate_AddRefreshTokensTableOnExistingUsers_NoUserRowChanged()
     {
         // Arrange
@@ -171,6 +175,7 @@ public class RefreshTokensTableTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 7
     [Fact]
+    [Trait("Rule", "F3")]
     public async Task RotateAsync_SameTokenTwiceInParallel_ExactlyOneSucceedsAndFamilyRevoked()
     {
         // Arrange
@@ -206,6 +211,7 @@ public class RefreshTokensTableTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 8
     [Fact]
+    [Trait("Rule", "D6")]
     public void ServiceProvider_RefreshTokenService_IsRegisteredForTheApp()
     {
         // Arrange

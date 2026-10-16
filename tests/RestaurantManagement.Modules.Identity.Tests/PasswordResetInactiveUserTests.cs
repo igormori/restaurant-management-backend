@@ -25,6 +25,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private static readonly Guid MariaId = Guid.Parse("11111111-aaaa-4aaa-8aaa-00000000000a");
 
         [Fact]
+        [Trait("Rule", "P9")]
         public async Task ResetPasswordAsync_DeactivatedAfterRequestingCode_RejectedLikeWrongCodeAndNothingChanges()
         {
             // Arrange

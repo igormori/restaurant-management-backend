@@ -60,6 +60,7 @@ public class UserRoleConstraintsTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 13
     [Fact]
+    [Trait("Rule", "T13")]
     public async Task InsertUserRole_NoOrganization_IsRejectedByNotNullRule()
     {
         // Arrange
@@ -76,6 +77,7 @@ public class UserRoleConstraintsTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 14
     [Fact]
+    [Trait("Rule", "T13")]
     public async Task InsertUserRole_SecondAllLocationsRowSameOrganizationAndRole_IsRejectedByUniqueIndex()
     {
         // Arrange
@@ -93,6 +95,7 @@ public class UserRoleConstraintsTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 15
     [Fact]
+    [Trait("Rule", "T13")]
     public async Task InsertUserRole_SecondRowSameSpecificLocationAndRole_IsRejectedByUniqueIndex()
     {
         // Arrange
@@ -110,6 +113,7 @@ public class UserRoleConstraintsTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 16
     [Fact]
+    [Trait("Rule", "T13")]
     public async Task InsertUserRole_SameRoleAllLocationsAndOneSpecificLocation_BothRowsKept()
     {
         // Arrange
@@ -125,6 +129,7 @@ public class UserRoleConstraintsTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 17
     [Fact]
+    [Trait("Rule", "T13")]
     public async Task InsertUserRole_SameOrganizationAndLocationDifferentRole_BothRowsKept()
     {
         // Arrange
@@ -140,6 +145,7 @@ public class UserRoleConstraintsTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 18
     [Fact]
+    [Trait("Rule", "T13")]
     public async Task InsertUserRole_SameAllLocationsRoleInAnotherOrganization_BothRowsKept()
     {
         // Arrange

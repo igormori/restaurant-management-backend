@@ -13,6 +13,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
     public class VerificationServiceEmailFailureLogTests
     {
         [Fact]
+        [Trait("Rule", "RS6")]
         public async Task ResendVerificationCodeAsync_EmailSendingFails_LogsTheCaughtException()
         {
             // Arrange

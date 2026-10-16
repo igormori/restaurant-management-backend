@@ -55,6 +55,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L5")]
         public async Task LoginAsync_UnknownEmailAndWrongPassword_ReturnSameStatusAndMessage()
         {
             // Arrange
@@ -90,6 +91,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L5")]
         public async Task LoginAsync_UnverifiedCorrectPassword_MatchesGenericFailure()
         {
             // Arrange
@@ -134,6 +136,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 10
         [Fact]
+        [Trait("Rule", "L5")]
+        [Trait("Rule", "L9")]
         public async Task LoginAsync_LockedAccountCorrectPassword_Throws401MatchingWrongPassword()
         {
             // Arrange
@@ -180,6 +184,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 11
         [Fact]
+        [Trait("Rule", "L10")]
         public async Task LoginAsync_LockedAccountWrongPassword_Throws401WithoutCountingAttemptOrExtendingLock()
         {
             // Arrange
@@ -216,6 +221,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 12
         [Fact]
+        [Trait("Rule", "L18")]
         public async Task LoginAsync_FailedAttemptsReachLimit_SentryMessageHasUserIdAndNoEmail()
         {
             // Arrange
@@ -249,6 +255,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 13
         [Fact]
+        [Trait("Rule", "L19")]
         public async Task LoginAsync_JwtExpireMinutesLeftAtDefault_TokenExpiresIn15Minutes()
         {
             // Arrange
@@ -290,6 +297,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L1")]
         public async Task LoginAsync_ValidCredentials_ReturnsTokens()
         {
             // Arrange
@@ -317,6 +325,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L3")]
         public async Task LoginAsync_EmailInOtherCasingWithSurroundingSpaces_IssuesTokens()
         {
             // Arrange
@@ -343,6 +352,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L6")]
         public async Task LoginAsync_UnknownEmail_VerifiesAgainstAWorkFactor12DummyHash()
         {
             // Arrange
@@ -361,6 +371,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L11")]
         public async Task LoginAsync_LockExpiredCorrectPassword_IssuesTokensAndClearsLock()
         {
             // Arrange
@@ -393,6 +404,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L4")]
         public async Task LoginAsync_CorrectPasswordAfterFailures_ResetsCounterAndRecordsLoginTime()
         {
             // Arrange
@@ -425,6 +437,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L4")]
         public async Task LoginAsync_UserWithPhoneNumber_ResponseHasNoPhoneNumber()
         {
             // Arrange
@@ -479,6 +492,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L7")]
         public async Task LoginAsync_FourWrongPasswords_CountsFourAttemptsWithoutLocking()
         {
             // Arrange
@@ -496,6 +510,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L8")]
         public async Task LoginAsync_FifthWrongPassword_LocksFor15MinutesAndResetsCounter()
         {
             // Arrange

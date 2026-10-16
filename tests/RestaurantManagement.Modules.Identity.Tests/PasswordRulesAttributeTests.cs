@@ -37,6 +37,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
         [InlineData("massa@fresca2026")]               // no uppercase letter
         [InlineData("Massa@Fresca")]                   // no digit
         [InlineData("MassaFresca2026")]                // no symbol
+        [Trait("Rule", "R6")]
+        [Trait("Rule", "R7")]
         public void GetValidationResult_PasswordBreaksARule_ReturnsError(string password)
         {
             // Act
@@ -49,6 +51,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         [Theory]
         [InlineData("Massa_Fresca2026")]               // underscore is not a symbol
         [InlineData("Massa Fresca2026")]               // space is not a symbol
+        [Trait("Rule", "R8")]
         public void GetValidationResult_OnlyNonLetterNonDigitIsUnderscoreOrSpace_ReturnsError(string password)
         {
             // Act
@@ -62,6 +65,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         [Theory]
         [InlineData("Massa@26")]                       // exactly 8 characters
         [InlineData(Password64)]                      // exactly 64 characters
+        [Trait("Rule", "R9")]
         public void GetValidationResult_PasswordAtLengthLimits_ReturnsSuccess(string password)
         {
             // Act
@@ -75,6 +79,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
         [Theory]
         [InlineData("reset")]
         [InlineData("change")]
+        [Trait("Rule", "C4")]
+        [Trait("Rule", "P11")]
         public void Validate_WeakNewPassword_ReturnsNewPasswordError(string requestName)
         {
             // Arrange
@@ -90,6 +96,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "R6")]
         public void GetValidationResult_PasswordOver72BytesWithin64Characters_ReturnsError()
         {
             // Act
@@ -101,6 +108,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "R9")]
         public void GetValidationResult_PasswordOfExactly72Bytes_ReturnsSuccess()
         {
             // Act

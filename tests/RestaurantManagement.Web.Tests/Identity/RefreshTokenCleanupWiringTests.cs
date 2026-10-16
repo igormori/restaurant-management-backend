@@ -16,6 +16,7 @@ public class RefreshTokenCleanupWiringTests : IDisposable
     public void Dispose() => _factory.Dispose();
 
     [Fact]
+    [Trait("Rule", "D7")]
     public void HostedServices_CleanupDisabledInTests_DoesNotRegisterCleanupWorker()
     {
         // Arrange / Act

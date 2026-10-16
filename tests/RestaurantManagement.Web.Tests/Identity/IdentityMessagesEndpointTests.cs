@@ -18,6 +18,7 @@ public class IdentityMessagesEndpointTests : IDisposable
     [Theory]
     [InlineData("pt", "O campo PhoneNumber não é um número de telefone válido.")]
     [InlineData("en", "The PhoneNumber field is not a valid phone number.")]
+    [Trait("Rule", "R11")]
     public async Task Register_InvalidPhoneNumber_ReturnsLocalizedPhoneError(string culture, string expected)
     {
         // Arrange
@@ -42,6 +43,7 @@ public class IdentityMessagesEndpointTests : IDisposable
     [Theory]
     [InlineData("pt", "O campo Password deve ter no máximo 72 bytes. Caracteres especiais e emojis ocupam mais de um byte; use menos deles.")]
     [InlineData("en", "The field Password must be a maximum of 72 bytes. Special characters and emoji take more than one byte, so use fewer of them.")]
+    [Trait("Rule", "R6")]
     public async Task Register_PasswordOver72Bytes_ReturnsLocalizedByteLimitError(string culture, string expected)
     {
         // Arrange
@@ -68,6 +70,7 @@ public class IdentityMessagesEndpointTests : IDisposable
     [InlineData("pt", """{ "email": "ana.cantinadanonna.com.br", "password": "Massa@Fresca2026" }""", "O campo Email não é um endereço de email válido.")]
     [InlineData("pt", """{ "email": "ana@cantinadanonna.com.br", "password": "Massa@1" }""", "O campo Password deve ter pelo menos 8 caracteres.")]
     [InlineData("en", """{ "email": "ana.cantinadanonna.com.br", "password": "Massa@Fresca2026" }""", "The Email field is not a valid email address.")]
+    [Trait("Rule", "L13")]
     public async Task Login_InvalidField_ReturnsLocalizedFieldError(string culture, string body, string expected)
     {
         // Arrange
@@ -90,6 +93,7 @@ public class IdentityMessagesEndpointTests : IDisposable
     [InlineData("en", "ana@cantinadanonna.com.br", "The field Password must be a maximum of 72 bytes. Special characters and emoji take more than one byte, so use fewer of them.")]
     [InlineData("pt", "ninguem@cantinadanonna.com.br", "O campo Password deve ter no máximo 72 bytes. Caracteres especiais e emojis ocupam mais de um byte; use menos deles.")]
     [InlineData("en", "ninguem@cantinadanonna.com.br", "The field Password must be a maximum of 72 bytes. Special characters and emoji take more than one byte, so use fewer of them.")]
+    [Trait("Rule", "L13")]
     public async Task Login_PasswordOver72Bytes_ReturnsSameLocalizedByteLimitError(string culture, string email, string expected)
     {
         // Arrange
@@ -105,6 +109,7 @@ public class IdentityMessagesEndpointTests : IDisposable
     }
 
     [Fact]
+    [Trait("Rule", "L13")]
     public async Task Login_PasswordOf72Bytes_PassesValidation()
     {
         // Arrange
@@ -128,6 +133,7 @@ public class IdentityMessagesEndpointTests : IDisposable
     [InlineData("en", Password65, "The field Password must be a maximum of 64 characters.")]
     [InlineData("pt", "massa@fresca2026", "A senha deve conter pelo menos uma letra maiúscula, um número e um caractere especial.")]
     [InlineData("en", "", "The Password field is required.")]
+    [Trait("Rule", "R7")]
     public async Task Register_PasswordBreaksRule_ReturnsUnchangedLocalizedError(string culture, string password, string expected)
     {
         // Arrange

@@ -38,6 +38,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L12")]
         public async Task LoginAsync_UserNotVerified_ThrowsBusinessExceptionAndIssuesNoTokens()
         {
             // Arrange
@@ -69,6 +70,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L1")]
         public async Task LoginAsync_AfterVerification_ReturnsTokens()
         {
             // Arrange

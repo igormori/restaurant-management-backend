@@ -189,22 +189,22 @@ forgot password 3/10 min, reset password 10/10 min, change password 10/min.
 These protect the database and the app setup rather than a rule users meet. They are listed so
 every Identity test maps somewhere; a new one goes here or in a row above.
 
-| Test | Protects |
-|---|---|
-| `PendingMigrationTests.RegisterAsync_DatabaseMissingAddVerificationAttemptTrackingMigration_ThrowsDbUpdateException` | Registration fails loudly on a database missing a migration |
-| `PendingMigrationTests.RegisterAsync_DatabaseFullyMigrated_Succeeds` | Registration works on a fully migrated database |
-| `UniqueEmailIndexTests.Migrate_DatabaseWithDistinctEmails_SucceedsAndKeepsRows` | Email uniqueness migration keeps existing rows |
-| `PasswordResetCodesTableTests.Migrate_CleanDatabase_CreatesResetCodeTableIndexAndUserCounters` | Reset code table, index and counters created |
-| `RefreshTokensTableTests.Migrate_AddRefreshTokensTableOnExistingUsers_NoUserRowChanged` | Refresh token table migration leaves users unchanged |
-| `RefreshTokensTableTests.ServiceProvider_RefreshTokenService_IsRegisteredForTheApp` | Refresh token service wired into the app |
-| `RefreshTokenCleanupWiringTests.HostedServices_CleanupDisabledInTests_DoesNotRegisterCleanupWorker` | Cleanup worker can be switched off |
-| `IdentityDeleteRulesTests.Migrate_IdentityForeignKeys_RolesRestrictCodesResetCodesAndRefreshTokensCascade` | Delete rules of the Identity foreign keys |
-| `IdentityDeleteRulesTests.Migrate_IdentityTablesWithRows_NoRowAddedChangedOrRemoved` | Delete-rule migration keeps existing rows |
-| `DropUserRefreshTokenColumnsMigrationTests.Migrate_DropUserRefreshTokenColumns_UsersHasNoOldTokenColumns` | Old refresh token columns removed from users |
-| `DropUserRefreshTokenColumnsMigrationTests.Migrate_UsersHoldingOldToken_EveryOtherUserColumnUnchanged` | Same migration keeps the other user columns |
-| `DropUserRefreshTokenColumnsMigrationTests.Migrate_RefreshTokensWithRows_RowsUnchanged` | Same migration keeps refresh token rows |
-| `DropUserSelectedOrganizationMigrationTests.Migrate_DropUserSelectedOrganization_UsersHasNoSelectedOrganizationColumn` | Stored organization choice removed from users |
-| `DropUserSelectedOrganizationMigrationTests.Migrate_UsersWithSelectedOrganization_EveryOtherUserColumnUnchanged` | Same migration keeps the other user columns |
-| `RetireVerificationCodesMigrationTests.Migrate_CodesStoredBeforeRelease_BlanksEveryStoredCode` | Readable codes from before fingerprints are blanked |
-| `RetireVerificationCodesMigrationTests.Migrate_CodesStoredBeforeRelease_MarksEveryCodeUsed` | Same codes can no longer be used |
-| `RetireVerificationCodesMigrationTests.Migrate_CodesStoredBeforeRelease_KeepsCreatedAt` | Same migration keeps the resend wait working |
+| ID | Test | Protects |
+|---|---|---|
+| D1 | `PendingMigrationTests.RegisterAsync_DatabaseMissingAddVerificationAttemptTrackingMigration_ThrowsDbUpdateException` | Registration fails loudly on a database missing a migration |
+| D2 | `PendingMigrationTests.RegisterAsync_DatabaseFullyMigrated_Succeeds` | Registration works on a fully migrated database |
+| D3 | `UniqueEmailIndexTests.Migrate_DatabaseWithDistinctEmails_SucceedsAndKeepsRows` | Email uniqueness migration keeps existing rows |
+| D4 | `PasswordResetCodesTableTests.Migrate_CleanDatabase_CreatesResetCodeTableIndexAndUserCounters` | Reset code table, index and counters created |
+| D5 | `RefreshTokensTableTests.Migrate_AddRefreshTokensTableOnExistingUsers_NoUserRowChanged` | Refresh token table migration leaves users unchanged |
+| D6 | `RefreshTokensTableTests.ServiceProvider_RefreshTokenService_IsRegisteredForTheApp` | Refresh token service wired into the app |
+| D7 | `RefreshTokenCleanupWiringTests.HostedServices_CleanupDisabledInTests_DoesNotRegisterCleanupWorker` | Cleanup worker can be switched off |
+| D8 | `IdentityDeleteRulesTests.Migrate_IdentityForeignKeys_RolesRestrictCodesResetCodesAndRefreshTokensCascade` | Delete rules of the Identity foreign keys |
+| D9 | `IdentityDeleteRulesTests.Migrate_IdentityTablesWithRows_NoRowAddedChangedOrRemoved` | Delete-rule migration keeps existing rows |
+| D10 | `DropUserRefreshTokenColumnsMigrationTests.Migrate_DropUserRefreshTokenColumns_UsersHasNoOldTokenColumns` | Old refresh token columns removed from users |
+| D11 | `DropUserRefreshTokenColumnsMigrationTests.Migrate_UsersHoldingOldToken_EveryOtherUserColumnUnchanged` | Same migration keeps the other user columns |
+| D12 | `DropUserRefreshTokenColumnsMigrationTests.Migrate_RefreshTokensWithRows_RowsUnchanged` | Same migration keeps refresh token rows |
+| D13 | `DropUserSelectedOrganizationMigrationTests.Migrate_DropUserSelectedOrganization_UsersHasNoSelectedOrganizationColumn` | Stored organization choice removed from users |
+| D14 | `DropUserSelectedOrganizationMigrationTests.Migrate_UsersWithSelectedOrganization_EveryOtherUserColumnUnchanged` | Same migration keeps the other user columns |
+| D15 | `RetireVerificationCodesMigrationTests.Migrate_CodesStoredBeforeRelease_BlanksEveryStoredCode` | Readable codes from before fingerprints are blanked |
+| D16 | `RetireVerificationCodesMigrationTests.Migrate_CodesStoredBeforeRelease_MarksEveryCodeUsed` | Same codes can no longer be used |
+| D17 | `RetireVerificationCodesMigrationTests.Migrate_CodesStoredBeforeRelease_KeepsCreatedAt` | Same migration keeps the resend wait working |

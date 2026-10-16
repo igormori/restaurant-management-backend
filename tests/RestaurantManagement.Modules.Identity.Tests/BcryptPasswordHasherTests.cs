@@ -19,6 +19,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
+        [Trait("Rule", "T7")]
         public void Verify_BlankPassword_ReturnsFalse(string? password)
         {
             // Act
@@ -32,6 +33,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         [InlineData(null)]
         [InlineData("")]
         [InlineData("not-a-bcrypt-hash")]
+        [Trait("Rule", "T7")]
         public void Verify_BlankOrMalformedHash_ReturnsFalse(string? hash)
         {
             // Act
@@ -45,6 +47,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private static readonly string Password73Bytes = Password72Bytes + "x";
 
         [Fact]
+        [Trait("Rule", "T7")]
         public void Hash_PasswordOver72Bytes_Throws()
         {
             // Act
@@ -55,6 +58,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "T7")]
         public void Verify_PasswordOver72Bytes_ReturnsFalseEvenWhenFirst72BytesMatch()
         {
             // Arrange
@@ -68,6 +72,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "T7")]
         public void Hash_PasswordOfExactly72Bytes_HashesAndVerifies()
         {
             // Act
@@ -78,6 +83,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "T7")]
         public void Verify_WrongPassword_ReturnsFalse()
         {
             // Arrange
@@ -91,6 +97,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "R13")]
         public void Hash_Password_UsesWorkFactor12AndVerifies()
         {
             // Act
@@ -102,6 +109,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "T7")]
         public void Hash_SamePasswordTwice_ReturnsDifferentHashes()
         {
             // Act
@@ -113,6 +121,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L13")]
         public void Validate_LoginPasswordOver64Characters_ReturnsPasswordError()
         {
             // Arrange
@@ -128,6 +137,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "C7")]
         public void Validate_CurrentPasswordOver64Characters_ReturnsCurrentPasswordError()
         {
             // Arrange
