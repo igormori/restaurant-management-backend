@@ -179,9 +179,8 @@ builder.Services.AddDbContext<OrganizationDbContext>((serviceProvider, options) 
     options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
         .AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>()));
 
-builder.Services.AddDbContext<AuditLogDbContext>((serviceProvider, options) =>
-    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
-        .AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>()));
+builder.Services.AddAuditLog((sp, options) => options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
+    .AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>()));
 
 // ---------------------------------------------
 // Sentry for error tracking
@@ -233,8 +232,6 @@ builder.Services.AddSwaggerGen(c =>
 // ---------------------------------------------
 // Shared Services
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IAuditLog, AuditLogWriter>();
-builder.Services.AddScoped<IAuditLogReader, AuditLogReader>();
 
 // Identity Module Services
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
