@@ -317,6 +317,32 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        public async Task LoginAsync_EmailInOtherCasingWithSurroundingSpaces_IssuesTokens()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            seedContext.Users.Add(new User
+            {
+                Email = "ana@cantinadanonna.com.br",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "Ana",
+                LastName = "Souza",
+                IsVerified = true
+            });
+            await seedContext.SaveChangesAsync();
+
+            using var context = database.CreateContext();
+            var sut = CreateSut(context);
+
+            // Act
+            var response = await sut.LoginAsync(new LoginRequest { Email = "  Ana@CantinaDaNonna.com.br ", Password = Password }, TestClients.KitchenTablet);
+
+            // Assert
+            response.Auth.Token.Should().NotBeNullOrEmpty();
+        }
+
+        [Fact]
         public async Task LoginAsync_UnknownEmail_VerifiesAgainstAWorkFactor12DummyHash()
         {
             // Arrange
