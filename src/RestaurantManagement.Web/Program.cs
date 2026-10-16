@@ -238,6 +238,9 @@ builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 builder.Services.AddScoped<IVerificationService, VerificationService>();
+builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
+builder.Services.AddScoped<IPasswordChangeService, PasswordChangeService>();
+builder.Services.AddScoped<IPasswordAuditRecorder, PasswordAuditRecorder>();
 builder.Services.AddSingleton<IVerificationCodeHasher, VerificationCodeHasher>();
 
 // Organization Module Services

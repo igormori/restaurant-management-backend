@@ -120,5 +120,41 @@ namespace RestaurantManagement.Modules.Identity.Controllers
             var response = await _verificationService.ResendVerificationCodeAsync(request);
             return Ok(response);
         }
+
+        // POST api/auth/forgot-password
+        [HttpPost("forgot-password")]
+        [AllowAnonymous]
+        [EnableRateLimiting(AuthRateLimitPolicies.ForgotPassword)]
+        public async Task<ActionResult<MessageResponse>> ForgotPassword(
+            [FromBody] ForgotPasswordRequest request, [FromServices] IPasswordResetService resetService)
+        {
+            return Ok(await resetService.RequestResetCodeAsync(request));
+        }
+
+        // POST api/auth/reset-password
+        [HttpPost("reset-password")]
+        [AllowAnonymous]
+        [EnableRateLimiting(AuthRateLimitPolicies.ResetPassword)]
+        public async Task<ActionResult<MessageResponse>> ResetPassword(
+            [FromBody] ResetPasswordRequest request, [FromServices] IPasswordResetService resetService)
+        {
+            return Ok(await resetService.ResetPasswordAsync(request));
+        }
+
+        // POST api/auth/change-password
+        [HttpPost("change-password")]
+        [Authorize]
+        [EnableRateLimiting(AuthRateLimitPolicies.ChangePassword)]
+        public async Task<ActionResult<MessageResponse>> ChangePassword(
+            [FromBody] ChangePasswordRequest request, [FromServices] IPasswordChangeService changeService)
+        {
+            var subject = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(subject, out var userId))
+                return Unauthorized();
+
+            var response = await changeService.ChangePasswordAsync(userId, request);
+            RefreshTokenCookie.Clear(Response);
+            return Ok(response);
+        }
     }
 }
