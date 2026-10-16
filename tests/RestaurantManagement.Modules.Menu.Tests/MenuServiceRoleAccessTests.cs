@@ -39,6 +39,7 @@ public class MenuServiceRoleAccessTests
         context.LocationMenus.Add(new Entities.LocationMenu
         {
             Id = Guid.NewGuid(),
+            OrganizationId = CantinaId,
             MenuId = DinnerMenuId,
             LocationId = CentroLocationId,
             IsActive = true,

@@ -199,19 +199,11 @@ namespace RestaurantManagement.Modules.Menu.Services
 
             await CheckReadPermission(userId, location.OrganizationId);
 
-            // Links are read without the tenant filter: the organization is enforced by the filtered
-            // Menus query, so a link row without its own organization stamp cannot hide a menu.
-            var menuIdsAtLocation = _menuDb.LocationMenus.IgnoreQueryFilters()
+            var menus = await _menuDb.LocationMenus
                 .Where(lm => lm.LocationId == locationId)
-                .Select(lm => lm.MenuId);
-
-            var menus = await _menuDb.Menus
-                .Where(m => menuIdsAtLocation.Contains(m.Id))
-                .ToListAsync();
-
-            var menuIds = menus.Select(m => m.Id).ToList();
-            var links = await _menuDb.LocationMenus.IgnoreQueryFilters()
-                .Where(lm => menuIds.Contains(lm.MenuId))
+                .Include(lm => lm.Menu)
+                .ThenInclude(m => m.LocationMenus) // Re-include to get all locationIds for response
+                .Select(lm => lm.Menu)
                 .ToListAsync();
 
             return menus.Select(m => new MenuResponse
@@ -221,7 +213,7 @@ namespace RestaurantManagement.Modules.Menu.Services
                 Name = m.Name,
                 Description = m.Description,
                 IsActive = m.IsActive,
-                LocationIds = links.Where(lm => lm.MenuId == m.Id).Select(lm => lm.LocationId).ToList()
+                LocationIds = m.LocationMenus.Select(lm => lm.LocationId).ToList()
             }).ToList();
         }
 

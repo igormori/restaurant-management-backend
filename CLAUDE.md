@@ -71,8 +71,6 @@ Scenarios: 1–3
     memberships, which may have no token organization yet
   - `OrganizationService.GetOrganizationsAsync`: plan details for every one of the user's
     memberships
-  - `MenuService.GetMenusByLocationAsync` (two reads of `LocationMenus`): link rows may lack
-    an organization stamp; the filtered `Menus` query still enforces the organization
 
 ## Workflow
 Test-first, with three human gates (⏸). Reviewer agents run automatically between steps and only
