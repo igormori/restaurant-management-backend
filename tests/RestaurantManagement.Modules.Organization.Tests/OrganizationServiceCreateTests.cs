@@ -15,7 +15,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
     {
         private static CreateOrganizationRequest ValidRequest => new()
         {
-            Name = "Test Restaurant"
+            Name = "Test Restaurant",
+            Currency = "BRL"
         };
 
         private static IUserRoleLookup CreateUserRoleLookup(Guid userId, List<Guid>? organizationIds = null)

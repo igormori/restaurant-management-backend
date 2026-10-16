@@ -39,6 +39,12 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                         .HasColumnType("text")
                         .HasColumnName("city");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("code");
+
                     b.Property<string>("Country")
                         .IsRequired()
                         .HasColumnType("text")
@@ -80,6 +86,20 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("status");
 
+                    b.Property<string>("TimeZone")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("time_zone");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Store")
+                        .HasColumnName("type");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -91,8 +111,9 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                     b.HasKey("Id")
                         .HasName("pk_locations");
 
-                    b.HasIndex("OrganizationId")
-                        .HasDatabaseName("ix_locations_organization_id");
+                    b.HasIndex("OrganizationId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_locations_organization_id_code");
 
                     b.ToTable("locations", (string)null);
                 });
@@ -115,6 +136,12 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("created_by_user_id");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
 
                     b.Property<string>("Description")
                         .HasColumnType("text")
@@ -164,6 +191,10 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<TimeOnly>("BusinessDayCutoff")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("business_day_cutoff");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -171,6 +202,11 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("created_by_user_id");
+
+                    b.Property<decimal>("DiscountApprovalLimit")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("discount_approval_limit");
 
                     b.Property<bool>("IsTrialActive")
                         .HasColumnType("boolean")
@@ -188,6 +224,11 @@ namespace RestaurantManagement.Modules.Organization.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("plan_type");
+
+                    b.Property<decimal>("ServiceChargeRate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("service_charge_rate");
 
                     b.Property<DateTime>("TrialEndDate")
                         .HasColumnType("timestamp with time zone")

@@ -15,6 +15,10 @@ namespace RestaurantManagement.Modules.Organization.Entities
         public string PhoneNumber { get; set; } = null!;
         public LocationStatus Status { get; set; } = LocationStatus.Active;
 
+        public string TimeZone { get; set; } = null!;
+        public LocationType Type { get; set; }
+        public string Code { get; set; } = null!;
+
 
         // Navigation
         public Organization Organization { get; set; } = null!;

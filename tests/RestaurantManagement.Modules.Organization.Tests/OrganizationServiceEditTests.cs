@@ -18,7 +18,10 @@ namespace RestaurantManagement.Modules.Organization.Tests
         private static EditOrganizationRequest ValidRequest => new()
         {
             Name = "Updated Restaurant Name",
-            Description = "Updated description"
+            Description = "Updated description",
+            ServiceChargeRate = 10m,
+            DiscountApprovalLimit = 5m,
+            BusinessDayCutoff = "04:00"
         };
 
         private static async Task<Guid> SeedOrganizationAsync(OrganizationTestDatabase database)
@@ -30,6 +33,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             {
                 Id = organizationId,
                 Name = "Original Restaurant",
+                Currency = Currency.BRL,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             });

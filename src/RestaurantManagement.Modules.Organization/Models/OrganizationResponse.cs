@@ -1,4 +1,5 @@
 using System;
+using RestaurantManagement.Modules.Organization.Entities;
 
 namespace RestaurantManagement.Modules.Organization.Models
 {
@@ -61,5 +62,10 @@ namespace RestaurantManagement.Modules.Organization.Models
         public int MaxLocations { get; set; } = 1;
         public DateTime? TrialEndDate { get; set; }
         public bool IsTrialActive { get; set; }
+
+        public Currency Currency { get; set; }
+        public decimal ServiceChargeRate { get; set; }
+        public decimal DiscountApprovalLimit { get; set; }
+        public string BusinessDayCutoff { get; set; } = string.Empty;
     }
 }

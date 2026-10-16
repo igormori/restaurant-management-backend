@@ -19,9 +19,9 @@ namespace RestaurantManagement.Modules.Organization.Tests
         {
             using var context = database.CreateContext();
             context.Organizations.AddRange(
-                new Entities.Organization { Id = CantinaId, Name = CantinaName },
-                new Entities.Organization { Id = TrattoriaId, Name = TrattoriaName, IsActive = false },
-                new Entities.Organization { Id = PizzariaId, Name = PizzariaName });
+                new Entities.Organization { Id = CantinaId, Name = CantinaName, Currency = Entities.Currency.BRL },
+                new Entities.Organization { Id = TrattoriaId, Name = TrattoriaName, Currency = Entities.Currency.BRL, IsActive = false },
+                new Entities.Organization { Id = PizzariaId, Name = PizzariaName, Currency = Entities.Currency.BRL });
             await context.SaveChangesAsync();
         }
 

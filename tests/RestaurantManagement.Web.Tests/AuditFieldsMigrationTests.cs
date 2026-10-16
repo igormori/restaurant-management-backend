@@ -261,17 +261,23 @@ public class AuditFieldsMigrationTests : IClassFixture<AuditFieldsPostgresFixtur
         // Act
         await MigrateToAsync(context, auditMigration);
 
-        // Assert
-        var organization = await context.Organizations.SingleAsync();
+        // Assert: project only the columns this schema already has; later migrations add more columns
+        var organization = await context.Organizations
+            .Select(o => new { o.Name, o.CreatedAt, o.CreatedByUserId, o.UpdatedByUserId })
+            .SingleAsync();
         organization.Name.ShouldBe("Cantina da Nonna");
         organization.CreatedAt.ShouldBe(CreationTime);
         organization.CreatedByUserId.ShouldBeNull();
         organization.UpdatedByUserId.ShouldBeNull();
-        var settings = await context.OrganizationSettings.IgnoreQueryFilters().SingleAsync();
+        var settings = await context.OrganizationSettings.IgnoreQueryFilters()
+            .Select(s => new { s.OrganizationId, s.PlanType, s.CreatedByUserId })
+            .SingleAsync();
         settings.OrganizationId.ShouldBe(OrgA);
         settings.PlanType.ShouldBe("TRIAL");
         settings.CreatedByUserId.ShouldBeNull();
-        var location = await context.Locations.IgnoreQueryFilters().SingleAsync();
+        var location = await context.Locations.IgnoreQueryFilters()
+            .Select(l => new { l.Name, l.OrganizationId, l.CreatedByUserId, l.UpdatedByUserId })
+            .SingleAsync();
         location.Name.ShouldBe("Unidade Centro");
         location.OrganizationId.ShouldBe(OrgA);
         location.CreatedByUserId.ShouldBeNull();

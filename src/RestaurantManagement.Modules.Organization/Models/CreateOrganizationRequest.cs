@@ -54,5 +54,7 @@ namespace RestaurantManagement.Modules.Organization.Models
             set => _accentColor = value?.Trim();
         }
 
+        [Required, RegularExpression("^(BRL|USD|CAD)$", ErrorMessage = "Currency must be BRL, USD or CAD.")]
+        public string? Currency { get; set; }
     }
 }

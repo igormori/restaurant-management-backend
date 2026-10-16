@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RestaurantManagement.Modules.Organization.Models
 {
-    public class EditOrganizationRequest
+    public class EditOrganizationRequest : IValidatableObject
     {
         private string _name = string.Empty;
         private string? _description;
@@ -53,6 +53,25 @@ namespace RestaurantManagement.Modules.Organization.Models
             get => _accentColor;
             set => _accentColor = value?.Trim();
         }
+
+        [Required, Range(typeof(decimal), "0", "100", ErrorMessage = "ServiceChargeRate must be between 0 and 100.")]
+        public decimal? ServiceChargeRate { get; set; }
+
+        [Required, Range(typeof(decimal), "0", "100", ErrorMessage = "DiscountApprovalLimit must be between 0 and 100.")]
+        public decimal? DiscountApprovalLimit { get; set; }
+
+        [Required, RegularExpression("^([01][0-9]|2[0-3]):[0-5][0-9]$", ErrorMessage = "BusinessDayCutoff must be in HH:mm format.")]
+        public string? BusinessDayCutoff { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (HasMoreThanTwoDecimals(ServiceChargeRate))
+                yield return new ValidationResult("ServiceChargeRate allows at most 2 decimals.", new[] { nameof(ServiceChargeRate) });
+            if (HasMoreThanTwoDecimals(DiscountApprovalLimit))
+                yield return new ValidationResult("DiscountApprovalLimit allows at most 2 decimals.", new[] { nameof(DiscountApprovalLimit) });
+        }
+
+        private static bool HasMoreThanTwoDecimals(decimal? value) => value.HasValue && decimal.Round(value.Value, 2) != value.Value;
 
     }
 }

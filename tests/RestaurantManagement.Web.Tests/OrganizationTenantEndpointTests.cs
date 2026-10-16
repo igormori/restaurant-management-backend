@@ -24,6 +24,7 @@ public class OrganizationTenantEndpointTests : IClassFixture<AuditFieldsPostgres
     private static readonly Guid CantinaBatelId = Guid.Parse("44444444-dddd-4ddd-8ddd-000000000001");
     private static readonly Guid TrattoriaCentroId = Guid.Parse("44444444-dddd-4ddd-8ddd-000000000003");
 
+    // Also carries the organization settings, so the same body passes validation on PUT api/organizations/edit.
     private static readonly object LocationBody = new
     {
         organizationId = TrattoriaId,
@@ -34,14 +35,22 @@ public class OrganizationTenantEndpointTests : IClassFixture<AuditFieldsPostgres
         postalCode = "80060-070",
         country = "Brasil",
         phoneNumber = "+55 41 3000-3000",
-        status = "Closed"
+        status = "Closed",
+        timeZone = "America/Sao_Paulo",
+        code = "MERCADO",
+        serviceChargeRate = 10m,
+        discountApprovalLimit = 5m,
+        businessDayCutoff = "04:00"
     };
 
     private static readonly object OrganizationBody = new
     {
         organizationId = TrattoriaId,
         name = "Cantina da Nonna Batel",
-        description = "Cozinha italiana de família"
+        description = "Cozinha italiana de família",
+        serviceChargeRate = 10m,
+        discountApprovalLimit = 5m,
+        businessDayCutoff = "04:00"
     };
 
     private readonly AuditFieldsPostgresFixture _postgres;
@@ -58,10 +67,10 @@ public class OrganizationTenantEndpointTests : IClassFixture<AuditFieldsPostgres
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana",
             new UserRole { OrganizationId = CantinaId, Role = Roles.Owner },
             new UserRole { OrganizationId = TrattoriaId, Role = Roles.Owner });
-        await factory.SeedOrganizationAsync(CantinaId, "Cantina da Nonna");
-        await factory.SeedOrganizationAsync(TrattoriaId, "Trattoria do Sol");
-        await factory.SeedLocationAsync(CantinaId, CantinaBatelId, "Unidade Batel");
-        await factory.SeedLocationAsync(TrattoriaId, TrattoriaCentroId, "Unidade Centro");
+        await factory.SeedOrganizationAsync(CantinaId, "Cantina da Nonna", Currency.BRL);
+        await factory.SeedOrganizationAsync(TrattoriaId, "Trattoria do Sol", Currency.BRL);
+        await factory.SeedLocationAsync(CantinaId, CantinaBatelId, "Unidade Batel", "BATEL", "America/Sao_Paulo");
+        await factory.SeedLocationAsync(TrattoriaId, TrattoriaCentroId, "Unidade Centro", "CENTRO", "America/Sao_Paulo");
         return factory;
     }
 

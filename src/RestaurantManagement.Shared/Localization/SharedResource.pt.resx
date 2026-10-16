@@ -111,6 +111,9 @@
   <data name="LocationNotFound" xml:space="preserve">
     <value>Localização não encontrada.</value>
   </data>
+  <data name="LocationCodeAlreadyUsed" xml:space="preserve">
+    <value>Outra localização desta organização já usa este código.</value>
+  </data>
   <data name="UserNotMemberOfOrganization" xml:space="preserve">
     <value>Usuário não é membro desta organização.</value>
   </data>
