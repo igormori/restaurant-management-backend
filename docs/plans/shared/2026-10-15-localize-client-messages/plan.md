@@ -45,4 +45,4 @@ Terms used below:
 - [x] T6 — Translate organization create/edit field errors
 - [x] T7 — Translate location create/edit field errors
 - [x] T8 — Answer an invalid user identifier on locations with a localized 401
-- [ ] T9 — Check that every message exists in en and pt
+- [x] T9 — Check that every message exists in en and pt
