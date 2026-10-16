@@ -45,7 +45,7 @@ Based on the OWASP (Open Worldwide Application Security Project) API Security To
   (BCrypt ignores everything past 72 bytes, and accented letters and emoji take 2 to 4 bytes
   each, so 64 characters can exceed 72 bytes). A longer password is rejected, never truncated.
   Enforce it both in validation (`PasswordRulesAttribute` for new passwords, `MaxPasswordBytesAttribute`
-  on the login password so it is rejected before the user lookup; 400 with a translated message) and in
+  on the login password and the change-password current password so they are rejected before the user lookup or `Verify`; 400 with a translated message) and in
   the hasher (`Hash` throws, `Verify` returns false).
 - Login failures return one generic message. Never say whether the email exists.
 - JWT: validate issuer, audience, lifetime and signing key. Short-lived access tokens.

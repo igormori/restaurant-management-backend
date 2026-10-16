@@ -141,4 +141,43 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
         cookie.Path.ToString().ShouldBe(CookiePath);
         (await IsRefreshAcceptedAsync(factory, earlierToken)).ShouldBeFalse();
     }
+
+    // 36 two-byte letters plus one ASCII letter: 37 characters, 73 UTF-8 bytes.
+    private static readonly string CurrentPasswordOf73Bytes = new string('é', 36) + "a";
+    private static readonly string CurrentPasswordOf72Bytes = new string('é', 36);
+
+    [Theory]
+    [InlineData("en", "The field CurrentPassword must be a maximum of 72 bytes. Special characters and emoji take more than one byte, so use fewer of them.")]
+    [InlineData("pt-BR", "O campo CurrentPassword deve ter no máximo 72 bytes. Caracteres especiais e emojis ocupam mais de um byte; use menos deles.")]
+    public async Task ChangePassword_CurrentPasswordOver72Bytes_ReturnsBadRequestWithTranslatedMessage(string culture, string expected)
+    {
+        // Arrange
+        using var factory = new AuthApiFactory();
+        var client = factory.CreateClient();
+        var request = LocalizedResponses.Request("POST", ChangeUrl, culture, new { currentPassword = CurrentPasswordOf73Bytes, newPassword = NewPassword });
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", TestAccessTokens.Create(factory.Services, MariaId, organizationId: null, Roles.Owner));
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await LocalizedResponses.FieldErrorsAsync(response)).ShouldContain(expected);
+    }
+
+    [Fact]
+    public async Task ChangePassword_CurrentPasswordOf72Bytes_IsNotRejectedByValidation()
+    {
+        // Arrange
+        using var factory = new AuthApiFactory();
+        var client = factory.CreateClient();
+        var request = LocalizedResponses.Request("POST", ChangeUrl, "en", new { currentPassword = CurrentPasswordOf72Bytes, newPassword = NewPassword });
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", TestAccessTokens.Create(factory.Services, MariaId, organizationId: null, Roles.Owner));
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        (await LocalizedResponses.FieldErrorsAsync(response)).ShouldNotContain(m => m.Contains("72 bytes"));
+    }
 }

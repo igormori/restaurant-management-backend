@@ -7,6 +7,7 @@ namespace RestaurantManagement.Modules.Identity.Models
     {
         [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
         [MaxLength(64, ErrorMessage = "MaxLengthAttribute_ValidationError")]
+        [MaxPasswordBytes]
         public string CurrentPassword { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
