@@ -23,8 +23,6 @@ namespace RestaurantManagement.Modules.Identity.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        public Guid? SelectedOrganizationId { get; set; }
-
         // Navigation property
         public ICollection<UserRole> Roles { get; set; } = new List<UserRole>();
     }

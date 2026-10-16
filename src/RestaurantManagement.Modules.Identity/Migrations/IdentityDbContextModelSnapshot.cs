@@ -198,10 +198,6 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                         .HasColumnType("text")
                         .HasColumnName("phone_number");
 
-                    b.Property<Guid?>("SelectedOrganizationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("selected_organization_id");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");

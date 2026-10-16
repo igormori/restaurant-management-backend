@@ -91,8 +91,6 @@ namespace RestaurantManagement.Modules.Identity.Services
             user.FailedAttempts = 0;
             user.LockedUntil = null;
 
-            // A fresh login starts without a selected organization.
-            user.SelectedOrganizationId = null;
             user.LastLoginAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();
@@ -152,7 +150,6 @@ namespace RestaurantManagement.Modules.Identity.Services
             if (!await _organizations.CanSelectAsync(user, request.OrganizationId))
                 throw new BusinessException(_localizer[NotMemberKey].Value, ForbiddenStatusCode);
 
-            user.SelectedOrganizationId = request.OrganizationId;
             user.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
 
