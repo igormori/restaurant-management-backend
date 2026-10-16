@@ -54,5 +54,8 @@ namespace RestaurantManagement.Modules.Organization.Models
             set => _accentColor = value?.Trim();
         }
 
+        // Stub (tester): T1 adds validation (required; BRL, USD or CAD only).
+        public string? Currency { get; set; }
+
     }
 }

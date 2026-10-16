@@ -2,6 +2,7 @@ using System.Net;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Shared;
 using Shouldly;
+using Currency = RestaurantManagement.Modules.Organization.Entities.Currency;
 
 namespace RestaurantManagement.Web.Tests;
 
@@ -28,11 +29,11 @@ public class LocationAccessEndpointTests : IClassFixture<AuditFieldsPostgresFixt
     private async Task<TenantApiFactory> CreateFactoryAsync()
     {
         var factory = await TenantApiFactory.CreateAsync(_postgres);
-        await factory.SeedOrganizationAsync(CantinaId, "Cantina da Nonna");
-        await factory.SeedOrganizationAsync(TrattoriaId, "Trattoria do Sol");
-        await factory.SeedLocationAsync(CantinaId, Guid.Parse(Batel), "Unidade Batel");
-        await factory.SeedLocationAsync(CantinaId, Guid.Parse(MercadoMunicipal), "Unidade Mercado Municipal");
-        await factory.SeedLocationAsync(TrattoriaId, Guid.Parse(TrattoriaCentro), "Unidade Centro");
+        await factory.SeedOrganizationAsync(CantinaId, "Cantina da Nonna", Currency.BRL);
+        await factory.SeedOrganizationAsync(TrattoriaId, "Trattoria do Sol", Currency.BRL);
+        await factory.SeedLocationAsync(CantinaId, Guid.Parse(Batel), "Unidade Batel", "BATEL", "America/Sao_Paulo");
+        await factory.SeedLocationAsync(CantinaId, Guid.Parse(MercadoMunicipal), "Unidade Mercado Municipal", "MERCADO", "America/Sao_Paulo");
+        await factory.SeedLocationAsync(TrattoriaId, Guid.Parse(TrattoriaCentro), "Unidade Centro", "CENTRO", "America/Sao_Paulo");
         await factory.SeedUserAsync(BiaId, "bia@cantinadanonna.com.br", "Bia",
             new UserRole { OrganizationId = CantinaId, LocationId = Guid.Parse(Batel), Role = Roles.Waiter });
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana",

@@ -5,6 +5,7 @@ using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Menu.Data;
 using RestaurantManagement.Shared;
 using Shouldly;
+using Currency = RestaurantManagement.Modules.Organization.Entities.Currency;
 
 namespace RestaurantManagement.Web.Tests;
 
@@ -39,9 +40,9 @@ public class MenuTenantEndpointTests : IClassFixture<AuditFieldsPostgresFixture>
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana",
             new UserRole { OrganizationId = CantinaId, Role = Roles.Owner },
             new UserRole { OrganizationId = TrattoriaId, Role = Roles.Owner });
-        await factory.SeedOrganizationAsync(CantinaId, "Cantina da Nonna");
-        await factory.SeedOrganizationAsync(TrattoriaId, "Trattoria do Sol");
-        await factory.SeedLocationAsync(TrattoriaId, TrattoriaCentroId, "Unidade Centro");
+        await factory.SeedOrganizationAsync(CantinaId, "Cantina da Nonna", Currency.BRL);
+        await factory.SeedOrganizationAsync(TrattoriaId, "Trattoria do Sol", Currency.BRL);
+        await factory.SeedLocationAsync(TrattoriaId, TrattoriaCentroId, "Unidade Centro", "CENTRO", "America/Sao_Paulo");
         await factory.SeedMenuAsync(CantinaId, CantinaDinnerMenuId, "Jantar");
         await factory.SeedMenuAsync(TrattoriaId, TrattoriaLunchMenuId, "Pranzo");
         await factory.SeedCategoryAsync(CantinaId, CantinaDinnerMenuId, CantinaPastaCategoryId, "Massas");

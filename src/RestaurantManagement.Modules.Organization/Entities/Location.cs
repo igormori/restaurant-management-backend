@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Modules.Organization.Entities;
 
@@ -14,6 +15,14 @@ namespace RestaurantManagement.Modules.Organization.Entities
         public string Country { get; set; } = null!;
         public string PhoneNumber { get; set; } = null!;
         public LocationStatus Status { get; set; } = LocationStatus.Active;
+
+        // Stub (tester): not mapped yet; T3 maps it and adds the migration. Remove [NotMapped] then.
+        [NotMapped]
+        public string TimeZone { get; set; } = null!;
+        [NotMapped]
+        public LocationType Type { get; set; }
+        [NotMapped]
+        public string Code { get; set; } = null!;
 
 
         // Navigation

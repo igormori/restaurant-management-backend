@@ -81,11 +81,11 @@ public sealed class TenantApiFactory : AuthApiFactory
         await db.SaveChangesAsync();
     }
 
-    public async Task SeedOrganizationAsync(Guid organizationId, string name)
+    public async Task SeedOrganizationAsync(Guid organizationId, string name, Currency currency)
     {
         await InOrganizationAsync<OrganizationDbContext>(organizationId, async db =>
         {
-            db.Organizations.Add(new Organization { Id = organizationId, Name = name, CreatedAt = CreationTime, UpdatedAt = CreationTime });
+            db.Organizations.Add(new Organization { Id = organizationId, Name = name, Currency = currency, CreatedAt = CreationTime, UpdatedAt = CreationTime });
             db.OrganizationSettings.Add(new OrganizationSettings
             {
                 Id = Guid.NewGuid(),
@@ -99,7 +99,7 @@ public sealed class TenantApiFactory : AuthApiFactory
         });
     }
 
-    public async Task SeedLocationAsync(Guid organizationId, Guid locationId, string name)
+    public async Task SeedLocationAsync(Guid organizationId, Guid locationId, string name, string code, string timeZone)
     {
         await InOrganizationAsync<OrganizationDbContext>(organizationId, async db =>
         {
@@ -114,7 +114,9 @@ public sealed class TenantApiFactory : AuthApiFactory
                 PostalCode = "80020-310",
                 Country = "Brasil",
                 PhoneNumber = "+55 41 3000-2000",
-                Status = LocationStatus.Active
+                Status = LocationStatus.Active,
+                Code = code,
+                TimeZone = timeZone
             });
             await db.SaveChangesAsync();
         });

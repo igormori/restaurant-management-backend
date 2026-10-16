@@ -54,5 +54,10 @@ namespace RestaurantManagement.Modules.Organization.Models
             set => _accentColor = value?.Trim();
         }
 
+        // Stubs (tester): T2 adds validation (required; rates 0 to 100 with up to 2 decimals; cutoff HH:mm).
+        public decimal? ServiceChargeRate { get; set; }
+        public decimal? DiscountApprovalLimit { get; set; }
+        public string? BusinessDayCutoff { get; set; }
+
     }
 }

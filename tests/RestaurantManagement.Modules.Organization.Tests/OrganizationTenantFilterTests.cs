@@ -26,7 +26,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         private static async Task SeedOrganizationAsync(OrganizationTestDatabase database, Guid organizationId, string name, string planType, int maxLocations)
         {
             using var context = database.CreateContext();
-            context.Organizations.Add(new Entities.Organization { Id = organizationId, Name = name, CreatedAt = CreationTime, UpdatedAt = CreationTime });
+            context.Organizations.Add(new Entities.Organization { Id = organizationId, Name = name, Currency = Currency.BRL, CreatedAt = CreationTime, UpdatedAt = CreationTime });
             context.OrganizationSettings.Add(new OrganizationSettings
             {
                 Id = Guid.NewGuid(),
@@ -56,6 +56,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
                 Country = "Brasil",
                 PhoneNumber = "+55 41 3000-2000",
                 Status = LocationStatus.Active,
+                TimeZone = "America/Sao_Paulo",
+                Code = "CENTRO",
                 CreatedAt = CreationTime,
                 UpdatedAt = CreationTime
             });
@@ -104,7 +106,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var sut = CreateService(context, AnaBelongsTo(CantinaId), tenant);
 
             // Act
-            var act = () => sut.CreateOrganizationAsync(AnaId, new CreateOrganizationRequest { Name = "Trattoria do Sol" });
+            var act = () => sut.CreateOrganizationAsync(AnaId, new CreateOrganizationRequest { Name = "Trattoria do Sol", Currency = "BRL" });
 
             // Assert
             var exception = await act.ShouldThrowAsync<BusinessException>();

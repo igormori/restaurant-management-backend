@@ -23,7 +23,9 @@ namespace RestaurantManagement.Modules.Organization.Tests
             State = "IL",
             PostalCode = "62701",
             Country = "USA",
-            PhoneNumber = "555-0100"
+            PhoneNumber = "555-0100",
+            TimeZone = "America/Chicago",
+            Code = "DTWN"
         };
 
         private static EditLocationRequest ValidEditRequest => new()
@@ -35,7 +37,9 @@ namespace RestaurantManagement.Modules.Organization.Tests
             PostalCode = "62701",
             Country = "USA",
             PhoneNumber = "555-0200",
-            Status = LocationStatus.Active
+            Status = LocationStatus.Active,
+            TimeZone = "America/Chicago",
+            Code = "ELM"
         };
 
         private static async Task<Guid> SeedOrganizationAsync(OrganizationTestDatabase database)
@@ -47,6 +51,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             {
                 Id = organizationId,
                 Name = "Original Restaurant",
+                Currency = Currency.USD,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             });
@@ -72,6 +77,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
                 Country = "USA",
                 PhoneNumber = "555-0000",
                 Status = LocationStatus.Active,
+                TimeZone = "America/Chicago",
+                Code = "ORIG",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             });
