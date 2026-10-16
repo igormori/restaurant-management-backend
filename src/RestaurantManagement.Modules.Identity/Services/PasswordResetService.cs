@@ -97,7 +97,7 @@ namespace RestaurantManagement.Modules.Identity.Services
                 .OrderByDescending(c => c.CreatedAt)
                 .FirstOrDefaultAsync();
 
-            if (user == null || IsResetLocked(user))
+            if (user == null || !user.IsActive || IsResetLocked(user))
                 throw InvalidRequest();
 
             if (resetCode == null || !_hasher.IsMatch(user.Id, request.Code, resetCode.CodeHash))
