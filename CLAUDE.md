@@ -1,7 +1,7 @@
 # RestaurantManagement
 
 .NET 9 modular monolith (Identity, Menu, Organization, Shared, Web) on PostgreSQL. Multi-tenant:
-data belongs to an organization. Roles: Owner, Admin, Staff. Launch markets: Brazil, Canada and
+data belongs to an organization. Roles: Owner, Admin, Manager, Cashier, Waiter, Kitchen (access is checked by permission). Launch markets: Brazil, Canada and
 the USA. Each organization chooses its currency (BRL: Brazilian real, USD: US dollar, CAD:
 Canadian dollar) and each location its time zone; never assume a country default.
 
