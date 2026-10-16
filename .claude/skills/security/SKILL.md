@@ -18,8 +18,9 @@ Based on the OWASP (Open Worldwide Application Security Project) API Security To
   organization B's data.
 
 ## 2. Authorization (broken function-level authorization)
-- Every controller action declares its roles explicitly (`[Authorize(Roles = ...)]`).
-  No action relies on a default.
+- Every controller action declares the permission it needs through an authorization policy
+  (`[Authorize(Policy = ...)]`), never a role name. No action relies on a default. Existing
+  actions that check role names are legacy: don't copy them.
 - `[AllowAnonymous]` only on login, registration and health checks. Anything else needs a
   flag in the plan.
 - Each role the spec disallows has a test proving it is rejected.
@@ -65,7 +66,7 @@ Based on the OWASP (Open Worldwide Application Security Project) API Security To
 
 ## Checklist for reviewers
 - [ ] Every tenant query scoped by `OrganizationId` from claims
-- [ ] Roles declared on every new action, with a rejection test per disallowed role
+- [ ] Permission policy declared on every new action (no role names), with a rejection test per disallowed role
 - [ ] Cross-tenant access test exists and returns not found
 - [ ] Request models contain no server-owned fields
 - [ ] No raw SQL with user input

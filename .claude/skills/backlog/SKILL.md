@@ -34,6 +34,7 @@ But not everything deserves a ticket. Decide in this order:
 | `features/` | A new capability |
 | `improvements/` | Works as designed, should work better |
 | `tech-debt/` | Internal quality: naming, missing tests, fragile design, docs |
+| `pre-production/` | Must be done before launch, outside the code: deployment, certificates, secrets, infrastructure |
 
 ## 4. File template (every field required)
 

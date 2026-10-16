@@ -8,6 +8,7 @@ One file per item, filed by type.
 | [bugs/](bugs/) | Something that exists but behaves incorrectly |
 | [improvements/](improvements/) | Existing capability that works but should work better |
 | [tech-debt/](tech-debt/) | Internal quality issues (outdated code, missing tests, fragile parts) |
+| [pre-production/](pre-production/) | Must be done before launch, outside the code (deployment, certificates, secrets, infrastructure) |
 
 ## Features
 | Item | Size | File |
@@ -20,6 +21,11 @@ One file per item, filed by type.
 | Item | File |
 |---|---|
 
+## Pre-production
+| Item | File |
+|---|---|
+| Deploy the HTTPS certificate | [2026-10-16-https-certificate-deployment.md](pre-production/2026-10-16-https-certificate-deployment.md) |
+
 ## Improvements
 | Item | Size | File |
 |---|---|---|
@@ -30,7 +36,6 @@ One file per item, filed by type.
 ## Tech debt
 | Item | Size | File |
 |---|---|---|
-| Wire HTTPS into the running app | Small | [https-wiring.md](tech-debt/https-wiring.md) |
 | Vulnerable `System.Security.Cryptography.Pkcs` dependency | Small | [pkcs-dependency.md](tech-debt/pkcs-dependency.md) |
 
-Suggested order for the auth items: https-wiring, pkcs-dependency, session-redesign, password-reset, then the rest.
+Suggested order for the auth items: pkcs-dependency, session-redesign, password-reset, then the rest.
