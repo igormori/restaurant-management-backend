@@ -35,10 +35,10 @@ Decided: audit entries go to each organization the user holds a role in; a user 
 | T9 | — | — | Two new public (anonymous) endpoints; one authenticated endpoint |
 
 ## Overall Definition of Done
-- [ ] All tasks done, tests passing
-- [ ] All spec Outcomes met
-- [ ] Full test suite green after the last batch
-- [ ] No out-of-scope changes; findings in the backlog
+- [x] All tasks done, tests passing
+- [x] All spec Outcomes met
+- [x] Full test suite green after the last batch
+- [x] No out-of-scope changes; findings in the backlog
 
 ## Checklist
 - [x] T1 — Password reset email
