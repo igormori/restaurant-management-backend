@@ -372,6 +372,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         [Fact]
         [Trait("Rule", "L11")]
+        [Trait("Rule", "L4")]
         public async Task LoginAsync_LockExpiredCorrectPassword_IssuesTokensAndClearsLock()
         {
             // Arrange

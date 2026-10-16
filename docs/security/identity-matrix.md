@@ -30,11 +30,13 @@ endpoint and database tests in `tests/RestaurantManagement.Web.Tests/Identity/`.
 Web.Tests outside that folder: `PrivateByDefaultTests`, `StartupConfigurationTests`,
 `RequiredIdFieldEndpointTests` (they cover several modules).
 
-**Limits in force (`appsettings.json`):** 5 wrong logins lock login for 15 min · 5 wrong codes
+**Limits in force (`appsettings.json`; tests set their own values, so a change to these numbers
+fails no test, except the 15-minute access token, L19):** 5 wrong logins lock login for 15 min · 5 wrong codes
 lock verification, or reset, for 15 min · codes are 6 digits and expire after 15 min · 60 s
 between resends · access token 15 min · refresh token 30 days · rate limits per IP address:
 login 10/min, register 5/h, verify 10/10 min, resend 3/10 min, refresh and logout 30/min,
-forgot password 3/10 min, reset password 10/10 min, change password 10/min.
+forgot password 3/10 min, reset password 10/10 min, change password 10/min. Access tokens get up
+to 5 minutes' grace past expiry (the framework's default clock allowance; untested).
 
 ## 1. Register: `POST /api/auth/register` (public)
 | ID | Case | Expected | Status | Test |
@@ -85,7 +87,7 @@ forgot password 3/10 min, reset password 10/10 min, change password 10/min.
 | L1 | Valid credentials | 200 with access token; refresh token only in the cookie, never in the body | ✅ | `SessionServiceLoginTests.LoginAsync_ValidCredentials_ReturnsTokens`, `SessionServiceVerificationTests.LoginAsync_AfterVerification_ReturnsTokens`, `RefreshTokenCookieEndpointTests.Login_ValidCredentials_ResponseBodyHasNoRefreshToken`, `SessionServiceRefreshTests.LoginAsync_ValidCredentials_CreatesOneActiveTokenForThisDevice` |
 | L2 | Refresh cookie flags | HttpOnly, Secure, SameSite=Strict, Path=/api/auth | ✅ | `RefreshTokenCookieEndpointTests.Login_ValidCredentials_SetsHttpOnlySecureStrictCookieOnAuthPath` |
 | L3 | Email in other casing or with spaces | Logs in | ✅ | `SessionServiceLoginTests.LoginAsync_EmailInOtherCasingWithSurroundingSpaces_IssuesTokens` |
-| L4 | Success | Failed-attempt counter and lock cleared; `LastLoginAt` set; phone number not returned | ✅ | `SessionServiceLoginTests.LoginAsync_CorrectPasswordAfterFailures_ResetsCounterAndRecordsLoginTime`, `SessionServiceLoginTests.LoginAsync_UserWithPhoneNumber_ResponseHasNoPhoneNumber` |
+| L4 | Success | Failed-attempt counter and lock cleared; `LastLoginAt` set; phone number not returned | ✅ | `SessionServiceLoginTests.LoginAsync_CorrectPasswordAfterFailures_ResetsCounterAndRecordsLoginTime`, `SessionServiceLoginTests.LoginAsync_LockExpiredCorrectPassword_IssuesTokensAndClearsLock`, `SessionServiceLoginTests.LoginAsync_UserWithPhoneNumber_ResponseHasNoPhoneNumber` |
 | L5 | Unknown email, wrong password, unverified, deactivated or locked | All the same 401 `InvalidEmailOrPassword` | ✅ | `SessionServiceLoginTests.LoginAsync_UnknownEmailAndWrongPassword_ReturnSameStatusAndMessage`, `SessionServiceLoginTests.LoginAsync_UnverifiedCorrectPassword_MatchesGenericFailure`, `SessionServiceRefreshTests.LoginAsync_InactiveUserCorrectPassword_ThrowsGeneric401`, `SessionServiceLoginTests.LoginAsync_LockedAccountCorrectPassword_Throws401MatchingWrongPassword`, `AuthUniformResponseTests.AuthFailures_AcrossFoldedCases_UseOneMessagePerEndpoint` |
 | L6 | Unknown email | Still checks a dummy hash at work factor 12, so the timing matches a real account | ✅ | `SessionServiceLoginTests.LoginAsync_UnknownEmail_VerifiesAgainstAWorkFactor12DummyHash` |
 | L7 | Wrong password, attempts 1 to 4 | Failed-attempt counter +1 each time; not locked | ✅ | `SessionServiceLoginTests.LoginAsync_FourWrongPasswords_CountsFourAttemptsWithoutLocking` |
@@ -174,7 +176,7 @@ forgot password 3/10 min, reset password 10/10 min, change password 10/min.
 ## 10. Tokens, secrets and platform
 | ID | Case | Expected | Status | Test |
 |---|---|---|---|---|
-| T1 | Expired access token | 401 once expired; the default 5-minute clock allowance applies | ✅ | `AccessTokenValidationEndpointTests.LogoutAll_AccessTokenExpiredTenMinutesAgo_ReturnsUnauthorized` |
+| T1 | Expired access token | 401 for a token expired 10 minutes ago | ✅ | `AccessTokenValidationEndpointTests.LogoutAll_AccessTokenExpiredTenMinutesAgo_ReturnsUnauthorized` |
 | T2 | Access token with a bad signature, wrong issuer, wrong audience or `alg: none` | 401 | ✅ | `AccessTokenValidationEndpointTests.LogoutAll_ForgedAccessToken_ReturnsUnauthorized` |
 | T3 | Endpoint with no access rule | Private by default (401); public auth endpoints stay open | ✅ | `PrivateByDefaultTests.UndeclaredEndpoint_NoAccessToken_ReturnsUnauthorized`, `PrivateByDefaultTests.PublicAuthEndpoint_NoAccessToken_IsNotRefusedAsUnauthorized` |
 | T4 | JWT key missing, under 32 bytes, or the placeholder in production; token lifetime not positive | App refuses to start | ✅ | `StartupConfigurationTests.Startup_JwtKeyMissingOrUnder32Bytes_FailsNamingJwtKey`, `StartupConfigurationTests.Startup_PlaceholderJwtKeyInProduction_FailsNamingJwtKey`, `StartupConfigurationTests.Startup_NonPositiveJwtExpireMinutes_FailsNamingJwtExpireMinutes` |
