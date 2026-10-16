@@ -42,7 +42,7 @@ Terms used below:
 - [x] T3 — Translate menu and menu category "not found"
 - [x] T4 — Translate menu and menu category field errors
 - [x] T5 — Translate registration phone, login and organization-selection field errors
-- [ ] T6 — Translate organization create/edit field errors
-- [ ] T7 — Translate location create/edit field errors
-- [ ] T8 — Answer an invalid user identifier on locations with a localized 401
+- [x] T6 — Translate organization create/edit field errors
+- [x] T7 — Translate location create/edit field errors
+- [x] T8 — Answer an invalid user identifier on locations with a localized 401
 - [ ] T9 — Check that every message exists in en and pt
