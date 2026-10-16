@@ -47,7 +47,10 @@ service, and controllers accept and return `Models/` only.
 - No magic strings or numbers; use named constants
 - Async all the way; never `.Result` or `.Wait()`
 - Constructor injection into `private readonly` fields
-- Inject the string localizer as `_localizer` (an automated check relies on this name)
+- Name the string localizer `_localizer` when it is a constructor-injected field, and `localizer`
+  when it is a local variable (for example inside a validation attribute). Look up messages with a
+  quoted key, `_localizer["Key"]`, so the automated "no message missing" check can see them; a key
+  read from a property needs its own test proving the message exists in every language
 - Models are classes with `{ get; set; }` properties, matching the existing Models folders
 
 ## 5. Comments
