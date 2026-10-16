@@ -38,7 +38,10 @@ Based on the OWASP (Open Worldwide Application Security Project) API Security To
 - List endpoints are paginated with a hard maximum page size.
 
 ## 5. Authentication and passwords
-- Passwords hashed with ASP.NET Core Identity's `PasswordHasher`, never custom hashing.
+- Passwords are hashed with BCrypt, work factor 12 or more, through one password hashing
+  interface. No other class calls BCrypt directly.
+- Passwords are 64 characters maximum, checked before hashing (BCrypt ignores everything past
+  72 bytes, so longer passwords would be silently cut).
 - Login failures return one generic message. Never say whether the email exists.
 - JWT: validate issuer, audience, lifetime and signing key. Short-lived access tokens.
 - Rate-limit login, registration and password reset endpoints.
@@ -66,4 +69,5 @@ Based on the OWASP (Open Worldwide Application Security Project) API Security To
 - [ ] Cross-tenant access test exists and returns not found
 - [ ] Request models contain no server-owned fields
 - [ ] No raw SQL with user input
+- [ ] Passwords hashed only through the password hashing interface; no direct BCrypt call
 - [ ] No secrets, tokens or personal data in code, logs, or responses
