@@ -289,5 +289,26 @@ namespace RestaurantManagement.Modules.Identity.Tests
             after.FailedAttempts.ShouldBe(0);
             after.LockedUntil.ShouldBeNull();
         }
+
+        [Fact]
+        public async Task ResetPasswordAsync_LockExpired_NewCodeCanBeRequestedAndUsed()
+        {
+            // Arrange
+            using var database = await CreateDatabaseAsync();
+            using (var context = database.CreateContext())
+            {
+                var maria = await context.Users.SingleAsync(u => u.Id == MariaId);
+                maria.PasswordResetLockedUntil = DateTime.UtcNow.AddMinutes(-1);
+                await context.SaveChangesAsync();
+            }
+            var code = await RequestCodeAsync(database);
+
+            // Act
+            await ResetAsync(database, MariaEmail, code, NewPassword);
+
+            // Assert
+            code.ShouldNotBeNullOrEmpty();
+            BCrypt.Net.BCrypt.Verify(NewPassword, (await ReadMariaAsync(database)).PasswordHash).ShouldBeTrue();
+        }
     }
 }

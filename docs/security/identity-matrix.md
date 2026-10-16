@@ -151,7 +151,7 @@ forgot password 3/10 min, reset password 10/10 min, change password 10/min.
 | P11 | Reset: weak new password | 400 | ✅ | `PasswordRulesAttributeTests.Validate_WeakNewPassword_ReturnsNewPasswordError` |
 | P12 | Reset: audit write fails | Request still succeeds; error logged | ✅ | `PasswordAuditFailureTests.ResetPasswordAsync_AuditWriteFails_SucceedsAndLogsError` |
 | P13 | Rate limit exceeded on forgot or reset | 429 | ✅ | `AuthRateLimitingTests.PasswordEndpoint_LimitExceeded_ReturnsTooManyRequests` |
-| P14 | Reset: lock expired | A new code can be requested and used | ❌ | |
+| P14 | Reset: lock expired | A new code can be requested and used | ✅ | `PasswordResetServiceResetTests.ResetPasswordAsync_LockExpired_NewCodeCanBeRequestedAndUsed` |
 
 ## 9. Change password: `POST /api/auth/change-password` (signed in)
 | ID | Case | Expected | Status | Test |
