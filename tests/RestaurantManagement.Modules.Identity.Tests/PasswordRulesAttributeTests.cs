@@ -46,6 +46,18 @@ namespace RestaurantManagement.Modules.Identity.Tests
             result.ShouldNotBe(ValidationResult.Success);
         }
 
+        [Theory]
+        [InlineData("Massa_Fresca2026")]               // underscore is not a symbol
+        [InlineData("Massa Fresca2026")]               // space is not a symbol
+        public void GetValidationResult_OnlyNonLetterNonDigitIsUnderscoreOrSpace_ReturnsError(string password)
+        {
+            // Act
+            var result = Validate(password);
+
+            // Assert
+            result.ShouldNotBe(ValidationResult.Success);
+        }
+
         // Scenario 8
         [Theory]
         [InlineData("Massa@26")]                       // exactly 8 characters
