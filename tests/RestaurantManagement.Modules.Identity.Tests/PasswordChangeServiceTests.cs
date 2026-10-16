@@ -166,5 +166,22 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await _auditRecorder.Received(1).RecordAsync(MariaId, AuditActions.PasswordChanged, Arg.Any<CancellationToken>());
             await _auditRecorder.ReceivedWithAnyArgs(1).RecordAsync(default, default!, default);
         }
+
+        [Fact]
+        public async Task ChangePasswordAsync_WrongCurrentPasswordRepeatedly_NeverCountsTowardLoginLock()
+        {
+            // Arrange
+            using var database = await CreateDatabaseAsync();
+            const int maxFailedLoginAttempts = 5;
+
+            // Act
+            for (var attempt = 0; attempt < maxFailedLoginAttempts + 1; attempt++)
+                await Should.ThrowAsync<BusinessException>(() => ChangeAsync(database, MariaId, "Pizza@Errada2025", NewPassword));
+
+            // Assert
+            var maria = await ReadUserAsync(database, MariaId);
+            maria.FailedAttempts.ShouldBe(0);
+            maria.LockedUntil.ShouldBeNull();
+        }
     }
 }

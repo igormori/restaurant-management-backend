@@ -158,7 +158,7 @@ forgot password 3/10 min, reset password 10/10 min, change password 10/min.
 |---|---|---|---|---|
 | C1 | Not signed in | 401 | ✅ | `PasswordChangeEndpointTests.ChangePassword_NoAccessToken_ReturnsUnauthorized` |
 | C2 | Wrong current password | 400; nothing changes | ✅ | `PasswordChangeServiceTests.ChangePasswordAsync_WrongCurrentPassword_RejectedAndNothingChanges` |
-| C3 | Wrong current password | Not counted toward the login lock | ❌ | |
+| C3 | Wrong current password | Not counted toward the login lock | ✅ | `PasswordChangeServiceTests.ChangePasswordAsync_WrongCurrentPasswordRepeatedly_NeverCountsTowardLoginLock` |
 | C4 | New password same as current, or weak | 400; sessions kept | ✅ | `PasswordChangeServiceTests.ChangePasswordAsync_NewPasswordSameAsCurrent_RejectedAndSessionsKept`, `PasswordRulesAttributeTests.Validate_WeakNewPassword_ReturnsNewPasswordError` |
 | C5 | Success | Old password stops working; every session revoked; cookie cleared; audit recorded once | ✅ | `PasswordChangeServiceTests.ChangePasswordAsync_CorrectCurrentPassword_NewPasswordVerifiesAndOldDoesNot`, `PasswordChangeServiceTests.ChangePasswordAsync_CorrectCurrentPassword_RevokesEveryRefreshTokenAsPasswordChanged`, `PasswordChangeServiceTests.ChangePasswordAsync_CorrectCurrentPassword_RecordsPasswordChangedAuditOnce`, `PasswordChangeEndpointTests.ChangePassword_CorrectCurrentPassword_ClearsRefreshCookieAndEarlierTokenRefused` |
 | C6 | Body names another user | Only the caller is changed | ✅ | `PasswordChangeEndpointTests.ChangePassword_BodyNamesAnotherUser_ChangesOnlyCallerAndOtherSessionsStayActive` |
