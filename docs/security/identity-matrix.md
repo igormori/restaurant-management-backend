@@ -171,7 +171,7 @@ forgot password 3/10 min, reset password 10/10 min, change password 10/min.
 | ID | Case | Expected | Status | Test |
 |---|---|---|---|---|
 | T1 | Expired access token | 401 once expired; the default 5-minute clock allowance applies | ✅ | `AccessTokenValidationEndpointTests.LogoutAll_AccessTokenExpiredTenMinutesAgo_ReturnsUnauthorized` |
-| T2 | Access token with a bad signature, wrong issuer, wrong audience or `alg: none` | 401 | ❌ | |
+| T2 | Access token with a bad signature, wrong issuer, wrong audience or `alg: none` | 401 | ✅ | `AccessTokenValidationEndpointTests.LogoutAll_ForgedAccessToken_ReturnsUnauthorized` |
 | T3 | Endpoint with no access rule | Private by default (401); public auth endpoints stay open | ✅ | `PrivateByDefaultTests.UndeclaredEndpoint_NoAccessToken_ReturnsUnauthorized`, `PrivateByDefaultTests.PublicAuthEndpoint_NoAccessToken_IsNotRefusedAsUnauthorized` |
 | T4 | JWT key missing, under 32 bytes, or the placeholder in production; token lifetime not positive | App refuses to start | ✅ | `StartupConfigurationTests.Startup_JwtKeyMissingOrUnder32Bytes_FailsNamingJwtKey`, `StartupConfigurationTests.Startup_PlaceholderJwtKeyInProduction_FailsNamingJwtKey`, `StartupConfigurationTests.Startup_NonPositiveJwtExpireMinutes_FailsNamingJwtExpireMinutes` |
 | T5 | Code hash key missing or under 32 bytes | App refuses to start | ✅ | `StartupConfigurationTests.Startup_VerificationHashKeyEmpty_FailsNamingHashKey`, `StartupConfigurationTests.Startup_VerificationHashKeyEmptyInProduction_FailsNamingHashKey`, `StartupConfigurationTests.Startup_VerificationHashKeyOf31Bytes_FailsNamingHashKey` |

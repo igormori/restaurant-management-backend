@@ -71,4 +71,45 @@ public class AccessTokenValidationEndpointTests : IDisposable
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
         await _factory.SessionService.DidNotReceive().LogoutAllAsync(Arg.Any<Guid>());
     }
+
+    private static string UnsignedToken(JwtOptions jwt)
+    {
+        var header = Base64UrlEncoder.Encode("""{"alg":"none","typ":"JWT"}""");
+        var payload = Base64UrlEncoder.Encode(
+            $$"""{"sub":"{{MariaId}}","iss":"{{jwt.Issuer}}","aud":"{{jwt.Audience}}","exp":{{DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds()}},"http://schemas.microsoft.com/ws/2008/06/identity/claims/role":"Owner"}""");
+        return $"{header}.{payload}.";
+    }
+
+    private string ForgedToken(string forgery)
+    {
+        var jwt = AppJwt;
+        var expires = DateTime.UtcNow.AddMinutes(15);
+        var notBefore = DateTime.UtcNow.AddMinutes(-1);
+        return forgery switch
+        {
+            "other-key" => SignToken("another-restaurant-signing-key-of-at-least-32-bytes", jwt.Issuer, jwt.Audience, expires, notBefore),
+            "wrong-issuer" => SignToken(jwt.Key, "https://evil.example.com", jwt.Audience, expires, notBefore),
+            "wrong-audience" => SignToken(jwt.Key, jwt.Issuer, "another-api", expires, notBefore),
+            _ => UnsignedToken(jwt)
+        };
+    }
+
+    // Matrix T2
+    [Theory]
+    [InlineData("other-key")]
+    [InlineData("wrong-issuer")]
+    [InlineData("wrong-audience")]
+    [InlineData("alg-none")]
+    public async Task LogoutAll_ForgedAccessToken_ReturnsUnauthorized(string forgery)
+    {
+        // Arrange
+        var token = ForgedToken(forgery);
+
+        // Act
+        var response = await LogoutAllWithAsync(token);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        await _factory.SessionService.DidNotReceive().LogoutAllAsync(Arg.Any<Guid>());
+    }
 }
