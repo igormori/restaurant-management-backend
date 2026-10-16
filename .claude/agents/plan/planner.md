@@ -23,15 +23,10 @@ Each [Blocking] question: 3 lines max — the question in plain words, the optio
 [Assumed]: max 5 items, one line each. Only choices a reviewer might disagree with. Never repeat a [Blocking] item. Skip anything obvious from the plan.
 Ask everything in one round. When answers arrive, change only what they affect.
 3. Scope and Backlog
-Plan only what the spec defines. Every task traces to a spec Outcome.
-Out-of-scope findings: write the backlog file yourself before finishing. Never only mention it.
-Folder	Use for
-backlog/features/	New capability
-backlog/bugs/	Behaviour that differs from what was intended
-backlog/improvements/	Works as designed, should work better
-backlog/tech-debt/	Internal quality (naming, missing tests, fragile design)
-
-File name: <YYYY-MM-DD>-<short-kebab-title>.md. Content: title, found during (plan path), date, description, why it matters.
+ 
+- Plan only what the spec defines. Every task traces to a spec Outcome.
+- Out-of-scope findings: **write the backlog file yourself** before finishing. Never only mention it.
+  Before creating one, read `.claude/skills/backlog/SKILL.md` and follow it (search for duplicates, template, naming).
 
 4. Tasks and Batches
 Task: one focused, testable change with its own DoD. Order shared foundations first.

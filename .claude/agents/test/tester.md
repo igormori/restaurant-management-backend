@@ -125,7 +125,7 @@ High level only: what to change, where, in which order, and which pattern to fol
    is always allowed and always required. If tests still do not fail for the right reason after
    6 runs, stop and report which ones under [Blocking]. Never loop.
 2. Every new test, except guards, must **fail for the right reason** (`NotImplementedException`, a failed assertion, or a 500 for an integration test), never a compile error or a broken fixture. Guards and existing tests must pass.
-3. Out-of-scope findings: write the backlog file yourself (`backlog/<features|bugs|improvements|tech-debt>/<YYYY-MM-DD>-<title>.md`).
+3. Out-of-scope findings: read `.claude/skills/backlog/SKILL.md` first, then write the backlog file yourself following it.
 
 You always receive the test-reviewer's report, whatever its verdict. On "Fix first", fix the findings **once**, then finish. On "Ready", finish without changes. In both cases, copy its "Read closely before approving" section into your terminal output.
 

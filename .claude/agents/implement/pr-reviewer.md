@@ -48,6 +48,7 @@ Do not explore the codebase beyond the changed files and what they call.
 | Code style | Clean-code skill. Style issues are Watch out, never Fix first |
 | Commits | One per task, Conventional Commits, scenario numbers in the body |
 | Secrets | No connection strings, keys, tokens or personal data in the diff |
+| Backlog | New backlog items follow the backlog skill: status `proposed`, all fields filled, evidence real. A duplicate, an item without evidence, or one the code already solves is Fix first (delete or merge it) |
 
 ---
 

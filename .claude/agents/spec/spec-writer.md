@@ -96,33 +96,7 @@ How things work today, in plain words. What is wrong or missing.
 |---|---|
 | `/backlog/<category>/<file>.md` | Removed (fully solved) / Updated (partially solved) |
 6. Backlog Rules
-
-Folders:
-
-Folder	Use for
-/backlog/features/	New capability that does not exist yet
-/backlog/bugs/	Behaviour that differs from what was intended. If it works as designed, it is not a bug.
-/backlog/improvements/	Existing capability that works as designed but should work better
-/backlog/tech-debt/	Internal quality issues (outdated code, missing tests, fragile design)
-
-File name: <YYYY-MM-DD>-<short-kebab-title>.md, for example 2026-10-15-export-report-to-pdf.md
-
-File content:
-
-markdown
-# <Title>
-
-**Found during:** docs/specs/<module>/<spec-file>.md
-**Date:** YYYY-MM-DD
-
-## Description
-What was found, in plain words.
-
-## Why it matters
-Business impact if it is not addressed.
-
-## Notes
-Anything that helps a future spec writer. When partially solved, state what was already done and by which spec.
+Before creating or updating any backlog item, read .claude/skills/backlog/SKILL.md and follow it: search for duplicates first, use its template (status proposed, severity, origin, evidence, acceptance criteria) and its date-prefixed file name.
 
 Path check: after creating or updating a backlog file, confirm the path written in the spec is exactly the file on disk, including folder and date prefix.
 

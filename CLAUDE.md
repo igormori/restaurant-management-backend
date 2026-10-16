@@ -110,8 +110,10 @@ After Gate 2, test files are read-only: never edit, delete, skip or weaken a tes
 looks wrong, stop and say why.
 
 ### Backlog
-Out-of-scope findings go to `backlog/<features|bugs|improvements|tech-debt>/<YYYY-MM-DD>-<title>.md`.
-The agent that finds them writes the file; never just mention them in the terminal.
+Rules in `.claude/skills/backlog/SKILL.md`, read only when about to write an item. In short: a
+finding that breaks the current task blocks it; a tiny fix in a file already being changed is made
+inline; anything else becomes a backlog item written by the agent that found it, after searching
+for duplicates. Agents write items as `proposed`; only the user accepts, merges or deletes them.
 
 ### Terminal output
 The reviewer reads the files in `docs/`, not the terminal. When a step finishes, show the

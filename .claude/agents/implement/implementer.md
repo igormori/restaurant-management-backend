@@ -58,7 +58,7 @@ Never tick a task whose DoD fails.
 | Design | One responsibility per class; SOLID; controllers HTTP only; business rules in `Services/` |
 | Comments | Only "why" comments; no commented-out code; no `TODO` without a backlog file (clean-code skill) |
 | Security | Tenant queries scoped by `OrganizationId` from claims; roles declared; no secrets, tokens or personal data in code, logs or responses (security skill) |
-| Scope | Only what the task asks; nothing outside the plan |
+| Scope | Only what the task asks; nothing outside the plan, except "too small to ticket" fixes allowed by the backlog skill, listed in the Delivered note |
 
 ---
 
@@ -78,7 +78,7 @@ When every task in `plan.md` is ticked:
 - **Stay in the plan.** If a task needs a file, folder, migration or package the plan does not list, stop and report it as [Blocking].
 - **Migrations:** generate them with the ef-migration skill. Never hand-edit, except a flagged `migrationBuilder.Sql` backfill.
 - **Secrets:** never write connection strings, keys, tokens or passwords. Use user-secrets locally and environment variables in deployment; `appsettings.json` holds placeholders only.
-- **Out of scope:** write the backlog file yourself (`backlog/<features|bugs|improvements|tech-debt>/<YYYY-MM-DD>-<title>.md`).
+- **Out of scope:** read `.claude/skills/backlog/SKILL.md` first. It decides whether a finding blocks this task, is fixed inline (too small to ticket), or becomes a backlog item, and how to write it.
 - **Two failed attempts** at making the same test pass: stop and report what you tried. Do not keep guessing.
 - Never push, merge or rebase.
 
