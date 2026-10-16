@@ -9,7 +9,7 @@ using RestaurantManagement.Shared.RateLimiting;
 namespace RestaurantManagement.Modules.Identity.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     public class AuthController : ControllerBase
     {
         private readonly IRegistrationService _registrationService;
