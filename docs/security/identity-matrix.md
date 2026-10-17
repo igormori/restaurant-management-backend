@@ -60,6 +60,7 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | R12 | Verification email fails to send | 200 anyway; account stays unverified; the log names the user ID, never the email address | ✅ | `RegistrationServiceTests.RegisterAsync_EmailSendingFails_StillCreatesUnverifiedUser`, `VerificationEmailFailureLogPrivacyTests.RegisterAsync_EmailSendingFails_LogsTheUserIdAndNotTheEmailAddress` |
 | R13 | Stored secrets | Password only as bcrypt (work factor 12); code only as its keyed fingerprint | ✅ | `RegistrationServiceTests.RegisterAsync_ValidRequest_StoresFingerprintOfEmailedCodeNotTheCode`, `BcryptPasswordHasherTests.Hash_Password_UsesWorkFactor12AndVerifies` |
 | R14 | Rate limit exceeded | 429 with `Retry-After` | ✅ | `AuthRateLimitingTests.PublicAuthEndpoint_LimitExceeded_ReturnsTooManyRequestsWithRetryAfter` |
+| R15 | Body carries protected fields (ID, verified, active, failed attempts, roles) | Ignored: user saved unverified, active, counters at 0, with no role | ✅ | `RegisterEndpointTests.Register_BodyCarriesProtectedFields_UserIsStillUnverifiedActiveAndWithoutRoles` |
 
 ## 2. Verify email: `POST /api/auth/verify` (public)
 | ID | Case | Expected | Status | Test |
