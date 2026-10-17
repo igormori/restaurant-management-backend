@@ -1,9 +1,9 @@
 # Review: Backlog fixes 2026-10-16 (ASVS #15, #18, #24–#28, V11, Identity missing tests)
 
 **Verdict:** Ready to merge
-**Build:** pass   **Tests:** 788 passed, 0 failed (Identity 257, Shared 159, Web 372)
+**Build:** pass   **Tests:** 789 passed, 0 failed (Identity 258, Shared 159, Web 372)
 
-Reviewed `git log 4e50ec0..HEAD` (17 commits) against the architecture, testing, security and
+Reviewed `git log 4e50ec0..HEAD` (18 commits) against the architecture, testing, security and
 clean-code skills and `CLAUDE.md`. No plan folder. ASVS means OWASP Application Security
 Verification Standard (the checklist the gap report follows).
 `python3 .claude/scripts/check-security-matrices.py`: "Security matrices in step with the tests".
@@ -19,6 +19,7 @@ test passwords are test literals).
 | 1f46f71, 50ff3d9 | Gap report: rows marked Covered; V11 no longer listed as open |
 | 65aac8e, e72c540, 0d2a3c8, 37262c0, bdb6bc3 | Earlier findings 5, 7, 8, 1+2, 3 |
 | 113b5d0 | Deletes the two solved backlog items |
+| 3a089b9 | Earlier finding 6 (locked verify timing) |
 
 ## Earlier findings
 | # | Status |
@@ -31,7 +32,7 @@ test passwords are test literals).
 | 7 (unused resx key) | Resolved in both languages |
 | 8 (V4/V5 message not asserted) | Resolved |
 | 9 (gap report V11 note) | Resolved |
-| 10 (login can trigger reuse detection) | Accepted, see Watch out 2 |
+| 10 (login can trigger reuse detection) | Accepted, see Watch out 1 |
 
 ## Production changes: full review
 - **HS256 allowlist** (`Program.cs:88`): `ValidAlgorithms = [HmacSha256]` is correct; T26
@@ -47,19 +48,18 @@ test passwords are test literals).
 ## Watch out
 | # | File:line | Problem | Suggestion |
 |---|---|---|---|
-| 1 | src/RestaurantManagement.Modules.Identity/Services/VerificationService.cs:46 | A locked account returns before the code lookup that unknown emails run "so they take the same path", so it answers slightly faster | Move the lock check after the lookup (still before the hash check) |
-| 2 | src/RestaurantManagement.Modules.Identity/Services/SessionService.cs:103 | `RevokeAsync` does not check the cookie belongs to the user logging in, and an already rotated cookie revokes its whole family. Harmless (the same browser gets a new family), but undocumented | Say so in row L20 |
-| 3 | 65aac8e (commit) | Typed `test` but changes `ISessionService`/`SessionService` signatures in `src/` | Next time use `refactor`; no action needed now |
-| 4 | docs/security/identity-asvs-gap-report.md:5,19 | Header says "Nothing changed: no code, test or matrix edits" and the summary is titled "Partial and Missing", but it now holds Covered rows | Update the header, or move Covered rows out of the summary |
-| 5 | tests/RestaurantManagement.Modules.Identity.Tests/ApprovedHashAlgorithmsTests.cs:63 | Long line with fully qualified `IOrganizationLookup` (style) | Add a `using` and break the call |
+| 1 | src/RestaurantManagement.Modules.Identity/Services/SessionService.cs:103 | `RevokeAsync` does not check the cookie belongs to the user logging in, and an already rotated cookie revokes its whole family. Harmless (the same browser gets a new family), but undocumented | Say so in row L20 |
+| 2 | 65aac8e (commit) | Typed `test` but changes `ISessionService`/`SessionService` signatures in `src/` | Next time use `refactor`; no action needed now |
+| 3 | docs/security/identity-asvs-gap-report.md:5,19 | Header says "Nothing changed: no code, test or matrix edits" and the summary is titled "Partial and Missing", but it now holds Covered rows | Update the header, or move Covered rows out of the summary |
+| 4 | tests/RestaurantManagement.Modules.Identity.Tests/ApprovedHashAlgorithmsTests.cs:63 | Long line with fully qualified `IOrganizationLookup` (style) | Add a `using` and break the call |
 
 ## Check before merging
 - **Base branch:** this branch sits on `security-fixes`. Merge `security-fixes` into
   `development` first, or this pull request carries its commits too.
 - **HS256 allowlist (Program.cs:88):** any token not signed HS256 is now refused. Today's tokens
   are HS256, so no live session breaks.
-- **Backlog deletion committed (113b5d0):** `CLAUDE.md` says agents never commit a backlog
-  deletion; the user checks and commits it. Confirm you meant this commit, or drop it.
+- **Backlog deletion committed (113b5d0):** committed at the user's request, as an exception
+  to the `CLAUDE.md` rule that the user commits backlog deletions.
 - **Verification lockout:** the frontend can no longer show "locked until"; a locked user sees
   "invalid email or code" for 15 minutes.
 
@@ -77,7 +77,7 @@ has an account.
 |---|---|---|
 | Web | Access tokens signed with anything but HS256 are refused (401) | T26 |
 | Identity | Logging in on a browser revokes that browser's previous refresh token, only once the login succeeds; other devices stay signed in | L20 |
-| Identity | A verification-locked account gets the same 401 (verify) or acknowledgement (resend) as an unknown email, instead of 423 | V4, V5, RS3, V11 |
+| Identity | A verification-locked account gets the same 401 (verify) or acknowledgement (resend) as an unknown email, instead of 423, and runs the same code lookup so it is not faster | V4, V5, RS3, V11 |
 | Identity | New tests: `nbf` enforced, `jku`/`x5u`/`jwk` headers ignored, POST-only endpoints with no secrets in URLs, no default accounts, SHA-256 fingerprints and HS256 signing | T21–T25 |
 | Shared | Unused `VerificationLockedUntil` message removed (English and Portuguese) | — |
 | Docs | Gap report rows #15, #18, #24–#28 marked Covered; V11 marked fixed | — |
@@ -92,7 +92,7 @@ and `tech-debt/2026-10-16-asvs-small-fixes-and-missing-tests.md` are deleted (so
 
 ### Checks
 - `dotnet build RestaurantManagement.sln`: pass
-- Identity, Shared and Web tests: 788 passed, 0 failed
+- Identity, Shared and Web tests: 789 passed, 0 failed
 - `python3 .claude/scripts/check-security-matrices.py`: in step
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
