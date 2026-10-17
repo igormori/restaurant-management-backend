@@ -81,6 +81,7 @@ public class AuditLogStorageTests : IClassFixture<PostgresDatabaseFixture>
     // Scenario 4
     [Theory]
     [MemberData(nameof(TamperingNames))]
+    [Trait("Rule", "SH15")]
     public async Task SaveChanges_StoredEntryChangedOrRemoved_IsRefusedAndRowUnchanged(string tampering)
     {
         // Arrange
@@ -105,6 +106,7 @@ public class AuditLogStorageTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 1
     [Fact]
+    [Trait("Rule", "SH16")]
     public async Task RecordAsync_AllFieldsGiven_StoresEveryField()
     {
         // Arrange
@@ -140,6 +142,7 @@ public class AuditLogStorageTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 2
     [Fact]
+    [Trait("Rule", "SH16")]
     public async Task RecordAsync_NoLocationReasonOrBeforeValue_StoresEntryWithThoseEmpty()
     {
         // Arrange
@@ -165,6 +168,7 @@ public class AuditLogStorageTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 3
     [Fact]
+    [Trait("Rule", "SH16")]
     public async Task RecordAsync_ChangedItemBelongsToAnotherOrganization_StoresEntryInTokenOrganization()
     {
         // Arrange
@@ -189,6 +193,7 @@ public class AuditLogStorageTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 7
     [Fact]
+    [Trait("Rule", "SH13")]
     public async Task ReadEntries_EntryRecordedInCantinaReadInTrattoriaScope_FindsNothing()
     {
         // Arrange
@@ -205,6 +210,7 @@ public class AuditLogStorageTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 5
     [Fact]
+    [Trait("Rule", "SHD17")]
     public async Task Migrate_AuditLogMigrations_CreatesOrganizationAndTimeIndex()
     {
         // Arrange
@@ -221,6 +227,7 @@ public class AuditLogStorageTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 6
     [Fact]
+    [Trait("Rule", "SHD18")]
     public async Task Migrate_AuditLogMigrations_ModelHasNoPendingChanges()
     {
         // Arrange

@@ -60,6 +60,7 @@ public class AuditLogRecordingEndpointTests : IClassFixture<PostgresDatabaseFixt
 
     // Scenario 20
     [Fact]
+    [Trait("Rule", "SH13")]
     public async Task EditOrganization_ServiceChargeRateChanged_EntryVisibleOnlyToSameOrganization()
     {
         // Arrange
@@ -80,6 +81,7 @@ public class AuditLogRecordingEndpointTests : IClassFixture<PostgresDatabaseFixt
 
     // Scenario 25
     [Fact]
+    [Trait("Rule", "SH16")]
     public async Task DeleteLocation_ActiveLocation_EntryShowsActiveToClosed()
     {
         // Arrange

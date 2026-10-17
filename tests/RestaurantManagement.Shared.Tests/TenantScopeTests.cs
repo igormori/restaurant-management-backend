@@ -10,6 +10,7 @@ public class TenantScopeTests
 
     // Scenario 23
     [Fact]
+    [Trait("Rule", "SH6")]
     public void OrganizationId_NoScopeBegun_IsNull()
     {
         // Arrange
@@ -24,6 +25,7 @@ public class TenantScopeTests
 
     // Scenario 24
     [Fact]
+    [Trait("Rule", "SH6")]
     public void Begin_Called_OrganizationIdIsTheScopedOrganization()
     {
         // Arrange
@@ -38,6 +40,7 @@ public class TenantScopeTests
 
     // Scenario 25
     [Fact]
+    [Trait("Rule", "SH6")]
     public void Dispose_ScopeDisposed_OrganizationIdIsNullAgain()
     {
         // Arrange
@@ -53,6 +56,7 @@ public class TenantScopeTests
 
     // Scenario 26
     [Fact]
+    [Trait("Rule", "SH6")]
     public void Dispose_NestedScopeDisposed_RestoresOuterOrganization()
     {
         // Arrange
@@ -69,6 +73,7 @@ public class TenantScopeTests
 
     // Scenario 27
     [Fact]
+    [Trait("Rule", "SH6")]
     public async Task OrganizationId_ReadAfterAwaits_StillTheScopedOrganization()
     {
         // Arrange
@@ -85,6 +90,7 @@ public class TenantScopeTests
 
     // Scenario 28
     [Fact]
+    [Trait("Rule", "SH6")]
     public async Task Begin_CalledInAnotherAsyncFlow_DoesNotLeakIntoCallerFlow()
     {
         // Arrange

@@ -63,6 +63,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 1
     [Fact]
+    [Trait("Rule", "SH7")]
     public async Task SaveChangesAsync_NewTenantRowCarriesAnotherOrganizationId_Throws403AndWritesNothing()
     {
         // Arrange
@@ -83,6 +84,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 2
     [Fact]
+    [Trait("Rule", "SH7")]
     public void SaveChanges_NewTenantRowCarriesAnotherOrganizationId_Throws403AndWritesNothing()
     {
         // Arrange
@@ -102,6 +104,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 3
     [Fact]
+    [Trait("Rule", "SH7")]
     public async Task SaveChangesAsync_ValidOrganizationRowBatchedWithMismatchedDish_WritesNeitherRow()
     {
         // Arrange
@@ -122,6 +125,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 4
     [Fact]
+    [Trait("Rule", "SH7")]
     public async Task SaveChangesAsync_ScopeOrganizationDiffersFromEntityOrganization_Throws403AndWritesNothing()
     {
         // Arrange
@@ -143,6 +147,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 5
     [Fact]
+    [Trait("Rule", "SH8")]
     public async Task SaveChangesAsync_OrganizationIdChangedOnExistingRow_Throws403AndKeepsStoredOrganization()
     {
         // Arrange
@@ -165,6 +170,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 6
     [Fact]
+    [Trait("Rule", "SH7")]
     public async Task SaveChangesAsync_NoCurrentOrganizationAndNoScope_Throws403AndWritesNothing()
     {
         // Arrange
@@ -185,6 +191,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 7
     [Fact]
+    [Trait("Rule", "SH7")]
     public async Task SaveChangesAsync_ScopeOpenWithDifferentUserOrganization_RowGetsScopeOrganization()
     {
         // Arrange
@@ -204,6 +211,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 8
     [Fact]
+    [Trait("Rule", "SH7")]
     public async Task SaveChangesAsync_ScopeOpenAndUserHasNoOrganization_SavesUnderScopeOrganization()
     {
         // Arrange
@@ -224,6 +232,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 9
     [Fact]
+    [Trait("Rule", "SH7")]
     public async Task SaveChangesAsync_NewDishByUserInOrgA_GetsOrganizationAndCreatorOfOrgA()
     {
         // Arrange
@@ -246,6 +255,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 10
     [Fact]
+    [Trait("Rule", "SH9")]
     public async Task SaveChangesAsync_NewTenantRow_UpdatedAtEqualsCreatedAtAndUpdatedByEqualsCreatedBy()
     {
         // Arrange
@@ -265,6 +275,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 11
     [Fact]
+    [Trait("Rule", "SH9")]
     public async Task SaveChangesAsync_NewRowWithEmptyId_GetsNewId()
     {
         // Arrange
@@ -283,6 +294,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 12
     [Fact]
+    [Trait("Rule", "SH9")]
     public async Task SaveChangesAsync_NewRowWithPresetId_KeepsPresetId()
     {
         // Arrange
@@ -303,6 +315,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 13
     [Fact]
+    [Trait("Rule", "SH7")]
     public async Task SaveChangesAsync_NewRowAlreadyCarriesCurrentOrganizationId_Saves()
     {
         // Arrange
@@ -322,6 +335,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 14
     [Fact]
+    [Trait("Rule", "SH9")]
     public async Task SaveChangesAsync_CallerSuppliesCreatedByUserId_OverwrittenWithCurrentUser()
     {
         // Arrange
@@ -343,6 +357,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 15
     [Fact]
+    [Trait("Rule", "SH7")]
     public void SaveChanges_NewDishByUserInOrgA_GetsOrganizationAndAuditFields()
     {
         // Arrange
@@ -363,6 +378,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 16
     [Fact]
+    [Trait("Rule", "SH9")]
     public async Task SaveChangesAsync_NewNonTenantRowWithNoOrganizationAndNoScope_SavesWithAuditFields()
     {
         // Arrange
@@ -384,6 +400,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 17
     [Fact]
+    [Trait("Rule", "SH9")]
     public async Task SaveChangesAsync_NewNonTenantRowWithNoSignedInUser_SavesWithNullAuditUsers()
     {
         // Arrange
@@ -403,6 +420,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 18
     [Fact]
+    [Trait("Rule", "SH9")]
     public async Task SaveChangesAsync_ExistingDishModified_SetsUpdatedAtAndUpdatedByUserId()
     {
         // Arrange
@@ -425,6 +443,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 19
     [Fact]
+    [Trait("Rule", "SH9")]
     public async Task SaveChangesAsync_ExistingDishModified_LeavesCreatedAtAndCreatedByUnchanged()
     {
         // Arrange
@@ -447,6 +466,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 20
     [Fact]
+    [Trait("Rule", "SH9")]
     public async Task SaveChangesAsync_ExistingNonTenantRowModifiedWithNoOrganization_SetsUpdatedAudit()
     {
         // Arrange
@@ -470,6 +490,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 21
     [Fact]
+    [Trait("Rule", "SH9")]
     public async Task SaveChangesAsync_NewRowWithFixedClock_CreatedAtAndUpdatedAtEqualFixedTimeAsUtc()
     {
         // Arrange
@@ -491,6 +512,7 @@ public class AuditSaveChangesInterceptorTests
 
     // Scenario 22
     [Fact]
+    [Trait("Rule", "SH9")]
     public async Task SaveChangesAsync_ModifiedRowWithFixedClock_UpdatedAtEqualsFixedTimeAsUtc()
     {
         // Arrange

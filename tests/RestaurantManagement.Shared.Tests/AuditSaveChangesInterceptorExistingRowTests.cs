@@ -48,6 +48,7 @@ public class AuditSaveChangesInterceptorExistingRowTests
     };
 
     [Fact]
+    [Trait("Rule", "SH8")]
     public async Task SaveChangesAsync_DetachedDishUpdatedWithAnotherOrganizationId_Throws403AndKeepsStoredOrganization()
     {
         // Arrange
@@ -68,6 +69,7 @@ public class AuditSaveChangesInterceptorExistingRowTests
     }
 
     [Fact]
+    [Trait("Rule", "SH8")]
     public async Task SaveChangesAsync_DishOfAnotherOrganizationModified_Throws403AndKeepsStoredPrice()
     {
         // Arrange
@@ -88,6 +90,7 @@ public class AuditSaveChangesInterceptorExistingRowTests
     }
 
     [Fact]
+    [Trait("Rule", "SH8")]
     public async Task SaveChangesAsync_DishOfAnotherOrganizationRemoved_Throws403AndKeepsRow()
     {
         // Arrange
@@ -108,6 +111,7 @@ public class AuditSaveChangesInterceptorExistingRowTests
     }
 
     [Fact]
+    [Trait("Rule", "SH8")]
     public async Task SaveChangesAsync_ExistingDishModifiedWithNoOrganizationAndNoScope_Throws403AndKeepsStoredPrice()
     {
         // Arrange
@@ -128,6 +132,7 @@ public class AuditSaveChangesInterceptorExistingRowTests
     }
 
     [Fact]
+    [Trait("Rule", "SH9")]
     public async Task SaveChangesAsync_DetachedDishUpdated_KeepsStoredCreatedAtAndCreatedBy()
     {
         // Arrange
@@ -148,6 +153,7 @@ public class AuditSaveChangesInterceptorExistingRowTests
     }
 
     [Fact]
+    [Trait("Rule", "SH8")]
     public async Task SaveChangesAsync_OwnDishRemoved_DeletesRow()
     {
         // Arrange

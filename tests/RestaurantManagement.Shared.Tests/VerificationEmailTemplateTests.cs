@@ -14,6 +14,7 @@ namespace RestaurantManagement.Shared.Tests
         [InlineData("")]
         [InlineData(" ")]
         [InlineData(null)]
+        [Trait("Rule", "SH24")]
         public void Build_FirstNameIsBlank_UsesGenericGreeting(string? firstName)
         {
             // Act
@@ -25,6 +26,7 @@ namespace RestaurantManagement.Shared.Tests
         }
 
         [Fact]
+        [Trait("Rule", "SH24")]
         public void Build_NonDefaultExpiryMinutes_StatesConfiguredMinutes()
         {
             // Act
@@ -36,6 +38,7 @@ namespace RestaurantManagement.Shared.Tests
         }
 
         [Fact]
+        [Trait("Rule", "SH24")]
         public void Build_WithCode_BodyContainsTheCode()
         {
             // Act
@@ -46,6 +49,7 @@ namespace RestaurantManagement.Shared.Tests
         }
 
         [Fact]
+        [Trait("Rule", "SH24")]
         public void Build_WithValidInput_LeavesNoUnsubstitutedTokens()
         {
             // Act
@@ -56,6 +60,7 @@ namespace RestaurantManagement.Shared.Tests
         }
 
         [Fact]
+        [Trait("Rule", "SH24")]
         public void Build_WithRecipient_FooterContainsRecipientAddress()
         {
             // Act
@@ -66,6 +71,7 @@ namespace RestaurantManagement.Shared.Tests
         }
 
         [Fact]
+        [Trait("Rule", "SH24")]
         public void Build_WithFirstName_GreetingContainsFirstName()
         {
             // Act
@@ -76,6 +82,7 @@ namespace RestaurantManagement.Shared.Tests
         }
 
         [Fact]
+        [Trait("Rule", "SH24")]
         public void Build_WithValidInput_ContainsAllDesignContentElements()
         {
             // Act
@@ -93,6 +100,7 @@ namespace RestaurantManagement.Shared.Tests
         }
 
         [Fact]
+        [Trait("Rule", "SH24")]
         public void Subject_IsUnchanged()
         {
             // Assert

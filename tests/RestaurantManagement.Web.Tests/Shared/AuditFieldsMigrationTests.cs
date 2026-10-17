@@ -98,6 +98,7 @@ public class AuditFieldsMigrationTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 1
     [Fact]
+    [Trait("Rule", "SHD1")]
     public async Task Migrate_MenuTablesWithRows_MenusKeepTheirData()
     {
         // Arrange
@@ -121,6 +122,7 @@ public class AuditFieldsMigrationTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 2
     [Fact]
+    [Trait("Rule", "SHD2")]
     public async Task Migrate_LocationMenusInTwoOrganizations_OrganizationIdBackfilledFromTheirMenu()
     {
         // Arrange
@@ -137,6 +139,7 @@ public class AuditFieldsMigrationTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 3
     [Fact]
+    [Trait("Rule", "SHD3")]
     public async Task Migrate_LocationMenusWithRows_UpdatedAtBackfilledFromCreatedAtAndDataKept()
     {
         // Arrange
@@ -156,6 +159,7 @@ public class AuditFieldsMigrationTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 4
     [Fact]
+    [Trait("Rule", "SHD4")]
     public async Task Migrate_MenuCategoriesWithRows_UpdatedAtBackfilledFromCreatedAtAndDataKept()
     {
         // Arrange
@@ -176,6 +180,7 @@ public class AuditFieldsMigrationTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 5
     [Fact]
+    [Trait("Rule", "SHD5")]
     public async Task Migrate_MenuTablesWithRows_NewColumnsEndUpNotNull()
     {
         // Arrange
@@ -195,6 +200,7 @@ public class AuditFieldsMigrationTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 6
     [Fact]
+    [Trait("Rule", "SHD6")]
     public async Task Migrate_MenuTablesWithoutRows_Succeeds()
     {
         // Arrange
@@ -214,6 +220,7 @@ public class AuditFieldsMigrationTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 7
     [Fact]
+    [Trait("Rule", "SHD7")]
     public async Task Migrate_OrganizationTablesWithRows_RowsKeepTheirDataWithNullAuditUsers()
     {
         // Arrange
@@ -262,6 +269,7 @@ public class AuditFieldsMigrationTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 8
     [Fact]
+    [Trait("Rule", "SHD8")]
     public async Task Migrate_UserRolesWithRows_RowsKeepTheirDataWithNullAuditUsers()
     {
         // Arrange
@@ -294,6 +302,7 @@ public class AuditFieldsMigrationTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 9
     [Fact]
+    [Trait("Rule", "SHD9")]
     public async Task Migrate_AllMenuMigrations_ModelHasNoPendingChanges()
     {
         // Arrange
@@ -309,6 +318,7 @@ public class AuditFieldsMigrationTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 10
     [Fact]
+    [Trait("Rule", "SHD10")]
     public async Task Migrate_AllOrganizationMigrations_ModelHasNoPendingChanges()
     {
         // Arrange
@@ -324,6 +334,7 @@ public class AuditFieldsMigrationTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 11
     [Fact]
+    [Trait("Rule", "SHD11")]
     public async Task Migrate_AllIdentityMigrations_ModelHasNoPendingChanges()
     {
         // Arrange

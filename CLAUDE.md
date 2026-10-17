@@ -75,9 +75,9 @@ file" section is the full rule set. Row IDs are unique across matrices.
 |---|---|---|---|---|
 | Identity | `identity-matrix.md` | R V RS L F S O P C T D | `Modules.Identity.Tests/` | `Web.Tests/Identity/` |
 | Web | `web-matrix.md` | W, WD | — | `Web.Tests/Web/` |
-| Menu | `menu-matrix.md` (not yet) | M, MD | `Modules.Menu.Tests/` | `Web.Tests/Menu/` |
-| Organization | `organization-matrix.md` (not yet) | OR, ORD | `Modules.Organization.Tests/` | `Web.Tests/Organization/` |
-| Shared | `shared-matrix.md` (not yet) | SH, SHD | `Shared.Tests/` | `Web.Tests/Shared/` |
+| Menu | `menu-matrix.md` | M, MD | `Modules.Menu.Tests/` | `Web.Tests/Menu/` |
+| Organization | `organization-matrix.md` | OR, ORD | `Modules.Organization.Tests/` | `Web.Tests/Organization/` |
+| Shared | `shared-matrix.md` | SH, SHD | `Shared.Tests/` | `Web.Tests/Shared/` |
 
 For a module with a matrix:
 - Any change to the module updates its matrix in the same commit: new rows for new behaviour,
@@ -86,7 +86,8 @@ For a module with a matrix:
   turn ✅ only when the named test passes
 - No row is ✅ without a named test, and every test in the module's folders is named in its
   matrix. A test may serve rows in several matrices
-- New tests go in the module's folders in the table above
+- New tests go in the module's folders in the table above; the check fails for a test anywhere
+  else (the root of `Web.Tests` holds only shared helpers)
 - Every named test carries `[Trait("Rule", "<row ID>")]` for each row naming it, and its key
   assertions say the rule in plain words (testing skill, "Writing tests")
 - `python3 .claude/scripts/check-security-matrices.py` checks all of this, in CI too. Run it

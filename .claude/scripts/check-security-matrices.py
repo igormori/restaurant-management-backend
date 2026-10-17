@@ -6,7 +6,8 @@ Keeps each module's security matrix (docs/security/<module>-matrix.md) and the t
   3. a row marked ✅ names no test,
   4. a test's [Trait("Rule", "<ID>")] tags differ from the IDs of the rows naming it, across all matrices,
   5. a row ID is used twice, in one matrix or across matrices, or
-  6. a file has a [Fact] or [Theory] this script cannot pair with a method (so nothing is skipped silently).
+  6. a file has a [Fact] or [Theory] this script cannot pair with a method (so nothing is skipped silently), or
+  7. a test sits outside every module's test folders (once every module has a matrix).
 Modules whose matrix does not exist yet are skipped.
 
 Usage: python3 .claude/scripts/check-security-matrices.py              (from anywhere; run by CI)
@@ -146,7 +147,10 @@ def main() -> int:
     expected_tags = {}
     seen_ids = {}
     checked = []
+    in_module_folders = set()
     for module, (matrix, folders) in MODULES.items():
+        for folder in folders:
+            in_module_folders.update(collect(Path(folder)))
         path = Path(matrix)
         if not path.exists():
             continue
@@ -161,6 +165,10 @@ def main() -> int:
         for cls, method in sorted(set(module_tests) - set(rows)):
             problems.append(f"{path}: {module} test not mapped in the matrix: {cls}.{method}")
         checked.append(f"{module} {len(rows)}")
+
+    if all(Path(matrix).exists() for matrix, _ in MODULES.values()):
+        for cls, method in sorted(set(all_tests) - in_module_folders):
+            problems.append(f"{cls}.{method} is outside every module's test folders; move it into its module's folder")
 
     for test, tagged in sorted(all_tests.items()):
         expected = expected_tags.get(test, set())

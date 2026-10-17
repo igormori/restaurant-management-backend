@@ -19,6 +19,7 @@ public class UnexpectedErrorEndpointTests : IDisposable
 
     // Scenario 6
     [Fact]
+    [Trait("Rule", "SH18")]
     public async Task Login_UnexpectedFailureInPortuguese_ReturnsServerErrorWithPortugueseMessage()
     {
         // Arrange

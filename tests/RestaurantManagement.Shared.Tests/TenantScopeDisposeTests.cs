@@ -10,6 +10,7 @@ public class TenantScopeDisposeTests
     private static readonly Guid OrgC = Guid.Parse("c3c3c3c3-0000-4000-8000-000000000003");
 
     [Fact]
+    [Trait("Rule", "SH6")]
     public void Dispose_CalledAgainAfterANewScopeBegan_KeepsTheNewScope()
     {
         // Arrange
@@ -26,6 +27,7 @@ public class TenantScopeDisposeTests
     }
 
     [Fact]
+    [Trait("Rule", "SH6")]
     public void Dispose_OuterScopeWhileInnerIsOpen_KeepsTheInnerOrganization()
     {
         // Arrange
@@ -41,6 +43,7 @@ public class TenantScopeDisposeTests
     }
 
     [Fact]
+    [Trait("Rule", "SH6")]
     public void Dispose_OuterScopeThenInnerScope_LeavesNoScope()
     {
         // Arrange

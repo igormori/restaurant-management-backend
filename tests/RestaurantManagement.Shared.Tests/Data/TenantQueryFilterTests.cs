@@ -40,6 +40,7 @@ public class TenantQueryFilterTests
 
     // Scenario 1
     [Fact]
+    [Trait("Rule", "SH4")]
     public async Task Query_NoCurrentOrganization_ReturnsNoRows()
     {
         // Arrange
@@ -55,6 +56,7 @@ public class TenantQueryFilterTests
 
     // Scenario 2
     [Fact]
+    [Trait("Rule", "SH4")]
     public async Task Query_RowsInTwoOrganizations_ReturnsOnlyCurrentOrganizationRows()
     {
         // Arrange
@@ -70,6 +72,7 @@ public class TenantQueryFilterTests
 
     // Scenario 3
     [Fact]
+    [Trait("Rule", "SH4")]
     public async Task FindById_RowOfAnotherOrganization_ReturnsNull()
     {
         // Arrange
@@ -85,6 +88,7 @@ public class TenantQueryFilterTests
 
     // Scenario 4
     [Fact]
+    [Trait("Rule", "SH4")]
     public async Task Query_TwoContextsOnTheSameModel_EachSeesOnlyItsOwnOrganization()
     {
         // Arrange
@@ -103,6 +107,7 @@ public class TenantQueryFilterTests
 
     // Scenario 5
     [Fact]
+    [Trait("Rule", "SH5")]
     public async Task Query_LocationSelected_ReturnsOnlyThatLocationsRows()
     {
         // Arrange
@@ -118,6 +123,7 @@ public class TenantQueryFilterTests
 
     // Scenario 6
     [Fact]
+    [Trait("Rule", "SH5")]
     public async Task Query_NoLocationSelected_ReturnsEveryLocationOfTheOrganizationOnly()
     {
         // Arrange

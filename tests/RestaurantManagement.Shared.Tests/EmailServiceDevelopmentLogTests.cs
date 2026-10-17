@@ -28,6 +28,7 @@ namespace RestaurantManagement.Shared.Tests
 
         // Scenario 3
         [Fact]
+        [Trait("Rule", "SH27")]
         public async Task SendEmailAsync_DevelopmentWithoutSmtpHost_LogsRecipientAndSubjectButNotBody()
         {
             // Arrange

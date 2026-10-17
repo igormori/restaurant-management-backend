@@ -28,6 +28,7 @@ namespace RestaurantManagement.Shared.Tests
         [InlineData("ResetPassword:WindowSeconds", 0)]
         [InlineData("ChangePassword:PermitLimit", 0)]
         [InlineData("ChangePassword:WindowSeconds", -60)]
+        [Trait("Rule", "SH23")]
         public void Validate_PasswordPolicyLimitZeroOrNegative_FailsNamingTheSetting(string setting, int value)
         {
             // Arrange
@@ -43,6 +44,7 @@ namespace RestaurantManagement.Shared.Tests
         }
 
         [Fact]
+        [Trait("Rule", "SH23")]
         public void Validate_DefaultOptions_Succeeds()
         {
             var result = _validator.Validate(null, new AuthRateLimitOptions());
@@ -53,6 +55,7 @@ namespace RestaurantManagement.Shared.Tests
         [Theory]
         [InlineData(0)]
         [InlineData(-1)]
+        [Trait("Rule", "SH23")]
         public void Validate_NonPositivePermitLimit_Fails(int permitLimit)
         {
             var options = new AuthRateLimitOptions();
@@ -67,6 +70,7 @@ namespace RestaurantManagement.Shared.Tests
         [Theory]
         [InlineData(0)]
         [InlineData(-30)]
+        [Trait("Rule", "SH23")]
         public void Validate_NonPositiveWindow_Fails(int windowSeconds)
         {
             var options = new AuthRateLimitOptions();
@@ -82,6 +86,7 @@ namespace RestaurantManagement.Shared.Tests
         [InlineData("not-an-ip")]
         [InlineData("10.0.0.1/99")]
         [InlineData("")]
+        [Trait("Rule", "SH23")]
         public void Validate_MalformedProxy_Fails(string proxy)
         {
             var options = new AuthRateLimitOptions { TrustedProxies = new[] { proxy } };
@@ -97,6 +102,7 @@ namespace RestaurantManagement.Shared.Tests
         [InlineData("10.0.0.0/8")]
         [InlineData("::1")]
         [InlineData("fd00::/8")]
+        [Trait("Rule", "SH23")]
         public void Validate_ValidProxy_Succeeds(string proxy)
         {
             var options = new AuthRateLimitOptions { TrustedProxies = new[] { proxy } };

@@ -23,6 +23,7 @@ namespace RestaurantManagement.Shared.Tests
 
         // Scenario 1
         [Fact]
+        [Trait("Rule", "SH21")]
         public void Validate_EmptyKey_FailsNamingJwtKey()
         {
             // Arrange
@@ -38,6 +39,7 @@ namespace RestaurantManagement.Shared.Tests
 
         // Scenario 2
         [Fact]
+        [Trait("Rule", "SH21")]
         public void Validate_KeyOf31Bytes_FailsNamingJwtKey()
         {
             // Arrange
@@ -54,6 +56,7 @@ namespace RestaurantManagement.Shared.Tests
 
         // Scenario 3
         [Fact]
+        [Trait("Rule", "SH21")]
         public void Validate_PlaceholderKeyInProduction_FailsNamingJwtKey()
         {
             // Arrange
@@ -69,6 +72,7 @@ namespace RestaurantManagement.Shared.Tests
 
         // Scenario 4
         [Fact]
+        [Trait("Rule", "SH21")]
         public void Validate_PlaceholderKeyInStaging_FailsNamingJwtKey()
         {
             // Arrange
@@ -86,6 +90,7 @@ namespace RestaurantManagement.Shared.Tests
         [Theory]
         [InlineData(0)]
         [InlineData(-5)]
+        [Trait("Rule", "SH21")]
         public void Validate_NonPositiveExpireMinutes_FailsNamingJwtExpireMinutes(int expireMinutes)
         {
             // Arrange
@@ -101,6 +106,7 @@ namespace RestaurantManagement.Shared.Tests
 
         // Scenario 6
         [Fact]
+        [Trait("Rule", "SH21")]
         public void Validate_PlaceholderKeyInDevelopment_Succeeds()
         {
             // Arrange
@@ -115,6 +121,7 @@ namespace RestaurantManagement.Shared.Tests
 
         // Scenario 7
         [Fact]
+        [Trait("Rule", "SH21")]
         public void Validate_KeyOfExactly32Bytes_Succeeds()
         {
             // Arrange
@@ -130,6 +137,7 @@ namespace RestaurantManagement.Shared.Tests
 
         // Scenario 8
         [Fact]
+        [Trait("Rule", "SH21")]
         public void Validate_Key17MultiByteCharsTotaling34Bytes_Succeeds()
         {
             // Arrange
@@ -145,6 +153,7 @@ namespace RestaurantManagement.Shared.Tests
 
         // Scenario 9
         [Fact]
+        [Trait("Rule", "SH21")]
         public void Validate_StrongKeyAndPositiveExpiryInProduction_Succeeds()
         {
             // Arrange

@@ -13,6 +13,7 @@ namespace RestaurantManagement.Shared.Tests
 
         // Scenario 2
         [Fact]
+        [Trait("Rule", "SH25")]
         public void Build_FirstNameWithHtmlCharacters_IsHtmlEncoded()
         {
             // Arrange
@@ -28,6 +29,7 @@ namespace RestaurantManagement.Shared.Tests
 
         // Scenario 1
         [Fact]
+        [Trait("Rule", "SH24")]
         public void Build_ValidInput_ContainsNameCodeExpiryAndIgnoreNotice()
         {
             // Arrange

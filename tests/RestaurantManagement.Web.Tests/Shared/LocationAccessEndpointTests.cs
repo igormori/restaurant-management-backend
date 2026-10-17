@@ -43,6 +43,7 @@ public class LocationAccessEndpointTests : IClassFixture<PostgresDatabaseFixture
 
     // Scenario 38
     [Fact]
+    [Trait("Rule", "SH10")]
     public async Task GetMenus_WaiterAssignedOnlyToBatelSelectsMercadoMunicipal_ReturnsForbidden()
     {
         // Arrange
@@ -60,6 +61,7 @@ public class LocationAccessEndpointTests : IClassFixture<PostgresDatabaseFixture
     [Theory]
     [InlineData(Batel)]
     [InlineData(MercadoMunicipal)]
+    [Trait("Rule", "SH11")]
     public async Task GetMenus_ManagerOfAllLocationsSelectsAnyCantinaLocation_ReturnsOk(string location)
     {
         // Arrange
@@ -75,6 +77,7 @@ public class LocationAccessEndpointTests : IClassFixture<PostgresDatabaseFixture
 
     // Scenario 40
     [Fact]
+    [Trait("Rule", "SH10")]
     public async Task GetMenus_ManagerOfAllLocationsSelectsAnotherOrganizationsLocation_ReturnsForbidden()
     {
         // Arrange

@@ -27,6 +27,7 @@ public class AuditInterceptorWiringTests : IDisposable
 
     // Scenario 42
     [Fact]
+    [Trait("Rule", "SHD12")]
     public void IdentityDbContext_Resolved_HasAuditInterceptorAttached()
     {
         // Arrange / Act
@@ -38,6 +39,7 @@ public class AuditInterceptorWiringTests : IDisposable
 
     // Scenario 43
     [Fact]
+    [Trait("Rule", "SHD13")]
     public void MenuDbContext_Resolved_HasAuditInterceptorAttached()
     {
         // Arrange / Act
@@ -49,6 +51,7 @@ public class AuditInterceptorWiringTests : IDisposable
 
     // Scenario 44
     [Fact]
+    [Trait("Rule", "SHD14")]
     public void OrganizationDbContext_Resolved_HasAuditInterceptorAttached()
     {
         // Arrange / Act
@@ -60,6 +63,7 @@ public class AuditInterceptorWiringTests : IDisposable
 
     // Scenario 45
     [Fact]
+    [Trait("Rule", "SHD15")]
     public void ICurrentUser_Resolved_IsClaimsCurrentUser()
     {
         // Arrange
@@ -74,6 +78,7 @@ public class AuditInterceptorWiringTests : IDisposable
 
     // Scenario 46
     [Fact]
+    [Trait("Rule", "SHD16")]
     public void ITenantScope_ResolvedFromTwoRequestScopes_IsTheSameInstance()
     {
         // Arrange

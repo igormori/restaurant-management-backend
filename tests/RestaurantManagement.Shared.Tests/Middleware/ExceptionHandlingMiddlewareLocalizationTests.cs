@@ -46,6 +46,7 @@ public class ExceptionHandlingMiddlewareLocalizationTests : IDisposable
     [Theory]
     [InlineData("pt", "Ocorreu um erro inesperado.")]
     [InlineData("en", "An unexpected error occurred.")]
+    [Trait("Rule", "SH18")]
     public async Task InvokeAsync_UnexpectedExceptionInRequestCulture_ReturnsLocalizedUnexpectedErrorMessage(string culture, string expected)
     {
         // Arrange
@@ -61,6 +62,7 @@ public class ExceptionHandlingMiddlewareLocalizationTests : IDisposable
 
     // Scenario 5
     [Fact]
+    [Trait("Rule", "SH18")]
     public async Task InvokeAsync_UnexpectedExceptionInProduction_HidesExceptionDetail()
     {
         // Arrange

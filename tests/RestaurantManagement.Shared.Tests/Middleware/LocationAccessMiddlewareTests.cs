@@ -83,6 +83,7 @@ public class LocationAccessMiddlewareTests
     [Theory]
     [InlineData("batel")]
     [InlineData("12345")]
+    [Trait("Rule", "SH10")]
     public async Task InvokeAsync_HeaderIsNotAValidId_ThrowsBadRequestAndStops(string headerValue)
     {
         // Arrange
@@ -99,6 +100,7 @@ public class LocationAccessMiddlewareTests
 
     // Scenario 33
     [Fact]
+    [Trait("Rule", "SH10")]
     public async Task InvokeAsync_NoOrganizationInToken_ThrowsForbiddenAndStops()
     {
         // Arrange
@@ -117,6 +119,7 @@ public class LocationAccessMiddlewareTests
     [Theory]
     [InlineData(UnknownLocation)]
     [InlineData(MercadoMunicipalLocation)]
+    [Trait("Rule", "SH10")]
     public async Task InvokeAsync_LocationUserMayNotWorkIn_ThrowsForbiddenAndStops(string location)
     {
         // Arrange
@@ -133,6 +136,7 @@ public class LocationAccessMiddlewareTests
 
     // Scenario 35
     [Fact]
+    [Trait("Rule", "SH11")]
     public async Task InvokeAsync_NoHeader_ContinuesWithoutLocationLimit()
     {
         // Arrange
@@ -148,6 +152,7 @@ public class LocationAccessMiddlewareTests
 
     // Scenario 36
     [Fact]
+    [Trait("Rule", "SH11")]
     public async Task InvokeAsync_AnonymousRequestWithHeader_IgnoresHeaderAndContinues()
     {
         // Arrange
@@ -165,6 +170,7 @@ public class LocationAccessMiddlewareTests
 
     // Scenario 37
     [Fact]
+    [Trait("Rule", "SH11")]
     public async Task InvokeAsync_UserAssignedToTheLocation_StoresLocationAndContinues()
     {
         // Arrange

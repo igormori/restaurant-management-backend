@@ -85,6 +85,7 @@ public class AuditLogEndpointTests : IClassFixture<PostgresDatabaseFixture>
     [InlineData(Roles.Waiter, Cantina)]
     [InlineData(Roles.Kitchen, Cantina)]
     [InlineData(Roles.Owner, null)]
+    [Trait("Rule", "SH12")]
     public async Task GetAuditLog_WithoutReportsViewInSelectedOrganization_ReturnsForbidden(string role, string? organization)
     {
         // Arrange
@@ -100,6 +101,7 @@ public class AuditLogEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 10
     [Fact]
+    [Trait("Rule", "SH12")]
     public async Task GetAuditLog_NoToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -117,6 +119,7 @@ public class AuditLogEndpointTests : IClassFixture<PostgresDatabaseFixture>
     [Theory]
     [InlineData("from=2026-10-14T00:00:00Z&to=2026-10-10T00:00:00Z", "AuditLogInvalidDateRange")]
     [InlineData("action=order.cancelled", "AuditLogUnknownAction")]
+    [Trait("Rule", "SH14")]
     public async Task GetAuditLog_InvalidFilter_ReturnsBadRequestWithLocalizedMessage(string query, string messageKey)
     {
         // Arrange
@@ -133,6 +136,7 @@ public class AuditLogEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 8
     [Fact]
+    [Trait("Rule", "SH13")]
     public async Task GetAuditLog_EntriesInTwoOrganizationsAndQueryNamesTheOther_ReturnsOnlyTokenOrganizationsEntries()
     {
         // Arrange
@@ -154,6 +158,7 @@ public class AuditLogEndpointTests : IClassFixture<PostgresDatabaseFixture>
     [InlineData(Roles.Owner)]
     [InlineData(Roles.Admin)]
     [InlineData(Roles.Manager)]
+    [Trait("Rule", "SH12")]
     public async Task GetAuditLog_RoleWithReportsView_ReturnsOk(string role)
     {
         // Arrange
@@ -176,6 +181,7 @@ public class AuditLogEndpointTests : IClassFixture<PostgresDatabaseFixture>
     // Scenario 12
     [Theory]
     [MemberData(nameof(Filters))]
+    [Trait("Rule", "SH14")]
     public async Task GetAuditLog_FilterGiven_ReturnsOnlyMatchingEntriesIncludingRangeEnds(string query, Guid[] expectedIds)
     {
         // Arrange
@@ -192,6 +198,7 @@ public class AuditLogEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 13
     [Fact]
+    [Trait("Rule", "SH14")]
     public async Task GetAuditLog_NoFilters_ReturnsEntriesNewestFirst()
     {
         // Arrange
@@ -211,6 +218,7 @@ public class AuditLogEndpointTests : IClassFixture<PostgresDatabaseFixture>
     [Theory]
     [InlineData("pageSize=500", 100)]
     [InlineData("page=1", 50)]
+    [Trait("Rule", "SH14")]
     public async Task GetAuditLog_PageSizeAboveLimitOrNotGiven_ReturnsCappedOrDefaultPage(string query, int expectedPageSize)
     {
         // Arrange

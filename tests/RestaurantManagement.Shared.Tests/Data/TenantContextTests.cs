@@ -22,6 +22,7 @@ public class TenantContextTests
 
     // Scenario 7
     [Fact]
+    [Trait("Rule", "SH6")]
     public void OrganizationId_ScopeOpenedForAnotherOrganization_ReturnsTheScopedOrganization()
     {
         // Arrange
@@ -38,6 +39,7 @@ public class TenantContextTests
 
     // Scenario 8
     [Fact]
+    [Trait("Rule", "SH6")]
     public void OrganizationId_NoScopeOpen_ReturnsTheTokenOrganization()
     {
         // Arrange

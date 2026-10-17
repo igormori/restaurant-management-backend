@@ -45,6 +45,7 @@ public class MessageCatalogCompletenessTests
 
     // Scenario 20
     [Fact]
+    [Trait("Rule", "SH19")]
     public void Catalog_EnglishAndPortuguese_HoldSameKeysWithText()
     {
         // Arrange
@@ -64,6 +65,7 @@ public class MessageCatalogCompletenessTests
 
     // Scenario 21
     [Fact]
+    [Trait("Rule", "SH19")]
     public void RequestModels_ValidationAttributes_UseCatalogKeys()
     {
         // Arrange
@@ -88,6 +90,7 @@ public class MessageCatalogCompletenessTests
 
     // Scenario 22
     [Fact]
+    [Trait("Rule", "SH19")]
     public void SourceCode_LocalizerLookups_ExistInCatalog()
     {
         // Arrange

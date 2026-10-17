@@ -36,6 +36,7 @@ public class RequiredIdFieldEndpointTests : IDisposable
     [InlineData("/api/menu-categories", """{ "menuId": null, "name": "Massas" }""", "MenuId", "en", "The MenuId field is required.")]
     [Trait("Rule", "M23")]
     [Trait("Rule", "S2")]
+    [Trait("Rule", "SH20")]
     public async Task IdMissingOrNull_ReturnsLocalizedRequiredError(string url, string body, string field, string culture, string expected)
     {
         // Arrange
@@ -57,6 +58,7 @@ public class RequiredIdFieldEndpointTests : IDisposable
     [InlineData("/api/menu-categories", """{ "menuId": "jantar", "name": "Massas" }""", "en", "The MenuId field is required.")]
     [Trait("Rule", "M23")]
     [Trait("Rule", "S2")]
+    [Trait("Rule", "SH20")]
     public async Task IdNotAnId_ReturnsLocalizedRequiredError(string url, string body, string culture, string expected)
     {
         // Arrange

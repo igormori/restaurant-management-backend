@@ -40,6 +40,7 @@ namespace RestaurantManagement.Shared.Tests
         }
 
         [Fact]
+        [Trait("Rule", "SH18")]
         public async Task InvokeAsync_UnexpectedException_ReturnsMessageProperty()
         {
             // Act
@@ -51,6 +52,7 @@ namespace RestaurantManagement.Shared.Tests
         }
 
         [Fact]
+        [Trait("Rule", "SH17")]
         public async Task InvokeAsync_BusinessException_ReturnsMessagePropertyWithExceptionMessage()
         {
             // Act
