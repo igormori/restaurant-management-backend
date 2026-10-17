@@ -48,9 +48,9 @@ proof of something the code already does.
 | 27 | Low | V6.3.2 | Covered | Proven by matrix row T24 | T24 |
 | 28 | Low | V11.4.1 | Covered | Proven by matrix row T25 | T25 |
 
-**Not counted above:** matrix row V11 (🐞, locked account gets 423 on verify and resend) is an
-open bug already in the backlog. It is an account-enumeration leak that no ASVS 5.0 L2
-requirement names directly.
+**Not counted above:** matrix row V11 (a locked account answers verify and resend like an
+unknown email) was an account-enumeration leak that no ASVS 5.0 L2 requirement names directly.
+It is fixed (commit 9b7bcbc).
 
 ## V6 Authentication
 
