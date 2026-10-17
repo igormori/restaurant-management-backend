@@ -57,6 +57,7 @@ public class MenuRoleEndpointTests : IDisposable
     [InlineData(Roles.Cashier)]
     [InlineData(Roles.Waiter)]
     [InlineData(Roles.Kitchen)]
+    [Trait("Rule", "M1")]
     public async Task CreateMenu_RoleOtherThanOwnerOrAdmin_ReturnsForbidden(string role)
     {
         // Arrange
@@ -84,6 +85,7 @@ public class MenuRoleEndpointTests : IDisposable
     [InlineData(Roles.Cashier)]
     [InlineData(Roles.Waiter)]
     [InlineData(Roles.Kitchen)]
+    [Trait("Rule", "M3")]
     public async Task GetMenus_AnyRole_ReturnsOk(string role)
     {
         // Arrange
@@ -104,6 +106,7 @@ public class MenuRoleEndpointTests : IDisposable
     [InlineData(Roles.Cashier)]
     [InlineData(Roles.Waiter)]
     [InlineData(Roles.Kitchen)]
+    [Trait("Rule", "M3")]
     public async Task GetMenusByLocation_AnyRole_ReturnsOk(string role)
     {
         // Arrange

@@ -60,6 +60,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
     [InlineData("DELETE", "")]
     [InlineData("POST", "/locations/" + TrattoriaCentro)]
     [InlineData("DELETE", "/locations/" + TrattoriaCentro)]
+    [Trait("Rule", "M7")]
     public async Task MenuById_MenuOfAnotherOrganization_ReturnsNotFoundAndLeavesItUnchanged(string method, string pathAfterMenuId)
     {
         // Arrange
@@ -85,6 +86,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
     [InlineData("GET")]
     [InlineData("PUT")]
     [InlineData("DELETE")]
+    [Trait("Rule", "M8")]
     public async Task MenuCategoryById_CategoryOfAnotherOrganization_ReturnsNotFoundAndLeavesItUnchanged(string method)
     {
         // Arrange
@@ -109,6 +111,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
     [InlineData("GET", "/api/menus")]
     [InlineData("POST", "/api/menu-categories")]
     [InlineData("GET", "/api/menu-categories")]
+    [Trait("Rule", "M6")]
     public async Task MenuEndpoints_NoOrganizationInToken_ReturnsForbiddenOrganizationRequired(string method, string url)
     {
         // Arrange
@@ -129,6 +132,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 13
     [Fact]
+    [Trait("Rule", "M10")]
     public async Task CreateMenu_BodyNamesAnotherOrganization_StoresMenuInTokenOrganization()
     {
         // Arrange
@@ -146,6 +150,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 14
     [Fact]
+    [Trait("Rule", "M10")]
     public async Task CreateMenuCategory_BodyNamesAnotherOrganization_StoresCategoryInTokenOrganization()
     {
         // Arrange
@@ -163,6 +168,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 15
     [Fact]
+    [Trait("Rule", "M9")]
     public async Task GetMenus_MenusInTwoOrganizations_ReturnsOnlyTokenOrganizationsMenus()
     {
         // Arrange
@@ -180,6 +186,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 16
     [Fact]
+    [Trait("Rule", "M9")]
     public async Task GetMenuCategories_CategoriesInTwoOrganizations_ReturnsOnlyTokenOrganizationsCategories()
     {
         // Arrange
@@ -199,6 +206,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
     [Theory]
     [InlineData("/api/menus/organization/" + Cantina)]
     [InlineData("/api/organizations/" + Cantina + "/menu-categories")]
+    [Trait("Rule", "M14")]
     public async Task OldOrganizationInUrlRoute_Called_ReturnsNotFound(string url)
     {
         // Arrange

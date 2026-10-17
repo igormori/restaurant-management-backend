@@ -53,6 +53,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M4")]
         public async Task GetMenusAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
         {
             // Arrange

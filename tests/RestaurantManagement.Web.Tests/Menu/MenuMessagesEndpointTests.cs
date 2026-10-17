@@ -55,6 +55,7 @@ public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
     [Theory]
     [InlineData("pt", "Menu não encontrado.")]
     [InlineData("en", "Menu not found.")]
+    [Trait("Rule", "M7")]
     public async Task EditMenu_MenuDoesNotExist_ReturnsNotFoundWithLocalizedMessage(string culture, string expected)
     {
         // Arrange
@@ -75,6 +76,7 @@ public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
     [InlineData("GET", "pt", "Categoria do menu não encontrada.")]
     [InlineData("PUT", "en", "Menu category not found.")]
     [InlineData("DELETE", "pt", "Categoria do menu não encontrada.")]
+    [Trait("Rule", "M8")]
     public async Task MenuCategoryById_CategoryOfAnotherOrganization_ReturnsNotFoundWithLocalizedMessage(string method, string culture, string expected)
     {
         // Arrange
@@ -94,6 +96,7 @@ public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
     [Theory]
     [InlineData("pt", "O campo Name é obrigatório.")]
     [InlineData("en", "The Name field is required.")]
+    [Trait("Rule", "M21")]
     public async Task CreateMenu_NameMissing_ReturnsLocalizedRequiredError(string culture, string expected)
     {
         // Arrange
@@ -113,6 +116,7 @@ public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
     [Theory]
     [InlineData("pt", "O campo Name deve ter no máximo 100 caracteres.")]
     [InlineData("en", "The field Name must be a maximum of 100 characters.")]
+    [Trait("Rule", "M21")]
     public async Task EditMenu_NameOver100Characters_ReturnsLocalizedMaxLengthError(string culture, string expected)
     {
         // Arrange
@@ -133,6 +137,7 @@ public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
     [Theory]
     [InlineData("pt", "O campo Name é obrigatório.")]
     [InlineData("en", "The Name field is required.")]
+    [Trait("Rule", "M23")]
     public async Task CreateMenuCategory_NameMissing_ReturnsLocalizedRequiredError(string culture, string expected)
     {
         // Arrange
@@ -152,6 +157,7 @@ public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
     [Theory]
     [InlineData("pt", "O campo Description deve ter no máximo 1000 caracteres.")]
     [InlineData("en", "The field Description must be a maximum of 1000 characters.")]
+    [Trait("Rule", "M23")]
     public async Task UpdateMenuCategory_DescriptionOver1000Characters_ReturnsLocalizedMaxLengthError(string culture, string expected)
     {
         // Arrange

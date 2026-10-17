@@ -64,6 +64,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
 
         // Scenario 1
         [Fact]
+        [Trait("Rule", "M15")]
         public async Task SaveChangesAsync_NewMenuByUserInOrgA_StampsOrganizationAndCreationAudit()
         {
             // Arrange
@@ -87,6 +88,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
 
         // Scenario 2
         [Fact]
+        [Trait("Rule", "M15")]
         public async Task SaveChangesAsync_UpdatedMenu_SetsUpdateAuditAndKeepsCreatedFields()
         {
             // Arrange
@@ -110,6 +112,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
 
         // Scenario 3
         [Fact]
+        [Trait("Rule", "M15")]
         public async Task SaveChangesAsync_NewMenuCarriesAnotherOrganizationId_Throws403AndWritesNothing()
         {
             // Arrange
@@ -129,6 +132,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
 
         // Scenario 4
         [Fact]
+        [Trait("Rule", "M15")]
         public async Task SaveChangesAsync_UserInOrgBUpdatesOrgAMenu_Throws403AndMenuUnchanged()
         {
             // Arrange
@@ -152,6 +156,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
 
         // Scenario 5
         [Fact]
+        [Trait("Rule", "M15")]
         public async Task SaveChangesAsync_OrganizationIdChangedOnStoredMenu_Throws403AndMenuStaysInOrgA()
         {
             // Arrange
@@ -173,6 +178,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
 
         // Scenario 6
         [Fact]
+        [Trait("Rule", "M15")]
         public async Task SaveChangesAsync_NewMenuWithoutCurrentOrganization_Throws403OrganizationRequired()
         {
             // Arrange
@@ -192,6 +198,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
 
         // Scenario 7
         [Fact]
+        [Trait("Rule", "M15")]
         public async Task SaveChangesAsync_NewMenuCategory_StampsOrganizationAndUpdatedAt()
         {
             // Arrange
@@ -214,6 +221,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
 
         // Scenario 8
         [Fact]
+        [Trait("Rule", "M15")]
         public async Task SaveChangesAsync_NewMenuCategoryWithoutLocation_KeepsLocationNull()
         {
             // Arrange
@@ -232,6 +240,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
 
         // Scenario 9
         [Fact]
+        [Trait("Rule", "M15")]
         public async Task SaveChangesAsync_NewLocationMenu_GetsOrganizationFromUserAndUpdatedAt()
         {
             // Arrange
@@ -253,6 +262,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
 
         // Scenario 10
         [Fact]
+        [Trait("Rule", "M15")]
         public async Task SaveChangesAsync_UpdatedMenuCategory_SetsUpdatedAtAndKeepsCreatedAt()
         {
             // Arrange

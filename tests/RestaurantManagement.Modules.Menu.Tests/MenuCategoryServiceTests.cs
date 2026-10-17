@@ -90,6 +90,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M5")]
         public async Task CreateAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
         {
             // Arrange
@@ -110,6 +111,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M11")]
         public async Task CreateAsync_WhenMenuBelongsToAnotherOrganization_ThrowsNotFoundAndStoresNothing()
         {
             // Arrange
@@ -133,6 +135,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M11")]
         public async Task CreateAsync_WhenMenuDoesNotExist_ThrowsNotFound()
         {
             // Arrange
@@ -153,6 +156,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M11")]
         public async Task CreateAsync_WhenLocationBelongsToAnotherOrganization_ThrowsNotFoundAndStoresNothing()
         {
             // Arrange
@@ -181,6 +185,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M11")]
         public async Task CreateAsync_WhenLocationDoesNotExist_ThrowsNotFoundAndStoresNothing()
         {
             // Arrange
@@ -205,6 +210,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M19")]
         public async Task CreateAsync_WhenLocationBelongsToOrganization_StoresLocationId()
         {
             // Arrange
@@ -231,6 +237,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M19")]
         public async Task CreateAsync_WhenUserIsOwnerOrAdmin_CreatesCategory()
         {
             // Arrange
@@ -253,6 +260,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M5")]
         public async Task GetByIdAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
         {
             // Arrange
@@ -274,6 +282,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M19")]
         public async Task GetByIdAsync_WhenUserIsOwnerOfOrganization_ReturnsCategory()
         {
             // Arrange
@@ -296,6 +305,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M5")]
         public async Task GetAllAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
         {
             // Arrange
@@ -317,6 +327,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M5")]
         public async Task UpdateAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
         {
             // Arrange
@@ -338,6 +349,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M19")]
         public async Task UpdateAsync_WhenUserIsAdminOfOrganization_UpdatesCategory()
         {
             // Arrange
@@ -360,6 +372,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M5")]
         public async Task DeleteAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
         {
             // Arrange
@@ -381,6 +394,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M19")]
         public async Task DeleteAsync_WhenUserIsOwnerOfOrganization_DeletesCategory()
         {
             // Arrange

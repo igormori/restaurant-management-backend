@@ -71,6 +71,7 @@ public class MenuServiceRoleAccessTests
 
     // Scenario 34
     [Fact]
+    [Trait("Rule", "M4")]
     public async Task GetMenusAsync_WaiterOfAnotherOrganization_ThrowsForbidden()
     {
         // Arrange
@@ -90,6 +91,7 @@ public class MenuServiceRoleAccessTests
 
     // Scenario 45
     [Fact]
+    [Trait("Rule", "M4")]
     public async Task GetMenusByLocationAsync_WaiterOfAnotherOrganization_ThrowsForbidden()
     {
         // Arrange
@@ -113,6 +115,7 @@ public class MenuServiceRoleAccessTests
     [InlineData(Roles.Cashier)]
     [InlineData(Roles.Waiter)]
     [InlineData(Roles.Kitchen)]
+    [Trait("Rule", "M1")]
     public async Task CreateMenuAsync_RoleOtherThanOwnerOrAdmin_ThrowsForbidden(string role)
     {
         // Arrange
@@ -140,6 +143,7 @@ public class MenuServiceRoleAccessTests
     [InlineData(Roles.Cashier)]
     [InlineData(Roles.Waiter)]
     [InlineData(Roles.Kitchen)]
+    [Trait("Rule", "M1")]
     public async Task DeleteMenuAsync_RoleOtherThanOwnerOrAdmin_ThrowsForbiddenAndKeepsMenu(string role)
     {
         // Arrange
@@ -167,6 +171,7 @@ public class MenuServiceRoleAccessTests
     [InlineData(Roles.Cashier)]
     [InlineData(Roles.Waiter)]
     [InlineData(Roles.Kitchen)]
+    [Trait("Rule", "M3")]
     public async Task GetMenusAsync_AnyRoleOfTheOrganization_ReturnsItsMenus(string role)
     {
         // Arrange
@@ -191,6 +196,7 @@ public class MenuServiceRoleAccessTests
     [InlineData(Roles.Cashier)]
     [InlineData(Roles.Waiter)]
     [InlineData(Roles.Kitchen)]
+    [Trait("Rule", "M3")]
     public async Task GetMenusByLocationAsync_AnyRoleOfTheOrganization_ReturnsLocationMenus(string role)
     {
         // Arrange
