@@ -205,6 +205,7 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | T21 | Access token used before its not-before time (`nbf`, 10 minutes ahead) | 401 | ✅ | `AccessTokenValidationEndpointTests.LogoutAll_AccessTokenNotValidForAnotherTenMinutes_ReturnsUnauthorized` |
 | T22 | Access token signed by an attacker's key that its `jku`, `x5u` or `jwk` header names | 401: those headers are ignored, the signing key comes only from configuration | ✅ | `AccessTokenValidationEndpointTests.LogoutAll_TokenSignedByAttackerNamingItsKeyInTheHeader_ReturnsUnauthorized` |
 | T23 | Every Identity endpoint | Accepts POST only and reads nothing from the query string or route: secrets travel in the body or the cookie, never the URL | ✅ | `AuthEndpointSecretsNotInUrlTests.AuthEndpoints_AllActions_AcceptOnlyPostWithNoQueryOrRouteParameters` |
+| T24 | Database built only from the migrations | No users and no role assignments: no default accounts | ✅ | `FreshDatabaseHasNoUsersTests.Migrate_CleanDatabase_HasNoUsersOrRoles` |
 
 ## 11. Schema, migration and wiring tests
 These protect the database and the app setup rather than a rule users meet. They are listed so
