@@ -21,17 +21,23 @@ jobs:
       - run: dotnet restore RestaurantManagement.sln
       - run: dotnet build RestaurantManagement.sln --no-restore
       - name: Test
-        run: dotnet test RestaurantManagement.sln --no-build --verbosity normal --logger trx --results-directory TestResults
+        run: dotnet test RestaurantManagement.sln --no-build --verbosity normal --logger trx --collect:"XPlat Code Coverage" --results-directory TestResults
 
       # Runs even when tests fail: shows each failure with its matrix rule on the run page and the pull request.
       - name: Report failed tests by business rule
         if: always()
         run: python3 .claude/scripts/report-test-results.py TestResults
 
+      - name: Report code coverage by module
+        if: always()
+        run: python3 .claude/scripts/report-coverage.py TestResults
+
       - name: Keep the test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: TestResults/**/*.trx
+          path: |
+            TestResults/**/*.trx
+            TestResults/**/coverage.cobertura.xml
           if-no-files-found: ignore
