@@ -19,6 +19,7 @@ public class KeyVaultHostingExtensionsTests
     [Theory]
     [InlineData("http://restaurant-kv.vault.azure.net/")]
     [InlineData("restaurant-kv.vault.azure.net")]
+    [Trait("Rule", "W17")]
     public void AddKeyVaultSecrets_UriNotAbsoluteHttps_ThrowsNamingKeyVaultUri(string vaultUri)
     {
         // Arrange
@@ -35,6 +36,7 @@ public class KeyVaultHostingExtensionsTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
+    [Trait("Rule", "W17")]
     public void AddKeyVaultSecrets_UriNotSet_AddsNoConfigurationSource(string? vaultUri)
     {
         // Arrange

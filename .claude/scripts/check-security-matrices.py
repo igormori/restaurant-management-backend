@@ -9,7 +9,9 @@ Keeps each module's security matrix (docs/security/<module>-matrix.md) and the t
   6. a file has a [Fact] or [Theory] this script cannot pair with a method (so nothing is skipped silently).
 Modules whose matrix does not exist yet are skipped.
 
-Usage: python3 .claude/scripts/check-security-matrices.py   (from anywhere; run by CI)
+Usage: python3 .claude/scripts/check-security-matrices.py              (from anywhere; run by CI)
+       python3 .claude/scripts/check-security-matrices.py --fix-tags   rewrites each test's Rule tags from the
+                                                                        matrices, then checks
 """
 import os
 import re
@@ -70,6 +72,37 @@ def tests_in(path: Path) -> dict:
     return found
 
 
+def fix_tags(expected_tags: dict) -> int:
+    """Replaces the Rule tags above every test method with the IDs of the rows naming it."""
+    changed = 0
+    for file in ALL_TESTS.rglob("*.cs"):
+        if {"bin", "obj"} & set(file.parts):
+            continue
+        lines = file.read_text(encoding="utf-8").split("\n")
+        output, touched = [], False
+        for line in lines:
+            match = METHOD.match(line)
+            key = (file.stem, match.group(1)) if match else None
+            if key and (key in expected_tags or any(RULE_TRAIT.search(previous) for previous in output[-12:])):
+                # Drop the Rule tags directly above this method, then write the expected ones.
+                cursor = len(output)
+                while cursor > 0 and ATTRIBUTE_OR_COMMENT.match(output[cursor - 1]):
+                    cursor -= 1
+                block = output[cursor:]
+                kept = [item for item in block if not RULE_TRAIT.search(item)]
+                if TEST_ATTRIBUTE.search("\n".join(block)):
+                    indent = line[: len(line) - len(line.lstrip())]
+                    wanted = [f'{indent}[Trait("Rule", "{rule}")]' for rule in sorted(expected_tags.get(key, set()))]
+                    if kept + wanted != block:
+                        output[cursor:] = kept + wanted
+                        touched = True
+            output.append(line)
+        if touched:
+            file.write_text("\n".join(output), encoding="utf-8")
+            changed += 1
+    return changed
+
+
 def collect(folder: Path) -> dict:
     found = {}
     if folder.exists():
@@ -99,6 +132,14 @@ def read_matrix(path: Path, seen_ids: dict) -> dict:
 
 
 def main() -> int:
+    if "--fix-tags" in sys.argv:
+        tags = {}
+        for matrix, _ in MODULES.values():
+            if Path(matrix).exists():
+                for test, ids in read_matrix(Path(matrix), {}).items():
+                    tags.setdefault(test, set()).update(ids)
+        problems.clear()
+        print(f"Rule tags rewritten in {fix_tags(tags)} file(s)")
     all_tests = collect(ALL_TESTS)
     expected_tags = {}
     seen_ids = {}

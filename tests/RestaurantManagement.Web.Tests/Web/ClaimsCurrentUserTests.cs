@@ -32,6 +32,7 @@ public class ClaimsCurrentUserTests
 
     // Scenario 35
     [Fact]
+    [Trait("Rule", "W11")]
     public void UserId_NoHttpContext_IsNull()
     {
         // Arrange
@@ -46,6 +47,7 @@ public class ClaimsCurrentUserTests
 
     // Scenario 36
     [Fact]
+    [Trait("Rule", "W11")]
     public void OrganizationId_NoHttpContext_IsNull()
     {
         // Arrange
@@ -60,6 +62,7 @@ public class ClaimsCurrentUserTests
 
     // Scenario 37
     [Fact]
+    [Trait("Rule", "W11")]
     public void UserId_NameIdentifierClaimIsNotAGuid_IsNull()
     {
         // Arrange
@@ -74,6 +77,7 @@ public class ClaimsCurrentUserTests
 
     // Scenario 38
     [Fact]
+    [Trait("Rule", "W11")]
     public void OrganizationId_OrganizationClaimIsNotAGuid_IsNull()
     {
         // Arrange
@@ -88,6 +92,7 @@ public class ClaimsCurrentUserTests
 
     // Scenario 39
     [Fact]
+    [Trait("Rule", "W11")]
     public void OrganizationId_NoOrganizationClaim_IsNull()
     {
         // Arrange
@@ -102,6 +107,7 @@ public class ClaimsCurrentUserTests
 
     // Scenario 40
     [Fact]
+    [Trait("Rule", "W11")]
     public void UserId_ValidNameIdentifierClaim_ReturnsTheUserId()
     {
         // Arrange
@@ -116,6 +122,7 @@ public class ClaimsCurrentUserTests
 
     // Scenario 41
     [Fact]
+    [Trait("Rule", "W11")]
     public void OrganizationId_ValidOrganizationClaim_ReturnsTheOrganizationId()
     {
         // Arrange

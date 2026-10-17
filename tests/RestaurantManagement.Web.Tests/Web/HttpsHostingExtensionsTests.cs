@@ -66,6 +66,7 @@ public class HttpsHostingExtensionsTests : IDisposable
 
     // Scenario 24
     [Fact]
+    [Trait("Rule", "W12")]
     public void UseHttpsOnlyOutsideDevelopment_ProductionWithoutCertificate_ThrowsNamingCertificatePath()
     {
         // Arrange
@@ -80,6 +81,7 @@ public class HttpsHostingExtensionsTests : IDisposable
 
     // Scenario 25
     [Fact]
+    [Trait("Rule", "W13")]
     public void UseHttpsOnlyOutsideDevelopment_ProductionWithCertificateFileMissing_ThrowsNamingCertificatePath()
     {
         // Arrange
@@ -96,6 +98,7 @@ public class HttpsHostingExtensionsTests : IDisposable
 
     // Scenario 26
     [Fact]
+    [Trait("Rule", "W16")]
     public async Task UseHttpsOnlyOutsideDevelopment_DevelopmentWithoutCertificate_StartsWithoutThrowing()
     {
         // Arrange
@@ -114,6 +117,7 @@ public class HttpsHostingExtensionsTests : IDisposable
 
     // Scenario 27
     [Fact]
+    [Trait("Rule", "W14")]
     public async Task UseHttpsOnlyOutsideDevelopment_ProductionWithCertificate_ServesHttps()
     {
         // Arrange
@@ -133,6 +137,7 @@ public class HttpsHostingExtensionsTests : IDisposable
 
     // Scenario 28
     [Fact]
+    [Trait("Rule", "W14")]
     public async Task UseHttpsOnlyOutsideDevelopment_ProductionWithCertificate_RefusesPlainHttpOnSamePort()
     {
         // Arrange
@@ -151,6 +156,7 @@ public class HttpsHostingExtensionsTests : IDisposable
 
     // Scenario 29
     [Fact]
+    [Trait("Rule", "W14")]
     public async Task UseHttpsOnlyOutsideDevelopment_ProductionWithHttpUrlsConfigured_DoesNotServePlainHttp()
     {
         // Arrange
@@ -172,6 +178,7 @@ public class HttpsHostingExtensionsTests : IDisposable
 
     // Scenario 30
     [Fact]
+    [Trait("Rule", "W15")]
     public async Task UseHttpsOnlyOutsideDevelopment_ProductionWithoutPort_ListensOnPort8443()
     {
         // Arrange

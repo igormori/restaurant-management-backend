@@ -212,6 +212,7 @@ public class RefreshTokenCookieEndpointTests : IDisposable
     // Scenario 52
     [Fact]
     [Trait("Rule", "T11")]
+    [Trait("Rule", "W23")]
     public async Task Cors_PreflightFromAllowedOrigin_AllowsCredentials()
     {
         // Arrange

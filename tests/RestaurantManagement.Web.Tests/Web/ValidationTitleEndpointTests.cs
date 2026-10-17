@@ -27,6 +27,7 @@ public class ValidationTitleEndpointTests : IDisposable
     [Theory]
     [InlineData("pt", "Falha na validação. Verifique os campos informados.")]
     [InlineData("en", "Validation failed. Please check the input fields.")]
+    [Trait("Rule", "W22")]
     public async Task Register_InvalidRequest_ReturnsLocalizedValidationTitle(string culture, string expected)
     {
         // Arrange
@@ -43,6 +44,7 @@ public class ValidationTitleEndpointTests : IDisposable
     }
 
     [Fact]
+    [Trait("Rule", "W22")]
     public async Task Register_InvalidRequest_KeepsStatusAndFieldErrorsInBody()
     {
         // Arrange

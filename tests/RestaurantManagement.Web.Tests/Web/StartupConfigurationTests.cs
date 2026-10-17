@@ -64,6 +64,7 @@ public class StartupConfigurationTests : IDisposable
     [InlineData("")]
     [InlineData("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")]
     [Trait("Rule", "T4")]
+    [Trait("Rule", "W18")]
     public void Startup_JwtKeyMissingOrUnder32Bytes_FailsNamingJwtKey(string key)
     {
         // Arrange
@@ -79,6 +80,7 @@ public class StartupConfigurationTests : IDisposable
     // Scenario 15
     [Fact]
     [Trait("Rule", "T4")]
+    [Trait("Rule", "W18")]
     public void Startup_PlaceholderJwtKeyInProduction_FailsNamingJwtKey()
     {
         // Arrange
@@ -93,6 +95,7 @@ public class StartupConfigurationTests : IDisposable
 
     // Auth hardening rule 4
     [Fact]
+    [Trait("Rule", "W12")]
     public void Startup_NoCertificateInProduction_FailsNamingHttpsCertificatePath()
     {
         // Arrange
@@ -111,6 +114,7 @@ public class StartupConfigurationTests : IDisposable
     [InlineData("0")]
     [InlineData("-3")]
     [Trait("Rule", "T4")]
+    [Trait("Rule", "W18")]
     public void Startup_NonPositiveJwtExpireMinutes_FailsNamingJwtExpireMinutes(string expireMinutes)
     {
         // Arrange
@@ -127,6 +131,7 @@ public class StartupConfigurationTests : IDisposable
     [Theory]
     [InlineData("1.5")]
     [InlineData("-0.1")]
+    [Trait("Rule", "W20")]
     public void Startup_SentryTracesSampleRateInvalid_FailsNamingSentryTracesSampleRate(string rate)
     {
         // Arrange
@@ -141,6 +146,7 @@ public class StartupConfigurationTests : IDisposable
 
     // Scenario 18
     [Fact]
+    [Trait("Rule", "W20")]
     public void Startup_SentryDebugInProduction_IsOff()
     {
         // Arrange
@@ -155,6 +161,7 @@ public class StartupConfigurationTests : IDisposable
 
     // Scenario 19
     [Fact]
+    [Trait("Rule", "W20")]
     public void Startup_SentryTracesSampleRateUnsetInProduction_DefaultsTo0Point1()
     {
         // Arrange
@@ -169,6 +176,7 @@ public class StartupConfigurationTests : IDisposable
 
     // Scenario 20
     [Fact]
+    [Trait("Rule", "W20")]
     public void Startup_SentryTracesSampleRateConfiguredInProduction_UsesConfiguredValue()
     {
         // Arrange
@@ -183,6 +191,7 @@ public class StartupConfigurationTests : IDisposable
 
     // Scenario 21
     [Fact]
+    [Trait("Rule", "W20")]
     public void Startup_SentryTracesSampleRateConfiguredInDevelopment_UsesConfiguredValue()
     {
         // Arrange
@@ -197,6 +206,7 @@ public class StartupConfigurationTests : IDisposable
 
     // Scenario 22
     [Fact]
+    [Trait("Rule", "W20")]
     public void Startup_SentryTracesSampleRateAtLowerBoundary_AcceptsZero()
     {
         // Arrange
@@ -212,6 +222,7 @@ public class StartupConfigurationTests : IDisposable
     // Scenario 23
     [Fact]
     [Trait("Rule", "L19")]
+    [Trait("Rule", "WD3")]
     public void Startup_DefaultConfiguration_JwtExpireMinutesIs15()
     {
         // Arrange
@@ -227,6 +238,7 @@ public class StartupConfigurationTests : IDisposable
     // Hash verification codes: Scenario 4
     [Fact]
     [Trait("Rule", "T5")]
+    [Trait("Rule", "W19")]
     public void Startup_VerificationHashKeyEmpty_FailsNamingHashKey()
     {
         // Arrange
@@ -242,6 +254,7 @@ public class StartupConfigurationTests : IDisposable
     // Hash verification codes: Scenario 5
     [Fact]
     [Trait("Rule", "T5")]
+    [Trait("Rule", "W19")]
     public void Startup_VerificationHashKeyEmptyInProduction_FailsNamingHashKey()
     {
         // Arrange
@@ -257,6 +270,7 @@ public class StartupConfigurationTests : IDisposable
     // Hash verification codes: Scenario 6
     [Fact]
     [Trait("Rule", "T5")]
+    [Trait("Rule", "W19")]
     public void Startup_VerificationHashKeyOf31Bytes_FailsNamingHashKey()
     {
         // Arrange
@@ -271,6 +285,7 @@ public class StartupConfigurationTests : IDisposable
 
     // Hash verification codes: Scenario 10
     [Fact]
+    [Trait("Rule", "WD1")]
     public void Startup_ValidVerificationHashKey_BindsHashKeyFromConfiguration()
     {
         // Arrange
@@ -286,6 +301,7 @@ public class StartupConfigurationTests : IDisposable
 
     // Hash verification codes: Scenario 19
     [Fact]
+    [Trait("Rule", "WD2")]
     public void Startup_DefaultConfiguration_RegistersVerificationCodeHasher()
     {
         // Arrange

@@ -90,7 +90,8 @@ For a module with a matrix:
 - Every named test carries `[Trait("Rule", "<row ID>")]` for each row naming it, and its key
   assertions say the rule in plain words (testing skill, "Writing tests")
 - `python3 .claude/scripts/check-security-matrices.py` checks all of this, in CI too. Run it
-  before committing a change to a module
+  before committing a change to a module; `--fix-tags` writes each test's Rule tags from the
+  matrices
 - In CI, `.claude/scripts/report-test-results.py` shows every failed test with its rule ID, case
   and expected result on the run page and the pull request, and
   `.claude/scripts/report-coverage.py` shows which code of each module no test runs

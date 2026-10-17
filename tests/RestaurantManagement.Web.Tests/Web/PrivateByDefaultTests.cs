@@ -35,6 +35,7 @@ public class PrivateByDefaultTests : IDisposable
     // Scenario 27
     [Fact]
     [Trait("Rule", "T3")]
+    [Trait("Rule", "W4")]
     public async Task UndeclaredEndpoint_NoAccessToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -49,6 +50,7 @@ public class PrivateByDefaultTests : IDisposable
 
     // Scenario 28
     [Fact]
+    [Trait("Rule", "W1")]
     public async Task UndeclaredEndpoint_NoAccessToken_ReturnsStandardUnauthorizedMessage()
     {
         // Arrange
@@ -66,6 +68,7 @@ public class PrivateByDefaultTests : IDisposable
     }
 
     [Fact]
+    [Trait("Rule", "W1")]
     public async Task UndeclaredEndpoint_NoAccessTokenInPortuguese_ReturnsPortugueseUnauthorizedMessage()
     {
         // Arrange
@@ -84,6 +87,7 @@ public class PrivateByDefaultTests : IDisposable
 
     // Scenario 29
     [Fact]
+    [Trait("Rule", "W4")]
     public async Task UndeclaredEndpoint_SignedInWaiter_ReturnsOk()
     {
         // Arrange
@@ -108,6 +112,7 @@ public class PrivateByDefaultTests : IDisposable
     [InlineData("/api/auth/verify", """{"email":"maria.souza@cantina.com.br","code":"482913"}""")]
     [InlineData("/api/auth/resend-verification", """{"email":"maria.souza@cantina.com.br"}""")]
     [Trait("Rule", "T3")]
+    [Trait("Rule", "W4")]
     public async Task PublicAuthEndpoint_NoAccessToken_IsNotRefusedAsUnauthorized(string url, string jsonBody)
     {
         // Arrange

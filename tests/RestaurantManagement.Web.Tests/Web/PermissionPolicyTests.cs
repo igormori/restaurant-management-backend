@@ -35,6 +35,7 @@ public class PermissionPolicyTests : IDisposable
 
     // Scenario 19
     [Fact]
+    [Trait("Rule", "W5")]
     public async Task MembersManagePolicy_NoAccessToken_ReturnsUnauthorized()
     {
         // Arrange
@@ -53,6 +54,7 @@ public class PermissionPolicyTests : IDisposable
     [InlineData(Roles.Cashier)]
     [InlineData(Roles.Waiter)]
     [InlineData(Roles.Kitchen)]
+    [Trait("Rule", "W8")]
     public async Task MembersManagePolicy_RoleWithoutMembersManage_ReturnsForbidden(string role)
     {
         // Arrange
@@ -67,6 +69,7 @@ public class PermissionPolicyTests : IDisposable
 
     // Scenario 21
     [Fact]
+    [Trait("Rule", "W6")]
     public async Task MembersManagePolicy_OwnerRolesButNoOrganizationSelected_ReturnsForbidden()
     {
         // Arrange: a user of two organizations who has not selected one gets roles from both, no organization claim
@@ -81,6 +84,7 @@ public class PermissionPolicyTests : IDisposable
 
     // Scenario 22
     [Fact]
+    [Trait("Rule", "W7")]
     public async Task MembersManagePolicy_OrganizationSelectedButNoRoleInIt_ReturnsForbidden()
     {
         // Arrange
@@ -97,6 +101,7 @@ public class PermissionPolicyTests : IDisposable
     [Theory]
     [InlineData(Roles.Owner)]
     [InlineData(Roles.Admin)]
+    [Trait("Rule", "W9")]
     public async Task MembersManagePolicy_OwnerOrAdminOfSelectedOrganization_ReturnsOk(string role)
     {
         // Arrange
@@ -111,6 +116,7 @@ public class PermissionPolicyTests : IDisposable
 
     // Scenario 24
     [Fact]
+    [Trait("Rule", "W9")]
     public async Task MenuManagePolicy_Manager_ReturnsOk()
     {
         // Arrange
@@ -125,6 +131,7 @@ public class PermissionPolicyTests : IDisposable
 
     // Scenario 25
     [Fact]
+    [Trait("Rule", "W9")]
     public async Task ReportsViewPolicy_Manager_ReturnsOk()
     {
         // Arrange
@@ -139,6 +146,7 @@ public class PermissionPolicyTests : IDisposable
 
     // Scenario 26
     [Fact]
+    [Trait("Rule", "W9")]
     public async Task MenuManagePolicy_WaiterAndManagerInSameOrganization_ReturnsOk()
     {
         // Arrange
