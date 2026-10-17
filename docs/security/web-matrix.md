@@ -61,7 +61,7 @@ for one module (rate limits on sign-in endpoints, the refresh cookie) are in tha
 |---|---|---|---|---|
 | W22 | Invalid request | 400 with a translated title; status and field errors kept | ✅ | `ValidationTitleEndpointTests.Register_InvalidRequest_ReturnsLocalizedValidationTitle`, `ValidationTitleEndpointTests.Register_InvalidRequest_KeepsStatusAndFieldErrorsInBody` |
 | W23 | Browser request from an allowed origin | May send credentials (cookies) | ✅ | `RefreshTokenCookieEndpointTests.Cors_PreflightFromAllowedOrigin_AllowsCredentials` |
-| W24 | Browser request from any other origin | Gets no cross-origin permission | ❌ | |
+| W24 | Browser request from any other origin | Gets no cross-origin permission | ✅ | `CorsUnknownOriginTests.Cors_PreflightFromUnknownOrigin_GetsNoCrossOriginPermission` |
 
 ## 6. Wiring tests
 These protect the app setup rather than a rule users meet.
