@@ -42,7 +42,7 @@ public class ClaimsCurrentUserTests
         var userId = sut.UserId;
 
         // Assert
-        userId.ShouldBeNull();
+        userId.ShouldBeNull("without a valid user id claim the caller is anonymous and no user id may be invented");
     }
 
     // Scenario 36
@@ -57,7 +57,7 @@ public class ClaimsCurrentUserTests
         var organizationId = sut.OrganizationId;
 
         // Assert
-        organizationId.ShouldBeNull();
+        organizationId.ShouldBeNull("without a valid organization claim in the token there is no organization, and it is never taken from anywhere else");
     }
 
     // Scenario 37
@@ -72,7 +72,7 @@ public class ClaimsCurrentUserTests
         var userId = sut.UserId;
 
         // Assert
-        userId.ShouldBeNull();
+        userId.ShouldBeNull("without a valid user id claim the caller is anonymous and no user id may be invented");
     }
 
     // Scenario 38
@@ -87,7 +87,7 @@ public class ClaimsCurrentUserTests
         var organizationId = sut.OrganizationId;
 
         // Assert
-        organizationId.ShouldBeNull();
+        organizationId.ShouldBeNull("without a valid organization claim in the token there is no organization, and it is never taken from anywhere else");
     }
 
     // Scenario 39
@@ -102,7 +102,7 @@ public class ClaimsCurrentUserTests
         var organizationId = sut.OrganizationId;
 
         // Assert
-        organizationId.ShouldBeNull();
+        organizationId.ShouldBeNull("without a valid organization claim in the token there is no organization, and it is never taken from anywhere else");
     }
 
     // Scenario 40
@@ -117,7 +117,7 @@ public class ClaimsCurrentUserTests
         var userId = sut.UserId;
 
         // Assert
-        userId.ShouldBe(MariaId);
+        userId.ShouldBe(MariaId, "the user id comes from the token's name identifier claim");
     }
 
     // Scenario 41
@@ -134,6 +134,6 @@ public class ClaimsCurrentUserTests
         var organizationId = sut.OrganizationId;
 
         // Assert
-        organizationId.ShouldBe(CantinaOrganizationId);
+        organizationId.ShouldBe(CantinaOrganizationId, "the organization comes only from the token's organization claim");
     }
 }

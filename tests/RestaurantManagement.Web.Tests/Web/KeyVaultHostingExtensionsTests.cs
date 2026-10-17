@@ -29,7 +29,7 @@ public class KeyVaultHostingExtensionsTests
         var act = () => builder.AddKeyVaultSecrets();
 
         // Assert
-        act.ShouldThrow<InvalidOperationException>().Message.ShouldContain(VaultUriKey);
+        act.ShouldThrow<InvalidOperationException>().Message.ShouldContain(VaultUriKey, customMessage: "a vault address that is not an absolute HTTPS URL must stop the app and name the setting to fix");
     }
 
     [Theory]
@@ -47,6 +47,6 @@ public class KeyVaultHostingExtensionsTests
         builder.AddKeyVaultSecrets();
 
         // Assert
-        ((IConfigurationBuilder)builder.Configuration).Sources.Count.ShouldBe(sourceCountBefore);
+        ((IConfigurationBuilder)builder.Configuration).Sources.Count.ShouldBe(sourceCountBefore, "without a vault address no secret source is added and the app starts normally");
     }
 }

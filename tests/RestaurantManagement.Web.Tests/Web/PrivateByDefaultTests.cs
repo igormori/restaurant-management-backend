@@ -60,11 +60,11 @@ public class PrivateByDefaultTests : IDisposable
         var response = await client.GetAsync(UndeclaredUrl);
 
         // Assert
-        response.Content.Headers.ContentType.ShouldNotBeNull();
-        response.Content.Headers.ContentType.MediaType.ShouldBe("application/json");
+        response.Content.Headers.ContentType.ShouldNotBeNull("the refusal must be a JSON answer");
+        response.Content.Headers.ContentType.MediaType.ShouldBe("application/json", "the refusal must be a JSON answer");
         var body = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
         body.ShouldNotBeNull();
-        body["message"].ShouldBe(EnglishUnauthorizedMessage);
+        body["message"].ShouldBe(EnglishUnauthorizedMessage, "an anonymous caller gets the standard unauthorized message");
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class PrivateByDefaultTests : IDisposable
         // Assert
         var body = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
         body.ShouldNotBeNull();
-        body["message"].ShouldBe(PortugueseUnauthorizedMessage);
+        body["message"].ShouldBe(PortugueseUnauthorizedMessage, "the unauthorized message follows the caller's language");
     }
 
     // Scenario 29
@@ -100,7 +100,7 @@ public class PrivateByDefaultTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "an endpoint with no access rule only needs a signed-in user, any role");
     }
 
     // Scenario 30

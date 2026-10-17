@@ -106,7 +106,7 @@ public class StartupConfigurationTests : IDisposable
         var error = StartupFailure.Capture(factory);
 
         // Assert
-        error.ToString().ShouldContain("Https:CertificatePath", Case.Sensitive);
+        error.ToString().ShouldContain("Https:CertificatePath", Case.Sensitive, "outside Development the app must refuse to start without a certificate and name the setting to fix");
     }
 
     // Scenario 16
@@ -141,7 +141,7 @@ public class StartupConfigurationTests : IDisposable
         var error = StartupFailure.Capture(factory);
 
         // Assert
-        error.ToString().ShouldContain("Sentry:TracesSampleRate", Case.Sensitive);
+        error.ToString().ShouldContain("Sentry:TracesSampleRate", Case.Sensitive, "the app must refuse to start when the Sentry sample rate is outside 0 to 1, and name the setting to fix");
     }
 
     // Scenario 18
@@ -156,7 +156,7 @@ public class StartupConfigurationTests : IDisposable
         var options = ResolveSentryOptions(Environments.Production, settings);
 
         // Assert
-        options.Debug.Should().BeFalse();
+        options.Debug.Should().BeFalse("Sentry debug output must be off in production");
     }
 
     // Scenario 19
@@ -171,7 +171,7 @@ public class StartupConfigurationTests : IDisposable
         var options = ResolveSentryOptions(Environments.Production, settings);
 
         // Assert
-        options.TracesSampleRate.Should().Be(0.1);
+        options.TracesSampleRate.Should().Be(0.1, "in production the Sentry sample rate defaults to 10 percent when not set");
     }
 
     // Scenario 20
@@ -186,7 +186,7 @@ public class StartupConfigurationTests : IDisposable
         var options = ResolveSentryOptions(Environments.Production, settings);
 
         // Assert
-        options.TracesSampleRate.Should().Be(0.5);
+        options.TracesSampleRate.Should().Be(0.5, "a configured Sentry sample rate is used as set");
     }
 
     // Scenario 21
@@ -201,7 +201,7 @@ public class StartupConfigurationTests : IDisposable
         var options = ResolveSentryOptions(Environments.Development, settings);
 
         // Assert
-        options.TracesSampleRate.Should().Be(0.25);
+        options.TracesSampleRate.Should().Be(0.25, "a configured Sentry sample rate is used as set");
     }
 
     // Scenario 22
@@ -216,7 +216,7 @@ public class StartupConfigurationTests : IDisposable
         var options = ResolveSentryOptions(Environments.Development, settings);
 
         // Assert
-        options.TracesSampleRate.Should().Be(0.0);
+        options.TracesSampleRate.Should().Be(0.0, "zero is a valid Sentry sample rate");
     }
 
     // Scenario 23
@@ -296,7 +296,7 @@ public class StartupConfigurationTests : IDisposable
         var options = factory.Services.GetRequiredService<IOptions<VerificationCodeOptions>>().Value;
 
         // Assert
-        options.HashKey.ShouldBe(configuredKey);
+        options.HashKey.ShouldBe(configuredKey, customMessage: "the code fingerprint key comes from configuration");
     }
 
     // Hash verification codes: Scenario 19
@@ -312,6 +312,6 @@ public class StartupConfigurationTests : IDisposable
         var hasher = scope.ServiceProvider.GetService<IVerificationCodeHasher>();
 
         // Assert
-        hasher.ShouldNotBeNull();
+        hasher.ShouldNotBeNull("verification codes must be stored hashed, so the hasher is always registered");
     }
 }

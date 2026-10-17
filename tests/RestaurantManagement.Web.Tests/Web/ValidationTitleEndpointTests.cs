@@ -38,9 +38,9 @@ public class ValidationTitleEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "invalid input must be answered as a validation error");
         var body = JsonNode.Parse(await response.Content.ReadAsStringAsync())!;
-        body["title"]!.GetValue<string>().ShouldBe(expected);
+        body["title"]!.GetValue<string>().ShouldBe(expected, "the validation title is the catalog message in the caller's language");
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class ValidationTitleEndpointTests : IDisposable
 
         // Assert
         var body = JsonNode.Parse(await response.Content.ReadAsStringAsync())!;
-        body["status"]!.GetValue<int>().ShouldBe(400);
-        body["errors"]!.AsObject().ContainsKey("PhoneNumber").ShouldBeTrue();
+        body["status"]!.GetValue<int>().ShouldBe(400, "the body still carries the 400 status");
+        body["errors"]!.AsObject().ContainsKey("PhoneNumber").ShouldBeTrue("the body still lists the field that failed validation");
     }
 }

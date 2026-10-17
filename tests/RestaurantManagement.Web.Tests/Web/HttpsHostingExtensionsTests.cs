@@ -76,7 +76,7 @@ public class HttpsHostingExtensionsTests : IDisposable
         var act = () => builder.UseHttpsOnlyOutsideDevelopment();
 
         // Assert
-        act.Should().Throw<InvalidOperationException>().WithMessage("*Https:CertificatePath*");
+        act.Should().Throw<InvalidOperationException>().WithMessage("*Https:CertificatePath*", "outside Development the app must refuse to start without a usable certificate and name the setting to fix");
     }
 
     // Scenario 25
@@ -93,7 +93,7 @@ public class HttpsHostingExtensionsTests : IDisposable
         var act = () => builder.UseHttpsOnlyOutsideDevelopment();
 
         // Assert
-        act.Should().Throw<InvalidOperationException>().WithMessage("*Https:CertificatePath*");
+        act.Should().Throw<InvalidOperationException>().WithMessage("*Https:CertificatePath*", "outside Development the app must refuse to start without a usable certificate and name the setting to fix");
     }
 
     // Scenario 26
@@ -112,7 +112,7 @@ public class HttpsHostingExtensionsTests : IDisposable
         };
 
         // Assert
-        await act.Should().NotThrowAsync();
+        await act.Should().NotThrowAsync("in Development the app may start without a certificate so developers can work locally");
     }
 
     // Scenario 27
@@ -131,8 +131,8 @@ public class HttpsHostingExtensionsTests : IDisposable
         var response = await client.GetAsync($"https://{LoopbackAddress}:{port}{PingPath}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        (await response.Content.ReadAsStringAsync()).Should().Be(PingBody);
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "outside Development the API is served over HTTPS with the configured certificate");
+        (await response.Content.ReadAsStringAsync()).Should().Be(PingBody, "the HTTPS endpoint must answer normally");
     }
 
     // Scenario 28
@@ -151,7 +151,7 @@ public class HttpsHostingExtensionsTests : IDisposable
         var act = () => client.GetAsync($"http://{LoopbackAddress}:{port}{PingPath}");
 
         // Assert
-        await act.Should().ThrowAsync<HttpRequestException>();
+        await act.Should().ThrowAsync<HttpRequestException>("outside Development plain HTTP must not be served at all");
     }
 
     // Scenario 29
@@ -173,7 +173,7 @@ public class HttpsHostingExtensionsTests : IDisposable
         var act = () => client.GetAsync($"http://{LoopbackAddress}:{httpPort}{PingPath}");
 
         // Assert
-        await act.Should().ThrowAsync<HttpRequestException>();
+        await act.Should().ThrowAsync<HttpRequestException>("outside Development plain HTTP must not be served at all");
     }
 
     // Scenario 30
@@ -190,6 +190,6 @@ public class HttpsHostingExtensionsTests : IDisposable
         var addresses = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses;
 
         // Assert
-        addresses.Should().ContainSingle().Which.Should().StartWith("https://").And.EndWith($":{DefaultHttpsPort}");
+        addresses.Should().ContainSingle().Which.Should().StartWith("https://", "the only address is HTTPS").And.EndWith($":{DefaultHttpsPort}", "without a configured port the API listens on the default HTTPS port");
     }
 }

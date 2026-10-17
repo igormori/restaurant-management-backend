@@ -45,7 +45,7 @@ public class PermissionPolicyTests : IDisposable
         var response = await client.GetAsync(MembersUrl);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "a caller with no access token is not signed in and must be refused");
     }
 
     // Scenario 20
@@ -64,7 +64,7 @@ public class PermissionPolicyTests : IDisposable
         var response = await client.SendAsync(SignedInGet(MembersUrl, CantinaId, role));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden, "a role that does not grant the members permission must be refused");
     }
 
     // Scenario 21
@@ -79,7 +79,7 @@ public class PermissionPolicyTests : IDisposable
         var response = await client.SendAsync(SignedInGet(MembersUrl, organizationId: null, Roles.Owner, Roles.Waiter));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden, "roles only count inside the selected organization, so with none selected access is refused");
     }
 
     // Scenario 22
@@ -94,7 +94,7 @@ public class PermissionPolicyTests : IDisposable
         var response = await client.SendAsync(SignedInGet(MembersUrl, CantinaId));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden, "a user with no role in the selected organization must be refused");
     }
 
     // Scenario 23
@@ -111,7 +111,7 @@ public class PermissionPolicyTests : IDisposable
         var response = await client.SendAsync(SignedInGet(MembersUrl, CantinaId, role));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "a role that grants the permission in the selected organization must get access");
     }
 
     // Scenario 24
@@ -126,7 +126,7 @@ public class PermissionPolicyTests : IDisposable
         var response = await client.SendAsync(SignedInGet(MenuUrl, CantinaId, Roles.Manager));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "a role that grants the permission in the selected organization must get access");
     }
 
     // Scenario 25
@@ -141,7 +141,7 @@ public class PermissionPolicyTests : IDisposable
         var response = await client.SendAsync(SignedInGet(ReportsUrl, CantinaId, Roles.Manager));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "a role that grants the permission in the selected organization must get access");
     }
 
     // Scenario 26
@@ -156,6 +156,6 @@ public class PermissionPolicyTests : IDisposable
         var response = await client.SendAsync(SignedInGet(MenuUrl, CantinaId, Roles.Waiter, Roles.Manager));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "a role that grants the permission in the selected organization must get access");
     }
 }
