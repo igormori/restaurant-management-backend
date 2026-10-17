@@ -42,7 +42,8 @@ namespace RestaurantManagement.Modules.Identity.Controllers
         [EnableRateLimiting(AuthRateLimitPolicies.Login)]
         public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
         {
-            var result = await _sessionService.LoginAsync(request, RefreshTokenCookie.ClientOf(HttpContext));
+            var result = await _sessionService.LoginAsync(
+                request, RefreshTokenCookie.ClientOf(HttpContext), RefreshTokenCookie.Read(Request));
             return RespondWithCookie(result);
         }
 

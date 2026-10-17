@@ -304,6 +304,51 @@ namespace RestaurantManagement.Modules.Identity.Tests
             tokens.Select(t => t.FamilyId).Distinct().Count().ShouldBe(2, "each device has its own session family");
         }
 
+        [Fact]
+        [Trait("Rule", "L20")]
+        public async Task LoginAsync_BrowserSendsItsExistingToken_RevokesThatTokenAndKeepsOtherDevices()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            await SeedUserAsync(database);
+            var tablet = await LoginAsync(database, TestClients.KitchenTablet);
+            var laptop = await LoginAsync(database, TestClients.ManagerLaptop);
+
+            // Act
+            using (var context = database.CreateContext())
+            {
+                await CreateSut(context).LoginAsync(
+                    new LoginRequest { Email = UserEmail, Password = Password }, TestClients.KitchenTablet, tablet.RefreshToken);
+            }
+
+            // Assert
+            await AssertRefreshRejectedAsync(database, tablet.RefreshToken);
+            var laptopRefreshed = await RefreshAsync(database, laptop.RefreshToken);
+            laptopRefreshed.Auth.Token.ShouldNotBeNullOrWhiteSpace("logging in again on one browser leaves the other device's session active");
+        }
+
+        [Fact]
+        [Trait("Rule", "L20")]
+        public async Task LoginAsync_BrowserSendsItsExistingTokenButPasswordIsWrong_KeepsThatToken()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            await SeedUserAsync(database);
+            var tablet = await LoginAsync(database, TestClients.KitchenTablet);
+
+            // Act
+            using (var context = database.CreateContext())
+            {
+                var act = () => CreateSut(context).LoginAsync(
+                    new LoginRequest { Email = UserEmail, Password = "WrongPassword1!" }, TestClients.KitchenTablet, tablet.RefreshToken);
+                await Should.ThrowAsync<BusinessException>(act);
+            }
+
+            // Assert
+            var refreshed = await RefreshAsync(database, tablet.RefreshToken);
+            refreshed.Auth.Token.ShouldNotBeNullOrWhiteSpace("a refused login does not end the browser's existing session");
+        }
+
         // Scenario 38
         [Fact]
         [Trait("Rule", "F7")]

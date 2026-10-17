@@ -109,6 +109,7 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | L17 | `X-Forwarded-For` header | Trusted only from configured proxies | ✅ | `AuthRateLimitingTests.Login_ForwardedForFromUntrustedSender_PartitionsByRemoteIp`, `AuthRateLimitingTests.Login_ForwardedForFromTrustedProxy_PartitionsByForwardedIp` |
 | L18 | Lockout reported | Sentry event with the user ID, never the email | ✅ | `SessionServiceLoginTests.LoginAsync_FailedAttemptsReachLimit_SentryMessageHasUserIdAndNoEmail` |
 | L19 | Access token lifetime | 15 min by default | ✅ | `SessionServiceLoginTests.LoginAsync_JwtExpireMinutesLeftAtDefault_TokenExpiresIn15Minutes`, `StartupConfigurationTests.Startup_DefaultConfiguration_JwtExpireMinutesIs15` |
+| L20 | Login from a browser that sends its existing refresh cookie | That cookie's token is revoked once the login succeeds; a refused login keeps it; other devices' tokens stay active | ✅ | `SessionServiceRefreshTests.LoginAsync_BrowserSendsItsExistingToken_RevokesThatTokenAndKeepsOtherDevices`, `SessionServiceRefreshTests.LoginAsync_BrowserSendsItsExistingTokenButPasswordIsWrong_KeepsThatToken` |
 
 ## 5. Refresh: `POST /api/auth/refresh` (refresh cookie)
 | ID | Case | Expected | Status | Test |
