@@ -70,10 +70,10 @@ public class StartupConfigurationTests : IDisposable
         var factory = CreateFactory(Environments.Development, new() { ["Jwt:Key"] = key });
 
         // Act
-        var act = () => factory.CreateClient();
+        var error = StartupFailure.Capture(factory);
 
         // Assert
-        act.Should().Throw<Exception>().Where(e => e.ToString().Contains("Jwt:Key"), "the app must refuse to start with a weak or placeholder signing key, and the error must name the setting to fix");
+        error.ToString().ShouldContain("Jwt:Key", Case.Sensitive, "the app must refuse to start with a weak or placeholder signing key, and the error must name the setting to fix");
     }
 
     // Scenario 15
@@ -85,10 +85,10 @@ public class StartupConfigurationTests : IDisposable
         var factory = CreateFactory(Environments.Production, With(ValidProductionSettings(), "Jwt:Key", JwtOptions.PlaceholderKey));
 
         // Act
-        var act = () => factory.CreateClient();
+        var error = StartupFailure.Capture(factory);
 
         // Assert
-        act.Should().Throw<Exception>().Where(e => e.ToString().Contains("Jwt:Key"), "the app must refuse to start with a weak or placeholder signing key, and the error must name the setting to fix");
+        error.ToString().ShouldContain("Jwt:Key", Case.Sensitive, "the app must refuse to start with a weak or placeholder signing key, and the error must name the setting to fix");
     }
 
     // Auth hardening rule 4
@@ -100,10 +100,10 @@ public class StartupConfigurationTests : IDisposable
         var factory = CreateFactory(Environments.Production, settings);
 
         // Act
-        var act = () => factory.CreateClient();
+        var error = StartupFailure.Capture(factory);
 
         // Assert
-        act.Should().Throw<Exception>().Where(e => e.ToString().Contains("Https:CertificatePath"));
+        error.ToString().ShouldContain("Https:CertificatePath", Case.Sensitive);
     }
 
     // Scenario 16
@@ -117,10 +117,10 @@ public class StartupConfigurationTests : IDisposable
         var factory = CreateFactory(Environments.Development, new() { ["Jwt:ExpireMinutes"] = expireMinutes });
 
         // Act
-        var act = () => factory.CreateClient();
+        var error = StartupFailure.Capture(factory);
 
         // Assert
-        act.Should().Throw<Exception>().Where(e => e.ToString().Contains("Jwt:ExpireMinutes"), "the app must refuse to start when the access token lifetime is not positive, and the error must name the setting to fix");
+        error.ToString().ShouldContain("Jwt:ExpireMinutes", Case.Sensitive, "the app must refuse to start when the access token lifetime is not positive, and the error must name the setting to fix");
     }
 
     // Scenario 17
@@ -133,10 +133,10 @@ public class StartupConfigurationTests : IDisposable
         var factory = CreateFactory(Environments.Development, new() { ["Sentry:TracesSampleRate"] = rate });
 
         // Act
-        var act = () => factory.CreateClient();
+        var error = StartupFailure.Capture(factory);
 
         // Assert
-        act.Should().Throw<Exception>().Where(e => e.ToString().Contains("Sentry:TracesSampleRate"));
+        error.ToString().ShouldContain("Sentry:TracesSampleRate", Case.Sensitive);
     }
 
     // Scenario 18
@@ -233,7 +233,7 @@ public class StartupConfigurationTests : IDisposable
         var factory = CreateFactory(Environments.Development, new() { ["VerificationCode:HashKey"] = string.Empty });
 
         // Act
-        var thrown = Should.Throw<Exception>(() => factory.CreateClient());
+        var thrown = StartupFailure.Capture(factory);
 
         // Assert
         thrown.ToString().ShouldContain("VerificationCode:HashKey", customMessage: "the app must refuse to start without a strong code fingerprint key, and the error must name the setting to fix");
@@ -248,7 +248,7 @@ public class StartupConfigurationTests : IDisposable
         var factory = CreateFactory(Environments.Production, With(ValidProductionSettings(), "VerificationCode:HashKey", string.Empty));
 
         // Act
-        var thrown = Should.Throw<Exception>(() => factory.CreateClient());
+        var thrown = StartupFailure.Capture(factory);
 
         // Assert
         thrown.ToString().ShouldContain("VerificationCode:HashKey", customMessage: "the app must refuse to start without a strong code fingerprint key, and the error must name the setting to fix");
@@ -263,7 +263,7 @@ public class StartupConfigurationTests : IDisposable
         var factory = CreateFactory(Environments.Development, new() { ["VerificationCode:HashKey"] = new string('k', 31) });
 
         // Act
-        var thrown = Should.Throw<Exception>(() => factory.CreateClient());
+        var thrown = StartupFailure.Capture(factory);
 
         // Assert
         thrown.ToString().ShouldContain("VerificationCode:HashKey", customMessage: "the app must refuse to start without a strong code fingerprint key, and the error must name the setting to fix");
