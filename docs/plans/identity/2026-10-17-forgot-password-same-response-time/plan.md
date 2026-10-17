@@ -1,6 +1,6 @@
 # Plan: Forgot password takes the same time for every email
 
-**Spec:** docs/specs/identity/2026-10-17-forgot-password-same-response-time.md   **Date:** 2026-10-17   **Status:** In progress
+**Spec:** docs/specs/identity/2026-10-17-forgot-password-same-response-time.md   **Date:** 2026-10-17   **Status:** Done
 **Risk:** High — new table and migration, a new background worker, and a behaviour change on a public (anonymous) endpoint
 
 ## Summary
@@ -37,10 +37,10 @@ which would make the tests unreliable.
 - [x] Full test suite green after the last batch
 - [x] No out-of-scope changes; findings in the backlog
 - [x] `docs/security/identity-matrix.md` rows P1–P5 changed, new P and D rows added, all ✅; `python3 .claude/scripts/check-security-matrices.py` passes
-- [ ] `backlog/bugs/2026-10-16-forgot-password-response-time-reveals-account.md` deleted, deletion left uncommitted for the user
+- [x] `backlog/bugs/2026-10-16-forgot-password-response-time-reveals-account.md` deleted in `57706ee` (committed at the user's request)
 
 ## Checklist
-- [x] T1 — Pending reset request table
-- [x] T2 — Forgot password only queues the request
-- [x] T3 — Processor sends reset emails and retries failures
-- [x] T4 — Background worker runs the processor
+- [x] T1 — Pending reset request table (`966f9c1`)
+- [x] T2 — Forgot password only queues the request (`8ee57b5`)
+- [x] T3 — Processor sends reset emails and retries failures (`830523b`)
+- [x] T4 — Background worker runs the processor (`19758cf`)
