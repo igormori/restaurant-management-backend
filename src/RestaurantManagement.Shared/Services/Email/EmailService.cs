@@ -63,14 +63,14 @@ namespace RestaurantManagement.Shared.Services.Email
                     await client.AuthenticateAsync(_emailOptions.SmtpUser, _emailOptions.SmtpPass);
                 }
 
-                _logger.LogInformation("Sending email to {To}...", to);
+                _logger.LogInformation("Sending email...");
                 await client.SendAsync(message);
                 _logger.LogInformation("Email sent successfully.");
                 await client.DisconnectAsync(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error sending email to {to}");
+                _logger.LogError(ex, "Error sending email");
                 // In production, we might want to throw or handle queueing
                 // For now, allow failure but log error.
                 // Re-throwing might be safer to ensure API knows it failed.

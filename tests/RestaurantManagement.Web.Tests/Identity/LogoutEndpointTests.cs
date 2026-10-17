@@ -16,7 +16,7 @@ public class LogoutEndpointTests : IDisposable
 {
     private const string LogoutUrl = "/api/auth/logout";
     private const string LogoutAllUrl = "/api/auth/logout-all";
-    private const string CookieName = "refresh_token";
+    private const string CookieName = "__Secure-refresh_token";
     private const string CookiePath = "/api/auth";
     private const string TabletCookieToken = "a2l0Y2hlbi10YWJsZXQtcmVmcmVzaC10b2tlbi0wMDAx";
 

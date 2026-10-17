@@ -135,7 +135,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             {
                 // Decide if we fail the whole request or just log.
                 // fail the request because the user will not receive the code
-                _logger.LogError(ex, "Failed to send verification email to {Email}", user.Email);
+                _logger.LogError(ex, "Failed to send verification email to user {UserId}", user.Id);
                 throw new BusinessException(_localizer["EmailSendingFailed"].Value, 500);
             }
 
