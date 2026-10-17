@@ -32,11 +32,11 @@ which would make the tests unreliable.
 | T4 | New background worker (hosted service) | — | — |
 
 ## Overall Definition of Done
-- [ ] All tasks done, tests passing
-- [ ] All spec Outcomes met
-- [ ] Full test suite green after the last batch
-- [ ] No out-of-scope changes; findings in the backlog
-- [ ] `docs/security/identity-matrix.md` rows P1–P5 changed, new P and D rows added, all ✅; `python3 .claude/scripts/check-security-matrices.py` passes
+- [x] All tasks done, tests passing
+- [x] All spec Outcomes met
+- [x] Full test suite green after the last batch
+- [x] No out-of-scope changes; findings in the backlog
+- [x] `docs/security/identity-matrix.md` rows P1–P5 changed, new P and D rows added, all ✅; `python3 .claude/scripts/check-security-matrices.py` passes
 - [ ] `backlog/bugs/2026-10-16-forgot-password-response-time-reveals-account.md` deleted, deletion left uncommitted for the user
 
 ## Checklist
