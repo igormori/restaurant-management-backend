@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
@@ -16,6 +17,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private const string UserEmail = "maria@cantinadanonna.com.br";
         private const string OwnerRole = "Owner";
         private const string StaffRole = "Staff";
+        private const string AdminRole = "Admin";
 
         private static readonly Guid CantinaOrganizationId = Guid.Parse("a1a1a1a1-0000-4000-8000-000000000001");
         private static readonly Guid TrattoriaOrganizationId = Guid.Parse("b2b2b2b2-0000-4000-8000-000000000002");
@@ -55,6 +57,14 @@ namespace RestaurantManagement.Modules.Identity.Tests
         {
             return new JwtSecurityTokenHandler().ReadJwtToken(token).Claims
                 .SingleOrDefault(c => c.Type == AppClaimTypes.OrganizationId)?.Value;
+        }
+
+        private static List<string> RoleClaimsOf(string? token)
+        {
+            return new JwtSecurityTokenHandler().ReadJwtToken(token).Claims
+                .Where(c => c.Type == ClaimTypes.Role)
+                .Select(c => c.Value)
+                .ToList();
         }
 
         // Scenario 29
@@ -142,6 +152,62 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             OrganizationClaimOf(refreshed.Auth.Token).ShouldBe(CantinaOrganizationId.ToString(), "a refreshed token keeps the user's single organization");
+        }
+
+        [Fact]
+        [Trait("Rule", "L14")]
+        public async Task LoginAsync_UserWithRolesInTwoOrganizations_TokenHasNoRoleClaims()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            await SeedUserAsync(database,
+                new UserRole { Role = OwnerRole, OrganizationId = CantinaOrganizationId },
+                new UserRole { Role = StaffRole, OrganizationId = TrattoriaOrganizationId });
+
+            // Act
+            var response = await LoginAsync(database);
+
+            // Assert
+            RoleClaimsOf(response.Auth.Token).ShouldBeEmpty("a token with no organization carries no role, so a role held in one organization cannot count as proof of access in another");
+        }
+
+        [Fact]
+        [Trait("Rule", "L14")]
+        public async Task LoginAsync_UserWithTwoRolesInOneOrganization_TokenCarriesBothRoles()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            await SeedUserAsync(database,
+                new UserRole { Role = OwnerRole, OrganizationId = CantinaOrganizationId },
+                new UserRole { Role = AdminRole, OrganizationId = CantinaOrganizationId, LocationId = CentroLocationId });
+
+            // Act
+            var response = await LoginAsync(database);
+
+            // Assert
+            var roles = RoleClaimsOf(response.Auth.Token).OrderBy(r => r).ToList();
+            roles.ShouldBe(new[] { AdminRole, OwnerRole }, ignoreOrder: false, customMessage: "a user of a single organization keeps all their roles in it");
+        }
+
+        [Fact]
+        [Trait("Rule", "F10")]
+        [Trait("Rule", "F6")]
+        public async Task RefreshTokenAsync_TwoOrganizationsNoneChosen_NewTokenHasNoRolesAndNoOrganization()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            await SeedUserAsync(database,
+                new UserRole { Role = OwnerRole, OrganizationId = CantinaOrganizationId },
+                new UserRole { Role = StaffRole, OrganizationId = TrattoriaOrganizationId });
+            var loginResponse = await LoginAsync(database);
+            using var refreshContext = database.CreateContext();
+
+            // Act
+            var refreshed = await CreateSut(refreshContext).RefreshTokenAsync(loginResponse.RefreshToken);
+
+            // Assert
+            RoleClaimsOf(refreshed.Auth.Token).ShouldBeEmpty("refreshing without a chosen organization gives a two-organization user no roles");
+            OrganizationClaimOf(refreshed.Auth.Token).ShouldBeNull("refreshing without a chosen organization gives a two-organization user no organization");
         }
     }
 }
