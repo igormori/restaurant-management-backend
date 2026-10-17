@@ -41,6 +41,6 @@ which would make the tests unreliable.
 
 ## Checklist
 - [x] T1 — Pending reset request table
-- [ ] T2 — Forgot password only queues the request
+- [x] T2 — Forgot password only queues the request
 - [ ] T3 — Processor sends reset emails and retries failures
 - [ ] T4 — Background worker runs the processor
