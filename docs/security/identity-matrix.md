@@ -38,6 +38,11 @@ login 10/min, register 5/h, verify 10/10 min, resend 3/10 min, refresh and logou
 forgot password 3/10 min, reset password 10/10 min, change password 10/min. Access tokens get no
 grace past expiry (T15).
 
+**Accepted ASVS 5.0 deviations (decided 2026-10-16, see `identity-asvs-gap-report.md`):**
+passwords keep the uppercase, digit and symbol rule (R7, R8; ASVS V6.2.5) · no list of a user's
+sessions: logout-all is enough (O5; ASVS V7.5.2) · passwords over 72 bytes are refused, so 64
+accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9).
+
 ## 1. Register: `POST /api/auth/register` (public)
 | ID | Case | Expected | Status | Test |
 |---|---|---|---|---|
