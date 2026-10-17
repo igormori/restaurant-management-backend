@@ -61,8 +61,7 @@ Read `.claude/skills/architecture/SKILL.md`, `.claude/skills/testing/SKILL.md`, 
    - The summary is the item's title, lowercase, shortened only to fit 72 characters, e.g.
      `fix(identity): resend email failure log drops the exception`.
    - Add `Refs: <backlog file path>` to the body.
-   - Fully solved: after the commit, delete the backlog file (and its row in
-     `backlog/README.md`, if any) and leave the deletion uncommitted for the user to check.
+   - Fully solved: after the commit, delete the backlog file and leave the deletion uncommitted for the user to check.
      Partly solved: update what is left, as the backlog skill says.
 
 If an item fails twice, or grows past Section 1, **stop the whole batch**: leave that item's files
