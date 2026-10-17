@@ -200,6 +200,7 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | T16 | Shipped lockout and code limits | 5 wrong logins lock for 15 min; 5 wrong codes lock verify or reset for 15 min; codes expire in 10 min; 60 s between emails | ✅ | `ShippedLimitsTests.Configuration_ShippedLockoutAndCodeLimits_MatchTheMatrix` |
 | T17 | Shipped token lifetimes | Access token 15 min; refresh token 30 days | ✅ | `ShippedLimitsTests.Configuration_ShippedTokenLifetimes_MatchTheMatrix` |
 | T18 | Shipped rate limits per IP address | The per-endpoint limits in the header above | ✅ | `ShippedLimitsTests.Configuration_ShippedRateLimit_MatchesTheMatrix` |
+| T19 | Randomness of codes and refresh tokens | Refresh tokens are 64 random bytes and never repeat; no Identity service uses `System.Random`, so codes and tokens come from `RandomNumberGenerator` | ✅ | `SecureRandomSourceTests.IssueAsync_TwoTokens_AreDifferentAnd64RandomBytesLong`, `SecureRandomSourceTests.IdentityServices_SourceCode_NeverUsesSystemRandom` |
 
 ## 11. Schema, migration and wiring tests
 These protect the database and the app setup rather than a rule users meet. They are listed so
