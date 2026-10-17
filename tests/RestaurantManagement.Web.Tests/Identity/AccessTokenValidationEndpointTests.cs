@@ -131,4 +131,22 @@ public class AccessTokenValidationEndpointTests : IDisposable
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "a token signed with another key, issuer or audience, or not signed at all, is forged and must be refused");
         await _factory.SessionService.DidNotReceive().LogoutAllAsync(Arg.Any<Guid>());
     }
+
+    // Matrix T21
+    [Fact]
+    [Trait("Rule", "T21")]
+    public async Task LogoutAll_AccessTokenNotValidForAnotherTenMinutes_ReturnsUnauthorized()
+    {
+        // Arrange
+        var jwt = AppJwt;
+        var token = SignToken(jwt.Key, jwt.Issuer, jwt.Audience,
+            expires: DateTime.UtcNow.AddMinutes(25), notBefore: DateTime.UtcNow.AddMinutes(10));
+
+        // Act
+        var response = await LogoutAllWithAsync(token);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "an access token used before its not-before time must be refused");
+        await _factory.SessionService.DidNotReceive().LogoutAllAsync(Arg.Any<Guid>());
+    }
 }

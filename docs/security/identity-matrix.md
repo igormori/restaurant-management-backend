@@ -202,6 +202,7 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | T18 | Shipped rate limits per IP address | The per-endpoint limits in the header above | ✅ | `ShippedLimitsTests.Configuration_ShippedRateLimit_MatchesTheMatrix` |
 | T19 | Randomness of codes and refresh tokens | Refresh tokens are 64 random bytes and never repeat; no Identity service uses `System.Random`, so codes and tokens come from `RandomNumberGenerator` | ✅ | `SecureRandomSourceTests.IssueAsync_TwoTokens_AreDifferentAnd64RandomBytesLong`, `SecureRandomSourceTests.IdentityServices_SourceCode_NeverUsesSystemRandom` |
 | T20 | Password typed with other casing or extra, missing or trailing spaces | Does not match; the password is checked exactly as typed, never trimmed or case-folded | ✅ | `PasswordExactMatchTests.Verify_PasswordWithDifferentCasingOrSpaces_ReturnsFalse`, `PasswordExactMatchTests.Verify_PasswordWithInnerSpaceAndCasingAsStored_ReturnsTrue` |
+| T21 | Access token used before its not-before time (`nbf`, 10 minutes ahead) | 401 | ✅ | `AccessTokenValidationEndpointTests.LogoutAll_AccessTokenNotValidForAnotherTenMinutes_ReturnsUnauthorized` |
 
 ## 11. Schema, migration and wiring tests
 These protect the database and the app setup rather than a rule users meet. They are listed so
