@@ -7,14 +7,11 @@
 
 ## Problem
 Small Identity gaps against OWASP ASVS 5.0 Level 2. Each is one small change, suited to one
-small batch (one commit per line below). #17, #19 and #21–#23 are done.
+small batch (one commit per line below). #17, #19, #21–#28 are done.
 
 **Small fixes (code changes):**
 - #18: no JWT algorithm allowlist; only `alg: none` is known to be refused
 - #15: logging in again on a browser leaves that browser's previous refresh token valid until it expires
-
-**Missing tests (code already does it; needs a matrix row and a test):**
-- #28: refresh fingerprints use SHA-256 and access tokens HS256
 
 ## Evidence
 - `src/RestaurantManagement.Web/Program.cs:78-88` — `TokenValidationParameters` without `ValidAlgorithms`
@@ -23,8 +20,7 @@ small batch (one commit per line below). #17, #19 and #21–#23 are done.
 ## Acceptance criteria
 - [ ] Access tokens signed with any algorithm other than HS256 are refused
 - [ ] Logging in with an existing refresh cookie revokes that cookie's token
-- [ ] Each remaining "missing test" line (#24–#28) has an Identity matrix row and a passing test
-- [ ] The gap report summary rows #15, #18 and #24–#28 can be marked Covered
+- [ ] The gap report summary rows #15 and #18 can be marked Covered. Rows #24–#28 are done in the matrix (T21–T25) but still to be marked Covered in the gap report
 
 ## Related
 - backlog/improvements/session-redesign.md
