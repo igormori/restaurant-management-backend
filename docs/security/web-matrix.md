@@ -35,7 +35,7 @@ for one module (rate limits on sign-in endpoints, the refresh cookie) are in tha
 | W7 | Organization chosen but no role in it | 403 | ✅ | `PermissionPolicyTests.MembersManagePolicy_OrganizationSelectedButNoRoleInIt_ReturnsForbidden` |
 | W8 | Role without the permission | 403 | ✅ | `PermissionPolicyTests.MembersManagePolicy_RoleWithoutMembersManage_ReturnsForbidden` |
 | W9 | A role in the chosen organization grants the permission | Allowed; one granting role is enough when the user has several | ✅ | `PermissionPolicyTests.MembersManagePolicy_OwnerOrAdminOfSelectedOrganization_ReturnsOk`, `PermissionPolicyTests.MenuManagePolicy_Manager_ReturnsOk`, `PermissionPolicyTests.ReportsViewPolicy_Manager_ReturnsOk`, `PermissionPolicyTests.MenuManagePolicy_WaiterAndManagerInSameOrganization_ReturnsOk` |
-| W10 | Every permission in the catalog | Has a policy an endpoint can require | ❌ | |
+| W10 | Every permission in the catalog | Has a policy an endpoint can require | ✅ | `PermissionCatalogPolicyTests.PolicyProvider_EveryPermissionInTheCatalog_HasAPolicyNamedAfterIt` |
 | W11 | The signed-in user and organization | Read only from the token; a missing or malformed ID counts as absent | ✅ | `ClaimsCurrentUserTests.UserId_NoHttpContext_IsNull`, `ClaimsCurrentUserTests.OrganizationId_NoHttpContext_IsNull`, `ClaimsCurrentUserTests.UserId_NameIdentifierClaimIsNotAGuid_IsNull`, `ClaimsCurrentUserTests.OrganizationId_OrganizationClaimIsNotAGuid_IsNull`, `ClaimsCurrentUserTests.OrganizationId_NoOrganizationClaim_IsNull`, `ClaimsCurrentUserTests.UserId_ValidNameIdentifierClaim_ReturnsTheUserId`, `ClaimsCurrentUserTests.OrganizationId_ValidOrganizationClaim_ReturnsTheOrganizationId` |
 
 ## 3. HTTPS
