@@ -79,6 +79,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 19
         [Fact]
+        [Trait("Rule", "OR14")]
         public async Task GetLocationAsync_LocationOfAnotherOrganization_ReturnsNull()
         {
             // Arrange
@@ -97,6 +98,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 20
         [Fact]
+        [Trait("Rule", "OR3")]
         public async Task CreateOrganizationAsync_TrialOwnerWithNoOrganizationInToken_ThrowsBadRequest()
         {
             // Arrange
@@ -116,6 +118,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 21
         [Fact]
+        [Trait("Rule", "OR17")]
         public async Task GetOrganizationsAsync_SignedInToOneOfTwoOrganizations_ShowsPlanDetailsOfBoth()
         {
             // Arrange

@@ -83,6 +83,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [Theory]
         [InlineData(Roles.Waiter, true)]
         [InlineData(Roles.Owner, false)]
+        [Trait("Rule", "OR25")]
         public async Task EditOrganizationAsync_EditRejected_RecordsNothing(string role, bool tokenHasOrganization)
         {
             // Arrange
@@ -102,6 +103,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 19
         [Fact]
+        [Trait("Rule", "OR25")]
         public async Task EditOrganizationAsync_RecordingFails_KeepsSettingsSavedAndLogsError()
         {
             // Arrange
@@ -134,6 +136,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData(12.0, 5.0, "04:00")]
         [InlineData(10.0, 8.0, "04:00")]
         [InlineData(10.0, 5.0, "05:30")]
+        [Trait("Rule", "OR25")]
         public async Task EditOrganizationAsync_OneSettingChanged_RecordsOneSettingsChangedEntry(
             double serviceChargeRate, double discountApprovalLimit, string businessDayCutoff)
         {
@@ -166,6 +169,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [Theory]
         [InlineData("Cantina da Nonna Batel")]
         [InlineData("Cantina da Nonna")]
+        [Trait("Rule", "OR25")]
         public async Task EditOrganizationAsync_SettingsUnchanged_RecordsNothing(string name)
         {
             // Arrange

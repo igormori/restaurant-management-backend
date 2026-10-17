@@ -39,6 +39,7 @@ METHOD = re.compile(r"^\s*public\s+(?:async\s+Task|void)\s+(\w+)\s*\(")
 ATTRIBUTE_OR_COMMENT = re.compile(r"^\s*(\[.*|//.*|)$")
 TEST_ATTRIBUTE = re.compile(r"\[(?:Fact|Theory)\b")
 RULE_TRAIT = re.compile(r'Trait\(\s*"Rule"\s*,\s*"([^"]+)"\s*\)')
+END_OF_MEMBER = re.compile(r"^\s*([{}]|.*;\s*(//.*)?)$")
 
 problems = []
 
@@ -84,9 +85,10 @@ def fix_tags(expected_tags: dict) -> int:
             match = METHOD.match(line)
             key = (file.stem, match.group(1)) if match else None
             if key and (key in expected_tags or any(RULE_TRAIT.search(previous) for previous in output[-12:])):
-                # Drop the Rule tags directly above this method, then write the expected ones.
+                # Drop the Rule tags directly above this method, then write the expected ones. The block
+                # ends at the previous member, so attributes spanning several lines stay inside it.
                 cursor = len(output)
-                while cursor > 0 and ATTRIBUTE_OR_COMMENT.match(output[cursor - 1]):
+                while cursor > 0 and not END_OF_MEMBER.match(output[cursor - 1]):
                     cursor -= 1
                 block = output[cursor:]
                 kept = [item for item in block if not RULE_TRAIT.search(item)]

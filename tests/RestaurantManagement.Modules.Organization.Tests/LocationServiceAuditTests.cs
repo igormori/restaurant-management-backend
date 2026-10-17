@@ -102,6 +102,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData("edit to TemporarilyClosed", Roles.Waiter, "Cantina", 403)]
         [InlineData("delete", Roles.Waiter, "Cantina", 403)]
         [InlineData("edit to TemporarilyClosed", Roles.Owner, "Trattoria", 404)]
+        [Trait("Rule", "OR29")]
         public async Task ChangeLocationStatus_RequestRejected_RecordsNothing(
             string operation, string role, string locationOrganization, int expectedStatusCode)
         {
@@ -121,6 +122,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 24
         [Fact]
+        [Trait("Rule", "OR29")]
         public async Task DeleteLocationAsync_RecordingFails_KeepsLocationClosedAndLogsError()
         {
             // Arrange
@@ -151,6 +153,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [Theory]
         [InlineData("edit to TemporarilyClosed", "TemporarilyClosed")]
         [InlineData("delete", "Closed")]
+        [Trait("Rule", "OR29")]
         public async Task ChangeLocationStatus_StatusChangesFromActive_RecordsOneLocationStatusChangedEntry(string operation, string expectedAfter)
         {
             // Arrange
@@ -178,6 +181,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData("edit keeping Active", LocationStatus.Active)]
         [InlineData("edit keeping Closed", LocationStatus.Closed)]
         [InlineData("delete", LocationStatus.Closed)]
+        [Trait("Rule", "OR29")]
         public async Task ChangeLocationStatus_StatusUnchanged_RecordsNothing(string operation, LocationStatus currentStatus)
         {
             // Arrange

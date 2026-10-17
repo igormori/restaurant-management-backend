@@ -30,6 +30,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR4")]
         public async Task CreateOrganizationAsync_UserDoesNotExist_ThrowsUnauthorizedBusinessException()
         {
             // Arrange
@@ -48,6 +49,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR17")]
         public async Task GetOrganizationsAsync_UserDoesNotExist_ThrowsUnauthorizedBusinessException()
         {
             // Arrange
@@ -66,6 +68,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR19")]
         public async Task EditOrganizationAsync_OrganizationDoesNotExist_ThrowsNotFoundBusinessException()
         {
             // Arrange
@@ -82,6 +85,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR19")]
         public async Task EditOrganizationAsync_OrganizationHasNoSettings_ThrowsNotFoundBusinessException()
         {
             // Arrange

@@ -64,6 +64,7 @@ public class LocationMessagesEndpointTests : IClassFixture<PostgresDatabaseFixtu
     [InlineData("POST", LocationsUrl, "pt", "code", "CTB-01", "O campo Code aceita apenas letras e números.")]
     [InlineData("PUT", BatelUrl, "pt", "timeZone", "Brasilia", "O campo TimeZone deve ser um fuso horário IANA válido.")]
     [InlineData("POST", LocationsUrl, "en", "postalCode", "80020-310-0000-000000", "The field PostalCode must be a maximum of 20 characters.")]
+    [Trait("Rule", "OR26")]
     public async Task LocationRequest_InvalidField_ReturnsLocalizedFieldError(string method, string url, string culture, string field, string? value, string expected)
     {
         // Arrange
@@ -85,6 +86,7 @@ public class LocationMessagesEndpointTests : IClassFixture<PostgresDatabaseFixtu
     [InlineData("POST", LocationsUrl, "en", "Unauthorized user.")]
     [InlineData("PUT", BatelUrl, "pt", "Usuário não autorizado!")]
     [InlineData("DELETE", BatelUrl, "en", "Unauthorized user.")]
+    [Trait("Rule", "OR13")]
     public async Task LocationEndpoints_UserIdentifierNotAUserId_ReturnsUnauthorizedWithLocalizedMessage(string method, string url, string culture, string expected)
     {
         // Arrange

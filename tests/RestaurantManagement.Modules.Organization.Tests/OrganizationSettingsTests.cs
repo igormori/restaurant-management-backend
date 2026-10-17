@@ -46,6 +46,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData(10.0, 0.0, "25:00", nameof(EditOrganizationRequest.BusinessDayCutoff))]
         [InlineData(10.0, 0.0, "quatro", nameof(EditOrganizationRequest.BusinessDayCutoff))]
         [InlineData(10.0, 0.0, null, nameof(EditOrganizationRequest.BusinessDayCutoff))]
+        [Trait("Rule", "OR23")]
         public void Validate_SettingMissingOutOfRangeOrMalformed_ReturnsErrorForThatSetting(
             double? serviceChargeRate, double? discountApprovalLimit, string? businessDayCutoff, string invalidSetting)
         {
@@ -64,6 +65,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData(0.0, 0.0, "00:00")]
         [InlineData(100.0, 100.0, "23:59")]
         [InlineData(12.5, 7.25, "04:00")]
+        [Trait("Rule", "OR23")]
         public void Validate_SettingsWithinLimits_IsValid(double serviceChargeRate, double discountApprovalLimit, string businessDayCutoff)
         {
             // Arrange
@@ -78,6 +80,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 8
         [Fact]
+        [Trait("Rule", "OR1")]
         public async Task CreateOrganizationAsync_NewOrganization_ReturnsDefaultSettings()
         {
             // Arrange

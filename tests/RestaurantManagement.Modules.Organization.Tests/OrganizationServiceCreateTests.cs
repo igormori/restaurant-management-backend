@@ -29,6 +29,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR5")]
         public async Task CreateOrganizationAsync_WhenRoleAssignmentFails_PersistsNoOrganizationOrSettings()
         {
             // Arrange
@@ -55,6 +56,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR5")]
         public async Task GetOrganizationsAsync_AfterFailedRoleAssignment_ReturnsEmptyList()
         {
             // Arrange
@@ -83,6 +85,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR5")]
         public async Task CreateOrganizationAsync_AfterFailedRoleAssignment_SecondAttemptSucceeds()
         {
             // Arrange
@@ -118,6 +121,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR5")]
         public async Task CreateOrganizationAsync_WhenRollbackFails_LogsError()
         {
             // Arrange
@@ -152,6 +156,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR5")]
         public async Task CreateOrganizationAsync_WhenRoleAssignmentFails_ThrowsAndReturnsNoResponse()
         {
             // Arrange
@@ -174,6 +179,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR5")]
         public async Task CreateOrganizationAsync_WhenCommitFailsAfterRoleAssignmentSucceeds_RevokesRoleAndThrows()
         {
             // Arrange: role assignment itself succeeds (Identity has already recorded the
@@ -219,6 +225,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR5")]
         public async Task CreateOrganizationAsync_WhenCommitFailsAndRevokeAlsoFails_LogsSecondErrorAndThrowsOriginalException()
         {
             // Arrange: same commit-failure scenario as above, but the compensating
@@ -266,6 +273,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR1")]
         public async Task CreateOrganizationAsync_WhenRoleAssignmentSucceeds_PersistsAllAndReturnsResponse()
         {
             // Arrange

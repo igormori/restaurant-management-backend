@@ -64,6 +64,7 @@ public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFix
 
     // Scenario 2
     [Fact]
+    [Trait("Rule", "OR21")]
     public async Task CreateOrganization_CurrencyMissing_ReturnsBadRequestAndStoresNothing()
     {
         // Arrange
@@ -84,6 +85,7 @@ public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFix
 
     // Scenario 23
     [Fact]
+    [Trait("Rule", "OR21")]
     public async Task CreateOrganization_CurrencyAsNumber_ReturnsBadRequestAndStoresNothing()
     {
         // Arrange
@@ -104,6 +106,7 @@ public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFix
 
     // Scenario 3
     [Fact]
+    [Trait("Rule", "OR1")]
     public async Task CreateOrganization_CurrencyCad_ReturnsAndStoresCad()
     {
         // Arrange
@@ -122,6 +125,7 @@ public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFix
 
     // Scenario 4
     [Fact]
+    [Trait("Rule", "OR22")]
     public async Task EditOrganization_BodyIncludesAnotherCurrency_KeepsStoredCurrency()
     {
         // Arrange
@@ -138,6 +142,7 @@ public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFix
 
     // Scenario 5
     [Fact]
+    [Trait("Rule", "OR17")]
     public async Task GetOrganizations_MemberOfTwoOrganizations_ReturnsOnlyThoseWithTheirOwnCurrency()
     {
         // Arrange
@@ -157,6 +162,7 @@ public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFix
 
     // Scenario 9
     [Fact]
+    [Trait("Rule", "OR7")]
     public async Task EditOrganization_ValidSettings_StoresAndReturnsThem()
     {
         // Arrange
@@ -176,6 +182,7 @@ public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFix
 
     // Scenario 10
     [Fact]
+    [Trait("Rule", "OR16")]
     public async Task EditOrganization_BodyNamesAnotherOrganization_ChangesOnlyTokenOrganizationSettings()
     {
         // Arrange

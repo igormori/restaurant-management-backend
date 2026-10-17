@@ -68,6 +68,7 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
     [InlineData("MM")]
     [InlineData("mm")]
     [InlineData("BT")]
+    [Trait("Rule", "OR28")]
     public async Task CreateLocation_CodeAlreadyUsedInOrganization_ReturnsBadRequestAndStoresNothing(string code)
     {
         // Arrange: Cantina has Mercado Municipal (MM, active) and Batel (BT, closed)
@@ -87,6 +88,7 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 16
     [Fact]
+    [Trait("Rule", "OR28")]
     public async Task CreateLocation_CodeUsedOnlyByAnotherOrganization_ReturnsOkWithCode()
     {
         // Arrange: Trattoria already has MM
@@ -105,6 +107,7 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 17
     [Fact]
+    [Trait("Rule", "OR28")]
     public async Task EditLocation_CodeUsedByAnotherLocationOfOrganization_ReturnsBadRequestAndKeepsCode()
     {
         // Arrange
@@ -123,6 +126,7 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 18
     [Fact]
+    [Trait("Rule", "OR28")]
     public async Task CreateLocation_SameCodeSentConcurrently_StoresOneAndRejectsOthersWithoutServerError()
     {
         // Arrange
@@ -142,6 +146,7 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     // Scenario 25
     [Fact]
+    [Trait("Rule", "OR27")]
     public async Task EditLocation_StatusOmitted_KeepsStoredStatus()
     {
         // Arrange: Batel is closed

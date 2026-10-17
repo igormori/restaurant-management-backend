@@ -97,6 +97,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR9")]
         public async Task CreateLocationAsync_WhenUserIsAdminOfOrganization_CreatesLocation()
         {
             // Arrange
@@ -117,6 +118,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR9")]
         public async Task CreateLocationAsync_WhenUserIsOwnerOfOrganization_CreatesLocation()
         {
             // Arrange
@@ -137,6 +139,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR10")]
         public async Task CreateLocationAsync_WhenUserHasWaiterRoleOrNoRole_ThrowsForbidden()
         {
             // Arrange
@@ -163,6 +166,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR9")]
         public async Task EditLocationAsync_WhenUserIsAdminOfOrganization_EditsLocation()
         {
             // Arrange
@@ -184,6 +188,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR9")]
         public async Task EditLocationAsync_WhenUserIsOwnerOfOrganization_EditsLocation()
         {
             // Arrange
@@ -205,6 +210,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR10")]
         public async Task EditLocationAsync_WhenUserHasWaiterRoleOrNoRole_ThrowsForbidden()
         {
             // Arrange
@@ -232,6 +238,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR9")]
         public async Task DeleteLocationAsync_WhenUserIsAdminOfOrganization_ClosesLocation()
         {
             // Arrange
@@ -254,6 +261,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR9")]
         public async Task DeleteLocationAsync_WhenUserIsOwnerOfOrganization_ClosesLocation()
         {
             // Arrange
@@ -276,6 +284,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR10")]
         public async Task DeleteLocationAsync_WhenUserHasWaiterRoleOrNoRole_ThrowsForbidden()
         {
             // Arrange
@@ -308,6 +317,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData(Roles.Cashier)]
         [InlineData(Roles.Waiter)]
         [InlineData(Roles.Kitchen)]
+        [Trait("Rule", "OR10")]
         public async Task CreateLocationAsync_RoleOtherThanOwnerOrAdmin_ThrowsForbiddenAndCreatesNothing(string role)
         {
             // Arrange

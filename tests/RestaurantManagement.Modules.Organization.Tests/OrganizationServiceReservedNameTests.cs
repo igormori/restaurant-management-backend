@@ -16,6 +16,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [Theory]
         [InlineData("TEST_SENTRY")]
         [InlineData("test_sentry")]
+        [Trait("Rule", "OR1")]
         public async Task CreateOrganizationAsync_NameMatchesFormerSentryTestHook_CreatesOrganization(string name)
         {
             // Arrange

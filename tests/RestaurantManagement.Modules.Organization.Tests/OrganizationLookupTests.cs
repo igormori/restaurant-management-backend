@@ -29,6 +29,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 26
         [Fact]
+        [Trait("Rule", "OR20")]
         public async Task GetOrganizationsAsync_RequestedIdsExist_ReturnsNamesAndActiveFlags()
         {
             // Arrange
@@ -46,6 +47,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 27
         [Fact]
+        [Trait("Rule", "OR20")]
         public async Task GetOrganizationsAsync_OrganizationNotRequested_IsNotReturned()
         {
             // Arrange
@@ -62,6 +64,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 28
         [Fact]
+        [Trait("Rule", "OR20")]
         public async Task GetOrganizationsAsync_RequestedIdDoesNotExist_IsOmitted()
         {
             // Arrange
@@ -78,6 +81,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 29
         [Fact]
+        [Trait("Rule", "OR20")]
         public async Task GetOrganizationsAsync_EmptyIdList_ReturnsEmptyList()
         {
             // Arrange
@@ -94,6 +98,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 30
         [Fact]
+        [Trait("Rule", "OR20")]
         public async Task GetOrganizationsAsync_OrganizationCreatedWithoutSettingIsActive_ReportsActive()
         {
             // Arrange

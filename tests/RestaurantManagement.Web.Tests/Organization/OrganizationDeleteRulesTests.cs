@@ -95,6 +95,7 @@ public class OrganizationDeleteRulesTests : IClassFixture<PostgresDatabaseFixtur
 
     // Scenario 1
     [Fact]
+    [Trait("Rule", "ORD1")]
     public async Task DeleteOrganization_HasActiveLocation_IsRefusedAndLocationKept()
     {
         // Arrange
@@ -113,6 +114,7 @@ public class OrganizationDeleteRulesTests : IClassFixture<PostgresDatabaseFixtur
 
     // Scenario 2
     [Fact]
+    [Trait("Rule", "ORD2")]
     public async Task DeleteOrganization_OnlyLocationIsClosed_IsRefusedAndLocationKept()
     {
         // Arrange
@@ -131,6 +133,7 @@ public class OrganizationDeleteRulesTests : IClassFixture<PostgresDatabaseFixtur
 
     // Scenario 3
     [Fact]
+    [Trait("Rule", "ORD3")]
     public async Task DeleteOrganization_HasSettingsAndNoLocations_IsRefusedAndSettingsKept()
     {
         // Arrange
@@ -149,6 +152,7 @@ public class OrganizationDeleteRulesTests : IClassFixture<PostgresDatabaseFixtur
 
     // Scenario 4
     [Fact]
+    [Trait("Rule", "ORD4")]
     public async Task DeleteOrganization_NoLocationsAndNoSettings_IsDeleted()
     {
         // Arrange
@@ -165,6 +169,7 @@ public class OrganizationDeleteRulesTests : IClassFixture<PostgresDatabaseFixtur
 
     // Scenario 5
     [Fact]
+    [Trait("Rule", "ORD5")]
     public async Task Migrate_OrganizationForeignKeys_AllRestrictDeletes()
     {
         // Arrange
@@ -181,6 +186,7 @@ public class OrganizationDeleteRulesTests : IClassFixture<PostgresDatabaseFixtur
 
     // Scenario 6
     [Fact]
+    [Trait("Rule", "ORD6")]
     public async Task Migrate_OrganizationTablesWithRows_NoRowAddedChangedOrRemoved()
     {
         // Arrange

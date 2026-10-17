@@ -135,6 +135,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         // Scenario 11
         [Theory]
         [MemberData(nameof(InvalidRequests))]
+        [Trait("Rule", "OR26")]
         public void Validate_LocationFieldMissingOrInvalid_ReturnsErrorForThatField(object request, string invalidField)
         {
             // Arrange: the request comes from InvalidRequests
@@ -149,6 +150,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         // Scenario 12
         [Theory]
         [MemberData(nameof(ValidRequests))]
+        [Trait("Rule", "OR26")]
         public void Validate_ValidTimeZoneTypeAndCode_IsValid(object request)
         {
             // Arrange: the request comes from ValidRequests
@@ -162,6 +164,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 13
         [Fact]
+        [Trait("Rule", "OR27")]
         public async Task CreateLocationAsync_TypeOmittedAndLowercaseCode_ReturnsStoreTimeZoneAndUppercaseCode()
         {
             // Arrange
@@ -184,6 +187,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 14
         [Fact]
+        [Trait("Rule", "OR27")]
         public async Task EditLocationAsync_NewTimeZoneTypeAndCode_ReturnsThem()
         {
             // Arrange
@@ -205,6 +209,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 24
         [Fact]
+        [Trait("Rule", "OR27")]
         public async Task EditLocationAsync_TypeOmitted_KeepsStoredType()
         {
             // Arrange: the location is a central kitchen
@@ -230,6 +235,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData(Roles.Cashier)]
         [InlineData(Roles.Waiter)]
         [InlineData(Roles.Kitchen)]
+        [Trait("Rule", "OR10")]
         public async Task EditLocationAsync_RoleOtherThanOwnerOrAdmin_ThrowsForbiddenAndChangesNothing(string role)
         {
             // Arrange

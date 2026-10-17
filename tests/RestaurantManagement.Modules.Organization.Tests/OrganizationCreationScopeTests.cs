@@ -61,6 +61,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 1
         [Fact]
+        [Trait("Rule", "OR6")]
         public async Task CreateOrganizationAsync_UserHasNoOrganization_SettingsGetNewOrganizationId()
         {
             // Arrange
@@ -80,6 +81,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 2
         [Fact]
+        [Trait("Rule", "OR6")]
         public async Task CreateOrganizationAsync_UserBelongsToAnotherOrganization_SettingsGetNewOrganizationNotUsers()
         {
             // Arrange
@@ -100,6 +102,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 3
         [Fact]
+        [Trait("Rule", "OR6")]
         public async Task CreateOrganizationAsync_SettingsSaved_CarryAuditFieldsOfCreator()
         {
             // Arrange
@@ -123,6 +126,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 4
         [Fact]
+        [Trait("Rule", "OR6")]
         public async Task CreateOrganizationAsync_OwnerRoleAssigned_AssignedWithNewOrganizationIdInsideScope()
         {
             // Arrange
@@ -149,6 +153,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 5
         [Fact]
+        [Trait("Rule", "OR6")]
         public async Task CreateOrganizationAsync_Completed_ScopeIsClosed()
         {
             // Arrange
@@ -166,6 +171,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 6
         [Fact]
+        [Trait("Rule", "OR6")]
         public async Task CreateOrganizationAsync_RoleAssignmentFails_ScopeIsClosedAndNothingPersisted()
         {
             // Arrange

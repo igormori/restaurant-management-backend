@@ -82,6 +82,7 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
     [Theory]
     [InlineData("PUT")]
     [InlineData("DELETE")]
+    [Trait("Rule", "OR14")]
     public async Task LocationById_LocationOfAnotherOrganization_ReturnsNotFoundAndLeavesItUnchanged(string method)
     {
         // Arrange
@@ -102,6 +103,7 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
 
     // Scenario 22
     [Fact]
+    [Trait("Rule", "OR15")]
     public async Task GetLocations_LocationsInTwoOrganizations_ReturnsOnlyTokenOrganizationsLocations()
     {
         // Arrange
@@ -119,6 +121,7 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
 
     // Scenario 23
     [Fact]
+    [Trait("Rule", "OR16")]
     public async Task CreateLocation_BodyNamesAnotherOrganization_StoresLocationInTokenOrganization()
     {
         // Arrange
@@ -135,6 +138,7 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
 
     // Scenario 24
     [Fact]
+    [Trait("Rule", "OR16")]
     public async Task EditOrganization_SignedInToCantina_EditsCantinaAndLeavesTrattoriaUnchanged()
     {
         // Arrange
@@ -157,6 +161,7 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
     [InlineData("GET", "/api/locations/" + Cantina)]
     [InlineData("POST", "/api/locations/" + Cantina)]
     [InlineData("PUT", "/api/organizations/edit/" + Cantina)]
+    [Trait("Rule", "OR18")]
     public async Task OldOrganizationInUrlRoute_Called_IsNotRouted(string method, string url)
     {
         // Arrange
@@ -175,6 +180,7 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
     [InlineData("GET", "/api/locations")]
     [InlineData("POST", "/api/locations")]
     [InlineData("PUT", "/api/organizations/edit")]
+    [Trait("Rule", "OR12")]
     public async Task OrganizationEndpoints_NoOrganizationInToken_ReturnsForbiddenOrganizationRequired(string method, string url)
     {
         // Arrange

@@ -20,6 +20,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData("E. South America Standard Time")]
         [InlineData("")]
         [InlineData(null)]
+        [Trait("Rule", "OR30")]
         public void GetBusinessDate_UnknownTimeZone_ThrowsArgumentException(string? timeZoneId)
         {
             // Arrange
@@ -36,6 +37,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [Theory]
         [InlineData("2026-10-15T05:30:00", "America/Sao_Paulo")] // 02:30 local, 15 Oct
         [InlineData("2026-10-15T06:30:00", "America/Toronto")]   // 02:30 local, 15 Oct
+        [Trait("Rule", "OR30")]
         public void GetBusinessDate_SaleAt0230LocalBeforeCutoff_ReturnsPreviousDay(string utcMoment, string timeZoneId)
         {
             // Arrange
@@ -59,6 +61,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData("2026-10-15T05:30:00", "America/Sao_Paulo", "00:00", "2026-10-15")]  // 02:30 local, cutoff at midnight: same day
         [InlineData("2026-10-15T08:30:00", "America/Sao_Paulo", "06:00", "2026-10-14")]  // 05:30 local, before a 06:00 cutoff
         [InlineData("2026-10-15T09:00:00", "America/Toronto", "05:00", "2026-10-15")]    // 05:00 local, exactly at a 05:00 cutoff
+        [Trait("Rule", "OR30")]
         public void GetBusinessDate_AtOrAfterCutoffOrAcrossUtcMidnight_ReturnsLocalBusinessDay(string utcMoment, string timeZoneId, string cutoff, string expectedDate)
         {
             // Arrange

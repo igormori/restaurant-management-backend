@@ -23,6 +23,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData("")]
         [InlineData("EUR")]
         [InlineData("1")]
+        [Trait("Rule", "OR21")]
         public void Validate_CurrencyMissingOrNotSupported_ReturnsCurrencyError(string? currency)
         {
             // Arrange

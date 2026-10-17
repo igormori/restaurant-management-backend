@@ -45,6 +45,7 @@ public class OrganizationMessagesEndpointTests : IDisposable
     [InlineData("PUT", EditUrl, "en",
         """{ "name": "Cantina da Nonna", "accentColor": "#12345G", "serviceChargeRate": 10, "discountApprovalLimit": 15.5, "businessDayCutoff": "05:30" }""",
         "AccentColor must be in hex format (#RRGGBB).")]
+    [Trait("Rule", "OR24")]
     public async Task OrganizationRequest_InvalidColor_ReturnsLocalizedHexColorError(string method, string url, string culture, string body, string expected)
     {
         // Arrange
@@ -63,6 +64,7 @@ public class OrganizationMessagesEndpointTests : IDisposable
     [Theory]
     [InlineData("pt", "O campo Name é obrigatório.")]
     [InlineData("en", "The Name field is required.")]
+    [Trait("Rule", "OR24")]
     public async Task CreateOrganization_NameMissing_ReturnsLocalizedRequiredError(string culture, string expected)
     {
         // Arrange
@@ -94,6 +96,7 @@ public class OrganizationMessagesEndpointTests : IDisposable
     [InlineData("PUT", EditUrl,
         """{ "name": "Cantina da Nonna", "serviceChargeRate": 10, "discountApprovalLimit": 15.5, "businessDayCutoff": "25:00" }""",
         "O campo BusinessDayCutoff deve estar no formato HH:mm.")]
+    [Trait("Rule", "OR23")]
     public async Task OrganizationRequest_InvalidSettingInPortuguese_ReturnsPortugueseFieldError(string method, string url, string body, string expected)
     {
         // Arrange
@@ -112,6 +115,7 @@ public class OrganizationMessagesEndpointTests : IDisposable
     [Theory]
     [InlineData("pt", "name", 201, "O campo Name deve ter no máximo 200 caracteres.")]
     [InlineData("en", "description", 1001, "The field Description must be a maximum of 1000 characters.")]
+    [Trait("Rule", "OR24")]
     public async Task EditOrganization_TextOverMaximumLength_ReturnsLocalizedMaxLengthError(string culture, string field, int length, string expected)
     {
         // Arrange

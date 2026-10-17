@@ -63,6 +63,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR8")]
         public async Task EditOrganizationAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
         {
             // Arrange
@@ -85,6 +86,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR7")]
         public async Task EditOrganizationAsync_WhenUserIsOwnerOfOrganization_EditsSuccessfully()
         {
             // Arrange
@@ -109,6 +111,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR7")]
         public async Task EditOrganizationAsync_WhenUserIsAdminOfOrganization_EditsSuccessfully()
         {
             // Arrange
@@ -137,6 +140,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData(Roles.Cashier)]
         [InlineData(Roles.Waiter)]
         [InlineData(Roles.Kitchen)]
+        [Trait("Rule", "OR8")]
         public async Task EditOrganizationAsync_RoleOtherThanOwnerOrAdmin_ThrowsForbidden(string role)
         {
             // Arrange
