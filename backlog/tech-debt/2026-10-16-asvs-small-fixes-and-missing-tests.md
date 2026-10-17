@@ -14,7 +14,6 @@ small batch (one commit per line below). #17, #19 and #21–#23 are done.
 - #15: logging in again on a browser leaves that browser's previous refresh token valid until it expires
 
 **Missing tests (code already does it; needs a matrix row and a test):**
-- #26: every Identity endpoint takes secrets in the body or cookie, never the URL
 - #27: a freshly migrated database has no users (no default accounts)
 - #28: refresh fingerprints use SHA-256 and access tokens HS256
 
