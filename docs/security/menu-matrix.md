@@ -55,7 +55,7 @@ endpoint and database tests in `tests/RestaurantManagement.Web.Tests/Menu/`.
 | ID | Case | Expected | Status | Test |
 |---|---|---|---|---|
 | M21 | Menu name missing or over 100 characters | 400 with the translated message | ✅ | `MenuMessagesEndpointTests.CreateMenu_NameMissing_ReturnsLocalizedRequiredError`, `MenuMessagesEndpointTests.EditMenu_NameOver100Characters_ReturnsLocalizedMaxLengthError` |
-| M22 | Menu description over 500 characters | 400 | ❌ | |
+| M22 | Menu description over 500 characters | 400 with the translated message; exactly 500 is accepted | ✅ | `MenuMessagesEndpointTests.EditMenu_DescriptionOver500Characters_ReturnsLocalizedMaxLengthError`, `MenuMessagesEndpointTests.EditMenu_DescriptionOf500Characters_IsAccepted` |
 | M23 | Category name missing, description over 1000 characters, menu ID missing or not an ID | 400 with the translated message | ✅ | `MenuMessagesEndpointTests.CreateMenuCategory_NameMissing_ReturnsLocalizedRequiredError`, `MenuMessagesEndpointTests.UpdateMenuCategory_DescriptionOver1000Characters_ReturnsLocalizedMaxLengthError`, `RequiredIdFieldEndpointTests.IdMissingOrNull_ReturnsLocalizedRequiredError`, `RequiredIdFieldEndpointTests.IdNotAnId_ReturnsLocalizedRequiredError` |
 | M24 | Category name over 255 characters | 400 | ❌ | |
 

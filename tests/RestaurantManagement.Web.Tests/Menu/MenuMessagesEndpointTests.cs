@@ -173,4 +173,41 @@ public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         (await FieldErrorsAsync(response)).ShouldContain(expected);
     }
+
+    [Theory]
+    [InlineData("pt", "O campo Description deve ter no máximo 500 caracteres.")]
+    [InlineData("en", "The field Description must be a maximum of 500 characters.")]
+    [Trait("Rule", "M22")]
+    public async Task EditMenu_DescriptionOver500Characters_ReturnsLocalizedMaxLengthError(string culture, string expected)
+    {
+        // Arrange
+        using var factory = new AuthApiFactory();
+        var client = AnaSignedInToCantina(factory);
+        var description = new string('a', 501);
+        var request = Request("PUT", $"/api/menus/{CantinaDinnerMenuId}", culture, new { name = "Jantar", description, isActive = true });
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "a menu description of 501 characters is refused");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, customMessage: "the refusal is written in the requested language");
+    }
+
+    [Fact]
+    [Trait("Rule", "M22")]
+    public async Task EditMenu_DescriptionOf500Characters_IsAccepted()
+    {
+        // Arrange
+        await using var factory = await CreateFactoryAsync();
+        var client = AnaSignedInToCantina(factory);
+        var description = new string('a', 500);
+        var request = Request("PUT", $"/api/menus/{CantinaDinnerMenuId}", "pt", new { name = "Jantar", description, isActive = true });
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "a menu description of exactly 500 characters is accepted");
+    }
 }
