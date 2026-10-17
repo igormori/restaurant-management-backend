@@ -57,7 +57,7 @@ endpoint and database tests in `tests/RestaurantManagement.Web.Tests/Menu/`.
 | M21 | Menu name missing or over 100 characters | 400 with the translated message | ✅ | `MenuMessagesEndpointTests.CreateMenu_NameMissing_ReturnsLocalizedRequiredError`, `MenuMessagesEndpointTests.EditMenu_NameOver100Characters_ReturnsLocalizedMaxLengthError` |
 | M22 | Menu description over 500 characters | 400 with the translated message; exactly 500 is accepted | ✅ | `MenuMessagesEndpointTests.EditMenu_DescriptionOver500Characters_ReturnsLocalizedMaxLengthError`, `MenuMessagesEndpointTests.EditMenu_DescriptionOf500Characters_IsAccepted` |
 | M23 | Category name missing, description over 1000 characters, menu ID missing or not an ID | 400 with the translated message | ✅ | `MenuMessagesEndpointTests.CreateMenuCategory_NameMissing_ReturnsLocalizedRequiredError`, `MenuMessagesEndpointTests.UpdateMenuCategory_DescriptionOver1000Characters_ReturnsLocalizedMaxLengthError`, `RequiredIdFieldEndpointTests.IdMissingOrNull_ReturnsLocalizedRequiredError`, `RequiredIdFieldEndpointTests.IdNotAnId_ReturnsLocalizedRequiredError` |
-| M24 | Category name over 255 characters | 400 | ❌ | |
+| M24 | Category name over 255 characters | 400 with the translated message; exactly 255 is accepted | ✅ | `MenuMessagesEndpointTests.CreateMenuCategory_NameOver255Characters_ReturnsLocalizedMaxLengthError`, `MenuMessagesEndpointTests.CreateMenuCategory_NameOf255Characters_IsAccepted` |
 
 ## Open questions (no row until decided)
 - **Staff and categories:** all six roles may read menus (M3), but only Owner and Admin may even
