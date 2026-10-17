@@ -1,70 +1,98 @@
-# Review: Backlog fixes 2026-10-16 (ASVS #24–#28, Identity missing tests)
+# Review: Backlog fixes 2026-10-16 (ASVS #15, #18, #24–#28, V11, Identity missing tests)
 
 **Verdict:** Ready to merge
-**Build:** pass   **Tests:** 375 passed, 0 failed (Modules.Identity.Tests 253; Web.Tests, Identity folder classes, 122)
+**Build:** pass   **Tests:** 788 passed, 0 failed (Identity 257, Shared 159, Web 372)
 
-Scope: 5 commits on `backlog-fixes/2026-10-16` since base `4e50ec0` (`security-fixes`). No plan
-folder: reviewed against the architecture, testing, security and clean-code skills and `CLAUDE.md`.
-ASVS means OWASP Application Security Verification Standard (the checklist the gap report follows).
+Reviewed `git log 4e50ec0..HEAD` (17 commits) against the architecture, testing, security and
+clean-code skills and `CLAUDE.md`. No plan folder. ASVS means OWASP Application Security
+Verification Standard (the checklist the gap report follows).
 `python3 .claude/scripts/check-security-matrices.py`: "Security matrices in step with the tests".
+No package, migration, endpoint or Shared contract added; no secrets (the T22 attacker key and
+test passwords are test literals).
 
-| Check | Result |
+## Commits: one item each
+| Commit | Item |
 |---|---|
-| One commit per backlog item | Yes: 7fe038a #24, 7794b0e #25, bbcfd2b #26, 2ccab2f #27, a60637c #28. Each adds one matrix row (T21–T25), its test, and removes its backlog line |
-| Tests only, no production code | Yes. Only `tests/`, `docs/security/identity-matrix.md` and the backlog item changed |
-| Structure | New files in allowed folders (`Modules.Identity.Tests/`, `Web.Tests/Identity/`), Web.Tests namespace as the skill requires; no new folders or projects |
-| Security matrix | T21–T25 each name a test that exists, carries `[Trait("Rule", ...)]` and asserts the row's Expected result with a plain-words message |
-| Commits | Conventional Commits, scope `identity`, lowercase imperative summaries under 72 characters, `Refs:` to the backlog file in the body |
-| Secrets | None. The attacker key in T22 is a test literal, not a real key |
-| Packages, migrations, endpoints, Shared contracts | None added |
+| 7fe038a, 7794b0e, bbcfd2b, 2ccab2f, a60637c | Tests for gaps #24–#28 (rows T21–T25) |
+| 0c1b141 | Previous review |
+| 4e07324 / eb17630 / 9b7bcbc | Fixes #18 (T26) / #15 (L20) / V11 bug (V4, V5, RS3, V11) |
+| 1f46f71, 50ff3d9 | Gap report: rows marked Covered; V11 no longer listed as open |
+| 65aac8e, e72c540, 0d2a3c8, 37262c0, bdb6bc3 | Earlier findings 5, 7, 8, 1+2, 3 |
+| 113b5d0 | Deletes the two solved backlog items |
+
+## Earlier findings
+| # | Status |
+|---|---|
+| 1, 2 (T23 loopholes) | Resolved: verbs must be exactly POST; a parameter with no or unknown binding source counts as a URL read |
+| 3 (T22 not decisive) | Resolved: new test sends each header on a server-signed token and expects it accepted; row T22 names it |
+| 4 (long line) | Open, style only: `ApprovedHashAlgorithmsTests.cs:63` |
+| 5 (controller wiring untested) | Resolved: `= null` default removed, so a caller must pass the cookie; endpoint test on real PostgreSQL proves the old token is refused; named in L20 |
+| 6 (locked verify answers faster) | Open, see Watch out 1 |
+| 7 (unused resx key) | Resolved in both languages |
+| 8 (V4/V5 message not asserted) | Resolved |
+| 9 (gap report V11 note) | Resolved |
+| 10 (login can trigger reuse detection) | Accepted, see Watch out 2 |
+
+## Production changes: full review
+- **HS256 allowlist** (`Program.cs:88`): `ValidAlgorithms = [HmacSha256]` is correct; T26
+  proves HS384/HS512 with the right key get 401, T25 proves issued tokens are HS256.
+- **Login revokes the browser's cookie** (`SessionService.cs:101-103`): runs only after every
+  check passed and counters are saved, before the new token is issued. L20 covers success, a
+  refused login keeping the token, other devices untouched, and the controller wiring.
+- **V11** (`VerificationService.cs:46-47, 89-90, 168`): locked verify, the lock-tripping attempt
+  and locked resend all give the unknown-email answer. V4, V5, RS3, V11 rows match tests.
+- Test edits in 65aac8e are signature updates only (`null` or `Arg.Any<string?>()` added); no
+  assertion dropped or weakened.
 
 ## Watch out
 | # | File:line | Problem | Suggestion |
 |---|---|---|---|
-| 1 | tests/RestaurantManagement.Web.Tests/Identity/AuthEndpointSecretsNotInUrlTests.cs:37 | `EndpointMetadata.OfType<HttpMethodMetadata>().All(...)` is true for an action with no verb metadata, so a future action with only `[Route]` (accepts every verb, including GET) would pass T23 | Require exactly POST: `.SelectMany(m => m.HttpMethods).SequenceEqual(["POST"])`, so an empty list fails |
-| 2 | tests/RestaurantManagement.Web.Tests/Identity/AuthEndpointSecretsNotInUrlTests.cs:43 | Only `Query` and `Path` binding sources are refused; a parameter with no `BindingInfo` (possible if `[ApiController]` is ever removed) is silently skipped | Also flag `p.BindingInfo is null`, or assert every parameter binds from `Body`, `Services` or a cookie |
-| 3 | tests/RestaurantManagement.Web.Tests/Identity/AccessTokenValidationEndpointTests.cs:154-163 | For `jku` and `x5u` the token is signed by a key that is not configured and the URL is unreachable, so the case is refused for the same reason as the existing wrong-key test; only the `jwk` case truly proves the header is ignored | Acceptable (the JWT library never fetches keys). Optionally note in the T22 row that `jwk` is the decisive case |
-| 4 | docs/security/identity-asvs-gap-report.md:75,132,133,155,162 | Gap report rows for #24–#28 still say "Partial"; the backlog acceptance criterion was reworded (backlog/tech-debt/2026-10-16-asvs-small-fixes-and-missing-tests.md:23) to defer this instead of doing it | Mark V6.3.2, V9.1.3, V9.2.1, V11.4.1 and V14.2.1 "Covered" with T24, T22, T21, T25, T23 in a follow-up docs commit |
-| 5 | tests/RestaurantManagement.Modules.Identity.Tests/ApprovedHashAlgorithmsTests.cs:65 | One very long line with an inline fully qualified `RestaurantManagement.Shared.Services.Organization.IOrganizationLookup` | Add a `using` and break the constructor call across lines (style only) |
+| 1 | src/RestaurantManagement.Modules.Identity/Services/VerificationService.cs:46 | A locked account returns before the code lookup that unknown emails run "so they take the same path", so it answers slightly faster | Move the lock check after the lookup (still before the hash check) |
+| 2 | src/RestaurantManagement.Modules.Identity/Services/SessionService.cs:103 | `RevokeAsync` does not check the cookie belongs to the user logging in, and an already rotated cookie revokes its whole family. Harmless (the same browser gets a new family), but undocumented | Say so in row L20 |
+| 3 | 65aac8e (commit) | Typed `test` but changes `ISessionService`/`SessionService` signatures in `src/` | Next time use `refactor`; no action needed now |
+| 4 | docs/security/identity-asvs-gap-report.md:5,19 | Header says "Nothing changed: no code, test or matrix edits" and the summary is titled "Partial and Missing", but it now holds Covered rows | Update the header, or move Covered rows out of the summary |
+| 5 | tests/RestaurantManagement.Modules.Identity.Tests/ApprovedHashAlgorithmsTests.cs:63 | Long line with fully qualified `IOrganizationLookup` (style) | Add a `using` and break the call |
 
 ## Check before merging
-- **Base branch:** this branch sits on `security-fixes`, which has 79 commits not yet in
-  `development`. Merge `security-fixes` first, or this pull request carries all of them.
-- **T23 reflection test** (`AuthEndpointSecretsNotInUrlTests`): it is the only guard that no
-  Identity endpoint ever takes a secret in the URL; see Watch out 1 and 2 for its blind spots.
-- **T24 fresh database test** reads `user_roles` with raw SQL (no tenant filter applies); if the
-  table is renamed, the test fails loudly rather than silently, which is the intended behaviour.
+- **Base branch:** this branch sits on `security-fixes`. Merge `security-fixes` into
+  `development` first, or this pull request carries its commits too.
+- **HS256 allowlist (Program.cs:88):** any token not signed HS256 is now refused. Today's tokens
+  are HS256, so no live session breaks.
+- **Backlog deletion committed (113b5d0):** `CLAUDE.md` says agents never commit a backlog
+  deletion; the user checks and commits it. Confirm you meant this commit, or drop it.
+- **Verification lockout:** the frontend can no longer show "locked until"; a locked user sees
+  "invalid email or code" for 15 minutes.
 
 ## Pull request description
 
-**Title:** test(identity): prove ASVS #24–#28 session and token rules
+**Title:** fix(identity): close ASVS gaps #15, #18, #24–#28 and the verification lockout leak
 
 ### Summary
-Adds tests and Identity security matrix rows for five rules the code already enforced but no
-test proved (OWASP ASVS 5.0 Level 2 gaps #24–#28). No production code changes.
+Fixes three Identity security gaps and adds proof for five rules the code already enforced
+(OWASP ASVS 5.0 Level 2 gaps #24–#28). A locked verification no longer reveals that an email
+has an account.
 
-### What changed (Identity)
-| Matrix row | Rule | Test |
+### What changed
+| Module | Change | Matrix row |
 |---|---|---|
-| T21 | An access token used before its `nbf` (not before) time is refused (401) | `AccessTokenValidationEndpointTests.LogoutAll_AccessTokenNotValidForAnotherTenMinutes_ReturnsUnauthorized` |
-| T22 | `jku`, `x5u` and `jwk` token headers are ignored; the signing key comes only from configuration | `AccessTokenValidationEndpointTests.LogoutAll_TokenSignedByAttackerNamingItsKeyInTheHeader_ReturnsUnauthorized` |
-| T23 | Every Identity endpoint is POST only and reads nothing from the query string or route | `AuthEndpointSecretsNotInUrlTests.AuthEndpoints_AllActions_AcceptOnlyPostWithNoQueryOrRouteParameters` |
-| T24 | A database built only from the migrations has no users or role assignments | `FreshDatabaseHasNoUsersTests.Migrate_CleanDatabase_HasNoUsersOrRoles` |
-| T25 | Refresh token fingerprints are SHA-256; access tokens are signed with HS256 | `ApprovedHashAlgorithmsTests.IssueAsync_NewSignIn_StoredFingerprintIsSha256OfTheIssuedToken`, `ApprovedHashAlgorithmsTests.LoginAsync_ValidCredentials_AccessTokenIsSignedWithHs256` |
-
-Backlog: `backlog/tech-debt/2026-10-16-asvs-small-fixes-and-missing-tests.md` now lists only
-#15 and #18 (code changes still open).
+| Web | Access tokens signed with anything but HS256 are refused (401) | T26 |
+| Identity | Logging in on a browser revokes that browser's previous refresh token, only once the login succeeds; other devices stay signed in | L20 |
+| Identity | A verification-locked account gets the same 401 (verify) or acknowledgement (resend) as an unknown email, instead of 423 | V4, V5, RS3, V11 |
+| Identity | New tests: `nbf` enforced, `jku`/`x5u`/`jwk` headers ignored, POST-only endpoints with no secrets in URLs, no default accounts, SHA-256 fingerprints and HS256 signing | T21–T25 |
+| Shared | Unused `VerificationLockedUntil` message removed (English and Portuguese) | — |
+| Docs | Gap report rows #15, #18, #24–#28 marked Covered; V11 marked fixed | — |
 
 ### Risk and flags
-Low. Tests and docs only: no migration, package, endpoint or Shared contract change.
-Depends on `security-fixes` being merged into `development` first.
+Auth changes (token validation, login, verification responses), approved by the solution
+architect. `ISessionService.LoginAsync` now requires the previous refresh token (module
+internal). The V4, V5 and RS3 tests changed from expecting 423, as the approved V11 fix requires.
+No migration, package, endpoint or Shared contract. Depends on `security-fixes` being merged
+into `development` first. Backlog items `bugs/2026-10-16-verification-lockout-reveals-account.md`
+and `tech-debt/2026-10-16-asvs-small-fixes-and-missing-tests.md` are deleted (solved).
 
 ### Checks
 - `dotnet build RestaurantManagement.sln`: pass
-- Identity unit and endpoint tests: 375 passed, 0 failed
+- Identity, Shared and Web tests: 788 passed, 0 failed
 - `python3 .claude/scripts/check-security-matrices.py`: in step
-
-### Follow-up
-Mark gap report rows V6.3.2, V9.1.3, V9.2.1, V11.4.1 and V14.2.1 as Covered.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
