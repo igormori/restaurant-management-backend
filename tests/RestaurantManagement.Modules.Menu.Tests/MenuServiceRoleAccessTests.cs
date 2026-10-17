@@ -163,6 +163,90 @@ public class MenuServiceRoleAccessTests
         checkContext.Menus.Count(m => m.Id == DinnerMenuId).ShouldBe(1);
     }
 
+    // Scenario 36
+    [Theory]
+    [InlineData(Roles.Manager)]
+    [InlineData(Roles.Cashier)]
+    [InlineData(Roles.Waiter)]
+    [InlineData(Roles.Kitchen)]
+    [Trait("Rule", "M2")]
+    public async Task EditMenuAsync_RoleOtherThanOwnerOrAdmin_ThrowsForbiddenAndKeepsMenu(string role)
+    {
+        // Arrange
+        using var database = new MenuTestDatabase();
+        await SeedCantinaDinnerMenuAtCentroAsync(database);
+        var tenant = TestTenant.Of(CantinaId);
+        using var context = database.CreateContext(tenant);
+        var sut = CreateSut(context, RoleIn(CantinaId, role), tenant);
+        var request = new EditMenuRequest { Name = "Cardápio alterado", Description = "Sem permissão", IsActive = false };
+
+        // Act
+        var act = () => sut.EditMenuAsync(JoaoId, DinnerMenuId, request);
+
+        // Assert
+        var exception = await act.ShouldThrowAsync<BusinessException>();
+        exception.StatusCode.ShouldBe(403, "only an Owner or Admin may edit a menu");
+        using var checkContext = database.CreateContext(tenant);
+        var stored = checkContext.Menus.Single(m => m.Id == DinnerMenuId);
+        stored.Name.ShouldBe("Jantar", "a refused edit leaves the menu name unchanged");
+        stored.IsActive.ShouldBeTrue("a refused edit leaves the menu active");
+    }
+
+    // Scenario 36
+    [Theory]
+    [InlineData(Roles.Manager)]
+    [InlineData(Roles.Cashier)]
+    [InlineData(Roles.Waiter)]
+    [InlineData(Roles.Kitchen)]
+    [Trait("Rule", "M2")]
+    public async Task AttachMenuToLocationAsync_RoleOtherThanOwnerOrAdmin_ThrowsForbiddenAndStoresNoLink(string role)
+    {
+        // Arrange
+        using var database = new MenuTestDatabase();
+        await SeedCantinaDinnerMenuAtCentroAsync(database);
+        var tenant = TestTenant.Of(CantinaId);
+        using var context = database.CreateContext(tenant);
+        var sut = CreateSut(context, RoleIn(CantinaId, role), tenant);
+        var otherLocationId = Guid.Parse("44444444-dddd-4ddd-8ddd-00000000000e");
+
+        // Act
+        var act = () => sut.AttachMenuToLocationAsync(JoaoId, DinnerMenuId, otherLocationId);
+
+        // Assert
+        var exception = await act.ShouldThrowAsync<BusinessException>();
+        exception.StatusCode.ShouldBe(403, "only an Owner or Admin may link a menu to a location");
+        using var checkContext = database.CreateContext(tenant);
+        checkContext.LocationMenus.Select(lm => lm.LocationId).ToList()
+            .ShouldBe(new[] { CentroLocationId }, ignoreOrder: false, customMessage: "a refused link leaves the menu's links as they were");
+    }
+
+    // Scenario 36
+    [Theory]
+    [InlineData(Roles.Manager)]
+    [InlineData(Roles.Cashier)]
+    [InlineData(Roles.Waiter)]
+    [InlineData(Roles.Kitchen)]
+    [Trait("Rule", "M2")]
+    public async Task DetachMenuFromLocationAsync_RoleOtherThanOwnerOrAdmin_ThrowsForbiddenAndKeepsLink(string role)
+    {
+        // Arrange
+        using var database = new MenuTestDatabase();
+        await SeedCantinaDinnerMenuAtCentroAsync(database);
+        var tenant = TestTenant.Of(CantinaId);
+        using var context = database.CreateContext(tenant);
+        var sut = CreateSut(context, RoleIn(CantinaId, role), tenant);
+
+        // Act
+        var act = () => sut.DetachMenuFromLocationAsync(JoaoId, DinnerMenuId, CentroLocationId);
+
+        // Assert
+        var exception = await act.ShouldThrowAsync<BusinessException>();
+        exception.StatusCode.ShouldBe(403, "only an Owner or Admin may unlink a menu from a location");
+        using var checkContext = database.CreateContext(tenant);
+        checkContext.LocationMenus.Select(lm => lm.LocationId).ToList()
+            .ShouldBe(new[] { CentroLocationId }, ignoreOrder: false, customMessage: "a refused unlink keeps the link");
+    }
+
     // Scenario 32
     [Theory]
     [InlineData(Roles.Owner)]
