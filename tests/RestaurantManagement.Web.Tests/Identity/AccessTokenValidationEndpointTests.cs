@@ -149,4 +149,38 @@ public class AccessTokenValidationEndpointTests : IDisposable
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "an access token used before its not-before time must be refused");
         await _factory.SessionService.DidNotReceive().LogoutAllAsync(Arg.Any<Guid>());
     }
+
+    private static string AttackerTokenWithKeyHeader(JwtOptions jwt, string headerName)
+    {
+        const string attackerKey = "another-restaurant-signing-key-of-at-least-32-bytes";
+        var credentials = new SigningCredentials(
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(attackerKey)), SecurityAlgorithms.HmacSha256);
+        var header = new JwtHeader(credentials);
+        header[headerName] = headerName == "jwk"
+            ? new Dictionary<string, string> { ["kty"] = "oct", ["k"] = Base64UrlEncoder.Encode(attackerKey) }
+            : "https://evil.example.com/keys";
+        var payload = new JwtPayload(jwt.Issuer, jwt.Audience,
+            [new Claim(ClaimTypes.NameIdentifier, MariaId.ToString()), new Claim(ClaimTypes.Role, "Owner")],
+            DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow.AddMinutes(15));
+        return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(header, payload));
+    }
+
+    // Matrix T22
+    [Theory]
+    [InlineData("jku")]
+    [InlineData("x5u")]
+    [InlineData("jwk")]
+    [Trait("Rule", "T22")]
+    public async Task LogoutAll_TokenSignedByAttackerNamingItsKeyInTheHeader_ReturnsUnauthorized(string headerName)
+    {
+        // Arrange
+        var token = AttackerTokenWithKeyHeader(AppJwt, headerName);
+
+        // Act
+        var response = await LogoutAllWithAsync(token);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "a key named in the token's jku, x5u or jwk header is ignored, so a token signed by that key is refused");
+        await _factory.SessionService.DidNotReceive().LogoutAllAsync(Arg.Any<Guid>());
+    }
 }
