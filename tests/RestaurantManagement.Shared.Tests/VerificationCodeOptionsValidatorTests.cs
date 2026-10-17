@@ -24,8 +24,8 @@ namespace RestaurantManagement.Shared.Tests
             var result = Validate(missingKey);
 
             // Assert
-            result.Failed.ShouldBeTrue();
-            result.FailureMessage.ShouldContain("VerificationCode:HashKey");
+            result.Failed.ShouldBeTrue("the app refuses to start without a hash key of at least 32 bytes");
+            result.FailureMessage.ShouldContain("VerificationCode:HashKey", customMessage: "the failure names the hash key setting so the operator knows what to fix");
         }
 
         // Hash verification codes: Scenario 2
@@ -40,8 +40,8 @@ namespace RestaurantManagement.Shared.Tests
             var result = Validate(emptyKey);
 
             // Assert
-            result.Failed.ShouldBeTrue();
-            result.FailureMessage.ShouldContain("VerificationCode:HashKey");
+            result.Failed.ShouldBeTrue("the app refuses to start without a hash key of at least 32 bytes");
+            result.FailureMessage.ShouldContain("VerificationCode:HashKey", customMessage: "the failure names the hash key setting so the operator knows what to fix");
         }
 
         // Hash verification codes: Scenario 3
@@ -56,8 +56,8 @@ namespace RestaurantManagement.Shared.Tests
             var result = Validate(thirtyOneByteKey);
 
             // Assert
-            result.Failed.ShouldBeTrue();
-            result.FailureMessage.ShouldContain("VerificationCode:HashKey");
+            result.Failed.ShouldBeTrue("the app refuses to start without a hash key of at least 32 bytes");
+            result.FailureMessage.ShouldContain("VerificationCode:HashKey", customMessage: "the failure names the hash key setting so the operator knows what to fix");
         }
 
         // Hash verification codes: Scenario 7
@@ -72,7 +72,7 @@ namespace RestaurantManagement.Shared.Tests
             var result = Validate(thirtyTwoByteKey);
 
             // Assert
-            result.Failed.ShouldBeFalse();
+            result.Failed.ShouldBeFalse("a hash key of exactly 32 bytes is accepted");
         }
 
         // Hash verification codes: Scenario 8
@@ -87,7 +87,7 @@ namespace RestaurantManagement.Shared.Tests
             var result = Validate(sixteenAccentedChars);
 
             // Assert
-            result.Failed.ShouldBeFalse();
+            result.Failed.ShouldBeFalse("the key length is counted in bytes, so 16 two-byte characters are accepted");
         }
 
         // Hash verification codes: Scenario 9
@@ -102,7 +102,7 @@ namespace RestaurantManagement.Shared.Tests
             var result = Validate(generatedKey);
 
             // Assert
-            result.Failed.ShouldBeFalse();
+            result.Failed.ShouldBeFalse("a randomly generated base64 key is accepted");
         }
     }
 }

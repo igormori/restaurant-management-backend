@@ -34,7 +34,7 @@ public class TenantContextTests
         var organizationId = sut.OrganizationId;
 
         // Assert
-        organizationId.ShouldBe(NewTrattoriaId);
+        organizationId.ShouldBe(NewTrattoriaId, "an open tenant scope takes priority over the token organization");
     }
 
     // Scenario 8
@@ -49,6 +49,6 @@ public class TenantContextTests
         var organizationId = sut.OrganizationId;
 
         // Assert
-        organizationId.ShouldBe(CantinaId);
+        organizationId.ShouldBe(CantinaId, "with no scope open the organization comes from the token");
     }
 }

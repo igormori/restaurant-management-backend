@@ -23,8 +23,8 @@ namespace RestaurantManagement.Shared.Tests
             var body = PasswordResetEmailTemplate.Build(Recipient, firstName, "482913", 15);
 
             // Assert
-            body.ShouldContain("&lt;b&gt;Maria&lt;/b&gt;");
-            body.ShouldNotContain("<b>Maria</b>");
+            body.ShouldContain("&lt;b&gt;Maria&lt;/b&gt;", customMessage: "a first name with HTML is shown as text in the reset email");
+            body.ShouldNotContain("<b>Maria</b>", customMessage: "a first name must never become markup in the reset email");
         }
 
         // Scenario 1
@@ -39,11 +39,11 @@ namespace RestaurantManagement.Shared.Tests
             var body = PasswordResetEmailTemplate.Build(Recipient, firstName, "482913", 20);
 
             // Assert
-            body.ShouldContain("Maria");
-            body.ShouldContain("482913");
-            body.ShouldContain("20 minutes");
+            body.ShouldContain("Maria", customMessage: "the reset email greets the user by first name");
+            body.ShouldContain("482913", customMessage: "the reset email carries the code the user must type");
+            body.ShouldContain("20 minutes", customMessage: "the reset email says how long the code lasts");
             body.ShouldContain("password", Case.Insensitive);
-            body.ShouldContain("ignore", Case.Insensitive);
+            body.ShouldContain("ignore", Case.Insensitive, customMessage: "the reset email tells the user to ignore it if they did not ask for it");
             body.ShouldNotContain("{{");
         }
     }

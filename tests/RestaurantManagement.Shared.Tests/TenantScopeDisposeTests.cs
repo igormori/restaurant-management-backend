@@ -23,7 +23,7 @@ public class TenantScopeDisposeTests
         firstScope.Dispose();
 
         // Assert
-        tenantScope.OrganizationId.ShouldBe(OrgB);
+        tenantScope.OrganizationId.ShouldBe(OrgB, "disposing an old scope twice must not end the scope that is open now");
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class TenantScopeDisposeTests
         outerScope.Dispose();
 
         // Assert
-        tenantScope.OrganizationId.ShouldBe(OrgB);
+        tenantScope.OrganizationId.ShouldBe(OrgB, "closing the outer scope while the inner one is open keeps the inner organization");
     }
 
     [Fact]
@@ -56,6 +56,6 @@ public class TenantScopeDisposeTests
         innerScope.Dispose();
 
         // Assert
-        tenantScope.OrganizationId.ShouldBeNull();
+        tenantScope.OrganizationId.ShouldBeNull("once every scope is closed no organization is active");
     }
 }

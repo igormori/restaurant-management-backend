@@ -93,9 +93,9 @@ public class LocationAccessMiddlewareTests
         var thrown = await Should.ThrowAsync<BusinessException>(() => InvokeAsync(context, CurrentUser(AnaId, CantinaId)));
 
         // Assert
-        thrown.StatusCode.ShouldBe(400);
-        _nextCalled.ShouldBeFalse();
-        _selectedLocation.LocationId.ShouldBeNull();
+        thrown.StatusCode.ShouldBe(400, "the request is refused with the right status");
+        _nextCalled.ShouldBeFalse("a refused request never reaches the endpoint");
+        _selectedLocation.LocationId.ShouldBeNull("a refused request selects no location");
     }
 
     // Scenario 33
@@ -110,9 +110,9 @@ public class LocationAccessMiddlewareTests
         var thrown = await Should.ThrowAsync<BusinessException>(() => InvokeAsync(context, CurrentUser(AnaId, organizationId: null)));
 
         // Assert
-        thrown.StatusCode.ShouldBe(403);
-        _nextCalled.ShouldBeFalse();
-        _selectedLocation.LocationId.ShouldBeNull();
+        thrown.StatusCode.ShouldBe(403, "the request is refused with the right status");
+        _nextCalled.ShouldBeFalse("a refused request never reaches the endpoint");
+        _selectedLocation.LocationId.ShouldBeNull("a refused request selects no location");
     }
 
     // Scenario 34
@@ -129,9 +129,9 @@ public class LocationAccessMiddlewareTests
         var thrown = await Should.ThrowAsync<BusinessException>(() => InvokeAsync(context, CurrentUser(AnaId, CantinaId)));
 
         // Assert
-        thrown.StatusCode.ShouldBe(403);
-        _nextCalled.ShouldBeFalse();
-        _selectedLocation.LocationId.ShouldBeNull();
+        thrown.StatusCode.ShouldBe(403, "the request is refused with the right status");
+        _nextCalled.ShouldBeFalse("a refused request never reaches the endpoint");
+        _selectedLocation.LocationId.ShouldBeNull("a refused request selects no location");
     }
 
     // Scenario 35
@@ -146,8 +146,8 @@ public class LocationAccessMiddlewareTests
         await InvokeAsync(context, CurrentUser(AnaId, CantinaId));
 
         // Assert
-        _nextCalled.ShouldBeTrue();
-        _selectedLocation.LocationId.ShouldBeNull();
+        _nextCalled.ShouldBeTrue("a request without a location header goes on to the endpoint");
+        _selectedLocation.LocationId.ShouldBeNull("no header means no location limit");
     }
 
     // Scenario 36
@@ -163,8 +163,8 @@ public class LocationAccessMiddlewareTests
         await InvokeAsync(context, CurrentUser(userId: null, organizationId: null));
 
         // Assert
-        _nextCalled.ShouldBeTrue();
-        _selectedLocation.LocationId.ShouldBeNull();
+        _nextCalled.ShouldBeTrue("an anonymous request goes on to the endpoint");
+        _selectedLocation.LocationId.ShouldBeNull("the location header is ignored for anonymous requests");
         await _organizationLookup.DidNotReceiveWithAnyArgs().GetLocationAsync(default);
     }
 
@@ -180,7 +180,7 @@ public class LocationAccessMiddlewareTests
         await InvokeAsync(context, CurrentUser(AnaId, CantinaId));
 
         // Assert
-        _nextCalled.ShouldBeTrue();
-        _selectedLocation.LocationId.ShouldBe(BatelLocationId);
+        _nextCalled.ShouldBeTrue("a user assigned to the location goes on to the endpoint");
+        _selectedLocation.LocationId.ShouldBe(BatelLocationId, "the location chosen in the header is the one the request works in");
     }
 }

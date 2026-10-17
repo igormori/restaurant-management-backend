@@ -20,7 +20,7 @@ public class TenantScopeTests
         var organizationId = tenantScope.OrganizationId;
 
         // Assert
-        organizationId.ShouldBeNull();
+        organizationId.ShouldBeNull("with no scope begun there is no active organization");
     }
 
     // Scenario 24
@@ -35,7 +35,7 @@ public class TenantScopeTests
         using var scope = tenantScope.Begin(OrgC);
 
         // Assert
-        tenantScope.OrganizationId.ShouldBe(OrgC);
+        tenantScope.OrganizationId.ShouldBe(OrgC, "inside a scope the active organization is the one the scope was begun for");
     }
 
     // Scenario 25
@@ -51,7 +51,7 @@ public class TenantScopeTests
         scope.Dispose();
 
         // Assert
-        tenantScope.OrganizationId.ShouldBeNull();
+        tenantScope.OrganizationId.ShouldBeNull("after the scope is closed no organization stays active");
     }
 
     // Scenario 26
@@ -68,7 +68,7 @@ public class TenantScopeTests
         inner.Dispose();
 
         // Assert
-        tenantScope.OrganizationId.ShouldBe(OrgA);
+        tenantScope.OrganizationId.ShouldBe(OrgA, "closing an inner scope brings back the outer organization");
     }
 
     // Scenario 27
@@ -85,7 +85,7 @@ public class TenantScopeTests
         await Task.Yield();
 
         // Assert
-        tenantScope.OrganizationId.ShouldBe(OrgC);
+        tenantScope.OrganizationId.ShouldBe(OrgC, "the scoped organization survives waiting on other work");
     }
 
     // Scenario 28
@@ -100,6 +100,6 @@ public class TenantScopeTests
         await Task.Run(() => tenantScope.Begin(OrgC));
 
         // Assert
-        tenantScope.OrganizationId.ShouldBeNull();
+        tenantScope.OrganizationId.ShouldBeNull("a scope begun in another flow must not leak into the caller");
     }
 }

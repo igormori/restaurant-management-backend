@@ -56,8 +56,8 @@ public class ExceptionHandlingMiddlewareLocalizationTests : IDisposable
         var (statusCode, body) = await InvokeAsync(new InvalidOperationException("Kitchen printer queue unavailable"), Environments.Production);
 
         // Assert
-        statusCode.ShouldBe(StatusCodes.Status500InternalServerError);
-        body.GetProperty("message").GetString().ShouldBe(expected);
+        statusCode.ShouldBe(StatusCodes.Status500InternalServerError, "an unexpected error answers with a server error status");
+        body.GetProperty("message").GetString().ShouldBe(expected, "the unexpected error message is shown in the language of the request");
     }
 
     // Scenario 5
@@ -72,7 +72,7 @@ public class ExceptionHandlingMiddlewareLocalizationTests : IDisposable
         var (_, body) = await InvokeAsync(new InvalidOperationException("Connection string Host=db-prod-cantina"), Environments.Production);
 
         // Assert
-        body.GetProperty("detail").ValueKind.ShouldBe(JsonValueKind.Null);
-        body.GetRawText().ShouldNotContain("db-prod-cantina");
+        body.GetProperty("detail").ValueKind.ShouldBe(JsonValueKind.Null, "the error detail is hidden in production");
+        body.GetRawText().ShouldNotContain("db-prod-cantina", customMessage: "internal details such as connection settings never reach the caller");
     }
 }

@@ -51,7 +51,7 @@ public class TenantQueryFilterTests
         var dishes = await context.Dishes.ToListAsync();
 
         // Assert
-        dishes.ShouldBeEmpty();
+        dishes.ShouldBeEmpty(customMessage: "with no organization in the token no tenant data is visible");
     }
 
     // Scenario 2
@@ -67,7 +67,7 @@ public class TenantQueryFilterTests
         var dishes = await context.Dishes.OrderBy(d => d.Name).ToListAsync();
 
         // Assert
-        dishes.Select(d => d.Id).ShouldBe(new[] { FeijoadaId, MoquecaId });
+        dishes.Select(d => d.Id).ShouldBe(new[] { FeijoadaId, MoquecaId }, ignoreOrder: false, customMessage: "only the current organization dishes are visible");
     }
 
     // Scenario 3
@@ -83,7 +83,7 @@ public class TenantQueryFilterTests
         var dish = await context.Dishes.FirstOrDefaultAsync(d => d.Id == LasanhaId);
 
         // Assert
-        dish.ShouldBeNull();
+        dish.ShouldBeNull("a row of another organization cannot be found even by its id");
     }
 
     // Scenario 4
@@ -101,8 +101,8 @@ public class TenantQueryFilterTests
         var trattoriaDishes = await trattoriaContext.Dishes.Select(d => d.Id).ToListAsync();
 
         // Assert
-        cantinaDishes.ShouldBe(new[] { FeijoadaId, MoquecaId }, ignoreOrder: true);
-        trattoriaDishes.ShouldBe(new[] { LasanhaId });
+        cantinaDishes.ShouldBe(new[] { FeijoadaId, MoquecaId }, ignoreOrder: true, customMessage: "the first organization sees only its own dishes");
+        trattoriaDishes.ShouldBe(new[] { LasanhaId }, ignoreOrder: false, customMessage: "the second organization sees only its own dishes");
     }
 
     // Scenario 5
@@ -118,7 +118,7 @@ public class TenantQueryFilterTests
         var counts = await context.StockCounts.ToListAsync();
 
         // Assert
-        counts.Select(c => c.LocationId).ShouldBe(new[] { BatelLocationId });
+        counts.Select(c => c.LocationId).ShouldBe(new[] { BatelLocationId }, ignoreOrder: false, customMessage: "with a location selected only that location rows are visible");
     }
 
     // Scenario 6
@@ -134,6 +134,6 @@ public class TenantQueryFilterTests
         var counts = await context.StockCounts.ToListAsync();
 
         // Assert
-        counts.Select(c => c.LocationId).ShouldBe(new[] { BatelLocationId, MercadoLocationId }, ignoreOrder: true);
+        counts.Select(c => c.LocationId).ShouldBe(new[] { BatelLocationId, MercadoLocationId }, ignoreOrder: true, customMessage: "with no location selected all locations of the organization are visible and no other organization");
     }
 }

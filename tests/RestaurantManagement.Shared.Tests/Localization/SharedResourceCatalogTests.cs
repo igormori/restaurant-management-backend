@@ -66,8 +66,8 @@ public class SharedResourceCatalogTests : IDisposable
         var message = localizer[key];
 
         // Assert
-        message.ResourceNotFound.ShouldBeFalse();
-        message.Value.ShouldBe(expected);
+        message.ResourceNotFound.ShouldBeFalse("every message key exists in the catalog");
+        message.Value.ShouldBe(expected, "the message reads as the agreed text in each language");
     }
 
     // Scenario 2
@@ -85,7 +85,7 @@ public class SharedResourceCatalogTests : IDisposable
         var message = localizer["MenuNotFound"];
 
         // Assert
-        message.Value.ShouldBe(expected);
+        message.Value.ShouldBe(expected, "a regional or unsupported language falls back to Portuguese or English");
     }
 
     // Scenario 3
@@ -107,6 +107,6 @@ public class SharedResourceCatalogTests : IDisposable
         var message = localizer[key];
 
         // Assert
-        message.Value.ShouldBe(expected);
+        message.Value.ShouldBe(expected, "existing messages keep their current text");
     }
 }

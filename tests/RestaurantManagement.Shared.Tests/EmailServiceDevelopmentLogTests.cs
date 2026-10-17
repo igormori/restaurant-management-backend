@@ -42,9 +42,9 @@ namespace RestaurantManagement.Shared.Tests
             await sut.SendEmailAsync("maria@cantinadanonna.com.br", "Reset your password", "<p>Your code is 482913</p>");
 
             // Assert
-            logger.Messages.ShouldContain(m => m.Contains("maria@cantinadanonna.com.br"));
-            logger.Messages.ShouldContain(m => m.Contains("Reset your password"));
-            logger.Messages.ShouldNotContain(m => m.Contains("482913"));
+            logger.Messages.ShouldContain(m => m.Contains("maria@cantinadanonna.com.br"), customMessage: "the log records who the email was sent to");
+            logger.Messages.ShouldContain(m => m.Contains("Reset your password"), customMessage: "the log records the email subject");
+            logger.Messages.ShouldNotContain(m => m.Contains("482913"), customMessage: "the email body holds the reset code, so it must never be written to the log");
         }
     }
 }

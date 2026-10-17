@@ -33,8 +33,8 @@ namespace RestaurantManagement.Shared.Tests
             var result = sut.Validate(null, CreateOptions(key: string.Empty));
 
             // Assert
-            result.Failed.Should().BeTrue();
-            result.FailureMessage.Should().Contain("Jwt:Key");
+            result.Failed.Should().BeTrue("a missing, short or placeholder signing key is refused at startup");
+            result.FailureMessage.Should().Contain("Jwt:Key", "the failure names the signing key setting");
         }
 
         // Scenario 2
@@ -50,8 +50,8 @@ namespace RestaurantManagement.Shared.Tests
             var result = sut.Validate(null, CreateOptions(key: thirtyOneByteKey));
 
             // Assert
-            result.Failed.Should().BeTrue();
-            result.FailureMessage.Should().Contain("Jwt:Key");
+            result.Failed.Should().BeTrue("a missing, short or placeholder signing key is refused at startup");
+            result.FailureMessage.Should().Contain("Jwt:Key", "the failure names the signing key setting");
         }
 
         // Scenario 3
@@ -66,8 +66,8 @@ namespace RestaurantManagement.Shared.Tests
             var result = sut.Validate(null, CreateOptions(key: JwtOptions.PlaceholderKey));
 
             // Assert
-            result.Failed.Should().BeTrue();
-            result.FailureMessage.Should().Contain("Jwt:Key");
+            result.Failed.Should().BeTrue("a missing, short or placeholder signing key is refused at startup");
+            result.FailureMessage.Should().Contain("Jwt:Key", "the failure names the signing key setting");
         }
 
         // Scenario 4
@@ -82,8 +82,8 @@ namespace RestaurantManagement.Shared.Tests
             var result = sut.Validate(null, CreateOptions(key: JwtOptions.PlaceholderKey));
 
             // Assert
-            result.Failed.Should().BeTrue();
-            result.FailureMessage.Should().Contain("Jwt:Key");
+            result.Failed.Should().BeTrue("a missing, short or placeholder signing key is refused at startup");
+            result.FailureMessage.Should().Contain("Jwt:Key", "the failure names the signing key setting");
         }
 
         // Scenario 5
@@ -100,8 +100,8 @@ namespace RestaurantManagement.Shared.Tests
             var result = sut.Validate(null, CreateOptions(expireMinutes: expireMinutes));
 
             // Assert
-            result.Failed.Should().BeTrue();
-            result.FailureMessage.Should().Contain("Jwt:ExpireMinutes");
+            result.Failed.Should().BeTrue("a token lifetime of zero or less is refused at startup");
+            result.FailureMessage.Should().Contain("Jwt:ExpireMinutes", "the failure names the token lifetime setting");
         }
 
         // Scenario 6
@@ -116,7 +116,7 @@ namespace RestaurantManagement.Shared.Tests
             var result = sut.Validate(null, CreateOptions(key: JwtOptions.PlaceholderKey));
 
             // Assert
-            result.Succeeded.Should().BeTrue();
+            result.Succeeded.Should().BeTrue("the placeholder key is allowed in development only");
         }
 
         // Scenario 7
@@ -132,7 +132,7 @@ namespace RestaurantManagement.Shared.Tests
             var result = sut.Validate(null, CreateOptions(key: thirtyTwoByteKey));
 
             // Assert
-            result.Succeeded.Should().BeTrue();
+            result.Succeeded.Should().BeTrue("a signing key of exactly 32 bytes is accepted");
         }
 
         // Scenario 8
@@ -148,7 +148,7 @@ namespace RestaurantManagement.Shared.Tests
             var result = sut.Validate(null, CreateOptions(key: seventeenAccentedChars));
 
             // Assert
-            result.Succeeded.Should().BeTrue();
+            result.Succeeded.Should().BeTrue("the key length is counted in bytes, so 17 two-byte characters are accepted");
         }
 
         // Scenario 9
@@ -163,7 +163,7 @@ namespace RestaurantManagement.Shared.Tests
             var result = sut.Validate(null, CreateOptions());
 
             // Assert
-            result.Succeeded.Should().BeTrue();
+            result.Succeeded.Should().BeTrue("a strong key with a positive token lifetime is accepted in production");
         }
     }
 }
