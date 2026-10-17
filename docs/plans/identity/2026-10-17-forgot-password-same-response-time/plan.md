@@ -43,4 +43,4 @@ which would make the tests unreliable.
 - [x] T1 — Pending reset request table
 - [x] T2 — Forgot password only queues the request
 - [x] T3 — Processor sends reset emails and retries failures
-- [ ] T4 — Background worker runs the processor
+- [x] T4 — Background worker runs the processor

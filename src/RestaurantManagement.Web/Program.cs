@@ -252,6 +252,10 @@ if (builder.Configuration.GetValue("RefreshTokenCleanup:Enabled", true))
 builder.Services.AddScoped<IVerificationService, VerificationService>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<IPasswordResetEmailProcessor, PasswordResetEmailProcessor>();
+if (builder.Configuration.GetValue("PasswordResetEmails:Enabled", true))
+{
+    builder.Services.AddHostedService<PasswordResetEmailWorker>();
+}
 builder.Services.AddScoped<IPasswordChangeService, PasswordChangeService>();
 builder.Services.AddScoped<IPasswordAuditRecorder, PasswordAuditRecorder>();
 builder.Services.AddSingleton<IVerificationCodeHasher, VerificationCodeHasher>();
