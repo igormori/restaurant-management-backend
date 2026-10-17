@@ -1,6 +1,6 @@
 # Plan: Sign-in token carries roles only for the organization in use
 
-**Spec:** docs/specs/identity/2026-10-16-token-roles-only-for-selected-organization.md   **Date:** 2026-10-16   **Status:** Draft
+**Spec:** docs/specs/identity/2026-10-16-token-roles-only-for-selected-organization.md   **Date:** 2026-10-16   **Status:** In progress
 **Risk:** High — changes which role claims the access token carries (auth change); no schema, data or contract change
 
 ## Summary
@@ -26,4 +26,4 @@ so one change covers both.
 - [ ] No out-of-scope changes; findings in the backlog
 
 ## Checklist
-- [ ] T1 — Token roles only for the organization in the token
+- [x] T1 — Token roles only for the organization in the token
