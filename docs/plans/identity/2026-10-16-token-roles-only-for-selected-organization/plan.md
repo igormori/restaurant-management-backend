@@ -26,4 +26,4 @@ so one change covers both.
 - [x] No out-of-scope changes; findings in the backlog
 
 ## Checklist
-- [x] T1 — Token roles only for the organization in the token
+- [x] T1 — Token roles only for the organization in the token (`58fd04f`)
