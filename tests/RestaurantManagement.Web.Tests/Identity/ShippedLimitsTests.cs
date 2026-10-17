@@ -43,7 +43,7 @@ public class ShippedLimitsTests
         security.LockoutDurationMinutes.ShouldBe(15, "a login lock lasts 15 minutes");
         security.MaxVerificationAttempts.ShouldBe(5, "the fifth wrong code locks verification and reset");
         security.VerificationLockoutDurationMinutes.ShouldBe(15, "a verification or reset lock lasts 15 minutes");
-        security.VerificationCodeExpiryMinutes.ShouldBe(15, "emailed codes expire after 15 minutes");
+        security.VerificationCodeExpiryMinutes.ShouldBe(10, "emailed codes expire after 10 minutes");
         security.ResendCooldownSeconds.ShouldBe(60, "a new code can be emailed at most once every 60 seconds");
     }
 

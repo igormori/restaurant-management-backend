@@ -32,7 +32,7 @@ Web.Tests outside that folder: `PrivateByDefaultTests`, `StartupConfigurationTes
 
 **Limits in force (`appsettings.json`, guarded by T16–T18 so changing a number fails a test;
 environment variables set at deployment can still override them):** 5 wrong logins lock login for 15 min · 5 wrong codes
-lock verification, or reset, for 15 min · codes are 6 digits and expire after 15 min · 60 s
+lock verification, or reset, for 15 min · codes are 6 digits and expire after 10 min · 60 s
 between resends · access token 15 min · refresh token 30 days · rate limits per IP address:
 login 10/min, register 5/h, verify 10/10 min, resend 3/10 min, refresh and logout 30/min,
 forgot password 3/10 min, reset password 10/10 min, change password 10/min. Access tokens get no
@@ -196,7 +196,7 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | T13 | Roles stored | Always tied to an organization; no duplicate role rows | ✅ | `UserRoleConstraintsTests.InsertUserRole_NoOrganization_IsRejectedByNotNullRule`, `UserRoleConstraintsTests.InsertUserRole_SecondAllLocationsRowSameOrganizationAndRole_IsRejectedByUniqueIndex`, `UserRoleConstraintsTests.InsertUserRole_SecondRowSameSpecificLocationAndRole_IsRejectedByUniqueIndex`, `UserRoleConstraintsTests.InsertUserRole_SameRoleAllLocationsAndOneSpecificLocation_BothRowsKept`, `UserRoleConstraintsTests.InsertUserRole_SameOrganizationAndLocationDifferentRole_BothRowsKept`, `UserRoleConstraintsTests.InsertUserRole_SameAllLocationsRoleInAnotherOrganization_BothRowsKept` |
 | T15 | Access token just past expiry (30 seconds) | 401: no grace period after expiry | ✅ | `AccessTokenValidationEndpointTests.LogoutAll_AccessTokenExpiredThirtySecondsAgo_ReturnsUnauthorized` |
 | T14 | Location access lookup | A role for all locations allows any location; a role for given locations allows only those; a role in another organization never counts | ✅ | `UserRoleLookupLocationAccessTests.HasLocationAccessAsync_RoleForAllLocations_ReturnsTrueForAnyLocation`, `UserRoleLookupLocationAccessTests.HasLocationAccessAsync_RolesForTwoLocations_AllowsOnlyThoseTwo`, `UserRoleLookupLocationAccessTests.HasLocationAccessAsync_RolesOnlyInAnotherOrganization_ReturnsFalse` |
-| T16 | Shipped lockout and code limits | 5 wrong logins lock for 15 min; 5 wrong codes lock verify or reset for 15 min; codes expire in 15 min; 60 s between emails | ✅ | `ShippedLimitsTests.Configuration_ShippedLockoutAndCodeLimits_MatchTheMatrix` |
+| T16 | Shipped lockout and code limits | 5 wrong logins lock for 15 min; 5 wrong codes lock verify or reset for 15 min; codes expire in 10 min; 60 s between emails | ✅ | `ShippedLimitsTests.Configuration_ShippedLockoutAndCodeLimits_MatchTheMatrix` |
 | T17 | Shipped token lifetimes | Access token 15 min; refresh token 30 days | ✅ | `ShippedLimitsTests.Configuration_ShippedTokenLifetimes_MatchTheMatrix` |
 | T18 | Shipped rate limits per IP address | The per-endpoint limits in the header above | ✅ | `ShippedLimitsTests.Configuration_ShippedRateLimit_MatchesTheMatrix` |
 
