@@ -35,8 +35,8 @@ fails no test, except the 15-minute access token, L19):** 5 wrong logins lock lo
 lock verification, or reset, for 15 min · codes are 6 digits and expire after 15 min · 60 s
 between resends · access token 15 min · refresh token 30 days · rate limits per IP address:
 login 10/min, register 5/h, verify 10/10 min, resend 3/10 min, refresh and logout 30/min,
-forgot password 3/10 min, reset password 10/10 min, change password 10/min. Access tokens get up
-to 5 minutes' grace past expiry (the framework's default clock allowance; untested).
+forgot password 3/10 min, reset password 10/10 min, change password 10/min. Access tokens get no
+grace past expiry (T15).
 
 ## 1. Register: `POST /api/auth/register` (public)
 | ID | Case | Expected | Status | Test |
@@ -189,6 +189,7 @@ to 5 minutes' grace past expiry (the framework's default clock allowance; untest
 | T11 | Cross-origin requests with credentials | Allowed only from configured origins | ✅ | `RefreshTokenCookieEndpointTests.Cors_PreflightFromAllowedOrigin_AllowsCredentials` |
 | T12 | Deleting a user | Refused while they hold a role; codes and refresh tokens deleted with the user, never another user's | ✅ | `IdentityDeleteRulesTests.DeleteUser_HasRole_IsRefusedAndRoleKept`, `IdentityDeleteRulesTests.DeleteUser_AnotherUserHasVerificationCode_OtherUsersCodeKept`, `RefreshTokensTableTests.DeleteUser_AnotherUserHasRefreshToken_OtherUsersTokenKept`, `IdentityDeleteRulesTests.DeleteUser_DeactivatedUserHasRole_IsRefusedAndRoleKept`, `IdentityDeleteRulesTests.DeleteUser_HasVerificationCodesAndNoRoles_UserAndCodesDeleted`, `RefreshTokensTableTests.DeleteUser_HasRefreshTokens_UserAndTokensDeleted` |
 | T13 | Roles stored | Always tied to an organization; no duplicate role rows | ✅ | `UserRoleConstraintsTests.InsertUserRole_NoOrganization_IsRejectedByNotNullRule`, `UserRoleConstraintsTests.InsertUserRole_SecondAllLocationsRowSameOrganizationAndRole_IsRejectedByUniqueIndex`, `UserRoleConstraintsTests.InsertUserRole_SecondRowSameSpecificLocationAndRole_IsRejectedByUniqueIndex`, `UserRoleConstraintsTests.InsertUserRole_SameRoleAllLocationsAndOneSpecificLocation_BothRowsKept`, `UserRoleConstraintsTests.InsertUserRole_SameOrganizationAndLocationDifferentRole_BothRowsKept`, `UserRoleConstraintsTests.InsertUserRole_SameAllLocationsRoleInAnotherOrganization_BothRowsKept` |
+| T15 | Access token just past expiry (30 seconds) | 401: no grace period after expiry | ✅ | `AccessTokenValidationEndpointTests.LogoutAll_AccessTokenExpiredThirtySecondsAgo_ReturnsUnauthorized` |
 | T14 | Location access lookup | A role for all locations allows any location; a role for given locations allows only those; a role in another organization never counts | ✅ | `UserRoleLookupLocationAccessTests.HasLocationAccessAsync_RoleForAllLocations_ReturnsTrueForAnyLocation`, `UserRoleLookupLocationAccessTests.HasLocationAccessAsync_RolesForTwoLocations_AllowsOnlyThoseTwo`, `UserRoleLookupLocationAccessTests.HasLocationAccessAsync_RolesOnlyInAnotherOrganization_ReturnsFalse` |
 
 ## 11. Schema, migration and wiring tests

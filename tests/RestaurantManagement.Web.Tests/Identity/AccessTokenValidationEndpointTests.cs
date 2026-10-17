@@ -54,8 +54,7 @@ public class AccessTokenValidationEndpointTests : IDisposable
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    // Matrix T1: Program.cs sets no ClockSkew, so the framework's 5-minute allowance applies;
-    // 10 minutes past expiry is clearly outside it.
+    // Matrix T1
     [Fact]
     [Trait("Rule", "T1")]
     public async Task LogoutAll_AccessTokenExpiredTenMinutesAgo_ReturnsUnauthorized()
@@ -69,7 +68,25 @@ public class AccessTokenValidationEndpointTests : IDisposable
         var response = await LogoutAllWithAsync(token);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "an access token that expired 10 minutes ago is past the 5-minute allowance and must be refused");
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "an access token that expired 10 minutes ago must be refused");
+        await _factory.SessionService.DidNotReceive().LogoutAllAsync(Arg.Any<Guid>());
+    }
+
+    // Matrix T15: no grace period after expiry (the framework would otherwise allow 5 minutes).
+    [Fact]
+    [Trait("Rule", "T15")]
+    public async Task LogoutAll_AccessTokenExpiredThirtySecondsAgo_ReturnsUnauthorized()
+    {
+        // Arrange
+        var jwt = AppJwt;
+        var token = SignToken(jwt.Key, jwt.Issuer, jwt.Audience,
+            expires: DateTime.UtcNow.AddSeconds(-30), notBefore: DateTime.UtcNow.AddMinutes(-15));
+
+        // Act
+        var response = await LogoutAllWithAsync(token);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "an access token is refused as soon as it expires, with no grace period");
         await _factory.SessionService.DidNotReceive().LogoutAllAsync(Arg.Any<Guid>());
     }
 
