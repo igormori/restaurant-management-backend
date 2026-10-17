@@ -1,6 +1,6 @@
 # Plan: Sign-in token carries roles only for the organization in use
 
-**Spec:** docs/specs/identity/2026-10-16-token-roles-only-for-selected-organization.md   **Date:** 2026-10-16   **Status:** In progress
+**Spec:** docs/specs/identity/2026-10-16-token-roles-only-for-selected-organization.md   **Date:** 2026-10-16   **Status:** Done
 **Risk:** High — changes which role claims the access token carries (auth change); no schema, data or contract change
 
 ## Summary
@@ -20,10 +20,10 @@ so one change covers both.
 | T1 | — | — | Auth change: role claims in the access token (JWT: JSON Web Token) narrowed; Identity matrix rows L14 and F6 changed, L21 and F10 added |
 
 ## Overall Definition of Done
-- [ ] All tasks done, tests passing
-- [ ] All spec Outcomes met
-- [ ] Full test suite green after the last batch
-- [ ] No out-of-scope changes; findings in the backlog
+- [x] All tasks done, tests passing
+- [x] All spec Outcomes met
+- [x] Full test suite green after the last batch
+- [x] No out-of-scope changes; findings in the backlog
 
 ## Checklist
 - [x] T1 — Token roles only for the organization in the token
