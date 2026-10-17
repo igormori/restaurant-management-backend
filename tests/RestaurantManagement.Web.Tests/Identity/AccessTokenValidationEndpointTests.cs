@@ -150,14 +150,15 @@ public class AccessTokenValidationEndpointTests : IDisposable
         await _factory.SessionService.DidNotReceive().LogoutAllAsync(Arg.Any<Guid>());
     }
 
-    private static string AttackerTokenWithKeyHeader(JwtOptions jwt, string headerName)
+    private const string AttackerKey = "another-restaurant-signing-key-of-at-least-32-bytes";
+
+    private static string TokenWithKeyHeader(JwtOptions jwt, string signingKey, string headerName)
     {
-        const string attackerKey = "another-restaurant-signing-key-of-at-least-32-bytes";
         var credentials = new SigningCredentials(
-            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(attackerKey)), SecurityAlgorithms.HmacSha256);
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey)), SecurityAlgorithms.HmacSha256);
         var header = new JwtHeader(credentials);
         header[headerName] = headerName == "jwk"
-            ? new Dictionary<string, string> { ["kty"] = "oct", ["k"] = Base64UrlEncoder.Encode(attackerKey) }
+            ? new Dictionary<string, string> { ["kty"] = "oct", ["k"] = Base64UrlEncoder.Encode(AttackerKey) }
             : "https://evil.example.com/keys";
         var payload = new JwtPayload(jwt.Issuer, jwt.Audience,
             [new Claim(ClaimTypes.NameIdentifier, MariaId.ToString()), new Claim(ClaimTypes.Role, "Owner")],
@@ -165,7 +166,7 @@ public class AccessTokenValidationEndpointTests : IDisposable
         return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(header, payload));
     }
 
-    // Matrix T22
+    // Matrix T22: signed with the attacker's key, the header changes nothing, so the token is refused.
     [Theory]
     [InlineData("jku")]
     [InlineData("x5u")]
@@ -174,7 +175,7 @@ public class AccessTokenValidationEndpointTests : IDisposable
     public async Task LogoutAll_TokenSignedByAttackerNamingItsKeyInTheHeader_ReturnsUnauthorized(string headerName)
     {
         // Arrange
-        var token = AttackerTokenWithKeyHeader(AppJwt, headerName);
+        var token = TokenWithKeyHeader(AppJwt, AttackerKey, headerName);
 
         // Act
         var response = await LogoutAllWithAsync(token);
@@ -182,6 +183,27 @@ public class AccessTokenValidationEndpointTests : IDisposable
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "a key named in the token's jku, x5u or jwk header is ignored, so a token signed by that key is refused");
         await _factory.SessionService.DidNotReceive().LogoutAllAsync(Arg.Any<Guid>());
+    }
+
+    // Matrix T22: signed with the real key, the header changes nothing, so the token is accepted.
+    // This proves the header is ignored rather than the token failing for some other reason.
+    [Theory]
+    [InlineData("jku")]
+    [InlineData("x5u")]
+    [InlineData("jwk")]
+    [Trait("Rule", "T22")]
+    public async Task LogoutAll_TokenSignedByServerKeyWithKeyHeaderPointingElsewhere_IsAccepted(string headerName)
+    {
+        // Arrange
+        var jwt = AppJwt;
+        var token = TokenWithKeyHeader(jwt, jwt.Key, headerName);
+
+        // Act
+        var response = await LogoutAllWithAsync(token);
+
+        // Assert
+        response.StatusCode.ShouldNotBe(HttpStatusCode.Unauthorized, "the signature is checked against the server's key only, whatever the jku, x5u or jwk header names");
+        await _factory.SessionService.Received(1).LogoutAllAsync(MariaId);
     }
 
     // Matrix T26
