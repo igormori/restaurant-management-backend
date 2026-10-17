@@ -42,10 +42,6 @@ namespace RestaurantManagement.Modules.Identity.Services
         {
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
 
-            // 🔒 A locked account gets the same 401 as an unknown email, so the lock never reveals the account.
-            if (user != null && user.VerificationLockedUntil.HasValue && user.VerificationLockedUntil > DateTime.UtcNow)
-                throw new BusinessException(_localizer["InvalidEmailOrCode"].Value, 401);
-
             // Run the code lookup even for an unknown email (against Guid.Empty, which never
             // matches a real UserId) so an unregistered email and an invalid code take the
             // same path and produce the same response.
@@ -53,6 +49,11 @@ namespace RestaurantManagement.Modules.Identity.Services
                 .Where(v => v.UserId == (user != null ? user.Id : Guid.Empty) && !v.IsUsed && v.ExpiresAt > DateTime.UtcNow)
                 .OrderByDescending(v => v.CreatedAt)
                 .FirstOrDefaultAsync();
+
+            // 🔒 A locked account gets the same 401 as an unknown email, so the lock never reveals the account.
+            // Checked after the lookup so a locked account does the same database work and answers in the same time.
+            if (user != null && user.VerificationLockedUntil.HasValue && user.VerificationLockedUntil > DateTime.UtcNow)
+                throw new BusinessException(_localizer["InvalidEmailOrCode"].Value, 401);
 
             if (user == null || verification == null || !_hasher.IsMatch(user.Id, request.Code, verification.CodeHash))
             {

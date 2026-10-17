@@ -75,7 +75,7 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | V8 | Same code submitted twice | Second attempt 401 | ✅ | `VerificationServiceTests.VerifyEmailAsync_SameCodeSubmittedTwice_SecondAttemptThrowsBusinessException` |
 | V9 | Code missing, or over 6 characters | 400 | ✅ | `VerifyEmailRequestValidationTests.Validate_VerifyCodeMissingOrOverSixCharacters_ReturnsErrorOnCode`, `VerifyEmailRequestValidationTests.Validate_VerifyCodeOfSixCharacters_ReturnsNoErrorOnCode`, `VerifyEmailRequestValidationTests.Validate_ResetCodeMissingOrOverSixCharacters_ReturnsErrorOnCode` |
 | V10 | Rate limit exceeded | 429 | ✅ | `AuthRateLimitingTests.PublicAuthEndpoint_LimitExceeded_ReturnsTooManyRequestsWithRetryAfter` |
-| V11 | Locked account compared with an unknown email, on verify and resend | Same status and body for both | ✅ | `VerificationServiceTests.VerifyEmailAsync_LockedAccountAndUnknownEmail_ReturnSameStatusAndMessage`, `VerificationServiceTests.ResendVerificationCodeAsync_LockedAccountAndUnknownEmail_ReturnSameAcknowledgement` |
+| V11 | Locked account compared with an unknown email, on verify and resend | Same status and body for both; verify runs the same code lookup for a locked account, so the answer takes the same time | ✅ | `VerificationServiceTests.VerifyEmailAsync_LockedAccountAndUnknownEmail_ReturnSameStatusAndMessage`, `VerificationServiceTests.VerifyEmailAsync_LockedAccountWithCorrectCode_RunsTheCodeLookupLikeAnUnknownEmail`, `VerificationServiceTests.ResendVerificationCodeAsync_LockedAccountAndUnknownEmail_ReturnSameAcknowledgement` |
 
 ## 3. Resend verification: `POST /api/auth/resend-verification` (public)
 | ID | Case | Expected | Status | Test |

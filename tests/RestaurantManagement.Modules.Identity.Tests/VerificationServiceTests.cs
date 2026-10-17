@@ -691,6 +691,78 @@ namespace RestaurantManagement.Modules.Identity.Tests
             reloaded.IsVerified.Should().BeFalse("a locked account stays unverified even with the correct code");
         }
 
+        [Fact]
+        [Trait("Rule", "V11")]
+        public async Task VerifyEmailAsync_LockedAccountWithCorrectCode_RunsTheCodeLookupLikeAnUnknownEmail()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            var user = new User
+            {
+                Email = "user@test.com",
+                PasswordHash = "hash",
+                FirstName = "A",
+                LastName = "B",
+                IsVerified = false,
+                VerificationLockedUntil = DateTime.UtcNow.AddMinutes(15)
+            };
+            seedContext.Users.Add(user);
+            seedContext.UserVerificationCodes.Add(new UserVerificationCode
+            {
+                UserId = user.Id,
+                CodeHash = Hasher.ComputeHash(user.Id, "123456"),
+                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+                IsUsed = false
+            });
+            await seedContext.SaveChangesAsync();
+
+            var queries = new CommandTextRecorder();
+            var options = new DbContextOptionsBuilder<IdentityDbContext>()
+                .UseSqlite(seedContext.Database.GetDbConnection())
+                .AddInterceptors(queries)
+                .Options;
+            using var context = new IdentityDbContext(options);
+            var sut = CreateSut(context, Substitute.For<IEmailService>());
+
+            // Act: the code is correct, but the account is locked out
+            var act = () => sut.VerifyEmailAsync(new VerifyEmailRequest { Email = "user@test.com", Code = "123456" });
+
+            // Assert
+            var thrown = await act.Should().ThrowAsync<BusinessException>();
+            thrown.Which.StatusCode.Should().Be(401, "a locked account is refused with the generic 401 even with the correct code");
+            queries.Commands.Should().Contain(c => c.Contains("UserVerificationCodes"),
+                "a locked account runs the same code lookup as an unknown email, so the answer takes the same time and the lock is not revealed");
+
+            using var verifyContext = database.CreateContext();
+            var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
+            reloaded.IsVerified.Should().BeFalse("a locked account stays unverified even with the correct code");
+        }
+
+        private sealed class CommandTextRecorder : Microsoft.EntityFrameworkCore.Diagnostics.DbCommandInterceptor
+        {
+            public List<string> Commands { get; } = new();
+
+            public override Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader> ReaderExecuting(
+                System.Data.Common.DbCommand command,
+                Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData eventData,
+                Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader> result)
+            {
+                Commands.Add(command.CommandText);
+                return result;
+            }
+
+            public override ValueTask<Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader>> ReaderExecutingAsync(
+                System.Data.Common.DbCommand command,
+                Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData eventData,
+                Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader> result,
+                CancellationToken cancellationToken = default)
+            {
+                Commands.Add(command.CommandText);
+                return ValueTask.FromResult(result);
+            }
+        }
+
         // Hash verification codes: Scenario 35
         [Fact]
         [Trait("Rule", "RS3")]

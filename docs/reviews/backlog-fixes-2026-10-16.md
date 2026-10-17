@@ -27,7 +27,7 @@ test passwords are test literals).
 | 3 (T22 not decisive) | Resolved: new test sends each header on a server-signed token and expects it accepted; row T22 names it |
 | 4 (long line) | Open, style only: `ApprovedHashAlgorithmsTests.cs:63` |
 | 5 (controller wiring untested) | Resolved: `= null` default removed, so a caller must pass the cookie; endpoint test on real PostgreSQL proves the old token is refused; named in L20 |
-| 6 (locked verify answers faster) | Open, see Watch out 1 |
+| 6 (locked verify answers faster) | Resolved: the lock check now runs after the code lookup; V11 names the test |
 | 7 (unused resx key) | Resolved in both languages |
 | 8 (V4/V5 message not asserted) | Resolved |
 | 9 (gap report V11 note) | Resolved |
