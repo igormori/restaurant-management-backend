@@ -75,6 +75,7 @@ database tests in `tests/RestaurantManagement.Web.Tests/Shared/`.
 | SH25 | A name with HTML characters in the reset email | Shown as text, never as markup | ✅ | `PasswordResetEmailTemplateTests.Build_FirstNameWithHtmlCharacters_IsHtmlEncoded` |
 | SH26 | A name or address with HTML characters in the verification email | Shown as text, never as markup | ✅ | `VerificationEmailTemplateTests.Build_NameAndAddressWithHtmlCharacters_AreShownAsTextNeverAsMarkup` |
 | SH27 | Development without a mail server | The email is logged with recipient and subject, never the body (so codes stay out of logs) | ✅ | `EmailServiceDevelopmentLogTests.SendEmailAsync_DevelopmentWithoutSmtpHost_LogsRecipientAndSubjectButNotBody` |
+| SH28 | Sending an email, whether it works or fails | The recipient's address is never written to the logs | ✅ | `EmailServiceRecipientLogPrivacyTests.SendEmailAsync_SendSucceeds_NoLogLineContainsTheRecipientAddress`, `EmailServiceRecipientLogPrivacyTests.SendEmailAsync_SendFails_NoLogLineContainsTheRecipientAddress` |
 
 ## 8. Schema and wiring tests
 | ID | Test | Protects |
