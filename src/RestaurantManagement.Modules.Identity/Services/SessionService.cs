@@ -67,7 +67,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         public async Task LogoutAllAsync(Guid userId)
             => await _refreshTokens.RevokeAllForUserAsync(userId);
 
-        public async Task<SessionResult> LoginAsync(LoginRequest request, ClientInfo client, string? previousRefreshToken = null)
+        public async Task<SessionResult> LoginAsync(LoginRequest request, ClientInfo client, string? previousRefreshToken)
         {
             var email = request.Email.Trim().ToLowerInvariant();
             var user = await _db.Users

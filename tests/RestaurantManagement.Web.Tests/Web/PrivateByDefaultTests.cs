@@ -123,7 +123,7 @@ public class PrivateByDefaultTests : IDisposable
             RefreshToken = "a2l0Y2hlbi10YWJsZXQtcmVmcmVzaC10b2tlbi0wMDAx",
             RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(7)
         };
-        _factory.SessionService.LoginAsync(Arg.Any<LoginRequest>(), Arg.Any<ClientInfo>()).Returns(issuedSession);
+        _factory.SessionService.LoginAsync(Arg.Any<LoginRequest>(), Arg.Any<ClientInfo>(), Arg.Any<string?>()).Returns(issuedSession);
         _factory.SessionService.RefreshTokenAsync(Arg.Any<string?>()).Returns(issuedSession);
         var request = new HttpRequestMessage(HttpMethod.Post, url)
         {

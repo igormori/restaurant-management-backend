@@ -92,7 +92,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private static async Task<SessionResult> LoginAsync(IdentityTestDatabase database, IOrganizationLookup lookup, ClientInfo? client = null)
         {
             using var context = database.CreateContext();
-            return await CreateSut(context, lookup).LoginAsync(new LoginRequest { Email = UserEmail, Password = Password }, client ?? TestClients.KitchenTablet);
+            return await CreateSut(context, lookup).LoginAsync(new LoginRequest { Email = UserEmail, Password = Password }, client ?? TestClients.KitchenTablet, null);
         }
 
         private static async Task<SessionResult> SelectAsync(IdentityTestDatabase database, IOrganizationLookup lookup, Guid userId, Guid organizationId, string? refreshToken = null, ClientInfo? client = null)

@@ -76,14 +76,14 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private static async Task<SessionResult> LoginAsync(IdentityTestDatabase database, ClientInfo client)
         {
             using var context = database.CreateContext();
-            return await CreateSut(context).LoginAsync(new LoginRequest { Email = UserEmail, Password = Password }, client);
+            return await CreateSut(context).LoginAsync(new LoginRequest { Email = UserEmail, Password = Password }, client, null);
         }
 
         private static async Task<int> CountTokensAfterRefusedLoginAsync(IdentityTestDatabase database, string password)
         {
             using (var context = database.CreateContext())
             {
-                var act = () => CreateSut(context).LoginAsync(new LoginRequest { Email = UserEmail, Password = password }, TestClients.KitchenTablet);
+                var act = () => CreateSut(context).LoginAsync(new LoginRequest { Email = UserEmail, Password = password }, TestClients.KitchenTablet, null);
                 (await Should.ThrowAsync<BusinessException>(act)).StatusCode.ShouldBe(UnauthorizedStatusCode, "a refused login answers 401");
             }
 

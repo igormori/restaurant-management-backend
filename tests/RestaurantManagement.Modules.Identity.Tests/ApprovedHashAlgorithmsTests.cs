@@ -63,7 +63,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create(), Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>(), new RefreshTokenService(context, jwtOptions), TestPasswordHasher.Create());
 
             // Act
-            var result = await sut.LoginAsync(new LoginRequest { Email = UserEmail, Password = Password }, TestClients.KitchenTablet);
+            var result = await sut.LoginAsync(new LoginRequest { Email = UserEmail, Password = Password }, TestClients.KitchenTablet, null);
 
             // Assert
             new JwtSecurityTokenHandler().ReadJwtToken(result.Auth.Token).Header.Alg

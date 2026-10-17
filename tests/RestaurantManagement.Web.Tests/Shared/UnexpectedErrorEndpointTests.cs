@@ -23,7 +23,7 @@ public class UnexpectedErrorEndpointTests : IDisposable
     public async Task Login_UnexpectedFailureInPortuguese_ReturnsServerErrorWithPortugueseMessage()
     {
         // Arrange
-        _factory.SessionService.LoginAsync(Arg.Any<LoginRequest>(), Arg.Any<ClientInfo>())
+        _factory.SessionService.LoginAsync(Arg.Any<LoginRequest>(), Arg.Any<ClientInfo>(), Arg.Any<string?>())
             .Returns(Task.FromException<SessionResult>(new InvalidOperationException("Session store unavailable")));
         var client = _factory.CreateClient();
         var request = Request("POST", "/api/auth/login", "pt", new { email = "ana@cantinadanonna.com.br", password = "Massa@Fresca2026" });
