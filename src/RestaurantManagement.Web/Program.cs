@@ -251,6 +251,7 @@ if (builder.Configuration.GetValue("RefreshTokenCleanup:Enabled", true))
 }
 builder.Services.AddScoped<IVerificationService, VerificationService>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
+builder.Services.AddScoped<IPasswordResetEmailProcessor, PasswordResetEmailProcessor>();
 builder.Services.AddScoped<IPasswordChangeService, PasswordChangeService>();
 builder.Services.AddScoped<IPasswordAuditRecorder, PasswordAuditRecorder>();
 builder.Services.AddSingleton<IVerificationCodeHasher, VerificationCodeHasher>();

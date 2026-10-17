@@ -33,4 +33,6 @@ string parameters with no compiler protection against swapping them.
 UniqueEmailIndexTests run against a real Postgres via Testcontainers (IdentityPostgresFixture)
 because they prove constraint races and migration-on-existing-data; other tests stay on
 the SQLite in-memory database.
+Forgot password only queues the email in password_reset_requests; PasswordResetEmailProcessor decides
+eligibility, creates the code, sends and retries (1, 2, 4, 8 min; failed after the 5th).
 Out-of-scope findings and accepted gaps are tracked in backlog/; don't fix them as drive-by changes.
