@@ -1,4 +1,5 @@
 using System.Net;
+using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Menu.Data;
 using RestaurantManagement.Modules.Menu.Entities;
@@ -72,5 +73,24 @@ public class MenuLocationEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var body = await response.Content.ReadAsStringAsync();
         body.ShouldNotContain("Jantar", customMessage: "the other organization's menu is never revealed");
         body.ShouldNotContain(CantinaDinnerMenuId.ToString(), customMessage: "the other organization's menu ID is never revealed");
+    }
+
+    // Scenario 46
+    [Fact]
+    [Trait("Rule", "M13")]
+    public async Task AttachMenuToLocation_LocationOfAnotherOrganization_ReturnsNotFoundAndStoresNoLink()
+    {
+        // Arrange
+        await using var factory = await CreateFactoryAsync();
+        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+
+        // Act
+        var response = await client.PostAsync($"/api/menus/{CantinaDinnerMenuId}/locations/{TrattoriaCentroId}", null);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound, "another organization's location is answered as if it did not exist");
+        var links = await factory.InOrganizationAsync<MenuDbContext, int>(CantinaId,
+            db => db.LocationMenus.IgnoreQueryFilters().CountAsync(lm => lm.LocationId == TrattoriaCentroId));
+        links.ShouldBe(0, "a menu is never linked to another organization's location");
     }
 }
