@@ -22,7 +22,7 @@ namespace RestaurantManagement.Web.Tests;
 public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string ChangeUrl = "/api/auth/change-password";
-    private const string CookieName = "refresh_token";
+    private const string CookieName = "__Secure-refresh_token";
     private const string CookiePath = "/api/auth";
     private const string MariaPassword = "Massa@Fresca2026";
     private const string JoaoPassword = "Pizza@Margherita2026";

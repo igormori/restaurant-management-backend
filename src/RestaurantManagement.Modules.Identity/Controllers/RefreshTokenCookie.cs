@@ -7,7 +7,7 @@ namespace RestaurantManagement.Modules.Identity.Controllers
     // The refresh token travels only in this cookie, never in a response body.
     internal static class RefreshTokenCookie
     {
-        public const string Name = "refresh_token";
+        public const string Name = "__Secure-refresh_token";
         private const string CookiePath = "/api/auth";
 
         public static string? Read(HttpRequest request)

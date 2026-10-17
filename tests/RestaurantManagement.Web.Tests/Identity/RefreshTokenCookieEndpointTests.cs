@@ -22,7 +22,8 @@ public class RefreshTokenCookieEndpointTests : IDisposable
     private const string LoginUrl = "/api/auth/login";
     private const string RefreshUrl = "/api/auth/refresh";
     private const string SelectOrganizationUrl = "/api/auth/select-organization";
-    private const string CookieName = "refresh_token";
+    private const string CookieName = "__Secure-refresh_token";
+    private const string OldCookieName = "refresh_token";
     private const string CookiePath = "/api/auth";
     private const string AllowedOrigin = "https://app.cantinadanonna.com.br";
 
@@ -122,6 +123,40 @@ public class RefreshTokenCookieEndpointTests : IDisposable
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK, "valid credentials log the person in");
         ShouldBeSecureRefreshCookie(RefreshCookieOf(response));
+    }
+
+    [Fact]
+    [Trait("Rule", "L2")]
+    public async Task Login_ValidCredentials_DoesNotSetTheOldCookieName()
+    {
+        // Arrange
+        _factory.SessionService.LoginAsync(Arg.Any<LoginRequest>(), Arg.Any<ClientInfo>()).Returns(IssuedSession());
+        var client = CreateClient();
+
+        // Act
+        var response = await client.SendAsync(LoginRequest());
+
+        // Assert
+        response.Headers.TryGetValues(HeaderNames.SetCookie, out var values).ShouldBeTrue("the response must set a cookie");
+        SetCookieHeaderValue.ParseList(values!.ToList()).ShouldNotContain(c => c.Name == OldCookieName, "the refresh cookie carries the __Secure- prefix; the old name is never set");
+    }
+
+    [Fact]
+    [Trait("Rule", "F2")]
+    public async Task Refresh_OnlyOldCookieName_IsTreatedAsNoCookie()
+    {
+        // Arrange
+        _factory.SessionService.RefreshTokenAsync(Arg.Is<string?>(t => t == null))
+            .Throws(new BusinessException("InvalidOrExpiredToken", 401));
+        var client = CreateClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, RefreshUrl);
+        request.Headers.Add("Cookie", $"{OldCookieName}={CurrentCookieToken}");
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "a token sent under the old cookie name is no longer read");
     }
 
     // Scenario 48
