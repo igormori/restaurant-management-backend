@@ -24,7 +24,7 @@ for one module (rate limits on sign-in endpoints, the refresh cookie) are in tha
 |---|---|---|---|---|
 | W1 | No access token on a protected endpoint | 401 with the translated "unauthorized" message as JSON, in the caller's language | ✅ | `PrivateByDefaultTests.UndeclaredEndpoint_NoAccessToken_ReturnsStandardUnauthorizedMessage`, `PrivateByDefaultTests.UndeclaredEndpoint_NoAccessTokenInPortuguese_ReturnsPortugueseUnauthorizedMessage` |
 | W2 | Forged or expired access token | 401 with the translated "invalid token" message as JSON; never says why the token failed | ✅ | `InvalidTokenMessageTests.ProtectedEndpoint_TokenSignedWithAnotherKey_ReturnsInvalidTokenMessageInEnglish`, `InvalidTokenMessageTests.ProtectedEndpoint_TokenSignedWithAnotherKeyInPortuguese_ReturnsInvalidTokenMessageInPortuguese`, `InvalidTokenMessageTests.ProtectedEndpoint_ExpiredToken_ReturnsInvalidTokenMessageWithoutSayingItExpired` |
-| W3 | Signed in but not allowed | 403 with the translated "access denied" message as JSON | ❌ | |
+| W3 | Signed in but not allowed | 403 with the translated "access denied" message as JSON | ✅ | `AccessDeniedMessageTests.MembersManagePolicy_WaiterWithoutPermission_ReturnsAccessDeniedMessageInEnglish`, `AccessDeniedMessageTests.MembersManagePolicy_WaiterWithoutPermissionInPortuguese_ReturnsAccessDeniedMessageInPortuguese` |
 
 ## 2. Who may call what
 | ID | Case | Expected | Status | Test |
