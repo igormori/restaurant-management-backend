@@ -10,8 +10,8 @@ tests/RestaurantManagement.Web.Tests/Identity/.
 Verification is account-level, never organization-scoped: a user has no UserRole (and no
 OrganizationId) until after verification, when they create/join an organization.
 Login collapses unknown email, wrong password, locked account, and unverified account into
-one generic 401; verify collapses unknown email and wrong code into one generic 401; resend
-always returns the same acknowledgement.
+one generic 401; verify collapses unknown email, wrong code and a verification-locked account
+into one generic 401; resend always returns the same acknowledgement, locked or not.
 Login hashes against a fixed dummy password when no user row exists, so an unregistered
 email does the same work as a wrong password for a real one. Don't remove it as dead code.
 Verification has its own lockout (VerificationFailedAttempts/VerificationLockedUntil,

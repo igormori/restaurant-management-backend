@@ -636,7 +636,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(423, "the last allowed wrong code locks verification");
+            thrown.Which.StatusCode.Should().Be(401, "the wrong code that trips the lock gets the same 401 as any wrong code, so the lock is not revealed");
 
             using var verifyContext = database.CreateContext();
             var reloadedCode = await verifyContext.UserVerificationCodes.SingleAsync(v => v.UserId == user.Id);
@@ -682,7 +682,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(423, "a locked account is refused with a 423 even with the correct code");
+            thrown.Which.StatusCode.Should().Be(401, "a locked account is refused with the generic 401 even with the correct code");
 
             using var verifyContext = database.CreateContext();
             var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
@@ -692,7 +692,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         // Hash verification codes: Scenario 35
         [Fact]
         [Trait("Rule", "RS3")]
-        public async Task ResendVerificationCodeAsync_AccountLocked_ThrowsAndSendsNoEmail()
+        public async Task ResendVerificationCodeAsync_AccountLocked_ReturnsAcknowledgementAndSendsNoEmail()
         {
             // Arrange
             using var database = new IdentityTestDatabase();
@@ -721,16 +721,80 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context, emailService);
 
             // Act
-            var act = () => sut.ResendVerificationCodeAsync(new ResendVerificationRequest { Email = "user@test.com" });
+            var response = await sut.ResendVerificationCodeAsync(new ResendVerificationRequest { Email = "user@test.com" });
 
             // Assert
-            var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(423, "a locked account cannot ask for a new code");
+            response.Message.Should().Be("VerificationResendAcknowledged", "a locked account gets the same acknowledgement as an unknown email");
             await emailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
 
             using var verifyContext = database.CreateContext();
             var codeCount = await verifyContext.UserVerificationCodes.CountAsync(v => v.UserId == user.Id);
             codeCount.Should().Be(1, "no new code is created while verification is locked");
+        }
+
+        [Fact]
+        [Trait("Rule", "V11")]
+        public async Task VerifyEmailAsync_LockedAccountAndUnknownEmail_ReturnSameStatusAndMessage()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            seedContext.Users.Add(new User
+            {
+                Email = "user@test.com",
+                PasswordHash = "hash",
+                FirstName = "A",
+                LastName = "B",
+                IsVerified = false,
+                VerificationLockedUntil = DateTime.UtcNow.AddMinutes(15)
+            });
+            await seedContext.SaveChangesAsync();
+
+            using var lockedContext = database.CreateContext();
+            var lockedSut = CreateSut(lockedContext, Substitute.For<IEmailService>());
+            using var unknownContext = database.CreateContext();
+            var unknownSut = CreateSut(unknownContext, Substitute.For<IEmailService>());
+
+            // Act
+            var lockedAct = () => lockedSut.VerifyEmailAsync(new VerifyEmailRequest { Email = "user@test.com", Code = "654321" });
+            var unknownAct = () => unknownSut.VerifyEmailAsync(new VerifyEmailRequest { Email = "nobody@test.com", Code = "654321" });
+
+            // Assert
+            var lockedThrown = await lockedAct.Should().ThrowAsync<BusinessException>();
+            var unknownThrown = await unknownAct.Should().ThrowAsync<BusinessException>();
+            lockedThrown.Which.StatusCode.Should().Be(unknownThrown.Which.StatusCode, "a locked account gets the same status as an unknown email on verify");
+            lockedThrown.Which.Message.Should().Be(unknownThrown.Which.Message, "a locked account gets the same message as an unknown email on verify");
+        }
+
+        [Fact]
+        [Trait("Rule", "V11")]
+        public async Task ResendVerificationCodeAsync_LockedAccountAndUnknownEmail_ReturnSameAcknowledgement()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            seedContext.Users.Add(new User
+            {
+                Email = "user@test.com",
+                PasswordHash = "hash",
+                FirstName = "A",
+                LastName = "B",
+                IsVerified = false,
+                VerificationLockedUntil = DateTime.UtcNow.AddMinutes(15)
+            });
+            await seedContext.SaveChangesAsync();
+
+            using var lockedContext = database.CreateContext();
+            var lockedSut = CreateSut(lockedContext, Substitute.For<IEmailService>());
+            using var unknownContext = database.CreateContext();
+            var unknownSut = CreateSut(unknownContext, Substitute.For<IEmailService>());
+
+            // Act
+            var locked = await lockedSut.ResendVerificationCodeAsync(new ResendVerificationRequest { Email = "user@test.com" });
+            var unknown = await unknownSut.ResendVerificationCodeAsync(new ResendVerificationRequest { Email = "nobody@test.com" });
+
+            // Assert
+            locked.Message.Should().Be(unknown.Message, "a locked account gets the same acknowledgement as an unknown email on resend");
         }
 
         // Hash verification codes: Scenario 31
