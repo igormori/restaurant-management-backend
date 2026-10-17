@@ -70,6 +70,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 13
         [Fact]
+        [Trait("Rule", "P1")]
         public async Task RequestResetCodeAsync_UnknownEmail_SameAcknowledgementAsKnownEmailAndNoEmail()
         {
             // Arrange
@@ -81,7 +82,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var unknown = await RequestAsync(database, UnknownEmail);
 
             // Assert
-            unknown.Message.ShouldBe(known.Message);
+            unknown.Message.ShouldBe(known.Message, "an unknown email gets the same acknowledgement as a real account, so nobody can tell which emails exist");
             await _emailService.DidNotReceiveWithAnyArgs().SendPasswordResetEmailAsync(default!, default!, default!, default);
         }
 
@@ -89,6 +90,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         [Theory]
         [InlineData("pedro@cantinadanonna.com.br")]    // inactive
         [InlineData("lucia@cantinadanonna.com.br")]    // email not verified
+        [Trait("Rule", "P1")]
         public async Task RequestResetCodeAsync_InactiveOrUnverifiedUser_NoEmailAndUnknownEmailAcknowledgement(string email)
         {
             // Arrange
@@ -99,14 +101,15 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await RequestAsync(database, email);
 
             // Assert
-            response.Message.ShouldBe(unknown.Message);
+            response.Message.ShouldBe(unknown.Message, "a deactivated or unverified user gets the same acknowledgement as an unknown email");
             await _emailService.DidNotReceiveWithAnyArgs().SendPasswordResetEmailAsync(default!, default!, default!, default);
             using var context = database.CreateContext();
-            (await context.Set<PasswordResetCode>().CountAsync()).ShouldBe(0);
+            (await context.Set<PasswordResetCode>().CountAsync()).ShouldBe(0, "no reset code is created for a deactivated or unverified user");
         }
 
         // Scenario 15
         [Fact]
+        [Trait("Rule", "P5")]
         public async Task RequestResetCodeAsync_EmailSendFails_SameAcknowledgementAndCodeNotLogged()
         {
             // Arrange
@@ -124,14 +127,15 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await RequestAsync(database, MariaEmail);
 
             // Assert
-            response.Message.ShouldBe(unknown.Message);
+            response.Message.ShouldBe(unknown.Message, "a failed email send must not change what the caller sees");
             sentCode.ShouldNotBeNullOrEmpty();
             _logger.Messages.ShouldNotBeEmpty();
-            _logger.Messages.ShouldNotContain(m => m.Contains(sentCode!));
+            _logger.Messages.ShouldNotContain(m => m.Contains(sentCode!), "the reset code must never be written to the logs");
         }
 
         // Scenario 16
         [Fact]
+        [Trait("Rule", "P2")]
         public async Task RequestResetCodeAsync_ActiveVerifiedUser_EmailsSixDigitCodeWithNameAndExpiry()
         {
             // Arrange
@@ -147,6 +151,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 17
         [Fact]
+        [Trait("Rule", "P2")]
         public async Task RequestResetCodeAsync_ActiveVerifiedUser_StoresOnlyProtectedFormOfCode()
         {
             // Arrange
@@ -165,10 +170,52 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             using var context = database.CreateContext();
             var stored = await context.Set<PasswordResetCode>().SingleAsync();
-            stored.UserId.ShouldBe(MariaId);
+            stored.UserId.ShouldBe(MariaId, "the stored code belongs to the user who asked");
             stored.IsUsed.ShouldBeFalse();
-            stored.CodeHash.ShouldNotBe(sentCode);
-            stored.CodeHash.ShouldBe(Hasher.ComputeHash(MariaId, sentCode!));
+            stored.CodeHash.ShouldNotBe(sentCode, "the reset code is never stored readable");
+            stored.CodeHash.ShouldBe(Hasher.ComputeHash(MariaId, sentCode!), "only the keyed fingerprint of the emailed code is stored");
+        }
+
+        [Fact]
+        [Trait("Rule", "P3")]
+        public async Task RequestResetCodeAsync_SecondRequestWithinResendWait_SameAcknowledgementAndNoNewCode()
+        {
+            // Arrange
+            using var database = await CreateDatabaseAsync();
+            var first = await RequestAsync(database, MariaEmail);
+
+            // Act
+            var second = await RequestAsync(database, MariaEmail);
+
+            // Assert
+            second.Message.ShouldBe(first.Message, "a second request within the 60-second wait gets the same acknowledgement");
+            await _emailService.ReceivedWithAnyArgs(1).SendPasswordResetEmailAsync(default!, default!, default!, default);
+            using var context = database.CreateContext();
+            (await context.Set<PasswordResetCode>().CountAsync()).ShouldBe(1, "a second request within the 60-second wait creates no new code");
+        }
+
+        [Fact]
+        [Trait("Rule", "P4")]
+        public async Task RequestResetCodeAsync_ResetLocked_SameAcknowledgementAsUnknownEmailAndNoCode()
+        {
+            // Arrange
+            using var database = await CreateDatabaseAsync();
+            var unknown = await RequestAsync(database, UnknownEmail);
+            using (var context = database.CreateContext())
+            {
+                var maria = await context.Users.SingleAsync(u => u.Id == MariaId);
+                maria.PasswordResetLockedUntil = DateTime.UtcNow.AddMinutes(10);
+                await context.SaveChangesAsync();
+            }
+
+            // Act
+            var response = await RequestAsync(database, MariaEmail);
+
+            // Assert
+            response.Message.ShouldBe(unknown.Message, "a reset-locked account gets the same acknowledgement as an unknown email");
+            await _emailService.DidNotReceiveWithAnyArgs().SendPasswordResetEmailAsync(default!, default!, default!, default);
+            using var check = database.CreateContext();
+            (await check.Set<PasswordResetCode>().CountAsync()).ShouldBe(0, "no code is created while the reset is locked");
         }
     }
 }

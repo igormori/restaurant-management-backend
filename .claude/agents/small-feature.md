@@ -45,8 +45,9 @@ Read `.claude/skills/architecture/SKILL.md`, `.claude/skills/testing/SKILL.md`, 
 2. **Implement** the minimum code to make them pass, in the folders the architecture skill allows.
 3. Run `.claude/scripts/test-summary.sh all` once (full suite) and `dotnet format`. Every test must pass. Record the passed and failed counts per test project.
 4. **Self-check the diff:** location, size limits, one responsibility per class, only "why" comments, no secrets, nothing beyond the request.
-5. **Commit once**, staging only the files you changed, by path (never `git add -A` or `git add .`). Conventional Commits (root `CLAUDE.md`).
-6. Out-of-scope findings: read `.claude/skills/backlog/SKILL.md` first. It decides whether to fix inline, stop, or write a backlog item, and how.
+5. **Security matrix:** change to a module with a matrix (root `CLAUDE.md`, "Security matrices"): update `docs/security/<module>-matrix.md` in the same commit — a row for every new or changed behaviour, ✅ only with the name of a passing test, every new test of that module named in a row and tagged `[Trait("Rule", "<row ID>")]`, with rule messages on its key assertions. Run `python3 .claude/scripts/check-security-matrices.py` before committing.
+6. **Commit once**, staging only the files you changed, by path (never `git add -A` or `git add .`). Conventional Commits (root `CLAUDE.md`).
+7. Out-of-scope findings: read `.claude/skills/backlog/SKILL.md` first. It decides whether to fix inline, stop, or write a backlog item, and how.
 
 ---
 

@@ -65,6 +65,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "C9")]
         public async Task ChangePasswordAsync_AuditWriteFails_SucceedsAndLogsError()
         {
             // Arrange
@@ -77,13 +78,14 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await sut.ChangePasswordAsync(MariaId, new ChangePasswordRequest { CurrentPassword = OldPassword, NewPassword = NewPassword });
 
             // Assert
-            response.Message.ShouldNotBeNullOrEmpty();
-            (await NewPasswordIsStoredAsync(database)).ShouldBeTrue();
-            logger.ReceivedCalls().Count(c => c.GetMethodInfo().Name == nameof(ILogger.Log)).ShouldBe(1);
-            logger.ReceivedCalls().Single().GetArguments()[0].ShouldBe(LogLevel.Error);
+            response.Message.ShouldNotBeNullOrEmpty("a failing audit write must not turn a completed password change into an error");
+            (await NewPasswordIsStoredAsync(database)).ShouldBeTrue("the new password is saved even though the audit write failed");
+            logger.ReceivedCalls().Count(c => c.GetMethodInfo().Name == nameof(ILogger.Log)).ShouldBe(1, "the audit failure is logged exactly once");
+            logger.ReceivedCalls().Single().GetArguments()[0].ShouldBe(LogLevel.Error, "the audit failure is logged as an error");
         }
 
         [Fact]
+        [Trait("Rule", "P12")]
         public async Task ResetPasswordAsync_AuditWriteFails_SucceedsAndLogsError()
         {
             // Arrange
@@ -106,10 +108,10 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await sut.ResetPasswordAsync(new ResetPasswordRequest { Email = MariaEmail, Code = _emailedCode!, NewPassword = NewPassword });
 
             // Assert
-            response.Message.ShouldNotBeNullOrEmpty();
-            (await NewPasswordIsStoredAsync(database)).ShouldBeTrue();
+            response.Message.ShouldNotBeNullOrEmpty("a failing audit write must not turn a completed password reset into an error");
+            (await NewPasswordIsStoredAsync(database)).ShouldBeTrue("the new password is saved even though the audit write failed");
             var logCall = logger.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(ILogger.Log));
-            logCall.GetArguments()[0].ShouldBe(LogLevel.Error);
+            logCall.GetArguments()[0].ShouldBe(LogLevel.Error, "the audit failure is logged as an error");
         }
     }
 }

@@ -102,6 +102,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData("edit to TemporarilyClosed", Roles.Waiter, "Cantina", 403)]
         [InlineData("delete", Roles.Waiter, "Cantina", 403)]
         [InlineData("edit to TemporarilyClosed", Roles.Owner, "Trattoria", 404)]
+        [Trait("Rule", "OR29")]
         public async Task ChangeLocationStatus_RequestRejected_RecordsNothing(
             string operation, string role, string locationOrganization, int expectedStatusCode)
         {
@@ -115,12 +116,13 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var change = () => Operations[operation](sut, LocationsByOrganization[locationOrganization]);
 
             // Assert
-            (await Should.ThrowAsync<BusinessException>(change)).StatusCode.ShouldBe(expectedStatusCode);
-            auditLog.ReceivedCalls().ShouldBeEmpty();
+            (await Should.ThrowAsync<BusinessException>(change)).StatusCode.ShouldBe(expectedStatusCode, "a refused status change is rejected with its error");
+            auditLog.ReceivedCalls().ShouldBeEmpty(customMessage: "a refused status change is not recorded in the audit log");
         }
 
         // Scenario 24
         [Fact]
+        [Trait("Rule", "OR29")]
         public async Task DeleteLocationAsync_RecordingFails_KeepsLocationClosedAndLogsError()
         {
             // Arrange
@@ -138,7 +140,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Assert
             await Should.NotThrowAsync(delete);
             using var readContext = database.CreateContext(TestTenant.Of(CantinaId));
-            (await readContext.Locations.SingleAsync(l => l.Id == CantinaBatelId)).Status.ShouldBe(LocationStatus.Closed);
+            (await readContext.Locations.SingleAsync(l => l.Id == CantinaBatelId)).Status.ShouldBe(LocationStatus.Closed, "the location is closed even when the audit entry cannot be recorded");
             logger.Received().Log(
                 LogLevel.Error,
                 Arg.Any<EventId>(),
@@ -151,6 +153,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [Theory]
         [InlineData("edit to TemporarilyClosed", "TemporarilyClosed")]
         [InlineData("delete", "Closed")]
+        [Trait("Rule", "OR29")]
         public async Task ChangeLocationStatus_StatusChangesFromActive_RecordsOneLocationStatusChangedEntry(string operation, string expectedAfter)
         {
             // Arrange
@@ -163,14 +166,14 @@ namespace RestaurantManagement.Modules.Organization.Tests
             await Operations[operation](sut, CantinaBatelId);
 
             // Assert
-            var call = auditLog.ReceivedCalls().ShouldHaveSingleItem();
+            var call = auditLog.ReceivedCalls().ShouldHaveSingleItem(customMessage: "a status change records exactly one audit entry");
             var entry = call.GetArguments()[0].ShouldBeOfType<AuditEntryDto>();
-            entry.Action.ShouldBe(AuditActions.LocationStatusChanged);
+            entry.Action.ShouldBe(AuditActions.LocationStatusChanged, "the audit entry says a location status changed");
             entry.EntityType.ShouldBe("Location");
-            entry.EntityId.ShouldBe(CantinaBatelId);
+            entry.EntityId.ShouldBe(CantinaBatelId, "the audit entry points at the location that changed");
             entry.LocationId.ShouldBe(CantinaBatelId);
-            entry.Before.ShouldBe("Active");
-            entry.After.ShouldBe(expectedAfter);
+            entry.Before.ShouldBe("Active", "the audit entry records the status before the change");
+            entry.After.ShouldBe(expectedAfter, "the audit entry records the status after the change");
         }
 
         // Scenario 22
@@ -178,6 +181,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData("edit keeping Active", LocationStatus.Active)]
         [InlineData("edit keeping Closed", LocationStatus.Closed)]
         [InlineData("delete", LocationStatus.Closed)]
+        [Trait("Rule", "OR29")]
         public async Task ChangeLocationStatus_StatusUnchanged_RecordsNothing(string operation, LocationStatus currentStatus)
         {
             // Arrange
@@ -190,7 +194,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             await Operations[operation](sut, CantinaBatelId);
 
             // Assert
-            auditLog.ReceivedCalls().ShouldBeEmpty();
+            auditLog.ReceivedCalls().ShouldBeEmpty(customMessage: "a status change that changes nothing is not recorded in the audit log");
         }
     }
 }

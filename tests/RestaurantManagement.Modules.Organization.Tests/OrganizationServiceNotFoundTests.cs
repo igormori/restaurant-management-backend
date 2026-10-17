@@ -30,6 +30,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR4")]
         public async Task CreateOrganizationAsync_UserDoesNotExist_ThrowsUnauthorizedBusinessException()
         {
             // Arrange
@@ -43,11 +44,12 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             // Assert
             var ex = await Should.ThrowAsync<BusinessException>(act);
-            ex.StatusCode.ShouldBe(401);
-            ex.Message.ShouldBe("UserNotFound");
+            ex.StatusCode.ShouldBe(401, "an account that does not exist cannot create an organization");
+            ex.Message.ShouldBe("UserNotFound", "the refusal says the user was not found");
         }
 
         [Fact]
+        [Trait("Rule", "OR17")]
         public async Task GetOrganizationsAsync_UserDoesNotExist_ThrowsUnauthorizedBusinessException()
         {
             // Arrange
@@ -61,11 +63,12 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             // Assert
             var ex = await Should.ThrowAsync<BusinessException>(act);
-            ex.StatusCode.ShouldBe(401);
-            ex.Message.ShouldBe("UserNotFound");
+            ex.StatusCode.ShouldBe(401, "an account that does not exist cannot list organizations");
+            ex.Message.ShouldBe("UserNotFound", "the refusal says the user was not found");
         }
 
         [Fact]
+        [Trait("Rule", "OR19")]
         public async Task EditOrganizationAsync_OrganizationDoesNotExist_ThrowsNotFoundBusinessException()
         {
             // Arrange
@@ -77,11 +80,12 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             // Assert
             var ex = await Should.ThrowAsync<BusinessException>(act);
-            ex.StatusCode.ShouldBe(404);
-            ex.Message.ShouldBe("OrganizationNotFound");
+            ex.StatusCode.ShouldBe(404, "editing an organization that does not exist is answered as not found");
+            ex.Message.ShouldBe("OrganizationNotFound", "the refusal says the organization was not found");
         }
 
         [Fact]
+        [Trait("Rule", "OR19")]
         public async Task EditOrganizationAsync_OrganizationHasNoSettings_ThrowsNotFoundBusinessException()
         {
             // Arrange
@@ -106,8 +110,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             // Assert
             var ex = await Should.ThrowAsync<BusinessException>(act);
-            ex.StatusCode.ShouldBe(404);
-            ex.Message.ShouldBe("OrganizationSettingsNotFound");
+            ex.StatusCode.ShouldBe(404, "editing an organization whose settings are missing is answered as not found");
+            ex.Message.ShouldBe("OrganizationSettingsNotFound", "the refusal says the organization settings were not found");
         }
     }
 }

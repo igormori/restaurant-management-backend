@@ -54,6 +54,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L5")]
         public async Task AuthFailures_AcrossFoldedCases_UseOneMessagePerEndpoint()
         {
             // Arrange
@@ -87,15 +88,15 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Act: login's three folded cases
             using var loginUnknownContext = database.CreateContext();
             var loginUnknownAct = () => CreateSessionService(loginUnknownContext)
-                .LoginAsync(new LoginRequest { Email = "nobody@test.com", Password = Password }, TestClients.KitchenTablet);
+                .LoginAsync(new LoginRequest { Email = "nobody@test.com", Password = Password }, TestClients.KitchenTablet, null);
 
             using var loginWrongPasswordContext = database.CreateContext();
             var loginWrongPasswordAct = () => CreateSessionService(loginWrongPasswordContext)
-                .LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
+                .LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet, null);
 
             using var loginUnverifiedContext = database.CreateContext();
             var loginUnverifiedAct = () => CreateSessionService(loginUnverifiedContext)
-                .LoginAsync(new LoginRequest { Email = "unverified@test.com", Password = Password }, TestClients.KitchenTablet);
+                .LoginAsync(new LoginRequest { Email = "unverified@test.com", Password = Password }, TestClients.KitchenTablet, null);
 
             var loginUnknownThrown = await loginUnknownAct.Should().ThrowAsync<BusinessException>();
             var loginWrongPasswordThrown = await loginWrongPasswordAct.Should().ThrowAsync<BusinessException>();
@@ -125,16 +126,16 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert: each endpoint's folded cases share one status code and one message
             var loginStatusCodes = new[] { loginUnknownThrown.Which.StatusCode, loginWrongPasswordThrown.Which.StatusCode, loginUnverifiedThrown.Which.StatusCode };
             var loginMessages = new[] { loginUnknownThrown.Which.Message, loginWrongPasswordThrown.Which.Message, loginUnverifiedThrown.Which.Message };
-            loginStatusCodes.Distinct().Should().ContainSingle();
-            loginMessages.Distinct().Should().ContainSingle();
+            loginStatusCodes.Distinct().Should().ContainSingle("unknown email, wrong password and unverified account must all get the same login status, so nobody can tell which accounts exist");
+            loginMessages.Distinct().Should().ContainSingle("unknown email, wrong password and unverified account must all get the same login message");
 
             var verifyStatusCodes = new[] { verifyUnknownThrown.Which.StatusCode, verifyInvalidCodeThrown.Which.StatusCode };
             var verifyMessages = new[] { verifyUnknownThrown.Which.Message, verifyInvalidCodeThrown.Which.Message };
-            verifyStatusCodes.Distinct().Should().ContainSingle();
-            verifyMessages.Distinct().Should().ContainSingle();
+            verifyStatusCodes.Distinct().Should().ContainSingle("an unknown email and a wrong code must get the same verify status");
+            verifyMessages.Distinct().Should().ContainSingle("an unknown email and a wrong code must get the same verify message");
 
             var resendMessages = new[] { resendUnknownMessage.Message, resendAlreadyVerifiedMessage.Message };
-            resendMessages.Distinct().Should().ContainSingle();
+            resendMessages.Distinct().Should().ContainSingle("resend must answer the same for an unknown email and an already verified one");
         }
     }
 }

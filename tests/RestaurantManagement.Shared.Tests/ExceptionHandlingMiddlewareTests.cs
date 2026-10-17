@@ -40,25 +40,27 @@ namespace RestaurantManagement.Shared.Tests
         }
 
         [Fact]
+        [Trait("Rule", "SH18")]
         public async Task InvokeAsync_UnexpectedException_ReturnsMessageProperty()
         {
             // Act
             var (statusCode, body) = await InvokeAsync(new InvalidOperationException("boom"));
 
             // Assert
-            statusCode.Should().Be(InternalServerErrorStatusCode);
-            body.TryGetProperty(MessageProperty, out _).Should().BeTrue();
+            statusCode.Should().Be(InternalServerErrorStatusCode, "an unexpected error answers with a server error status");
+            body.TryGetProperty(MessageProperty, out _).Should().BeTrue("the error answer always carries a message");
         }
 
         [Fact]
+        [Trait("Rule", "SH17")]
         public async Task InvokeAsync_BusinessException_ReturnsMessagePropertyWithExceptionMessage()
         {
             // Act
             var (statusCode, body) = await InvokeAsync(new BusinessException(BusinessErrorMessage, UnauthorizedStatusCode));
 
             // Assert
-            statusCode.Should().Be(UnauthorizedStatusCode);
-            body.GetProperty(MessageProperty).GetString().Should().Be(BusinessErrorMessage);
+            statusCode.Should().Be(UnauthorizedStatusCode, "a business error keeps the status it was raised with");
+            body.GetProperty(MessageProperty).GetString().Should().Be(BusinessErrorMessage, "a business error shows its own message to the caller");
         }
     }
 }

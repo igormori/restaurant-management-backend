@@ -52,9 +52,9 @@ Scenarios: 1–3
 - Summary: lowercase, imperative, no trailing period, 72 characters max for the whole line;
   says what changed and its effect, e.g.
   `fix(identity): return a generic 401 for locked accounts`
-- Branches start from `development`, and pull requests always target `development`, never `main`
-- Never push to `development` or `main`: `.githooks/pre-push` rejects it. A branch created from
-  `origin/development` must not track it (`git switch --no-track -c ...`)
+- New branches start from the current branch (`git switch -c ...`), and pull requests always
+  target `development`, never `main`
+- Never push to `development` or `main`: `.githooks/pre-push` rejects it
 - Body only when the why isn't obvious. Scenario numbers and ticket IDs (`Refs: ABC-123`) go
   in the body, never in the summary
 
@@ -65,6 +65,38 @@ Scenarios: 1–3
 - Small slices: one spec is one behaviour, reviewable in about 5 minutes. Split when a plan has
   more than 10 files or more than 3 open decisions. Ship shared infrastructure and data
   backfills as their own slices, before the features that use them
+
+## Security matrices
+Each module's rules (who may do what, with which organization's data, limits, refusals) and the
+tests that prove them live in `docs/security/<module>-matrix.md`. Each matrix's "Rules for this
+file" section is the full rule set. Row IDs are unique across matrices.
+
+| Module | Matrix | Row IDs | Unit tests | Endpoint and database tests |
+|---|---|---|---|---|
+| Identity | `identity-matrix.md` | R V RS L F S O P C T D | `Modules.Identity.Tests/` | `Web.Tests/Identity/` |
+| Web | `web-matrix.md` | W, WD | — | `Web.Tests/Web/` |
+| Menu | `menu-matrix.md` | M, MD | `Modules.Menu.Tests/` | `Web.Tests/Menu/` |
+| Organization | `organization-matrix.md` | OR, ORD | `Modules.Organization.Tests/` | `Web.Tests/Organization/` |
+| Shared | `shared-matrix.md` | SH, SHD | `Shared.Tests/` | `Web.Tests/Shared/` |
+
+For a module with a matrix:
+- Any change to the module updates its matrix in the same commit: new rows for new behaviour,
+  changed rows for changed behaviour, and the test that covers each
+- A new feature adds its security cases as ❌ rows before it is built (tester, step 3). They
+  turn ✅ only when the named test passes
+- No row is ✅ without a named test, and every test in the module's folders is named in its
+  matrix. A test may serve rows in several matrices
+- New tests go in the module's folders in the table above; the check fails for a test anywhere
+  else (the root of `Web.Tests` holds only shared helpers)
+- Every named test carries `[Trait("Rule", "<row ID>")]` for each row naming it, and its key
+  assertions say the rule in plain words (testing skill, "Writing tests")
+- `python3 .claude/scripts/check-security-matrices.py` checks all of this, in CI too. Run it
+  before committing a change to a module; `--fix-tags` writes each test's Rule tags from the
+  matrices
+- In CI, `.claude/scripts/report-test-results.py` shows every failed test with its rule ID, case
+  and expected result on the run page and the pull request, and
+  `.claude/scripts/report-coverage.py` shows which code of each module no test runs
+- The pr-reviewer flags a change that leaves its module's matrix behind as Fix first
 
 ## Tenant data filtering
 - Tenant data is filtered by organization automatically (EF Core global query filters). The

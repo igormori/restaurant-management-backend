@@ -10,6 +10,7 @@ public class TenantScopeDisposeTests
     private static readonly Guid OrgC = Guid.Parse("c3c3c3c3-0000-4000-8000-000000000003");
 
     [Fact]
+    [Trait("Rule", "SH6")]
     public void Dispose_CalledAgainAfterANewScopeBegan_KeepsTheNewScope()
     {
         // Arrange
@@ -22,10 +23,11 @@ public class TenantScopeDisposeTests
         firstScope.Dispose();
 
         // Assert
-        tenantScope.OrganizationId.ShouldBe(OrgB);
+        tenantScope.OrganizationId.ShouldBe(OrgB, "disposing an old scope twice must not end the scope that is open now");
     }
 
     [Fact]
+    [Trait("Rule", "SH6")]
     public void Dispose_OuterScopeWhileInnerIsOpen_KeepsTheInnerOrganization()
     {
         // Arrange
@@ -37,10 +39,11 @@ public class TenantScopeDisposeTests
         outerScope.Dispose();
 
         // Assert
-        tenantScope.OrganizationId.ShouldBe(OrgB);
+        tenantScope.OrganizationId.ShouldBe(OrgB, "closing the outer scope while the inner one is open keeps the inner organization");
     }
 
     [Fact]
+    [Trait("Rule", "SH6")]
     public void Dispose_OuterScopeThenInnerScope_LeavesNoScope()
     {
         // Arrange
@@ -53,6 +56,6 @@ public class TenantScopeDisposeTests
         innerScope.Dispose();
 
         // Assert
-        tenantScope.OrganizationId.ShouldBeNull();
+        tenantScope.OrganizationId.ShouldBeNull("once every scope is closed no organization is active");
     }
 }

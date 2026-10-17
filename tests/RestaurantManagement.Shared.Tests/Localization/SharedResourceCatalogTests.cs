@@ -55,6 +55,7 @@ public class SharedResourceCatalogTests : IDisposable
     [InlineData("pt", "UserNotFound", "Usuário não encontrado.")]
     [InlineData("pt", "InvalidToken", "Token inválido.")]
     [InlineData("pt", "TooManyRequests", "Muitas solicitações. Tente novamente mais tarde.")]
+    [Trait("Rule", "SH19")]
     public void Localizer_NewMessageKey_ReturnsExpectedTextInEachLanguage(string culture, string key, string expected)
     {
         // Arrange
@@ -65,14 +66,15 @@ public class SharedResourceCatalogTests : IDisposable
         var message = localizer[key];
 
         // Assert
-        message.ResourceNotFound.ShouldBeFalse();
-        message.Value.ShouldBe(expected);
+        message.ResourceNotFound.ShouldBeFalse("every message key exists in the catalog");
+        message.Value.ShouldBe(expected, "the message reads as the agreed text in each language");
     }
 
     // Scenario 2
     [Theory]
     [InlineData("pt-BR", "Menu não encontrado.")]
     [InlineData("fr", "Menu not found.")]
+    [Trait("Rule", "SH19")]
     public void Localizer_RegionalOrUnsupportedCulture_ReturnsPortugueseOrEnglishFallback(string culture, string expected)
     {
         // Arrange
@@ -83,7 +85,7 @@ public class SharedResourceCatalogTests : IDisposable
         var message = localizer["MenuNotFound"];
 
         // Assert
-        message.Value.ShouldBe(expected);
+        message.Value.ShouldBe(expected, "a regional or unsupported language falls back to Portuguese or English");
     }
 
     // Scenario 3
@@ -94,6 +96,7 @@ public class SharedResourceCatalogTests : IDisposable
     [InlineData("pt", "RequiredAttribute_ValidationError", "O campo {0} é obrigatório.")]
     [InlineData("en", "MaxLengthAttribute_ValidationError", "The field {0} must be a maximum of {1} characters.")]
     [InlineData("pt", "MaxLengthAttribute_ValidationError", "O campo {0} deve ter no máximo {1} caracteres.")]
+    [Trait("Rule", "SH19")]
     public void Localizer_ExistingMessageKey_KeepsTodaysText(string culture, string key, string expected)
     {
         // Arrange
@@ -104,6 +107,6 @@ public class SharedResourceCatalogTests : IDisposable
         var message = localizer[key];
 
         // Assert
-        message.Value.ShouldBe(expected);
+        message.Value.ShouldBe(expected, "existing messages keep their current text");
     }
 }

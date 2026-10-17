@@ -53,15 +53,15 @@ Read `.claude/skills/architecture/SKILL.md`, `.claude/skills/testing/SKILL.md`, 
 3. **Implement** the minimum code to make them pass, in the folders the architecture skill allows.
 4. Run that item's test classes again until they pass. Run `dotnet format`; if it changes a file
    this item did not touch, revert only that file by path.
-5. **Self-check the diff:** location, size limits, one responsibility per class, only "why"
+5. **Security matrix:** change to a module with a matrix (root `CLAUDE.md`, "Security matrices"): update `docs/security/<module>-matrix.md` in the same commit — a row for every new or changed behaviour, ✅ only with the name of a passing test, every new test of that module named in a row and tagged `[Trait("Rule", "<row ID>")]`, with rule messages on its key assertions. Run `python3 .claude/scripts/check-security-matrices.py` before committing.
+6. **Self-check the diff:** location, size limits, one responsibility per class, only "why"
    comments, no secrets, nothing beyond the item.
-6. **Commit the item alone**, staged by path (never `git add -A` or `git add .`). Conventional
+7. **Commit the item alone**, staged by path (never `git add -A` or `git add .`). Conventional
    Commits (root `CLAUDE.md`). If the item is a backlog file:
    - The summary is the item's title, lowercase, shortened only to fit 72 characters, e.g.
      `fix(identity): resend email failure log drops the exception`.
    - Add `Refs: <backlog file path>` to the body.
-   - Fully solved: after the commit, delete the backlog file (and its row in
-     `backlog/README.md`, if any) and leave the deletion uncommitted for the user to check.
+   - Fully solved: after the commit, delete the backlog file and leave the deletion uncommitted for the user to check.
      Partly solved: update what is left, as the backlog skill says.
 
 If an item fails twice, or grows past Section 1, **stop the whole batch**: leave that item's files

@@ -14,6 +14,7 @@ namespace RestaurantManagement.Shared.Tests
 
         // Hash verification codes: Scenario 1
         [Fact]
+        [Trait("Rule", "SH22")]
         public void Validate_HashKeyMissing_FailsNamingHashKey()
         {
             // Arrange
@@ -23,12 +24,13 @@ namespace RestaurantManagement.Shared.Tests
             var result = Validate(missingKey);
 
             // Assert
-            result.Failed.ShouldBeTrue();
-            result.FailureMessage.ShouldContain("VerificationCode:HashKey");
+            result.Failed.ShouldBeTrue("the app refuses to start without a hash key of at least 32 bytes");
+            result.FailureMessage.ShouldContain("VerificationCode:HashKey", customMessage: "the failure names the hash key setting so the operator knows what to fix");
         }
 
         // Hash verification codes: Scenario 2
         [Fact]
+        [Trait("Rule", "SH22")]
         public void Validate_HashKeyEmpty_FailsNamingHashKey()
         {
             // Arrange
@@ -38,12 +40,13 @@ namespace RestaurantManagement.Shared.Tests
             var result = Validate(emptyKey);
 
             // Assert
-            result.Failed.ShouldBeTrue();
-            result.FailureMessage.ShouldContain("VerificationCode:HashKey");
+            result.Failed.ShouldBeTrue("the app refuses to start without a hash key of at least 32 bytes");
+            result.FailureMessage.ShouldContain("VerificationCode:HashKey", customMessage: "the failure names the hash key setting so the operator knows what to fix");
         }
 
         // Hash verification codes: Scenario 3
         [Fact]
+        [Trait("Rule", "SH22")]
         public void Validate_HashKeyOf31Bytes_FailsNamingHashKey()
         {
             // Arrange
@@ -53,12 +56,13 @@ namespace RestaurantManagement.Shared.Tests
             var result = Validate(thirtyOneByteKey);
 
             // Assert
-            result.Failed.ShouldBeTrue();
-            result.FailureMessage.ShouldContain("VerificationCode:HashKey");
+            result.Failed.ShouldBeTrue("the app refuses to start without a hash key of at least 32 bytes");
+            result.FailureMessage.ShouldContain("VerificationCode:HashKey", customMessage: "the failure names the hash key setting so the operator knows what to fix");
         }
 
         // Hash verification codes: Scenario 7
         [Fact]
+        [Trait("Rule", "SH22")]
         public void Validate_HashKeyOfExactly32Bytes_Succeeds()
         {
             // Arrange
@@ -68,11 +72,12 @@ namespace RestaurantManagement.Shared.Tests
             var result = Validate(thirtyTwoByteKey);
 
             // Assert
-            result.Failed.ShouldBeFalse();
+            result.Failed.ShouldBeFalse("a hash key of exactly 32 bytes is accepted");
         }
 
         // Hash verification codes: Scenario 8
         [Fact]
+        [Trait("Rule", "SH22")]
         public void Validate_HashKeyOf16TwoByteCharacters_Succeeds()
         {
             // Arrange: 16 characters, but 32 bytes in UTF-8, so the length is counted in bytes
@@ -82,11 +87,12 @@ namespace RestaurantManagement.Shared.Tests
             var result = Validate(sixteenAccentedChars);
 
             // Assert
-            result.Failed.ShouldBeFalse();
+            result.Failed.ShouldBeFalse("the key length is counted in bytes, so 16 two-byte characters are accepted");
         }
 
         // Hash verification codes: Scenario 9
         [Fact]
+        [Trait("Rule", "SH22")]
         public void Validate_RandomBase64HashKey_Succeeds()
         {
             // Arrange: the shape produced by `openssl rand -base64 32`
@@ -96,7 +102,7 @@ namespace RestaurantManagement.Shared.Tests
             var result = Validate(generatedKey);
 
             // Assert
-            result.Failed.ShouldBeFalse();
+            result.Failed.ShouldBeFalse("a randomly generated base64 key is accepted");
         }
     }
 }

@@ -46,6 +46,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData(10.0, 0.0, "25:00", nameof(EditOrganizationRequest.BusinessDayCutoff))]
         [InlineData(10.0, 0.0, "quatro", nameof(EditOrganizationRequest.BusinessDayCutoff))]
         [InlineData(10.0, 0.0, null, nameof(EditOrganizationRequest.BusinessDayCutoff))]
+        [Trait("Rule", "OR23")]
         public void Validate_SettingMissingOutOfRangeOrMalformed_ReturnsErrorForThatSetting(
             double? serviceChargeRate, double? discountApprovalLimit, string? businessDayCutoff, string invalidSetting)
         {
@@ -56,7 +57,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var results = Validate(request);
 
             // Assert
-            results.SelectMany(r => r.MemberNames).Distinct().ShouldBe(new[] { invalidSetting });
+            results.SelectMany(r => r.MemberNames).Distinct().ShouldBe(new[] { invalidSetting }, ignoreOrder: false, customMessage: "a setting that is missing, out of range or malformed is refused, and the error names only that setting");
         }
 
         // Scenario 7
@@ -64,6 +65,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData(0.0, 0.0, "00:00")]
         [InlineData(100.0, 100.0, "23:59")]
         [InlineData(12.5, 7.25, "04:00")]
+        [Trait("Rule", "OR23")]
         public void Validate_SettingsWithinLimits_IsValid(double serviceChargeRate, double discountApprovalLimit, string businessDayCutoff)
         {
             // Arrange
@@ -73,11 +75,12 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var results = Validate(request);
 
             // Assert
-            results.ShouldBeEmpty();
+            results.ShouldBeEmpty(customMessage: "settings within the allowed limits are accepted");
         }
 
         // Scenario 8
         [Fact]
+        [Trait("Rule", "OR1")]
         public async Task CreateOrganizationAsync_NewOrganization_ReturnsDefaultSettings()
         {
             // Arrange
@@ -98,10 +101,10 @@ namespace RestaurantManagement.Modules.Organization.Tests
             using var listContext = database.CreateContext();
             var listSut = new OrganizationService(listContext, userRoleLookup, Substitute.For<IUserRoleAssigner>(), new TenantScope(),
                 TestTenant.None, TestLocalizer.Create(), Substitute.For<ILogger<OrganizationService>>(), Substitute.For<IAuditLog>());
-            var stored = (await listSut.GetOrganizationsAsync(userId)).ShouldHaveSingleItem();
-            stored.ServiceChargeRate.ShouldBe(0m);
-            stored.DiscountApprovalLimit.ShouldBe(0m);
-            stored.BusinessDayCutoff.ShouldBe("04:00");
+            var stored = (await listSut.GetOrganizationsAsync(userId)).ShouldHaveSingleItem(customMessage: "the user has the one organization just created");
+            stored.ServiceChargeRate.ShouldBe(0m, "a new organization starts with no service charge");
+            stored.DiscountApprovalLimit.ShouldBe(0m, "a new organization starts with no discount approval limit");
+            stored.BusinessDayCutoff.ShouldBe("04:00", "a new organization starts its business day at 04:00");
         }
     }
 }

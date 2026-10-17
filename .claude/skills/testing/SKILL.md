@@ -21,6 +21,11 @@ Test projects mirror `src/`: `tests/<ProjectName>.Tests`
 
 - Behaviour that only PostgreSQL enforces (constraints, delete rules, migrations on data) is
   tested in Web.Tests, never on SQLite
+- Integration tests go in the module's folder under `tests/RestaurantManagement.Web.Tests/`
+  (`Identity/`, `Web/`, `Menu/`, `Organization/`, `Shared/`; same namespace as the rest of
+  Web.Tests), so each module's tests sit in two folders (root `CLAUDE.md`, "Security matrices")
+- Every test of a module with a matrix is named in `docs/security/<module>-matrix.md`; a new one
+  is added to its row in the same commit
 - Never create a new test project without flagging it first
 
 ## 3. Writing tests
@@ -29,6 +34,14 @@ Test projects mirror `src/`: `tests/<ProjectName>.Tests`
 - Every test has explicit `// Arrange`, `// Act`, `// Assert` comments; one behaviour per test
 - Realistic restaurant values (grams, dish names, prices in BRL, USD or CAD), never
   `foo`/`bar`/`123`
+- A test named in a security matrix (`docs/security/*-matrix.md`) carries one
+  `[Trait("Rule", "<row ID>")]` per row that names it, placed directly above the method
+  (`dotnet test --filter Rule=L8` runs one rule). The matrix check fails if the tags and the rows
+  disagree
+- The assertions that prove the rule carry a message saying the rule in plain words, so a
+  failure reads without opening the test: Shouldly `customMessage`
+  (`user.LockedUntil.ShouldNotBeNull("the fifth wrong password locks the account for 15 minutes")`),
+  FluentAssertions `because` (without the word "because"). Setup assertions need none
 - No logic in tests: no loops or conditionals deciding what to assert
 - Cover the failure cases first, then the happy path
 - Bug fixes start with a failing test that reproduces the bug

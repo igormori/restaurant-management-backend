@@ -1,0 +1,45 @@
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Shouldly;
+
+namespace RestaurantManagement.Web.Tests;
+
+/// <summary>
+/// Browsers match cookie paths case-sensitively, and the refresh_token cookie has Path /api/auth.
+/// Generated clients call the route template as written, so it must start with that exact path.
+/// </summary>
+public class AuthRoutePathTests : IDisposable
+{
+    private const string CookiePath = "/api/auth";
+
+    private readonly AuthApiFactory _factory = new();
+
+    public void Dispose()
+    {
+        _factory.Dispose();
+    }
+
+    [Theory]
+    [InlineData("login")]
+    [InlineData("refresh")]
+    [InlineData("logout")]
+    [InlineData("select-organization")]
+    [Trait("Rule", "T10")]
+    public void AuthEndpoint_RouteTemplate_StartsWithRefreshCookiePathExactly(string action)
+    {
+        // Arrange
+        var endpoints = _factory.Services.GetRequiredService<EndpointDataSource>().Endpoints
+            .OfType<RouteEndpoint>()
+            .Select(endpoint => endpoint.RoutePattern.RawText!)
+            .ToList();
+
+        // Act
+        var template = endpoints.SingleOrDefault(raw =>
+            raw.EndsWith("/" + action, StringComparison.OrdinalIgnoreCase)
+            && raw.StartsWith("api/auth", StringComparison.OrdinalIgnoreCase));
+
+        // Assert
+        template.ShouldNotBeNull("the auth endpoint must exist under the api/auth path");
+        ("/" + template).ShouldStartWith(CookiePath + "/", Case.Sensitive, "browsers match the refresh cookie path case-sensitively, so every auth route must start with exactly that path or the cookie is not sent");
+    }
+}

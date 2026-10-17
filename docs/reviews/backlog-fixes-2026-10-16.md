@@ -1,65 +1,98 @@
-# Review: backlog-fixes 2026-10-16 (72-byte password limit at login and change password)
+# Review: Backlog fixes 2026-10-16 (ASVS #15, #18, #24–#28, V11, Identity missing tests)
 
 **Verdict:** Ready to merge
-**Build:** pass (0 errors, 1 warning: xUnit1026, already on `development`)   **Tests:** 529 passed, 0 failed (Identity 213, Web 316; StartupConfigurationTests passed first time)
+**Build:** pass   **Tests:** 789 passed, 0 failed (Identity 258, Shared 159, Web 372)
 
-No spec or plan folder (small changes), so the Completeness check was skipped. No project or package files changed, so no vulnerability scan was needed. No secrets or personal data in the diff (test data only).
+Reviewed `git log 4e50ec0..HEAD` (18 commits) against the architecture, testing, security and
+clean-code skills and `CLAUDE.md`. No plan folder. ASVS means OWASP Application Security
+Verification Standard (the checklist the gap report follows).
+`python3 .claude/scripts/check-security-matrices.py`: "Security matrices in step with the tests".
+No package, migration, endpoint or Shared contract added; no secrets (the T22 attacker key and
+test passwords are test literals).
 
-**What the pull request holds:** after `git fetch`, `origin/development..HEAD` is d2b2676 and 07254d2 (code) plus ed4eac6 and dfe3fe1 (docs only). 7abb057, caae3b3 and 05c5b61 are already on `development`; their findings are kept below only where they still apply.
+## Commits: one item each
+| Commit | Item |
+|---|---|
+| 7fe038a, 7794b0e, bbcfd2b, 2ccab2f, a60637c | Tests for gaps #24–#28 (rows T21–T25) |
+| 0c1b141 | Previous review |
+| 4e07324 / eb17630 / 9b7bcbc | Fixes #18 (T26) / #15 (L20) / V11 bug (V4, V5, RS3, V11) |
+| 1f46f71, 50ff3d9 | Gap report: rows marked Covered; V11 no longer listed as open |
+| 65aac8e, e72c540, 0d2a3c8, 37262c0, bdb6bc3 | Earlier findings 5, 7, 8, 1+2, 3 |
+| 113b5d0 | Deletes the two solved backlog items |
+| 3a089b9 | Earlier finding 6 (locked verify timing) |
 
-**One commit per change:** d2b2676 (login) and 07254d2 (change password) each make one change, Conventional Commits, scope `identity`, summaries under 72 characters, body explains why. ed4eac6 adds one evidence line to the flaky startup tests item. dfe3fe1 is the previous version of this file. The 5 deleted backlog files are uncommitted on purpose and were not reviewed.
+## Earlier findings
+| # | Status |
+|---|---|
+| 1, 2 (T23 loopholes) | Resolved: verbs must be exactly POST; a parameter with no or unknown binding source counts as a URL read |
+| 3 (T22 not decisive) | Resolved: new test sends each header on a server-signed token and expects it accepted; row T22 names it |
+| 4 (long line) | Open, style only: `ApprovedHashAlgorithmsTests.cs:63` |
+| 5 (controller wiring untested) | Resolved: `= null` default removed, so a caller must pass the cookie; endpoint test on real PostgreSQL proves the old token is refused; named in L20 |
+| 6 (locked verify answers faster) | Resolved: the lock check now runs after the code lookup; V11 names the test |
+| 7 (unused resx key) | Resolved in both languages |
+| 8 (V4/V5 message not asserted) | Resolved |
+| 9 (gap report V11 note) | Resolved |
+| 10 (login can trigger reuse detection) | Accepted, see Watch out 1 |
 
-**Does the change close the timing gap from earlier Watch out 1?** Yes.
-- **Same 400 for every email:** `AuthController` has `[ApiController]`, so `[MaxPasswordBytes]` on `LoginRequest.Password` answers 400 before `SessionService.LoginAsync` runs: no user lookup, no `FailedAttempts` write, no BCrypt. The response depends only on the password, never on the email. `Login_PasswordOver72Bytes_ReturnsSameLocalizedByteLimitError` proves it for a known and an unknown email, in en and pt.
-- **No path reaches `Verify` with over 72 bytes:** `Verify` has two callers, `SessionService:80` (`LoginRequest.Password`) and `PasswordChangeService:46` (`ChangePasswordRequest.CurrentPassword`). Both properties now carry the attribute, and both actions bind `[FromBody]` under `[ApiController]`. `Verify` still returns false above 72 bytes as a second guard.
-- **Boundary:** 72 bytes passes validation (login 401, not 400; change password gets no byte error), 73 bytes fails. Unit tests cover 72, 73 and null.
-- **No duplicated rule:** the attribute calls the same `BcryptPasswordHasher.ExceedsByteLimit` and `MaxPasswordBytes` as `PasswordRulesAttribute` and the hasher, and reuses the catalog key `PasswordTooManyBytes_ValidationError`. Only the five lines that build the translated message are copied (Watch out 2).
-- **Layering:** a `Models/` attribute calling a public static on `Services/BcryptPasswordHasher` is the same pattern `PasswordRulesAttribute` already uses. The architecture skill bans cross-module access and service injection into other modules, not this; it stays inside Identity and uses no instance or DbContext. Acceptable, but now two attributes depend on the BCrypt class (Watch out 1).
-- **Security skill section 5** matches the code: it names `PasswordRulesAttribute` for new passwords and `MaxPasswordBytesAttribute` on the login password and the change-password current password, plus the hasher guards.
-
-Test edits: both commits only add tests (one new test class, new cases in two endpoint test classes). Nothing was edited, weakened, skipped or deleted.
+## Production changes: full review
+- **HS256 allowlist** (`Program.cs:88`): `ValidAlgorithms = [HmacSha256]` is correct; T26
+  proves HS384/HS512 with the right key get 401, T25 proves issued tokens are HS256.
+- **Login revokes the browser's cookie** (`SessionService.cs:101-103`): runs only after every
+  check passed and counters are saved, before the new token is issued. L20 covers success, a
+  refused login keeping the token, other devices untouched, and the controller wiring.
+- **V11** (`VerificationService.cs:46-47, 89-90, 168`): locked verify, the lock-tripping attempt
+  and locked resend all give the unknown-email answer. V4, V5, RS3, V11 rows match tests.
+- Test edits in 65aac8e are signature updates only (`null` or `Arg.Any<string?>()` added); no
+  assertion dropped or weakened.
 
 ## Watch out
 | # | File:line | Problem | Suggestion |
 |---|---|---|---|
-| 1 | src/RestaurantManagement.Modules.Identity/Models/MaxPasswordBytesAttribute.cs:3,21 (also PasswordRulesAttribute.cs:3,45) | Two request-model attributes now depend on the concrete `BcryptPasswordHasher` in `Services/` for one constant and one byte count. Small coupling of the DTO (Data Transfer Object: request/response shape) layer to the BCrypt implementation. | Leave it, or move `MaxPasswordBytes` / `ExceedsByteLimit` to a small `PasswordLimits` static class used by both attributes and the hasher. |
-| 2 | src/RestaurantManagement.Modules.Identity/Models/MaxPasswordBytesAttribute.cs:24-29 | The localizer lookup and `ValidationResult` building are copied from `PasswordRulesAttribute.cs:28-33`. | Next time either file changes, extract a private static helper (for example `LocalizedValidation.Result(context, key, args)`) inside Identity `Models/`. |
-| 3 | src/RestaurantManagement.Modules.Identity/Models/MaxPasswordBytesAttribute.cs:8-11 | `///` summary on a class outside Shared (clean-code skill section 5 allows `///` only on Shared public interfaces). | Turn it into a one-line `//` "why" comment. |
-| 4 | .claude/skills/security/SKILL.md:47-48 | The two edited lines run to about 110 and 130 characters, while the rest of the section wraps near 95. | Rewrap the bullet. |
-| 5 | src/RestaurantManagement.Modules.Identity/Models/PasswordRulesAttribute.cs:42-46 | Carried over: the byte check sits after the three complexity checks it does not use. | Move the `ExceedsByteLimit` guard up, right after the `MaxLength` line (40). |
-| 6 | tests/RestaurantManagement.Modules.Identity.Tests/BcryptPasswordHasherTests.cs:71 | Carried over: nothing proves that byte 72 counts (the 72-byte test passes even if BCrypt ignored it). | Add: hash `Password72Bytes`, verify the same text with the last `é` replaced by `è`: must return false. |
-| 7 | src/RestaurantManagement.Modules.Identity/Services/IPasswordHasher.cs:3, PasswordRulesAttribute.cs:9 | Carried over: `///` outside Shared, and a 125-character summary line. | Make them `//` "why" comments when the files are next touched. |
-| 8 | tests/RestaurantManagement.Modules.Identity.Tests/BcryptPasswordHasherTests.cs:116 | Carried over: request-model validation tests sit in the hasher test class. Now that `MaxPasswordBytesAttributeTests` exists, the split is more visible. | Move them to a request-model validation test class. |
-
-Earlier Watch out 1 (login timing for over-72-byte passwords) and 2 (no login test for 73 bytes) are solved by d2b2676. Earlier findings on the `RequiredIdAttribute` file layout, xUnit1026, the 4f20dc7 scope and `test-summary.sh` concern commits already on `development` and are unchanged.
-
-Note: `dotnet format` keeps reformatting `tests/RestaurantManagement.Web.Tests/RequiredIdFieldEndpointTests.cs`. That file is not in these commits; not a finding here.
+| 1 | src/RestaurantManagement.Modules.Identity/Services/SessionService.cs:103 | `RevokeAsync` does not check the cookie belongs to the user logging in, and an already rotated cookie revokes its whole family. Harmless (the same browser gets a new family), but undocumented | Say so in row L20 |
+| 2 | 65aac8e (commit) | Typed `test` but changes `ISessionService`/`SessionService` signatures in `src/` | Next time use `refactor`; no action needed now |
+| 3 | docs/security/identity-asvs-gap-report.md:5,19 | Header says "Nothing changed: no code, test or matrix edits" and the summary is titled "Partial and Missing", but it now holds Covered rows | Update the header, or move Covered rows out of the summary |
+| 4 | tests/RestaurantManagement.Modules.Identity.Tests/ApprovedHashAlgorithmsTests.cs:63 | Long line with fully qualified `IOrganizationLookup` (style) | Add a `using` and break the call |
 
 ## Check before merging
-- **Login now answers 400 instead of 401 for a password over 72 bytes (d2b2676).** It is identical for every email and skips the user lookup, which is the point. It also means such attempts no longer count toward the account lockout; the login rate limit still applies, so no new brute-force path (a 73-byte guess can never match anyway).
-- **Change password answers 400 for a current password over 72 bytes (07254d2)**, before `Verify`. Users whose stored password was over 72 bytes already had to reset it (accepted pre-launch).
-- **Validation is now the main guard on both `Verify` callers.** A future endpoint that verifies a password (for example "confirm password to delete account") must add `[MaxPasswordBytes]` too; the security skill now says so.
+- **Base branch:** this branch sits on `security-fixes`. Merge `security-fixes` into
+  `development` first, or this pull request carries its commits too.
+- **HS256 allowlist (Program.cs:88):** any token not signed HS256 is now refused. Today's tokens
+  are HS256, so no live session breaks.
+- **Backlog deletion committed (113b5d0):** committed at the user's request, as an exception
+  to the `CLAUDE.md` rule that the user commits backlog deletions.
+- **Verification lockout:** the frontend can no longer show "locked until"; a locked user sees
+  "invalid email or code" for 15 minutes.
 
 ## Pull request description
-**Identity: reject over-72-byte passwords at login and change password before any lookup**
 
-Summary: BCrypt reads only the first 72 bytes of a password. Since the previous change, a login password over 72 bytes was refused inside `Verify` without running BCrypt, so it answered faster than a normal failed login and the timing could hint whether an email is registered. Such passwords are now rejected in request validation with a translated 400, before the user is looked up, identically for every email. The change-password current password gets the same rule.
+**Title:** fix(identity): close ASVS gaps #15, #18, #24–#28 and the verification lockout leak
 
-Identity
-- New `MaxPasswordBytesAttribute` (72 UTF-8 bytes, reuses `BcryptPasswordHasher.ExceedsByteLimit` and the existing `PasswordTooManyBytes_ValidationError` message)
-- Applied to `LoginRequest.Password` and `ChangePasswordRequest.CurrentPassword`
+### Summary
+Fixes three Identity security gaps and adds proof for five rules the code already enforced
+(OWASP ASVS 5.0 Level 2 gaps #24–#28). A locked verification no longer reveals that an email
+has an account.
 
-Docs
-- Security skill section 5 names where each attribute applies
-- Flaky startup tests backlog item: one more piece of evidence
+### What changed
+| Module | Change | Matrix row |
+|---|---|---|
+| Web | Access tokens signed with anything but HS256 are refused (401) | T26 |
+| Identity | Logging in on a browser revokes that browser's previous refresh token, only once the login succeeds; other devices stay signed in | L20 |
+| Identity | A verification-locked account gets the same 401 (verify) or acknowledgement (resend) as an unknown email, instead of 423, and runs the same code lookup so it is not faster | V4, V5, RS3, V11 |
+| Identity | New tests: `nbf` enforced, `jku`/`x5u`/`jwk` headers ignored, POST-only endpoints with no secrets in URLs, no default accounts, SHA-256 fingerprints and HS256 signing | T21–T25 |
+| Shared | Unused `VerificationLockedUntil` message removed (English and Portuguese) | — |
+| Docs | Gap report rows #15, #18, #24–#28 marked Covered; V11 marked fixed | — |
 
-Tests
-- Attribute: 72 bytes passes, 73 fails, null passes
-- Login endpoint: 73 bytes gives the same en/pt 400 for a known and an unknown email; 72 bytes is not a 400
-- Change password endpoint: 73-byte current password gives the en/pt-BR 400; 72 bytes gets no byte error
+### Risk and flags
+Auth changes (token validation, login, verification responses), approved by the solution
+architect. `ISessionService.LoginAsync` now requires the previous refresh token (module
+internal). The V4, V5 and RS3 tests changed from expecting 423, as the approved V11 fix requires.
+No migration, package, endpoint or Shared contract. Depends on `security-fixes` being merged
+into `development` first. Backlog items `bugs/2026-10-16-verification-lockout-reveals-account.md`
+and `tech-debt/2026-10-16-asvs-small-fixes-and-missing-tests.md` are deleted (solved).
 
-Risk and flags
-- Authentication code (request validation only). No new endpoint, package, migration or Shared contract
-- Login status for over-72-byte passwords changes from 401 to 400
+### Checks
+- `dotnet build RestaurantManagement.sln`: pass
+- Identity, Shared and Web tests: 789 passed, 0 failed
+- `python3 .claude/scripts/check-security-matrices.py`: in step
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

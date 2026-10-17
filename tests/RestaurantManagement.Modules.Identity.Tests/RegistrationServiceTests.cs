@@ -22,6 +22,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "R3")]
         public async Task RegisterAsync_EmailAlreadyRegistered_ThrowsBusinessExceptionAndSendsNoEmail()
         {
             // Arrange
@@ -54,12 +55,13 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var act = () => sut.RegisterAsync(request);
 
             // Assert
-            var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(400);
+            var thrown = await act.Should().ThrowAsync<BusinessException>("registering an email that already exists is refused");
+            thrown.Which.StatusCode.Should().Be(400, "a duplicate email is a 400");
             await emailService.DidNotReceive().SendVerificationEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
         }
 
         [Fact]
+        [Trait("Rule", "R1")]
         public async Task RegisterAsync_ValidRequest_SendsVerificationEmailWithFirstNameAndConfiguredExpiry()
         {
             // Arrange
@@ -87,7 +89,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             using var verifyContext = database.CreateContext();
             var user = await verifyContext.Users.SingleAsync(u => u.Email == "newuser@test.com");
-            user.IsVerified.Should().BeFalse();
+            user.IsVerified.Should().BeFalse("a new account starts unverified until the emailed code is used");
 
             var code = await verifyContext.UserVerificationCodes.SingleAsync(v => v.UserId == user.Id);
             code.ExpiresAt.Should().BeCloseTo(beforeRegistration.AddMinutes(15), TimeSpan.FromSeconds(5));
@@ -96,6 +98,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "R1")]
+        [Trait("Rule", "R12")]
         public async Task RegisterAsync_EmailSendingFails_StillCreatesUnverifiedUser()
         {
             // Arrange
@@ -120,15 +124,16 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var act = () => sut.RegisterAsync(request);
 
             // Assert
-            await act.Should().NotThrowAsync();
+            await act.Should().NotThrowAsync("registration still succeeds when the verification email cannot be sent");
 
             using var verifyContext = database.CreateContext();
             var user = await verifyContext.Users.SingleAsync(u => u.Email == "failedemail@test.com");
-            user.IsVerified.Should().BeFalse();
-            (await verifyContext.UserVerificationCodes.AnyAsync(v => v.UserId == user.Id)).Should().BeTrue();
+            user.IsVerified.Should().BeFalse("the account stays unverified when the email fails");
+            (await verifyContext.UserVerificationCodes.AnyAsync(v => v.UserId == user.Id)).Should().BeTrue("the verification code is still stored so a resend can follow");
         }
 
         [Fact]
+        [Trait("Rule", "R4")]
         public async Task RegisterAsync_ExistingEmailDifferentCasing_RejectsDuplicate()
         {
             // Arrange: seed a row with mixed-case email directly, bypassing RegisterRequest's
@@ -163,14 +168,15 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var act = () => sut.RegisterAsync(request);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>();
+            await act.Should().ThrowAsync<BusinessException>("the same email in another casing counts as a duplicate");
 
             using var verifyContext = _postgresFixture.CreateContext();
             (await verifyContext.Users.CountAsync(u => u.Email == "User@Example.com" || u.Email == "user@example.com"))
-                .Should().Be(1);
+                .Should().Be(1, "only one account may exist for the same email, whatever its casing");
         }
 
         [Fact]
+        [Trait("Rule", "R5")]
         public async Task RegisterAsync_UniqueViolationOnSave_ThrowsBusinessExceptionWithPreCheckMessage()
         {
             // Arrange: same setup as the casing test above, which bypasses the AnyAsync
@@ -204,12 +210,13 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(400);
-            thrown.Which.Message.Should().Be("EmailAlreadyRegistered");
+            thrown.Which.StatusCode.Should().Be(400, "two requests racing for one email: the loser gets a 400");
+            thrown.Which.Message.Should().Be("EmailAlreadyRegistered", "the loser of the race gets the same message as a normal duplicate");
         }
 
         // Hash verification codes: Scenario 27
         [Fact]
+        [Trait("Rule", "R13")]
         public async Task RegisterAsync_ValidRequest_StoresFingerprintOfEmailedCodeNotTheCode()
         {
             // Arrange
@@ -239,8 +246,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var user = await verifyContext.Users.SingleAsync(u => u.Email == "joao.pereira@cantina.com.br");
             var stored = await verifyContext.UserVerificationCodes.SingleAsync(v => v.UserId == user.Id);
             emailedCode.ShouldNotBeNull();
-            stored.CodeHash.ShouldNotContain(emailedCode);
-            hasher.IsMatch(user.Id, emailedCode, stored.CodeHash).ShouldBeTrue();
+            stored.CodeHash.ShouldNotContain(emailedCode, customMessage: "the verification code is never stored readable, only as a fingerprint");
+            hasher.IsMatch(user.Id, emailedCode, stored.CodeHash).ShouldBeTrue("the stored fingerprint must match the code that was emailed");
         }
     }
 }

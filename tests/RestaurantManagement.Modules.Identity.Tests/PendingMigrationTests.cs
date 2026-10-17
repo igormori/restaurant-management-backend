@@ -21,6 +21,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
     public class PendingMigrationTests
     {
         [Fact]
+        [Trait("Rule", "D1")]
         public async Task RegisterAsync_DatabaseMissingAddVerificationAttemptTrackingMigration_ThrowsDbUpdateException()
         {
             // Arrange: a database migrated only up to InitialCreate, one migration behind
@@ -58,10 +59,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert: matches the "column verification_failed_attempts does not exist" error
             // reported when registering against an under-migrated database.
-            await act.Should().ThrowAsync<DbUpdateException>();
+            await act.Should().ThrowAsync<DbUpdateException>("registering against a database that is missing a migration must fail loudly instead of silently misbehaving");
         }
 
         [Fact]
+        [Trait("Rule", "D2")]
         public async Task RegisterAsync_DatabaseFullyMigrated_Succeeds()
         {
             // Arrange: same starting point as above, but with every migration applied.
@@ -96,7 +98,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var act = () => sut.RegisterAsync(request);
 
             // Assert
-            await act.Should().NotThrowAsync();
+            await act.Should().NotThrowAsync("registration works on a database with every migration applied");
         }
     }
 }

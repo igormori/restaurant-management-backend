@@ -63,6 +63,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         }
 
         [Fact]
+        [Trait("Rule", "OR8")]
         public async Task EditOrganizationAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
         {
             // Arrange
@@ -81,10 +82,11 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var act = () => sut.EditOrganizationAsync(userId, ValidRequest);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
+            await act.Should().ThrowAsync<BusinessException>("a user with no role in the organization may not edit it").Where(e => e.StatusCode == 403);
         }
 
         [Fact]
+        [Trait("Rule", "OR7")]
         public async Task EditOrganizationAsync_WhenUserIsOwnerOfOrganization_EditsSuccessfully()
         {
             // Arrange
@@ -103,12 +105,13 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var response = await sut.EditOrganizationAsync(userId, ValidRequest);
 
             // Assert
-            response.Should().NotBeNull();
-            response.Name.Should().Be(ValidRequest.Name);
-            response.Description.Should().Be(ValidRequest.Description);
+            response.Should().NotBeNull("an Owner may edit the organization");
+            response.Name.Should().Be(ValidRequest.Name, "the edit changes the organization name");
+            response.Description.Should().Be(ValidRequest.Description, "the edit changes the organization description");
         }
 
         [Fact]
+        [Trait("Rule", "OR7")]
         public async Task EditOrganizationAsync_WhenUserIsAdminOfOrganization_EditsSuccessfully()
         {
             // Arrange
@@ -127,8 +130,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var response = await sut.EditOrganizationAsync(userId, ValidRequest);
 
             // Assert
-            response.Should().NotBeNull();
-            response.Name.Should().Be(ValidRequest.Name);
+            response.Should().NotBeNull("an Admin may edit the organization");
+            response.Name.Should().Be(ValidRequest.Name, "the edit changes the organization name");
         }
 
         // Scenario 28
@@ -137,6 +140,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData(Roles.Cashier)]
         [InlineData(Roles.Waiter)]
         [InlineData(Roles.Kitchen)]
+        [Trait("Rule", "OR8")]
         public async Task EditOrganizationAsync_RoleOtherThanOwnerOrAdmin_ThrowsForbidden(string role)
         {
             // Arrange
@@ -156,7 +160,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             // Assert
             var exception = await act.ShouldThrowAsync<BusinessException>();
-            exception.StatusCode.ShouldBe(403);
+            exception.StatusCode.ShouldBe(403, "only an Owner or Admin may edit the organization");
         }
     }
 }

@@ -97,7 +97,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send verification email to {Email}", user.Email);
+                _logger.LogError(ex, "Failed to send verification email to user {UserId}", user.Id);
             }
 
             return new AuthResponse

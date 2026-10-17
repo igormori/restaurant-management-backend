@@ -17,6 +17,7 @@ public class RolePermissionsTests
 
     // Scenario 1
     [Fact]
+    [Trait("Rule", "SH2")]
     public void GetPermissions_RetiredStaffRole_ReturnsNoPermissions()
     {
         // Arrange
@@ -26,11 +27,12 @@ public class RolePermissionsTests
         var permissions = RolePermissions.GetPermissions(retiredStaffRole);
 
         // Assert
-        permissions.ShouldBeEmpty();
+        permissions.ShouldBeEmpty(customMessage: "a retired role grants no permissions");
     }
 
     // Scenario 2
     [Fact]
+    [Trait("Rule", "SH2")]
     public void GetPermissions_UnknownRole_ReturnsNoPermissions()
     {
         // Arrange
@@ -40,11 +42,12 @@ public class RolePermissionsTests
         var permissions = RolePermissions.GetPermissions(unknownRole);
 
         // Assert
-        permissions.ShouldBeEmpty();
+        permissions.ShouldBeEmpty(customMessage: "an unknown role grants no permissions");
     }
 
     // Scenario 3
     [Fact]
+    [Trait("Rule", "SH1")]
     public void HasPermission_ManagerAndMembersManage_ReturnsFalse()
     {
         // Arrange
@@ -54,11 +57,12 @@ public class RolePermissionsTests
         var allowed = RolePermissions.HasPermission(role, Permissions.MembersManage);
 
         // Assert
-        allowed.ShouldBeFalse();
+        allowed.ShouldBeFalse("a manager cannot manage members");
     }
 
     // Scenario 4
     [Fact]
+    [Trait("Rule", "SH1")]
     public void GetPermissions_Cashier_ReturnsNoPermissions()
     {
         // Arrange
@@ -68,11 +72,12 @@ public class RolePermissionsTests
         var permissions = RolePermissions.GetPermissions(role);
 
         // Assert
-        permissions.ShouldBeEmpty();
+        permissions.ShouldBeEmpty(customMessage: "a cashier has no permissions");
     }
 
     // Scenario 5
     [Fact]
+    [Trait("Rule", "SH1")]
     public void GetPermissions_Waiter_ReturnsNoPermissions()
     {
         // Arrange
@@ -82,11 +87,12 @@ public class RolePermissionsTests
         var permissions = RolePermissions.GetPermissions(role);
 
         // Assert
-        permissions.ShouldBeEmpty();
+        permissions.ShouldBeEmpty(customMessage: "a waiter has no permissions");
     }
 
     // Scenario 6
     [Fact]
+    [Trait("Rule", "SH1")]
     public void GetPermissions_Kitchen_ReturnsNoPermissions()
     {
         // Arrange
@@ -96,11 +102,12 @@ public class RolePermissionsTests
         var permissions = RolePermissions.GetPermissions(role);
 
         // Assert
-        permissions.ShouldBeEmpty();
+        permissions.ShouldBeEmpty(customMessage: "kitchen staff have no permissions");
     }
 
     // Scenario 7
     [Fact]
+    [Trait("Rule", "SH1")]
     public void GetPermissions_Owner_ReturnsAllFivePermissions()
     {
         // Arrange
@@ -110,11 +117,12 @@ public class RolePermissionsTests
         var permissions = RolePermissions.GetPermissions(role);
 
         // Assert
-        permissions.ShouldBe(AllFivePermissions, ignoreOrder: true);
+        permissions.ShouldBe(AllFivePermissions, ignoreOrder: true, customMessage: "an owner has all five permissions");
     }
 
     // Scenario 8
     [Fact]
+    [Trait("Rule", "SH1")]
     public void GetPermissions_Admin_ReturnsAllFivePermissions()
     {
         // Arrange
@@ -124,11 +132,12 @@ public class RolePermissionsTests
         var permissions = RolePermissions.GetPermissions(role);
 
         // Assert
-        permissions.ShouldBe(AllFivePermissions, ignoreOrder: true);
+        permissions.ShouldBe(AllFivePermissions, ignoreOrder: true, customMessage: "an admin has all five permissions");
     }
 
     // Scenario 9
     [Fact]
+    [Trait("Rule", "SH1")]
     public void GetPermissions_Manager_ReturnsMenuManageAndReportsViewOnly()
     {
         // Arrange
@@ -138,11 +147,12 @@ public class RolePermissionsTests
         var permissions = RolePermissions.GetPermissions(role);
 
         // Assert
-        permissions.ShouldBe(new[] { "menu.manage", "reports.view" }, ignoreOrder: true);
+        permissions.ShouldBe(new[] { "menu.manage", "reports.view" }, ignoreOrder: true, customMessage: "a manager has only menu management and report viewing");
     }
 
     // Scenario 10
     [Fact]
+    [Trait("Rule", "SH1")]
     public void HasPermission_ManagerAndMenuManage_ReturnsTrue()
     {
         // Arrange
@@ -152,11 +162,12 @@ public class RolePermissionsTests
         var allowed = RolePermissions.HasPermission(role, Permissions.MenuManage);
 
         // Assert
-        allowed.ShouldBeTrue();
+        allowed.ShouldBeTrue("a manager can manage the menu");
     }
 
     // Scenario 11
     [Fact]
+    [Trait("Rule", "SH3")]
     public void All_ProductPermissionList_IsExactlyTheFiveSpecPermissions()
     {
         // Arrange
@@ -166,11 +177,12 @@ public class RolePermissionsTests
         var permissions = Permissions.All;
 
         // Assert
-        permissions.ShouldBe(AllFivePermissions, ignoreOrder: true);
+        permissions.ShouldBe(AllFivePermissions, ignoreOrder: true, customMessage: "the product has exactly these five permissions");
     }
 
     // Scenario 12
     [Fact]
+    [Trait("Rule", "SH2")]
     public void GetPermissions_CallerTriesToAddPermissionToResult_IsRefused()
     {
         // Arrange
@@ -180,11 +192,12 @@ public class RolePermissionsTests
         var act = () => managerPermissions.Add(Permissions.MembersManage);
 
         // Assert
-        act.ShouldThrow<NotSupportedException>();
+        act.ShouldThrow<NotSupportedException>(customMessage: "the permission list a caller receives cannot be changed to grant more");
     }
 
     // Scenario 31
     [Fact]
+    [Trait("Rule", "SH3")]
     public void Roles_DeclaredRoleNames_AreExactlyTheSixProductRoles()
     {
         // Arrange
@@ -194,6 +207,6 @@ public class RolePermissionsTests
         var roleNames = roleFields.Select(f => (string)f.GetRawConstantValue()!).ToList();
 
         // Assert
-        roleNames.ShouldBe(new[] { "Owner", "Admin", "Manager", "Cashier", "Waiter", "Kitchen" }, ignoreOrder: true);
+        roleNames.ShouldBe(new[] { "Owner", "Admin", "Manager", "Cashier", "Waiter", "Kitchen" }, ignoreOrder: true, customMessage: "the product has exactly six roles");
     }
 }

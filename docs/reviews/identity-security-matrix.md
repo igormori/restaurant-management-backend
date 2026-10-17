@@ -1,0 +1,42 @@
+# Review: Identity security matrix, guard tests and the password reset wait fix
+
+**Verdict:** Fix first — matrix row T1 is ✅ but its test does not prove half of its Expected result (the 5-minute clock allowance).
+**Build:** pass (0 warnings, 0 errors)   **Tests:** 893 passed, 0 failed on the third full run. Runs 1 and 2 had 1 and 3 failures, all in `StartupConfigurationTests` (JWT (JSON Web Token) key cases), each passing on rerun: the known flake in `backlog/bugs/2026-10-16-startup-configuration-tests-flaky.md`, which already lists these cases. Not caused by this branch (it only adds traits and messages to that file).
+
+Matrix check: `python3 .claude/scripts/check-identity-matrix.py` passes (302 named tests, every Identity test mapped and tagged). No packages added, so no vulnerability scan was needed.
+
+## Fix first
+| # | File:line | Problem | Change |
+|---|---|---|---|
+| 1 | docs/security/identity-matrix.md:177 | T1 Expected says "401 once expired; the default 5-minute clock allowance applies", but `LogoutAll_AccessTokenExpiredTenMinutesAgo_ReturnsUnauthorized` only proves that a token expired 10 minutes ago is refused. Nothing checks that the allowance applies, so a change to `ClockSkew` (for example to zero, or to 30 minutes) leaves every test green while the row stays ✅ | Choose one: (a) add a test to `AccessTokenValidationEndpointTests` that a token expired 2 minutes ago is still accepted (204), proving the allowance, and name it in T1; or (b) change the Expected to "401 once more than 5 minutes past expiry" and keep the current test. Option (b) is docs only |
+
+## Watch out
+| # | File:line | Problem | Suggestion |
+|---|---|---|---|
+| 1 | .claude/scripts/report-test-results.py:74,114 | `escape_annotation` escapes `%`, CR and LF but not `:` or `,`, which GitHub requires in property values. Most Case cells have commas (L5, L13, R6, R10…), so the title gets cut. I checked this with a synthetic failure: `title=Rule L5: Unknown email, wrong password, …` is read as title "Rule L5: Unknown email" plus junk properties | Add a property escaper that also maps `:` to `%3A` and `,` to `%2C`, and use it for `title` and `file` (keep the current one for the message body) |
+| 2 | docs/security/identity-matrix.md:88 | L4 says "counter and lock cleared", but `LoginAsync_CorrectPasswordAfterFailures_ResetsCounterAndRecordsLoginTime` seeds no lock, so its `LockedUntil.ShouldBeNull` check can never fail. The lock part is really proven by the L11 test | Name `SessionServiceLoginTests.LoginAsync_LockExpiredCorrectPassword_IssuesTokensAndClearsLock` in L4 too (and add its `[Trait("Rule", "L4")]`), or drop "and lock" from L4 |
+| 3 | tests/RestaurantManagement.Modules.Identity.Tests/SessionServiceLoginTests.cs:488 | L7 and L8 pass `maxFailedLoginAttempts: 5, lockoutDurationMinutes: 15` into the service. They prove the service applies its settings, not that the shipped limits are 5 and 15 (the matrix header says "Limits in force (`appsettings.json`)"). If `appsettings.json` changed, no test would fail | Add a guard like `StartupConfigurationTests.Startup_DefaultConfiguration_JwtExpireMinutesIs15` for the security limits, or say in the matrix header that the numbers come from config and are not tested |
+| 4 | .claude/agents/test/tester.md:71, .claude/agents/test/test-reviewer.md:50-51 | The tester writes every Security/Failure/Edge row as ❌, and the test-reviewer treats a row already ✅ as Fix first. A `Guard` scenario's test passes before the change (tester.md:43,58), so its row would be marked ❌ while its test passes. The implementer only turns "the task's rows" ✅, so guard rows may stay ❌ for good | In both files, allow `Guard` rows to be ✅ at step 3 (their test passes now), and keep ❌ for rows whose test fails |
+| 5 | .claude/scripts/check-identity-matrix.py:30-31 | The checker only finds `public async Task` / `public void` methods whose attribute lines start with `[`, `//` or are blank. A `public Task` or `ValueTask` test, or a multi-line `[InlineData(...)]`, is skipped without warning, so a new unmapped test passes the "every test mapped" check. None exist today (I checked: 291 test attributes, all matched) | Also count `[Fact]`/`[Theory]` attributes per file and fail when the count differs from the methods found |
+| 6 | .claude/scripts/report-test-results.py:109-114 | Secrets and personal data: the script prints the first 600 characters of each failure message into annotations and the run Summary, with no masking. Today this adds no new exposure: the job gets no secrets, test data is fictional, and the same messages already appear in the `--verbosity normal` job log. It becomes a risk if a secret or a real connection string is ever added to this job's environment, because Shouldly messages for `StartupConfigurationTests` include the exception's `ToString()` | Leave as is for now. If the workflow ever gets `secrets.*`, mask them (`::add-mask::`) before the test step, or drop the message for `StartupConfigurationTests` |
+
+## Check before merging
+- `PasswordResetCode.CreatedAt` default (8840f90): this is the only production change. It is correct and complete. `RequestResetCodeAsync` never set `CreatedAt`, so codes were stored as 0001-01-01 and the 60-second wait never applied. The default `DateTime.UtcNow` matches `UserVerificationCode` and `User`, and it also fixes the "newest code" ordering in `ResetPasswordAsync`. `RefreshToken.CreatedAt` has no default, but its service sets it explicitly. The new P3 test fails without the fix and passes with it. Existing reset tests that request two codes set `resendCooldownSeconds: 0`, so they still test what they did before.
+- CI changes (`.github/workflows/dotnet.yml`): the matrix check now runs before the build, so it fails any PR that changes an Identity test without the matrix. Also, the flaky `StartupConfigurationTests` will now turn PR builds red at random until the backlog item is fixed.
+- No tests were weakened: across all 25 commits, the only removed test lines are in 6458d87, and each one comes back as the same assertion plus a message. 2040c3a is pure moves (namespace unchanged, as the testing skill asks).
+
+## Pull request description
+**Identity security matrix, guard tests and the 60-second password reset wait**
+
+Adds a single record of every Identity rule and the test that proves it, enforces it in CI (continuous integration: the automated build on every pull request), fills the rows that had no test, and fixes the one bug those tests found.
+
+- **Identity (production):** `PasswordResetCode.CreatedAt` now defaults to `DateTime.UtcNow`. Before, every reset code was stored with a 0001-01-01 date, so the 60-second wait between forgot-password emails never applied (matrix P3).
+- **Docs:** `docs/security/identity-matrix.md` lists 11 areas of Identity rules with status and tests. V11 (a locked account gets 423, which reveals that the account exists) is 🐞, tracked in `backlog/bugs/2026-10-16-verification-lockout-reveals-account.md`.
+- **Tests:** Identity endpoint and database tests moved to `tests/RestaurantManagement.Web.Tests/Identity/` (moves only). New guard tests for T1, T2, C3, L3, L4, L7, L8, L11, P4, P10, P14, R2, R8, R10, V9 and the rate limits (R14, V10, RS5, F8). Every Identity test is tagged `[Trait("Rule", "<ID>")]` (run one rule with `dotnet test --filter Rule=L8`), and key assertions now carry a message stating the rule (messages only, no assertion changed).
+- **CI:** `.claude/scripts/check-identity-matrix.py` fails the build when the matrix and the tests drift apart. `.claude/scripts/report-test-results.py` shows each failed test with its rule, case and expected result on the run page and the pull request. TRX files (the test results format) are uploaded as an artifact.
+- **Workflow:** matrix rules added to the root and Identity `CLAUDE.md`, the security and testing skills, and the planner, tester, test-reviewer, implementer, pr-reviewer, small-feature, small-batch and bug-fixer agents. `.claude/hooks/enforce-structure.py` allows `docs/security/*-matrix.md`.
+
+Risk: low. One default value on an entity; no migration, no package, no endpoint or Shared contract change. New folders (`docs/security/`, `tests/RestaurantManagement.Web.Tests/Identity/`) were requested and are allowed by the structure hook.
+Known: `StartupConfigurationTests` is flaky (backlog item above) and may turn a run red on its own.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)

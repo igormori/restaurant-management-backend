@@ -20,6 +20,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData("E. South America Standard Time")]
         [InlineData("")]
         [InlineData(null)]
+        [Trait("Rule", "OR30")]
         public void GetBusinessDate_UnknownTimeZone_ThrowsArgumentException(string? timeZoneId)
         {
             // Arrange
@@ -29,13 +30,14 @@ namespace RestaurantManagement.Modules.Organization.Tests
             Action act = () => sut.GetBusinessDate(Utc("2026-10-15T05:30:00"), timeZoneId!, FourAm);
 
             // Assert
-            act.ShouldThrow<ArgumentException>();
+            act.ShouldThrow<ArgumentException>("a location with an unknown time zone cannot have a business day");
         }
 
         // Scenario 21
         [Theory]
         [InlineData("2026-10-15T05:30:00", "America/Sao_Paulo")] // 02:30 local, 15 Oct
         [InlineData("2026-10-15T06:30:00", "America/Toronto")]   // 02:30 local, 15 Oct
+        [Trait("Rule", "OR30")]
         public void GetBusinessDate_SaleAt0230LocalBeforeCutoff_ReturnsPreviousDay(string utcMoment, string timeZoneId)
         {
             // Arrange
@@ -45,7 +47,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var businessDate = sut.GetBusinessDate(Utc(utcMoment), timeZoneId, FourAm);
 
             // Assert
-            businessDate.ShouldBe(new DateOnly(2026, 10, 14));
+            businessDate.ShouldBe(new DateOnly(2026, 10, 14), "a sale made before the cutoff belongs to the previous business day");
         }
 
         // Scenario 22
@@ -59,6 +61,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData("2026-10-15T05:30:00", "America/Sao_Paulo", "00:00", "2026-10-15")]  // 02:30 local, cutoff at midnight: same day
         [InlineData("2026-10-15T08:30:00", "America/Sao_Paulo", "06:00", "2026-10-14")]  // 05:30 local, before a 06:00 cutoff
         [InlineData("2026-10-15T09:00:00", "America/Toronto", "05:00", "2026-10-15")]    // 05:00 local, exactly at a 05:00 cutoff
+        [Trait("Rule", "OR30")]
         public void GetBusinessDate_AtOrAfterCutoffOrAcrossUtcMidnight_ReturnsLocalBusinessDay(string utcMoment, string timeZoneId, string cutoff, string expectedDate)
         {
             // Arrange
@@ -68,7 +71,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var businessDate = sut.GetBusinessDate(Utc(utcMoment), timeZoneId, TimeOnly.Parse(cutoff, System.Globalization.CultureInfo.InvariantCulture));
 
             // Assert
-            businessDate.ShouldBe(DateOnly.Parse(expectedDate, System.Globalization.CultureInfo.InvariantCulture));
+            businessDate.ShouldBe(DateOnly.Parse(expectedDate, System.Globalization.CultureInfo.InvariantCulture), "a sale at or after the cutoff belongs to the local business day");
         }
     }
 }

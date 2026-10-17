@@ -45,6 +45,7 @@ Do not explore the codebase beyond the changed files and what they call.
 | Design | Clean-code skill: size limits, one responsibility per class, SOLID, controllers HTTP only. A class doing several jobs is Fix first |
 | Comments | Clean-code skill: only "why" comments, no commented-out code, no `TODO` without a backlog file. Watch out |
 | Security | Every item in the security skill's reviewer checklist. A violation is always Fix first |
+| Security matrices | If the diff touches a module with a matrix (root `CLAUDE.md`, "Security matrices"; its code, its tests, or auth code in Shared or Web): run `python3 .claude/scripts/check-security-matrices.py`, then check that module's `docs/security/<module>-matrix.md` against the diff. Every new or changed behaviour has a row, every changed row says what the code now does, and every ✅ names a test that exists and checks that row's Expected result. A missing or stale row, or a ✅ without a matching test, is Fix first |
 | Code style | Clean-code skill. Style issues are Watch out, never Fix first |
 | Commits | One per task, Conventional Commits, scenario numbers in the body |
 | Secrets | No connection strings, keys, tokens or personal data in the diff |

@@ -48,7 +48,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private static async Task<SessionResult> LoginAsync(IdentityTestDatabase database)
         {
             using var context = database.CreateContext();
-            return await CreateSut(context).LoginAsync(new LoginRequest { Email = UserEmail, Password = Password }, TestClients.KitchenTablet);
+            return await CreateSut(context).LoginAsync(new LoginRequest { Email = UserEmail, Password = Password }, TestClients.KitchenTablet, null);
         }
 
         private static string? OrganizationClaimOf(string? token)
@@ -59,6 +59,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 29
         [Fact]
+        [Trait("Rule", "L14")]
         public async Task LoginAsync_UserWithRolesInTwoOrganizations_TokenHasNoOrganizationClaim()
         {
             // Arrange
@@ -71,11 +72,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database);
 
             // Assert
-            OrganizationClaimOf(response.Auth.Token).ShouldBeNull();
+            OrganizationClaimOf(response.Auth.Token).ShouldBeNull("a user with roles in two organizations gets no organization in the token until they choose one");
         }
 
         // Scenario 30
         [Fact]
+        [Trait("Rule", "L14")]
         public async Task LoginAsync_UserWithNoRoles_TokenHasNoOrganizationClaim()
         {
             // Arrange
@@ -86,11 +88,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database);
 
             // Assert
-            OrganizationClaimOf(response.Auth.Token).ShouldBeNull();
+            OrganizationClaimOf(response.Auth.Token).ShouldBeNull("a user with no roles gets no organization in the token");
         }
 
         // Scenario 32
         [Fact]
+        [Trait("Rule", "L14")]
         public async Task LoginAsync_UserWithOneRoleInOneOrganization_TokenCarriesThatOrganizationId()
         {
             // Arrange
@@ -101,11 +104,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database);
 
             // Assert
-            OrganizationClaimOf(response.Auth.Token).ShouldBe(CantinaOrganizationId.ToString());
+            OrganizationClaimOf(response.Auth.Token).ShouldBe(CantinaOrganizationId.ToString(), "a user with a single organization gets that organization in the token");
         }
 
         // Scenario 33
         [Fact]
+        [Trait("Rule", "L14")]
         public async Task LoginAsync_UserWithTwoRolesInSameOrganization_TokenCarriesThatOrganizationId()
         {
             // Arrange
@@ -118,11 +122,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database);
 
             // Assert
-            OrganizationClaimOf(response.Auth.Token).ShouldBe(CantinaOrganizationId.ToString());
+            OrganizationClaimOf(response.Auth.Token).ShouldBe(CantinaOrganizationId.ToString(), "two roles in the same organization still count as one organization");
         }
 
         // Scenario 34
         [Fact]
+        [Trait("Rule", "F6")]
         public async Task RefreshTokenAsync_UserWithOneOrganization_NewTokenCarriesThatOrganizationId()
         {
             // Arrange
@@ -136,7 +141,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var refreshed = await sut.RefreshTokenAsync(loginResponse.RefreshToken);
 
             // Assert
-            OrganizationClaimOf(refreshed.Auth.Token).ShouldBe(CantinaOrganizationId.ToString());
+            OrganizationClaimOf(refreshed.Auth.Token).ShouldBe(CantinaOrganizationId.ToString(), "a refreshed token keeps the user's single organization");
         }
     }
 }

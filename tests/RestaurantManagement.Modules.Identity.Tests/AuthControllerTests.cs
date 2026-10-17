@@ -19,6 +19,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "V1")]
         public async Task VerifyEmail_ValidRequest_ReturnsOkWithMessageBody()
         {
             // Arrange
@@ -31,12 +32,13 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = await sut.VerifyEmail(new VerifyEmailRequest { Email = "user@test.com", Code = "123456" });
 
             // Assert
-            var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+            var okResult = result.Result.Should().BeOfType<OkObjectResult>("a correct code verifies the email and answers 200").Subject;
             var body = okResult.Value.Should().BeOfType<MessageResponse>().Subject;
             body.Message.Should().NotBeNullOrEmpty();
         }
 
         [Fact]
+        [Trait("Rule", "RS2")]
         public async Task ResendVerification_ValidRequest_ReturnsOkWithMessageBody()
         {
             // Arrange
@@ -49,7 +51,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = await sut.ResendVerification(new ResendVerificationRequest { Email = "user@test.com" });
 
             // Assert
-            var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+            var okResult = result.Result.Should().BeOfType<OkObjectResult>("a resend request is acknowledged with a 200 and a message").Subject;
             var body = okResult.Value.Should().BeOfType<MessageResponse>().Subject;
             body.Message.Should().NotBeNullOrEmpty();
         }

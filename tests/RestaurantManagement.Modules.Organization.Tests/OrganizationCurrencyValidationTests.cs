@@ -23,6 +23,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         [InlineData("")]
         [InlineData("EUR")]
         [InlineData("1")]
+        [Trait("Rule", "OR21")]
         public void Validate_CurrencyMissingOrNotSupported_ReturnsCurrencyError(string? currency)
         {
             // Arrange
@@ -32,7 +33,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var results = Validate(request);
 
             // Assert
-            results.SelectMany(r => r.MemberNames).ShouldContain(nameof(CreateOrganizationRequest.Currency));
+            results.SelectMany(r => r.MemberNames).ShouldContain(nameof(CreateOrganizationRequest.Currency), customMessage: "a missing or unsupported currency is refused with an error on the currency field");
         }
     }
 }

@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Globalization;
 using System.Security.Cryptography;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
@@ -43,10 +42,6 @@ namespace RestaurantManagement.Modules.Identity.Services
         {
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
 
-            // 🔒 Check if locked out of verification (only a real, existing account can be locked)
-            if (user != null && user.VerificationLockedUntil.HasValue && user.VerificationLockedUntil > DateTime.UtcNow)
-                throw new BusinessException(BuildVerificationLockoutMessage(user.VerificationLockedUntil.Value), 423);
-
             // Run the code lookup even for an unknown email (against Guid.Empty, which never
             // matches a real UserId) so an unregistered email and an invalid code take the
             // same path and produce the same response.
@@ -55,10 +50,15 @@ namespace RestaurantManagement.Modules.Identity.Services
                 .OrderByDescending(v => v.CreatedAt)
                 .FirstOrDefaultAsync();
 
+            // 🔒 A locked account gets the same 401 as an unknown email, so the lock never reveals the account.
+            // Checked after the lookup so a locked account does the same database work and answers in the same time.
+            if (user != null && user.VerificationLockedUntil.HasValue && user.VerificationLockedUntil > DateTime.UtcNow)
+                throw new BusinessException(_localizer["InvalidEmailOrCode"].Value, 401);
+
             if (user == null || verification == null || !_hasher.IsMatch(user.Id, request.Code, verification.CodeHash))
             {
                 if (user != null)
-                    await RegisterFailedVerificationAttemptAsync(user); // always throws: 401, or 423 when the lockout trips
+                    await RegisterFailedVerificationAttemptAsync(user); // always throws the same 401, also when the lockout trips
 
                 throw new BusinessException(_localizer["InvalidEmailOrCode"].Value, 401);
             }
@@ -86,9 +86,9 @@ namespace RestaurantManagement.Modules.Identity.Services
             if (user.IsVerified)
                 return new MessageResponse { Message = _localizer["VerificationResendAcknowledged"].Value };
 
-            // 🔒 Check if locked out of verification
+            // 🔒 A locked account gets the same acknowledgement as an unknown email, so the lock never reveals the account.
             if (user.VerificationLockedUntil.HasValue && user.VerificationLockedUntil > DateTime.UtcNow)
-                throw new BusinessException(BuildVerificationLockoutMessage(user.VerificationLockedUntil.Value), 423);
+                return new MessageResponse { Message = _localizer["VerificationResendAcknowledged"].Value };
 
             // Check cooldown: prevent resending too often. Hitting it returns the same
             // acknowledgement as the cases above instead of a distinct "please wait" signal.
@@ -135,7 +135,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             {
                 // Decide if we fail the whole request or just log.
                 // fail the request because the user will not receive the code
-                _logger.LogError(ex, "Failed to send verification email to {Email}", user.Email);
+                _logger.LogError(ex, "Failed to send verification email to user {UserId}", user.Id);
                 throw new BusinessException(_localizer["EmailSendingFailed"].Value, 500);
             }
 
@@ -166,13 +166,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             }
 
             await _db.SaveChangesAsync();
-            throw new BusinessException(BuildVerificationLockoutMessage(user.VerificationLockedUntil.Value), 423);
-        }
-
-        private string BuildVerificationLockoutMessage(DateTime lockedUntilUtc)
-        {
-            var lockUntilText = lockedUntilUtc.ToLocalTime().ToString("f", CultureInfo.CurrentUICulture);
-            return string.Format(_localizer["VerificationLockedUntil"].Value, lockUntilText);
+            throw new BusinessException(_localizer["InvalidEmailOrCode"].Value, 401);
         }
     }
 }

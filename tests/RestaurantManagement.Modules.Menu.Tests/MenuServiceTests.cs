@@ -53,6 +53,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
         }
 
         [Fact]
+        [Trait("Rule", "M4")]
         public async Task GetMenusAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
         {
             // Arrange
@@ -69,7 +70,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var act = () => sut.GetMenusAsync(userId);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a user with no role in the organization may not read its menus");
         }
     }
 }

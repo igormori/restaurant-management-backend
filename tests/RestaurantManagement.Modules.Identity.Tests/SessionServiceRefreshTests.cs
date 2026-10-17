@@ -76,15 +76,15 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private static async Task<SessionResult> LoginAsync(IdentityTestDatabase database, ClientInfo client)
         {
             using var context = database.CreateContext();
-            return await CreateSut(context).LoginAsync(new LoginRequest { Email = UserEmail, Password = Password }, client);
+            return await CreateSut(context).LoginAsync(new LoginRequest { Email = UserEmail, Password = Password }, client, null);
         }
 
         private static async Task<int> CountTokensAfterRefusedLoginAsync(IdentityTestDatabase database, string password)
         {
             using (var context = database.CreateContext())
             {
-                var act = () => CreateSut(context).LoginAsync(new LoginRequest { Email = UserEmail, Password = password }, TestClients.KitchenTablet);
-                (await Should.ThrowAsync<BusinessException>(act)).StatusCode.ShouldBe(UnauthorizedStatusCode);
+                var act = () => CreateSut(context).LoginAsync(new LoginRequest { Email = UserEmail, Password = password }, TestClients.KitchenTablet, null);
+                (await Should.ThrowAsync<BusinessException>(act)).StatusCode.ShouldBe(UnauthorizedStatusCode, "a refused login answers 401");
             }
 
             using var assertContext = database.CreateContext();
@@ -106,11 +106,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private static async Task AssertRefreshRejectedAsync(IdentityTestDatabase database, string? refreshToken)
         {
             var thrown = await Should.ThrowAsync<BusinessException>(() => RefreshAsync(database, refreshToken));
-            thrown.StatusCode.ShouldBe(UnauthorizedStatusCode);
-            thrown.Message.ShouldBe(InvalidOrExpiredTokenKey);
+            thrown.StatusCode.ShouldBe(UnauthorizedStatusCode, "a refresh that is not allowed answers 401");
+            thrown.Message.ShouldBe(InvalidOrExpiredTokenKey, "every refused refresh gets the same generic message, whatever the reason");
         }
 
         [Fact]
+        [Trait("Rule", "L5")]
         public async Task LoginAsync_InactiveUserCorrectPassword_ThrowsGeneric401()
         {
             // Arrange
@@ -122,12 +123,13 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(UnauthorizedStatusCode);
-            thrown.Which.Message.Should().Be(InvalidEmailOrPasswordKey);
+            thrown.Which.StatusCode.Should().Be(UnauthorizedStatusCode, "a deactivated account gets the generic 401 login failure");
+            thrown.Which.Message.Should().Be(InvalidEmailOrPasswordKey, "a deactivated account cannot be told apart from a wrong password");
         }
 
         // Scenario 27
         [Fact]
+        [Trait("Rule", "F2")]
         public async Task RefreshTokenAsync_NoCookie_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange
@@ -140,6 +142,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 28
         [Fact]
+        [Trait("Rule", "F2")]
         public async Task RefreshTokenAsync_UnknownToken_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange
@@ -153,6 +156,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 29
         [Fact]
+        [Trait("Rule", "F2")]
         public async Task RefreshTokenAsync_ExpiredToken_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange
@@ -172,6 +176,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 30
         [Fact]
+        [Trait("Rule", "F3")]
         public async Task RefreshTokenAsync_ReusedRotatedToken_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange
@@ -186,6 +191,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 31
         [Fact]
+        [Trait("Rule", "F3")]
         public async Task RefreshTokenAsync_ReusedRotatedToken_NewestTokenOfThatDeviceIsRefusedToo()
         {
             // Arrange
@@ -201,6 +207,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 32
         [Fact]
+        [Trait("Rule", "F4")]
         public async Task RefreshTokenAsync_InactiveUser_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange
@@ -214,6 +221,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 33
         [Fact]
+        [Trait("Rule", "F4")]
         public async Task RefreshTokenAsync_UnverifiedUser_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange
@@ -227,6 +235,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 34
         [Fact]
+        [Trait("Rule", "F4")]
         public async Task RefreshTokenAsync_LockedUser_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange
@@ -240,6 +249,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 35
         [Fact]
+        [Trait("Rule", "F5")]
         public async Task RefreshTokenAsync_TokenForOrganizationUserIsNotMemberOf_ThrowsInvalidOrExpiredToken401()
         {
             // Arrange: Maria is Owner of Cantina only; the token claims Trattoria
@@ -253,6 +263,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 36
         [Fact]
+        [Trait("Rule", "L1")]
         public async Task LoginAsync_ValidCredentials_CreatesOneActiveTokenForThisDevice()
         {
             // Arrange
@@ -263,18 +274,19 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = await LoginAsync(database, TestClients.KitchenTablet);
 
             // Assert
-            result.RefreshToken.ShouldNotBeNullOrWhiteSpace();
+            result.RefreshToken.ShouldNotBeNullOrWhiteSpace("a login issues a refresh token");
             result.RefreshTokenExpiresAt.ShouldBe(DateTime.UtcNow.AddDays(TestJwtOptions.RefreshTokenExpireDays), TimeSpan.FromMinutes(1));
             var token = (await ReadTokensAsync(database)).ShouldHaveSingleItem();
-            token.UserId.ShouldBe(userId);
+            token.UserId.ShouldBe(userId, "the login stores one refresh token for the user");
             token.OrganizationId.ShouldBeNull();
-            token.RevokedAt.ShouldBeNull();
-            token.DeviceDescription.ShouldBe(TestClients.KitchenTablet.DeviceDescription);
-            token.IpAddress.ShouldBe(TestClients.KitchenTablet.IpAddress);
+            token.RevokedAt.ShouldBeNull("the new refresh token is active");
+            token.DeviceDescription.ShouldBe(TestClients.KitchenTablet.DeviceDescription, "the login records which device was used");
+            token.IpAddress.ShouldBe(TestClients.KitchenTablet.IpAddress, "the login records the IP address of the device");
         }
 
         // Scenario 37
         [Fact]
+        [Trait("Rule", "L15")]
         public async Task LoginAsync_SecondDevice_FirstDeviceTokenStaysActive()
         {
             // Arrange
@@ -287,13 +299,59 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var tokens = await ReadTokensAsync(database);
-            tokens.Count.ShouldBe(2);
-            tokens.ShouldAllBe(t => t.RevokedAt == null);
-            tokens.Select(t => t.FamilyId).Distinct().Count().ShouldBe(2);
+            tokens.Count.ShouldBe(2, "each device has its own refresh token");
+            tokens.ShouldAllBe(t => t.RevokedAt == null, "logging in on a second device keeps the first device signed in");
+            tokens.Select(t => t.FamilyId).Distinct().Count().ShouldBe(2, "each device has its own session family");
+        }
+
+        [Fact]
+        [Trait("Rule", "L20")]
+        public async Task LoginAsync_BrowserSendsItsExistingToken_RevokesThatTokenAndKeepsOtherDevices()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            await SeedUserAsync(database);
+            var tablet = await LoginAsync(database, TestClients.KitchenTablet);
+            var laptop = await LoginAsync(database, TestClients.ManagerLaptop);
+
+            // Act
+            using (var context = database.CreateContext())
+            {
+                await CreateSut(context).LoginAsync(
+                    new LoginRequest { Email = UserEmail, Password = Password }, TestClients.KitchenTablet, tablet.RefreshToken);
+            }
+
+            // Assert
+            await AssertRefreshRejectedAsync(database, tablet.RefreshToken);
+            var laptopRefreshed = await RefreshAsync(database, laptop.RefreshToken);
+            laptopRefreshed.Auth.Token.ShouldNotBeNullOrWhiteSpace("logging in again on one browser leaves the other device's session active");
+        }
+
+        [Fact]
+        [Trait("Rule", "L20")]
+        public async Task LoginAsync_BrowserSendsItsExistingTokenButPasswordIsWrong_KeepsThatToken()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            await SeedUserAsync(database);
+            var tablet = await LoginAsync(database, TestClients.KitchenTablet);
+
+            // Act
+            using (var context = database.CreateContext())
+            {
+                var act = () => CreateSut(context).LoginAsync(
+                    new LoginRequest { Email = UserEmail, Password = "WrongPassword1!" }, TestClients.KitchenTablet, tablet.RefreshToken);
+                await Should.ThrowAsync<BusinessException>(act);
+            }
+
+            // Assert
+            var refreshed = await RefreshAsync(database, tablet.RefreshToken);
+            refreshed.Auth.Token.ShouldNotBeNullOrWhiteSpace("a refused login does not end the browser's existing session");
         }
 
         // Scenario 38
         [Fact]
+        [Trait("Rule", "F7")]
         public async Task RefreshTokenAsync_TwoDevicesSignedIn_BothRefreshSucceed()
         {
             // Arrange
@@ -307,12 +365,13 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var laptopRefreshed = await RefreshAsync(database, laptop.RefreshToken);
 
             // Assert
-            tabletRefreshed.Auth.Token.ShouldNotBeNullOrWhiteSpace();
-            laptopRefreshed.Auth.Token.ShouldNotBeNullOrWhiteSpace();
+            tabletRefreshed.Auth.Token.ShouldNotBeNullOrWhiteSpace("the tablet can refresh its session");
+            laptopRefreshed.Auth.Token.ShouldNotBeNullOrWhiteSpace("the laptop can refresh its session independently of the tablet");
         }
 
         // Scenario 39
         [Fact]
+        [Trait("Rule", "F1")]
         public async Task RefreshTokenAsync_ActiveToken_ReplacesItWithNewTokenInSameFamily()
         {
             // Arrange
@@ -324,15 +383,16 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = await RefreshAsync(database, issued.Token);
 
             // Assert
-            result.RefreshToken.ShouldNotBe(issued.Token);
+            result.RefreshToken.ShouldNotBe(issued.Token, "a refresh issues a new refresh token");
             var tokens = await ReadTokensAsync(database);
-            tokens.Count.ShouldBe(2);
-            tokens.ShouldAllBe(t => t.FamilyId == issued.FamilyId);
-            tokens.Count(t => t.RevokedAt == null).ShouldBe(1);
+            tokens.Count.ShouldBe(2, "the family holds the old token and its replacement");
+            tokens.ShouldAllBe(t => t.FamilyId == issued.FamilyId, "the replacement stays in the same session family");
+            tokens.Count(t => t.RevokedAt == null).ShouldBe(1, "only the new token is still active after a refresh");
         }
 
         // Scenario 40
         [Fact]
+        [Trait("Rule", "F1")]
         public async Task RefreshTokenAsync_ActiveToken_NewTokenExpiresInRefreshTokenExpireDays()
         {
             // Arrange
@@ -348,6 +408,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "F6")]
         public async Task RefreshTokenAsync_UserWithRole_JwtContainsRoleClaim()
         {
             // Arrange
@@ -361,10 +422,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             var jwt = new JwtSecurityTokenHandler().ReadJwtToken(result.Auth.Token);
             jwt.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value)
-                .Should().ContainSingle().Which.Should().Be(OwnerRole);
+                .Should().ContainSingle().Which.Should().Be(OwnerRole, "the refreshed access token carries the user's role");
         }
 
         [Fact]
+        [Trait("Rule", "F1")]
         public async Task RefreshTokenAsync_ActiveVerifiedUnlockedUser_ReturnsNewTokens()
         {
             // Arrange
@@ -376,12 +438,13 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var result = await RefreshAsync(database, issued.Token);
 
             // Assert
-            result.Auth.Token.Should().NotBeNullOrEmpty();
-            result.RefreshToken.Should().NotBeNullOrEmpty().And.NotBe(issued.Token);
+            result.Auth.Token.Should().NotBeNullOrEmpty("a user whose lock has expired can refresh");
+            result.RefreshToken.Should().NotBeNullOrEmpty().And.NotBe(issued.Token, "the refresh issues a different refresh token");
         }
 
         // Scenario 71
         [Fact]
+        [Trait("Rule", "L12")]
         public async Task LoginAsync_WrongPassword_StoresNoToken()
         {
             // Arrange
@@ -392,11 +455,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var tokenCount = await CountTokensAfterRefusedLoginAsync(database, "WrongPassword1!");
 
             // Assert
-            tokenCount.ShouldBe(0);
+            tokenCount.ShouldBe(0, "a wrong password stores no refresh token");
         }
 
         // Scenario 72
         [Fact]
+        [Trait("Rule", "L9")]
         public async Task LoginAsync_LockedAccountCorrectPassword_StoresNoToken()
         {
             // Arrange
@@ -407,11 +471,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var tokenCount = await CountTokensAfterRefusedLoginAsync(database, Password);
 
             // Assert
-            tokenCount.ShouldBe(0);
+            tokenCount.ShouldBe(0, "a locked account stores no refresh token even with the correct password");
         }
 
         // Scenario 73
         [Fact]
+        [Trait("Rule", "L12")]
         public async Task LoginAsync_InactiveUserCorrectPassword_StoresNoToken()
         {
             // Arrange
@@ -422,11 +487,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var tokenCount = await CountTokensAfterRefusedLoginAsync(database, Password);
 
             // Assert
-            tokenCount.ShouldBe(0);
+            tokenCount.ShouldBe(0, "a deactivated account stores no refresh token even with the correct password");
         }
 
         // Scenario 74
         [Fact]
+        [Trait("Rule", "F4")]
         public async Task RefreshTokenAsync_InactiveUser_LeavesNoActiveTokenBehind()
         {
             // Arrange
@@ -438,7 +504,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await Should.ThrowAsync<BusinessException>(() => RefreshAsync(database, issued.Token));
 
             // Assert
-            (await ReadTokensAsync(database)).ShouldAllBe(t => t.RevokedAt != null);
+            (await ReadTokensAsync(database)).ShouldAllBe(t => t.RevokedAt != null, "refusing a deactivated user also revokes their remaining tokens");
         }
     }
 }

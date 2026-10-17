@@ -66,9 +66,6 @@
   <data name="AccountLocked" xml:space="preserve">
     <value>Your account has been locked due to multiple failed login attempts.</value>
   </data>
-  <data name="VerificationLockedUntil" xml:space="preserve">
-    <value>Too many failed verification attempts. Please try again after {0}.</value>
-  </data>
   <data name="InvalidOrExpiredToken" xml:space="preserve">
     <value>The token is invalid or has expired. Please log in again.</value>
   </data>

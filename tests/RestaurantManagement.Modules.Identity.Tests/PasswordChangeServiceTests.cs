@@ -75,6 +75,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         [InlineData("99999999-9999-4999-8999-999999999999")]   // no such user
         [InlineData("33333333-cccc-4ccc-8ccc-00000000000c")]   // Pedro, inactive
         [InlineData("55555555-eeee-4eee-8eee-00000000000e")]   // Lucia, email not verified
+        [Trait("Rule", "C8")]
         public async Task ChangePasswordAsync_UnknownInactiveOrUnverifiedUser_RejectedAsInvalidSession(string userId)
         {
             // Arrange
@@ -84,12 +85,13 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var rejection = await Should.ThrowAsync<BusinessException>(() => ChangeAsync(database, Guid.Parse(userId), OldPassword, NewPassword));
 
             // Assert
-            rejection.StatusCode.ShouldBe(401);
+            rejection.StatusCode.ShouldBe(401, "a missing, deactivated or unverified user cannot change a password and gets the invalid-session 401");
             await _auditRecorder.DidNotReceiveWithAnyArgs().RecordAsync(default, default!, default);
         }
 
         // Scenario 29
         [Fact]
+        [Trait("Rule", "C2")]
         public async Task ChangePasswordAsync_WrongCurrentPassword_RejectedAndNothingChanges()
         {
             // Arrange
@@ -99,14 +101,15 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var rejection = await Should.ThrowAsync<BusinessException>(() => ChangeAsync(database, MariaId, "Pizza@Errada2025", NewPassword));
 
             // Assert
-            rejection.StatusCode.ShouldBe(400);
-            BCrypt.Net.BCrypt.Verify(OldPassword, (await ReadUserAsync(database, MariaId)).PasswordHash).ShouldBeTrue();
-            (await ReadMariaTokensAsync(database)).ShouldAllBe(t => t.RevokedAt == null);
+            rejection.StatusCode.ShouldBe(400, "a wrong current password is refused with a 400");
+            BCrypt.Net.BCrypt.Verify(OldPassword, (await ReadUserAsync(database, MariaId)).PasswordHash).ShouldBeTrue("a refused change leaves the old password working");
+            (await ReadMariaTokensAsync(database)).ShouldAllBe(t => t.RevokedAt == null, "a refused change does not sign the user out of any device");
             await _auditRecorder.DidNotReceiveWithAnyArgs().RecordAsync(default, default!, default);
         }
 
         // Scenario 30
         [Fact]
+        [Trait("Rule", "C4")]
         public async Task ChangePasswordAsync_NewPasswordSameAsCurrent_RejectedAndSessionsKept()
         {
             // Arrange
@@ -116,12 +119,13 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var rejection = await Should.ThrowAsync<BusinessException>(() => ChangeAsync(database, MariaId, OldPassword, OldPassword));
 
             // Assert
-            rejection.StatusCode.ShouldBe(400);
-            (await ReadMariaTokensAsync(database)).ShouldAllBe(t => t.RevokedAt == null);
+            rejection.StatusCode.ShouldBe(400, "a new password equal to the current one is refused with a 400");
+            (await ReadMariaTokensAsync(database)).ShouldAllBe(t => t.RevokedAt == null, "a refused change keeps every session signed in");
         }
 
         // Scenario 31
         [Fact]
+        [Trait("Rule", "C5")]
         public async Task ChangePasswordAsync_CorrectCurrentPassword_NewPasswordVerifiesAndOldDoesNot()
         {
             // Arrange
@@ -132,12 +136,13 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var maria = await ReadUserAsync(database, MariaId);
-            BCrypt.Net.BCrypt.Verify(NewPassword, maria.PasswordHash).ShouldBeTrue();
-            BCrypt.Net.BCrypt.Verify(OldPassword, maria.PasswordHash).ShouldBeFalse();
+            BCrypt.Net.BCrypt.Verify(NewPassword, maria.PasswordHash).ShouldBeTrue("after a successful change the new password works");
+            BCrypt.Net.BCrypt.Verify(OldPassword, maria.PasswordHash).ShouldBeFalse("after a successful change the old password stops working");
         }
 
         // Scenario 32
         [Fact]
+        [Trait("Rule", "C5")]
         public async Task ChangePasswordAsync_CorrectCurrentPassword_RevokesEveryRefreshTokenAsPasswordChanged()
         {
             // Arrange
@@ -148,12 +153,13 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var tokens = await ReadMariaTokensAsync(database);
-            tokens.Count.ShouldBe(2);
-            tokens.ShouldAllBe(t => t.RevokedAt != null && t.RevocationReason == RefreshToken.ReasonPasswordChanged);
+            tokens.Count.ShouldBe(2, "the user was signed in on two devices");
+            tokens.ShouldAllBe(t => t.RevokedAt != null && t.RevocationReason == RefreshToken.ReasonPasswordChanged, "a successful change signs the user out of every device, marked as a password change");
         }
 
         // Scenario 33
         [Fact]
+        [Trait("Rule", "C5")]
         public async Task ChangePasswordAsync_CorrectCurrentPassword_RecordsPasswordChangedAuditOnce()
         {
             // Arrange
@@ -165,6 +171,24 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             await _auditRecorder.Received(1).RecordAsync(MariaId, AuditActions.PasswordChanged, Arg.Any<CancellationToken>());
             await _auditRecorder.ReceivedWithAnyArgs(1).RecordAsync(default, default!, default);
+        }
+
+        [Fact]
+        [Trait("Rule", "C3")]
+        public async Task ChangePasswordAsync_WrongCurrentPasswordRepeatedly_NeverCountsTowardLoginLock()
+        {
+            // Arrange
+            using var database = await CreateDatabaseAsync();
+            const int maxFailedLoginAttempts = 5;
+
+            // Act
+            for (var attempt = 0; attempt < maxFailedLoginAttempts + 1; attempt++)
+                await Should.ThrowAsync<BusinessException>(() => ChangeAsync(database, MariaId, "Pizza@Errada2025", NewPassword));
+
+            // Assert
+            var maria = await ReadUserAsync(database, MariaId);
+            maria.FailedAttempts.ShouldBe(0, "a wrong current password on change-password must not count toward the login lock");
+            maria.LockedUntil.ShouldBeNull("repeated wrong current passwords on change-password must never lock the login");
         }
     }
 }

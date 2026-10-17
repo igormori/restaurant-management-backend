@@ -67,7 +67,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         public async Task LogoutAllAsync(Guid userId)
             => await _refreshTokens.RevokeAllForUserAsync(userId);
 
-        public async Task<SessionResult> LoginAsync(LoginRequest request, ClientInfo client)
+        public async Task<SessionResult> LoginAsync(LoginRequest request, ClientInfo client, string? previousRefreshToken)
         {
             var email = request.Email.Trim().ToLowerInvariant();
             var user = await _db.Users
@@ -97,6 +97,10 @@ namespace RestaurantManagement.Modules.Identity.Services
             user.LastLoginAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();
+
+            // The browser's earlier session ends only once the new login is accepted.
+            if (!string.IsNullOrWhiteSpace(previousRefreshToken))
+                await _refreshTokens.RevokeAsync(previousRefreshToken);
 
             // Issued only after every check passed, so a refused login leaves no token behind.
             var issued = await _refreshTokens.IssueAsync(user.Id, null, client.DeviceDescription, client.IpAddress);

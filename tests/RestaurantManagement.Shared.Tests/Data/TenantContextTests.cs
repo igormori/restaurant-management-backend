@@ -22,6 +22,7 @@ public class TenantContextTests
 
     // Scenario 7
     [Fact]
+    [Trait("Rule", "SH6")]
     public void OrganizationId_ScopeOpenedForAnotherOrganization_ReturnsTheScopedOrganization()
     {
         // Arrange
@@ -33,11 +34,12 @@ public class TenantContextTests
         var organizationId = sut.OrganizationId;
 
         // Assert
-        organizationId.ShouldBe(NewTrattoriaId);
+        organizationId.ShouldBe(NewTrattoriaId, "an open tenant scope takes priority over the token organization");
     }
 
     // Scenario 8
     [Fact]
+    [Trait("Rule", "SH6")]
     public void OrganizationId_NoScopeOpen_ReturnsTheTokenOrganization()
     {
         // Arrange
@@ -47,6 +49,6 @@ public class TenantContextTests
         var organizationId = sut.OrganizationId;
 
         // Assert
-        organizationId.ShouldBe(CantinaId);
+        organizationId.ShouldBe(CantinaId, "with no scope open the organization comes from the token");
     }
 }

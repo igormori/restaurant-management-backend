@@ -66,6 +66,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 12
         [Fact]
+        [Trait("Rule", "P6")]
         public async Task RecordAsync_UserWithoutOrganization_RecordsNothing()
         {
             // Arrange
@@ -80,6 +81,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 11
         [Fact]
+        [Trait("Rule", "P6")]
         public async Task RecordAsync_AnotherUserInAnotherOrganization_NoEntryInThatOrganization()
         {
             // Arrange
@@ -91,13 +93,14 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await RecordAsync(database, MariaId, AuditActions.PasswordChanged);
 
             // Assert
-            _recorded.Select(r => r.OrganizationId).ShouldBe(new Guid?[] { CantinaId });
+            _recorded.Select(r => r.OrganizationId).ShouldBe(new Guid?[] { CantinaId }, customMessage: "only the organization where the user holds a role gets an audit entry, never another user's organization");
         }
 
         // Scenario 10
         [Theory]
         [InlineData(AuditActions.PasswordReset)]
         [InlineData(AuditActions.PasswordChanged)]
+        [Trait("Rule", "P6")]
         public async Task RecordAsync_UserInTwoOrganizations_OneEntryPerOrganizationWithoutValues(string action)
         {
             // Arrange
@@ -110,9 +113,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await RecordAsync(database, MariaId, action);
 
             // Assert
-            _recorded.Select(r => r.OrganizationId).ShouldBe(new Guid?[] { CantinaId, TrattoriaId }, ignoreOrder: true);
-            _recorded.ShouldAllBe(r => r.Entry.Action == action && r.Entry.EntityType == "User" && r.Entry.EntityId == MariaId);
-            _recorded.ShouldAllBe(r => r.Entry.LocationId == null && r.Entry.Before == null && r.Entry.After == null && r.Entry.Reason == null);
+            _recorded.Select(r => r.OrganizationId).ShouldBe(new Guid?[] { CantinaId, TrattoriaId }, ignoreOrder: true, customMessage: "the user gets exactly one audit entry in each organization where they hold a role");
+            _recorded.ShouldAllBe(r => r.Entry.Action == action && r.Entry.EntityType == "User" && r.Entry.EntityId == MariaId, "every entry names the action and the user whose password changed");
+            _recorded.ShouldAllBe(r => r.Entry.LocationId == null && r.Entry.Before == null && r.Entry.After == null && r.Entry.Reason == null, "the audit entry never carries password data or any before and after values");
         }
     }
 }

@@ -28,6 +28,7 @@ namespace RestaurantManagement.Shared.Tests
         [InlineData("ResetPassword:WindowSeconds", 0)]
         [InlineData("ChangePassword:PermitLimit", 0)]
         [InlineData("ChangePassword:WindowSeconds", -60)]
+        [Trait("Rule", "SH23")]
         public void Validate_PasswordPolicyLimitZeroOrNegative_FailsNamingTheSetting(string setting, int value)
         {
             // Arrange
@@ -38,21 +39,23 @@ namespace RestaurantManagement.Shared.Tests
             var result = _validator.Validate(null, options);
 
             // Assert
-            result.Failed.ShouldBeTrue();
-            result.FailureMessage.ShouldContain(setting);
+            result.Failed.ShouldBeTrue("a zero or negative password rate limit is refused at startup");
+            result.FailureMessage.ShouldContain(setting, customMessage: "the failure names the exact setting that is wrong");
         }
 
         [Fact]
+        [Trait("Rule", "SH23")]
         public void Validate_DefaultOptions_Succeeds()
         {
             var result = _validator.Validate(null, new AuthRateLimitOptions());
 
-            result.Succeeded.Should().BeTrue();
+            result.Succeeded.Should().BeTrue("the default rate limits are valid");
         }
 
         [Theory]
         [InlineData(0)]
         [InlineData(-1)]
+        [Trait("Rule", "SH23")]
         public void Validate_NonPositivePermitLimit_Fails(int permitLimit)
         {
             var options = new AuthRateLimitOptions();
@@ -60,13 +63,14 @@ namespace RestaurantManagement.Shared.Tests
 
             var result = _validator.Validate(null, options);
 
-            result.Failed.Should().BeTrue();
-            result.FailureMessage.Should().Contain("Login:PermitLimit");
+            result.Failed.Should().BeTrue("a zero or negative login permit limit is refused at startup");
+            result.FailureMessage.Should().Contain("Login:PermitLimit", "the failure names the login limit setting");
         }
 
         [Theory]
         [InlineData(0)]
         [InlineData(-30)]
+        [Trait("Rule", "SH23")]
         public void Validate_NonPositiveWindow_Fails(int windowSeconds)
         {
             var options = new AuthRateLimitOptions();
@@ -74,22 +78,23 @@ namespace RestaurantManagement.Shared.Tests
 
             var result = _validator.Validate(null, options);
 
-            result.Failed.Should().BeTrue();
-            result.FailureMessage.Should().Contain("Register:WindowSeconds");
+            result.Failed.Should().BeTrue("a zero or negative register window is refused at startup");
+            result.FailureMessage.Should().Contain("Register:WindowSeconds", "the failure names the register window setting");
         }
 
         [Theory]
         [InlineData("not-an-ip")]
         [InlineData("10.0.0.1/99")]
         [InlineData("")]
+        [Trait("Rule", "SH23")]
         public void Validate_MalformedProxy_Fails(string proxy)
         {
             var options = new AuthRateLimitOptions { TrustedProxies = new[] { proxy } };
 
             var result = _validator.Validate(null, options);
 
-            result.Failed.Should().BeTrue();
-            result.FailureMessage.Should().Contain("TrustedProxies");
+            result.Failed.Should().BeTrue("a malformed trusted proxy address is refused at startup");
+            result.FailureMessage.Should().Contain("TrustedProxies", "the failure names the trusted proxies setting");
         }
 
         [Theory]
@@ -97,13 +102,14 @@ namespace RestaurantManagement.Shared.Tests
         [InlineData("10.0.0.0/8")]
         [InlineData("::1")]
         [InlineData("fd00::/8")]
+        [Trait("Rule", "SH23")]
         public void Validate_ValidProxy_Succeeds(string proxy)
         {
             var options = new AuthRateLimitOptions { TrustedProxies = new[] { proxy } };
 
             var result = _validator.Validate(null, options);
 
-            result.Succeeded.Should().BeTrue();
+            result.Succeeded.Should().BeTrue("a valid trusted proxy address or range is accepted");
         }
     }
 }

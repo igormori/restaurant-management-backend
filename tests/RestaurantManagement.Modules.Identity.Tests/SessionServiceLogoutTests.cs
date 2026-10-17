@@ -70,6 +70,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 53
         [Fact]
+        [Trait("Rule", "O1")]
         public async Task LogoutAsync_NoCookie_CompletesAndChangesNothing()
         {
             // Arrange
@@ -80,11 +81,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await LogoutAsync(database, NoCookie);
 
             // Assert
-            (await ReadTokensAsync(database, MariaId)).ShouldHaveSingleItem().RevokedAt.ShouldBeNull();
+            (await ReadTokensAsync(database, MariaId)).ShouldHaveSingleItem().RevokedAt.ShouldBeNull("logging out without a cookie changes nothing");
         }
 
         // Scenario 54
         [Fact]
+        [Trait("Rule", "O1")]
         public async Task LogoutAsync_UnknownToken_CompletesAndChangesNothing()
         {
             // Arrange
@@ -95,11 +97,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await LogoutAsync(database, "bm90LWEtcmVhbC10b2tlbi1mb3ItY2FudGluYQ==");
 
             // Assert
-            (await ReadTokensAsync(database, MariaId)).ShouldHaveSingleItem().RevokedAt.ShouldBeNull();
+            (await ReadTokensAsync(database, MariaId)).ShouldHaveSingleItem().RevokedAt.ShouldBeNull("logging out with an unknown cookie changes nothing");
         }
 
         // Scenario 55
         [Fact]
+        [Trait("Rule", "O2")]
         public async Task LogoutAsync_OneOfTwoDevices_OnlyThatDevicesTokenRevoked()
         {
             // Arrange
@@ -112,12 +115,13 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var tokens = await ReadTokensAsync(database, MariaId);
-            tokens.Single(t => t.FamilyId == tablet.FamilyId).RevokedAt.ShouldNotBeNull();
-            tokens.Single(t => t.FamilyId == laptop.FamilyId).RevokedAt.ShouldBeNull();
+            tokens.Single(t => t.FamilyId == tablet.FamilyId).RevokedAt.ShouldNotBeNull("logging out revokes the token of the device that logged out");
+            tokens.Single(t => t.FamilyId == laptop.FamilyId).RevokedAt.ShouldBeNull("logging out on one device leaves the other device signed in");
         }
 
         // Scenario 56
         [Fact]
+        [Trait("Rule", "O2")]
         public async Task LogoutAsync_OneOfTwoDevices_OtherDeviceStillRefreshes()
         {
             // Arrange
@@ -131,12 +135,13 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var refreshed = await CreateSut(context).RefreshTokenAsync(laptop.Token);
 
             // Assert
-            refreshed.Auth.Token.ShouldNotBeNullOrWhiteSpace();
-            refreshed.RefreshToken.ShouldNotBe(laptop.Token);
+            refreshed.Auth.Token.ShouldNotBeNullOrWhiteSpace("the other device can still refresh after one device logs out");
+            refreshed.RefreshToken.ShouldNotBe(laptop.Token, "the other device gets a new refresh token");
         }
 
         // Scenario 57
         [Fact]
+        [Trait("Rule", "O2")]
         public async Task LogoutAsync_CookieOfUserInAnotherOrganization_OtherUsersTokensStayActive()
         {
             // Arrange
@@ -149,11 +154,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await LogoutAsync(database, joao.Token);
 
             // Assert
-            (await ReadTokensAsync(database, MariaId)).ShouldAllBe(t => t.RevokedAt == null);
+            (await ReadTokensAsync(database, MariaId)).ShouldAllBe(t => t.RevokedAt == null, "logging out as one user never revokes another user's tokens");
         }
 
         // Scenario 58
         [Fact]
+        [Trait("Rule", "O5")]
         public async Task LogoutAllAsync_UserOnTwoDevices_NoActiveTokenLeft()
         {
             // Arrange
@@ -166,12 +172,13 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var tokens = await ReadTokensAsync(database, MariaId);
-            tokens.Count.ShouldBe(2);
-            tokens.ShouldAllBe(t => t.RevokedAt != null);
+            tokens.Count.ShouldBe(2, "the user was signed in on two devices");
+            tokens.ShouldAllBe(t => t.RevokedAt != null, "logout-all revokes every token of the user");
         }
 
         // Scenario 59
         [Fact]
+        [Trait("Rule", "O5")]
         public async Task LogoutAllAsync_UserOfOrganizationA_UserOfOrganizationBKeepsActiveToken()
         {
             // Arrange
@@ -183,11 +190,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await LogoutAllAsync(database, MariaId);
 
             // Assert
-            (await ReadTokensAsync(database, JoaoId)).ShouldHaveSingleItem().RevokedAt.ShouldBeNull();
+            (await ReadTokensAsync(database, JoaoId)).ShouldHaveSingleItem().RevokedAt.ShouldBeNull("logout-all for one user leaves another user's session active");
         }
 
         // Scenario 76
         [Fact]
+        [Trait("Rule", "O3")]
         public async Task LogoutAsync_AlreadyRotatedToken_CompletesAndRevokesThatDevicesFamily()
         {
             // Arrange
@@ -203,9 +211,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var family = await ReadTokensAsync(database, MariaId);
-            family.Count.ShouldBe(2);
-            family.ShouldAllBe(t => t.RevokedAt != null);
-            family.ShouldContain(t => t.RevocationReason == RefreshToken.ReasonReuseDetected);
+            family.Count.ShouldBe(2, "the family holds the original token and its replacement");
+            family.ShouldAllBe(t => t.RevokedAt != null, "logout with a reused token revokes that device's whole family");
+            family.ShouldContain(t => t.RevocationReason == RefreshToken.ReasonReuseDetected, "the family is marked as revoked because of token reuse");
         }
     }
 }

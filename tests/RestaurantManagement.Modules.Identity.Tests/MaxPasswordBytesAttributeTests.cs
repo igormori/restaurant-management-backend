@@ -16,33 +16,36 @@ namespace RestaurantManagement.Modules.Identity.Tests
             => new MaxPasswordBytesAttribute().GetValidationResult(value, new ValidationContext(new object()) { MemberName = "Password" });
 
         [Fact]
+        [Trait("Rule", "L13")]
         public void GetValidationResult_PasswordOver72Bytes_ReturnsError()
         {
             // Act
             var result = Validate(Password73Bytes);
 
             // Assert
-            result.ShouldNotBe(ValidationResult.Success);
+            result.ShouldNotBe(ValidationResult.Success, "a password over 72 bytes is refused");
         }
 
         [Fact]
+        [Trait("Rule", "L13")]
         public void GetValidationResult_PasswordOf72Bytes_ReturnsSuccess()
         {
             // Act
             var result = Validate(Password72Bytes);
 
             // Assert
-            result.ShouldBe(ValidationResult.Success);
+            result.ShouldBe(ValidationResult.Success, "a password of exactly 72 bytes is accepted");
         }
 
         [Fact]
+        [Trait("Rule", "L13")]
         public void GetValidationResult_NullValue_ReturnsSuccess()
         {
             // Act
             var result = Validate(null);
 
             // Assert
-            result.ShouldBe(ValidationResult.Success);
+            result.ShouldBe(ValidationResult.Success, "a missing password is not rejected by the byte limit; other rules handle it");
         }
     }
 }

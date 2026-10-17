@@ -79,6 +79,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 19
         [Fact]
+        [Trait("Rule", "OR14")]
         public async Task GetLocationAsync_LocationOfAnotherOrganization_ReturnsNull()
         {
             // Arrange
@@ -92,11 +93,12 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var location = await sut.GetLocationAsync(TrattoriaCentroLocationId);
 
             // Assert
-            location.ShouldBeNull();
+            location.ShouldBeNull("another organization's location is not visible, as if it did not exist");
         }
 
         // Scenario 20
         [Fact]
+        [Trait("Rule", "OR3")]
         public async Task CreateOrganizationAsync_TrialOwnerWithNoOrganizationInToken_ThrowsBadRequest()
         {
             // Arrange
@@ -111,11 +113,12 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             // Assert
             var exception = await act.ShouldThrowAsync<BusinessException>();
-            exception.StatusCode.ShouldBe(400);
+            exception.StatusCode.ShouldBe(400, "a user who already owns a TRIAL organization cannot create another");
         }
 
         // Scenario 21
         [Fact]
+        [Trait("Rule", "OR17")]
         public async Task GetOrganizationsAsync_SignedInToOneOfTwoOrganizations_ShowsPlanDetailsOfBoth()
         {
             // Arrange
@@ -130,9 +133,9 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var organizations = await sut.GetOrganizationsAsync(AnaId);
 
             // Assert
-            organizations.Single(o => o.Id == CantinaId).PlanType.ShouldBe("TRIAL");
-            organizations.Single(o => o.Id == TrattoriaId).PlanType.ShouldBe("PRO");
-            organizations.Single(o => o.Id == TrattoriaId).MaxLocations.ShouldBe(5);
+            organizations.Single(o => o.Id == CantinaId).PlanType.ShouldBe("TRIAL", "each organization shows its own plan");
+            organizations.Single(o => o.Id == TrattoriaId).PlanType.ShouldBe("PRO", "each organization shows its own plan");
+            organizations.Single(o => o.Id == TrattoriaId).MaxLocations.ShouldBe(5, "each organization shows its own location limit");
         }
     }
 }

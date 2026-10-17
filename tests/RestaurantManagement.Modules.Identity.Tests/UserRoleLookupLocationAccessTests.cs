@@ -47,6 +47,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         // Scenario 29
         [Fact]
+        [Trait("Rule", "T14")]
         public async Task HasLocationAccessAsync_RoleForAllLocations_ReturnsTrueForAnyLocation()
         {
             // Arrange
@@ -58,11 +59,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var hasAccess = await HasLocationAccessAsync(database, userId, CantinaId, MercadoMunicipalLocationId);
 
             // Assert
-            hasAccess.ShouldBeTrue();
+            hasAccess.ShouldBeTrue("a role for all locations allows any location of the organization");
         }
 
         // Scenario 30
         [Fact]
+        [Trait("Rule", "T14")]
         public async Task HasLocationAccessAsync_RolesOnlyInAnotherOrganization_ReturnsFalse()
         {
             // Arrange
@@ -75,7 +77,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var hasAccess = await HasLocationAccessAsync(database, userId, CantinaId, BatelLocationId);
 
             // Assert
-            hasAccess.ShouldBeFalse();
+            hasAccess.ShouldBeFalse("a role in another organization never gives access to this organization's locations");
         }
 
         // Scenario 31
@@ -83,6 +85,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         [InlineData(BatelLocation, true)]
         [InlineData(CentroLocation, true)]
         [InlineData(MercadoMunicipalLocation, false)]
+        [Trait("Rule", "T14")]
         public async Task HasLocationAccessAsync_RolesForTwoLocations_AllowsOnlyThoseTwo(string location, bool expected)
         {
             // Arrange
@@ -95,7 +98,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var hasAccess = await HasLocationAccessAsync(database, userId, CantinaId, Guid.Parse(location));
 
             // Assert
-            hasAccess.ShouldBe(expected);
+            hasAccess.ShouldBe(expected, "a role for given locations allows only those locations");
         }
     }
 }

@@ -11,6 +11,7 @@ using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Modules.Identity.Services;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Utils.Exceptions;
+using Shouldly;
 using Xunit;
 
 namespace RestaurantManagement.Modules.Identity.Tests
@@ -54,6 +55,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L5")]
         public async Task LoginAsync_UnknownEmailAndWrongPassword_ReturnSameStatusAndMessage()
         {
             // Arrange
@@ -76,19 +78,20 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var wrongPasswordSut = CreateSut(wrongPasswordContext);
 
             // Act
-            var unknownEmailAct = () => unknownEmailSut.LoginAsync(new LoginRequest { Email = "nobody@test.com", Password = Password }, TestClients.KitchenTablet);
-            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
+            var unknownEmailAct = () => unknownEmailSut.LoginAsync(new LoginRequest { Email = "nobody@test.com", Password = Password }, TestClients.KitchenTablet, null);
+            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet, null);
 
             // Assert
             var unknownEmailThrown = await unknownEmailAct.Should().ThrowAsync<BusinessException>();
             var wrongPasswordThrown = await wrongPasswordAct.Should().ThrowAsync<BusinessException>();
 
-            unknownEmailThrown.Which.StatusCode.Should().Be(401);
-            unknownEmailThrown.Which.StatusCode.Should().Be(wrongPasswordThrown.Which.StatusCode);
-            unknownEmailThrown.Which.Message.Should().Be(wrongPasswordThrown.Which.Message);
+            unknownEmailThrown.Which.StatusCode.Should().Be(401, "an unknown email is refused with a 401");
+            unknownEmailThrown.Which.StatusCode.Should().Be(wrongPasswordThrown.Which.StatusCode, "an unknown email gets the same status as a wrong password, so nobody can tell which accounts exist");
+            unknownEmailThrown.Which.Message.Should().Be(wrongPasswordThrown.Which.Message, "an unknown email gets the same message as a wrong password");
         }
 
         [Fact]
+        [Trait("Rule", "L5")]
         public async Task LoginAsync_UnverifiedCorrectPassword_MatchesGenericFailure()
         {
             // Arrange
@@ -119,20 +122,22 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var unverifiedSut = CreateSut(unverifiedContext);
 
             // Act
-            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
-            var unverifiedAct = () => unverifiedSut.LoginAsync(new LoginRequest { Email = "unverified@test.com", Password = Password }, TestClients.KitchenTablet);
+            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet, null);
+            var unverifiedAct = () => unverifiedSut.LoginAsync(new LoginRequest { Email = "unverified@test.com", Password = Password }, TestClients.KitchenTablet, null);
 
             // Assert
             var wrongPasswordThrown = await wrongPasswordAct.Should().ThrowAsync<BusinessException>();
             var unverifiedThrown = await unverifiedAct.Should().ThrowAsync<BusinessException>();
 
-            unverifiedThrown.Which.StatusCode.Should().Be(401);
-            unverifiedThrown.Which.StatusCode.Should().Be(wrongPasswordThrown.Which.StatusCode);
-            unverifiedThrown.Which.Message.Should().Be(wrongPasswordThrown.Which.Message);
+            unverifiedThrown.Which.StatusCode.Should().Be(401, "an unverified account is refused with a 401 even with the correct password");
+            unverifiedThrown.Which.StatusCode.Should().Be(wrongPasswordThrown.Which.StatusCode, "an unverified account gets the same status as a wrong password");
+            unverifiedThrown.Which.Message.Should().Be(wrongPasswordThrown.Which.Message, "an unverified account gets the same message as a wrong password");
         }
 
         // Scenario 10
         [Fact]
+        [Trait("Rule", "L5")]
+        [Trait("Rule", "L9")]
         public async Task LoginAsync_LockedAccountCorrectPassword_Throws401MatchingWrongPassword()
         {
             // Arrange
@@ -164,21 +169,22 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var wrongPasswordSut = CreateSut(wrongPasswordContext);
 
             // Act: correct password supplied, but the account is locked
-            var lockedAct = () => lockedSut.LoginAsync(new LoginRequest { Email = "locked@test.com", Password = Password }, TestClients.KitchenTablet);
-            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
+            var lockedAct = () => lockedSut.LoginAsync(new LoginRequest { Email = "locked@test.com", Password = Password }, TestClients.KitchenTablet, null);
+            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet, null);
 
             // Assert
             var lockedThrown = await lockedAct.Should().ThrowAsync<BusinessException>();
             var wrongPasswordThrown = await wrongPasswordAct.Should().ThrowAsync<BusinessException>();
 
-            lockedThrown.Which.StatusCode.Should().Be(401);
-            lockedThrown.Which.Message.Should().Be("InvalidEmailOrPassword");
-            lockedThrown.Which.StatusCode.Should().Be(wrongPasswordThrown.Which.StatusCode);
-            lockedThrown.Which.Message.Should().Be(wrongPasswordThrown.Which.Message);
+            lockedThrown.Which.StatusCode.Should().Be(401, "a locked account is refused with a 401 even with the correct password");
+            lockedThrown.Which.Message.Should().Be("InvalidEmailOrPassword", "a locked account gets the generic login failure message");
+            lockedThrown.Which.StatusCode.Should().Be(wrongPasswordThrown.Which.StatusCode, "a locked account gets the same status as a wrong password");
+            lockedThrown.Which.Message.Should().Be(wrongPasswordThrown.Which.Message, "a locked account gets the same message as a wrong password");
         }
 
         // Scenario 11
         [Fact]
+        [Trait("Rule", "L10")]
         public async Task LoginAsync_LockedAccountWrongPassword_Throws401WithoutCountingAttemptOrExtendingLock()
         {
             // Arrange
@@ -201,20 +207,21 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context, maxFailedLoginAttempts: 1);
 
             // Act
-            var act = () => sut.LoginAsync(new LoginRequest { Email = "locked@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
+            var act = () => sut.LoginAsync(new LoginRequest { Email = "locked@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet, null);
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
-            thrown.Which.StatusCode.Should().Be(401);
+            thrown.Which.StatusCode.Should().Be(401, "a wrong password on a locked account is refused with a 401");
 
             using var assertContext = database.CreateContext();
             var user = await assertContext.Users.SingleAsync(u => u.Email == "locked@test.com");
-            user.FailedAttempts.Should().Be(0);
-            user.LockedUntil.Should().BeCloseTo(lockedUntil, TimeSpan.FromSeconds(1));
+            user.FailedAttempts.Should().Be(0, "a wrong password while locked is not counted");
+            user.LockedUntil.Should().BeCloseTo(lockedUntil, TimeSpan.FromSeconds(1), "a wrong password while locked does not extend the lock");
         }
 
         // Scenario 12
         [Fact]
+        [Trait("Rule", "L18")]
         public async Task LoginAsync_FailedAttemptsReachLimit_SentryMessageHasUserIdAndNoEmail()
         {
             // Arrange
@@ -237,17 +244,18 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context, maxFailedLoginAttempts: 1, hub: hub);
 
             // Act
-            var act = () => sut.LoginAsync(new LoginRequest { Email = "marina.souza@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
+            var act = () => sut.LoginAsync(new LoginRequest { Email = "marina.souza@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet, null);
             await act.Should().ThrowAsync<BusinessException>();
 
             // Assert
             var lockoutMessage = CapturedEvents(hub).Should().ContainSingle().Subject.Message?.Formatted;
-            lockoutMessage.Should().Contain(user.Id.ToString());
-            lockoutMessage.Should().NotContain("marina.souza@test.com");
+            lockoutMessage.Should().Contain(user.Id.ToString(), "the lockout alert identifies the user by ID");
+            lockoutMessage.Should().NotContain("marina.souza@test.com", "the lockout alert must never contain the user's email");
         }
 
         // Scenario 13
         [Fact]
+        [Trait("Rule", "L19")]
         public async Task LoginAsync_JwtExpireMinutesLeftAtDefault_TokenExpiresIn15Minutes()
         {
             // Arrange
@@ -281,14 +289,15 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 TestPasswordHasher.Create());
 
             // Act
-            var response = await sut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = Password }, TestClients.KitchenTablet);
+            var response = await sut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = Password }, TestClients.KitchenTablet, null);
 
             // Assert
             var token = new JwtSecurityTokenHandler().ReadJwtToken(response.Auth.Token);
-            token.ValidTo.Should().BeCloseTo(DateTime.UtcNow.AddMinutes(15), TimeSpan.FromMinutes(1));
+            token.ValidTo.Should().BeCloseTo(DateTime.UtcNow.AddMinutes(15), TimeSpan.FromMinutes(1), "the access token lives for 15 minutes by default");
         }
 
         [Fact]
+        [Trait("Rule", "L1")]
         public async Task LoginAsync_ValidCredentials_ReturnsTokens()
         {
             // Arrange
@@ -308,14 +317,42 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context);
 
             // Act
-            var response = await sut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = Password }, TestClients.KitchenTablet);
+            var response = await sut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = Password }, TestClients.KitchenTablet, null);
 
             // Assert
-            response.Auth.Token.Should().NotBeNullOrEmpty();
-            response.RefreshToken.Should().NotBeNullOrEmpty();
+            response.Auth.Token.Should().NotBeNullOrEmpty("a valid login returns an access token");
+            response.RefreshToken.Should().NotBeNullOrEmpty("a valid login returns a refresh token for the cookie");
         }
 
         [Fact]
+        [Trait("Rule", "L3")]
+        public async Task LoginAsync_EmailInOtherCasingWithSurroundingSpaces_IssuesTokens()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            seedContext.Users.Add(new User
+            {
+                Email = "ana@cantinadanonna.com.br",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "Ana",
+                LastName = "Souza",
+                IsVerified = true
+            });
+            await seedContext.SaveChangesAsync();
+
+            using var context = database.CreateContext();
+            var sut = CreateSut(context);
+
+            // Act
+            var response = await sut.LoginAsync(new LoginRequest { Email = "  Ana@CantinaDaNonna.com.br ", Password = Password }, TestClients.KitchenTablet, null);
+
+            // Assert
+            response.Auth.Token.Should().NotBeNullOrEmpty("an email in other casing or with spaces still logs in");
+        }
+
+        [Fact]
+        [Trait("Rule", "L6")]
         public async Task LoginAsync_UnknownEmail_VerifiesAgainstAWorkFactor12DummyHash()
         {
             // Arrange
@@ -326,11 +363,170 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create(), Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>(), new RefreshTokenService(context, jwtOptions), hasher);
 
             // Act
-            var act = () => sut.LoginAsync(new LoginRequest { Email = "nobody@test.com", Password = Password }, TestClients.KitchenTablet);
+            var act = () => sut.LoginAsync(new LoginRequest { Email = "nobody@test.com", Password = Password }, TestClients.KitchenTablet, null);
             await act.Should().ThrowAsync<BusinessException>();
 
             // Assert
             hasher.Received(1).Verify(Password, Arg.Is<string>(hash => hash.StartsWith("$2a$12$")));
+        }
+
+        [Fact]
+        [Trait("Rule", "L11")]
+        [Trait("Rule", "L4")]
+        public async Task LoginAsync_LockExpiredCorrectPassword_IssuesTokensAndClearsLock()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            seedContext.Users.Add(new User
+            {
+                Email = "maria@cantinadanonna.com.br",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "Maria",
+                LastName = "Souza",
+                IsVerified = true,
+                FailedAttempts = 0,
+                LockedUntil = DateTime.UtcNow.AddMinutes(-1)
+            });
+            await seedContext.SaveChangesAsync();
+
+            using var context = database.CreateContext();
+            var sut = CreateSut(context);
+
+            // Act
+            var response = await sut.LoginAsync(new LoginRequest { Email = "maria@cantinadanonna.com.br", Password = Password }, TestClients.KitchenTablet, null);
+
+            // Assert
+            response.Auth.Token.ShouldNotBeNullOrEmpty("once the lock has expired the correct password logs in");
+            response.RefreshToken.ShouldNotBeNullOrEmpty("once the lock has expired a refresh token is issued");
+            using var readContext = database.CreateContext();
+            var maria = await readContext.Users.SingleAsync();
+            maria.LockedUntil.ShouldBeNull("logging in after the lock expired clears the lock");
+        }
+
+        [Fact]
+        [Trait("Rule", "L4")]
+        public async Task LoginAsync_CorrectPasswordAfterFailures_ResetsCounterAndRecordsLoginTime()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            seedContext.Users.Add(new User
+            {
+                Email = "marina@cantinadanonna.com.br",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "Marina",
+                LastName = "Souza",
+                IsVerified = true,
+                FailedAttempts = 3
+            });
+            await seedContext.SaveChangesAsync();
+
+            using var context = database.CreateContext();
+            var sut = CreateSut(context);
+
+            // Act
+            await sut.LoginAsync(new LoginRequest { Email = "marina@cantinadanonna.com.br", Password = Password }, TestClients.KitchenTablet, null);
+
+            // Assert
+            using var readContext = database.CreateContext();
+            var marina = await readContext.Users.SingleAsync();
+            marina.FailedAttempts.ShouldBe(0, "a successful login resets the failed-attempt counter");
+            marina.LockedUntil.ShouldBeNull("a successful login leaves no lock");
+            marina.LastLoginAt.ShouldNotBeNull("a successful login records the last login time");
+            marina.LastLoginAt.Value.ShouldBe(DateTime.UtcNow, TimeSpan.FromMinutes(1));
+        }
+
+        [Fact]
+        [Trait("Rule", "L4")]
+        public async Task LoginAsync_UserWithPhoneNumber_ResponseHasNoPhoneNumber()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            seedContext.Users.Add(new User
+            {
+                Email = "marina@cantinadanonna.com.br",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "Marina",
+                LastName = "Souza",
+                PhoneNumber = "+5541999990000",
+                IsVerified = true
+            });
+            await seedContext.SaveChangesAsync();
+
+            using var context = database.CreateContext();
+            var sut = CreateSut(context);
+
+            // Act
+            var response = await sut.LoginAsync(new LoginRequest { Email = "marina@cantinadanonna.com.br", Password = Password }, TestClients.KitchenTablet, null);
+
+            // Assert
+            response.Auth.PhoneNumber.ShouldBeNull("the login response never returns the phone number");
+        }
+
+        private async Task<(IdentityTestDatabase Database, string Email)> SeedMarinaAsync()
+        {
+            var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            seedContext.Users.Add(new User
+            {
+                Email = "marina@cantinadanonna.com.br",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "Marina",
+                LastName = "Souza",
+                IsVerified = true
+            });
+            await seedContext.SaveChangesAsync();
+            return (database, "marina@cantinadanonna.com.br");
+        }
+
+        private async Task FailLoginsAsync(IdentityTestDatabase database, string email, int times)
+        {
+            for (var attempt = 0; attempt < times; attempt++)
+            {
+                using var context = database.CreateContext();
+                var sut = CreateSut(context, maxFailedLoginAttempts: 5, lockoutDurationMinutes: 15);
+                var act = () => sut.LoginAsync(new LoginRequest { Email = email, Password = "WrongPassword1!" }, TestClients.KitchenTablet, null);
+                await act.ShouldThrowAsync<BusinessException>();
+            }
+        }
+
+        [Fact]
+        [Trait("Rule", "L7")]
+        public async Task LoginAsync_FourWrongPasswords_CountsFourAttemptsWithoutLocking()
+        {
+            // Arrange
+            var (database, email) = await SeedMarinaAsync();
+            using var _ = database;
+
+            // Act
+            await FailLoginsAsync(database, email, 4);
+
+            // Assert
+            using var readContext = database.CreateContext();
+            var marina = await readContext.Users.SingleAsync();
+            marina.FailedAttempts.ShouldBe(4, "each of the first four wrong passwords adds one failed attempt");
+            marina.LockedUntil.ShouldBeNull("four wrong passwords do not lock the account yet");
+        }
+
+        [Fact]
+        [Trait("Rule", "L8")]
+        public async Task LoginAsync_FifthWrongPassword_LocksFor15MinutesAndResetsCounter()
+        {
+            // Arrange
+            var (database, email) = await SeedMarinaAsync();
+            using var _ = database;
+
+            // Act
+            await FailLoginsAsync(database, email, 5);
+
+            // Assert
+            using var readContext = database.CreateContext();
+            var marina = await readContext.Users.SingleAsync();
+            marina.LockedUntil.ShouldNotBeNull("the fifth wrong password locks the account");
+            marina.LockedUntil.Value.ShouldBe(DateTime.UtcNow.AddMinutes(15), TimeSpan.FromMinutes(1), "the fifth wrong password locks the account for 15 minutes");
+            marina.FailedAttempts.ShouldBe(0, "the failed-attempt counter goes back to 0 when the lock starts");
         }
     }
 }
