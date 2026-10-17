@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Menu.Data;
@@ -42,6 +43,8 @@ public class MenuLocationEndpointTests : IClassFixture<PostgresDatabaseFixture>
         await factory.SeedMenuAsync(CantinaId, CantinaDinnerMenuId, "Jantar");
         return factory;
     }
+
+    private sealed record MenuBody(Guid Id, bool IsActive, List<Guid> LocationIds);
 
     // Scenario 45
     [Fact]
@@ -92,5 +95,30 @@ public class MenuLocationEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var links = await factory.InOrganizationAsync<MenuDbContext, int>(CantinaId,
             db => db.LocationMenus.IgnoreQueryFilters().CountAsync(lm => lm.LocationId == TrattoriaCentroId));
         links.ShouldBe(0, "a menu is never linked to another organization's location");
+    }
+
+    // Scenario 47
+    [Fact]
+    [Trait("Rule", "M16")]
+    public async Task CreateMenu_LocationIdsOfTwoOrganizations_LinksOnlyTheTokenOrganizationsLocation()
+    {
+        // Arrange
+        await using var factory = await CreateFactoryAsync();
+        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+
+        // Act
+        var response = await client.PostAsJsonAsync("/api/menus/create", new
+        {
+            name = "Almoço executivo",
+            description = "Prato feito com arroz, feijão e bife",
+            locationIds = new[] { CantinaCentroId, TrattoriaCentroId }
+        });
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var menu = await response.Content.ReadFromJsonAsync<MenuBody>();
+        menu!.IsActive.ShouldBeTrue("a new menu is stored active");
+        menu.LocationIds.ShouldBe(new[] { CantinaCentroId }, ignoreOrder: false,
+            customMessage: "only the token organization's location is linked; another organization's location ID is ignored");
     }
 }

@@ -45,7 +45,7 @@ endpoint and database tests in `tests/RestaurantManagement.Web.Tests/Menu/`.
 ## 3. Menus and categories
 | ID | Case | Expected | Status | Test |
 |---|---|---|---|---|
-| M16 | Owner or Admin creates a menu with location IDs | Menu stored active; the token organization's locations are linked; IDs of other organizations' locations are ignored | ❌ | |
+| M16 | Owner or Admin creates a menu with location IDs | Menu stored active; the token organization's locations are linked; IDs of other organizations' locations are ignored | ✅ | `MenuLocationEndpointTests.CreateMenu_LocationIdsOfTwoOrganizations_LinksOnlyTheTokenOrganizationsLocation` |
 | M17 | Linking a menu to a location twice; unlinking one that is not linked | One link only; unlinking still answers OK and changes nothing | ❌ | |
 | M18 | Deleting a menu | Its categories and location links are removed with it | ❌ | |
 | M19 | Owner or Admin creates, reads, changes and deletes a category | Allowed; the location is kept when it belongs to the organization | ✅ | `MenuCategoryServiceTests.CreateAsync_WhenUserIsOwnerOrAdmin_CreatesCategory`, `MenuCategoryServiceTests.CreateAsync_WhenLocationBelongsToOrganization_StoresLocationId`, `MenuCategoryServiceTests.GetByIdAsync_WhenUserIsOwnerOfOrganization_ReturnsCategory`, `MenuCategoryServiceTests.UpdateAsync_WhenUserIsAdminOfOrganization_UpdatesCategory`, `MenuCategoryServiceTests.DeleteAsync_WhenUserIsOwnerOfOrganization_DeletesCategory` |
