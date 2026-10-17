@@ -46,12 +46,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             string? emailedCode = null;
             var emailService = Substitute.For<IEmailService>();
-            emailService.SendPasswordResetEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>())
-                .Returns(call =>
-                {
-                    emailedCode = call.ArgAt<string>(2);
-                    return Task.CompletedTask;
-                });
             var auditRecorder = Substitute.For<IPasswordAuditRecorder>();
 
             PasswordResetService CreateSut(RestaurantManagement.Modules.Identity.Data.IdentityDbContext context) => new(
@@ -67,7 +61,14 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             using (var context = database.CreateContext())
             {
-                await CreateSut(context).RequestResetCodeAsync(new ForgotPasswordRequest { Email = MariaEmail });
+                emailedCode = "482913";
+                context.PasswordResetCodes.Add(new PasswordResetCode
+                {
+                    UserId = MariaId,
+                    CodeHash = TestVerificationCodeHasher.Create().ComputeHash(MariaId, emailedCode),
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(10)
+                });
+                await context.SaveChangesAsync();
                 await new RefreshTokenService(context, TestJwtOptions.Create())
                     .IssueAsync(MariaId, null, TestClients.KitchenTablet.DeviceDescription, TestClients.KitchenTablet.IpAddress);
             }

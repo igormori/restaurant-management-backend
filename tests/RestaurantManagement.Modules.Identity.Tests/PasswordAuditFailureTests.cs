@@ -32,12 +32,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
         {
             _auditRecorder.RecordAsync(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
                 .ThrowsAsync(new InvalidOperationException("audit store down"));
-            _emailService.SendPasswordResetEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>())
-                .Returns(call =>
-                {
-                    _emailedCode = call.ArgAt<string>(2);
-                    return Task.CompletedTask;
-                });
         }
 
         private static async Task<IdentityTestDatabase> CreateDatabaseAsync()
@@ -101,7 +95,14 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 TestVerificationCodeHasher.Create(),
                 new RefreshTokenService(context, TestJwtOptions.Create()),
                 _auditRecorder, TestPasswordHasher.Create());
-            await sut.RequestResetCodeAsync(new ForgotPasswordRequest { Email = MariaEmail });
+            _emailedCode = "482913";
+            context.PasswordResetCodes.Add(new PasswordResetCode
+            {
+                UserId = MariaId,
+                CodeHash = TestVerificationCodeHasher.Create().ComputeHash(MariaId, _emailedCode),
+                ExpiresAt = DateTime.UtcNow.AddMinutes(10)
+            });
+            await context.SaveChangesAsync();
             logger.ClearReceivedCalls();
 
             // Act
