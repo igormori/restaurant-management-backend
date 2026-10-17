@@ -33,24 +33,24 @@ proof of something the code already does.
 | 12 | Medium | V6.2.5 | Missing (conflicts) | ASVS forbids composition rules. R7 and R8 require an uppercase letter, a digit and a symbol. Product decision | R7, R8 |
 | 13 | Medium | V16.3.3 | Partial | Rate-limit rejections are logged (L16). Verify and reset lockouts are not, and neither are other attempts to get past a control | L16, V4, P8 |
 | 14 | Low | V7.3.1, V7.1.1, V7.1.2 | Partial | Inactivity timeout (30 days of not refreshing) and session count (unlimited devices) are in the matrix but with no risk decision or NIST justification. Shared restaurant tablets make this matter | L15, T17 |
-| 15 | Low | V7.2.4 | Partial | Login does not end the session that browser already had: the old refresh token stays valid until it expires | L1, L15 |
+| 15 | Low | V7.2.4 | Covered | Proven by matrix row L20 | L20 |
 | 16 | Low | V6.2.9 | Partial | 64-character passwords are accepted only within 72 bytes (bcrypt limit). 64 accented or non-Latin characters are refused | R6, R9, T7 |
 | 17 | Low | V3.3.1, V3.3.3 | Partial | Refresh cookie is `Secure` but named `refresh_token`, with no `__Secure-` prefix. `__Host-` cannot be used with `Path=/api/auth`; that deviation is not recorded | L2, T10 |
-| 18 | Low | V9.1.2 | Partial | `alg: none` is refused (T2), but no algorithm allowlist is configured (`ValidAlgorithms` unset in `Program.cs`) | T2 |
+| 18 | Low | V9.1.2 | Covered | Proven by matrix row T26 | T26 |
 | 19 | Low | V16.2.5 | Partial | Email addresses are logged when a verification email fails to send (`RegistrationService.cs:100`, `VerificationService.cs:138`). Codes and lockouts are kept out of logs (P5, L18) | P5, L18 |
 | 20 | Low | V6.1.2, V6.2.11 | Missing | No list of context-specific words (product name, role names, "restaurant"…) blocked in passwords | — |
 | 21 | Low | V8.1.2, V8.2.3 | Partial | Response fields are proven (R2, L1, L4). No row proves a client cannot set protected fields such as verified, active or roles through register | R2, L4 |
 | 22 | Low | V6.5.3, V7.2.3, V11.5.1 | Partial | Code already uses a secure random generator: 6-digit codes and 64-byte refresh tokens. No test proves it | R1, P2, T8 |
 | 23 | Low | V6.2.8 | Partial | Code already checks the password exactly as typed (only email is trimmed and lowercased). No test proves spaces or casing are kept | L3, T7 |
-| 24 | Low | V9.2.1 | Partial | `exp` is proven (T1, T15). `nbf` (not before) is validated by the framework but not tested | T1, T15 |
-| 25 | Low | V9.1.3 | Partial | Signing key comes only from configuration. No test proves `jku`, `x5u` or `jwk` headers are ignored | T2 |
-| 26 | Low | V14.2.1 | Partial | Every Identity endpoint is POST with body or cookie, so no secret is in a URL. No test guards against a GET or query parameter being added | — |
-| 27 | Low | V6.3.2 | Partial | No default accounts are seeded today. No test proves a fresh database has no users | — |
-| 28 | Low | V11.4.1 | Partial | HMAC-SHA256 for codes is proven (T6). SHA-256 for refresh fingerprints and HS256 for tokens are code only | T6, T8 |
+| 24 | Low | V9.2.1 | Covered | Proven by matrix row T21 | T21 |
+| 25 | Low | V9.1.3 | Covered | Proven by matrix row T22 | T22 |
+| 26 | Low | V14.2.1 | Covered | Proven by matrix row T23 | T23 |
+| 27 | Low | V6.3.2 | Covered | Proven by matrix row T24 | T24 |
+| 28 | Low | V11.4.1 | Covered | Proven by matrix row T25 | T25 |
 
-**Not counted above:** matrix row V11 (🐞, locked account gets 423 on verify and resend) is an
-open bug already in the backlog. It is an account-enumeration leak that no ASVS 5.0 L2
-requirement names directly.
+**Not counted above:** matrix row V11 (a locked account answers verify and resend like an
+unknown email) was an account-enumeration leak that no ASVS 5.0 L2 requirement names directly.
+It is fixed (commit 9b7bcbc).
 
 ## V6 Authentication
 
@@ -72,7 +72,7 @@ requirement names directly.
 | V6.2.11 | 2 | Context-specific words list enforced | Missing | Summary #20 |
 | V6.2.12 | 2 | Check against breached passwords | Missing | Summary #3 |
 | V6.3.1 | 1 | Credential-stuffing and brute-force controls implemented | Covered | L7–L11, L16, L17, T18 |
-| V6.3.2 | 1 | No default accounts | Partial | Summary #27 |
+| V6.3.2 | 1 | No default accounts | Covered | T24 |
 | V6.3.3 | 2 | MFA, or documented rationale and mitigations | Missing | Summary #1 |
 | V6.3.4 | 2 | No undocumented pathways; consistent strength | Covered | T3 (private by default); L5, F4, S4, C8 refuse the same inactive, unverified or locked users on every pathway |
 | V6.4.1 | 1 | Activation codes random, short-lived, single use | Covered | R1, V2, V8, T16; randomness is code only (summary #22) |
@@ -99,7 +99,7 @@ requirement names directly.
 | V7.2.1 | 1 | Tokens verified by the backend | Covered | T1, T2, T15, W2 |
 | V7.2.2 | 1 | Dynamic tokens, not static keys | Covered | L1, F1 |
 | V7.2.3 | 1 | Reference tokens unique, secure random, 128+ bits | Partial | Unique: T8. 512-bit random value is code only (summary #22) |
-| V7.2.4 | 1 | New token on login, old one ended | Partial | Summary #15 |
+| V7.2.4 | 1 | New token on login, old one ended | Covered | L20 |
 | V7.3.1 | 2 | Inactivity timeout | Partial | 30 days without refreshing (T17), no risk decision (summary #14) |
 | V7.3.2 | 2 | Absolute maximum session lifetime | Missing | Summary #2 |
 | V7.4.1 | 1 | Ended session cannot be used | Partial | Refresh side proven (O2, O3, O5). Access token still works up to 15 min (summary #6) |
@@ -128,9 +128,9 @@ requirement names directly.
 | ASVS | L | Requirement (short) | Status | Evidence or gap |
 |---|---|---|---|---|
 | V9.1.1 | 1 | Signature checked before use | Covered | T2 |
-| V9.1.2 | 1 | Algorithm allowlist, never `none` | Partial | Summary #18 |
-| V9.1.3 | 1 | Keys only from trusted configuration | Partial | Summary #25 |
-| V9.2.1 | 1 | `exp` and `nbf` enforced | Partial | Summary #24 |
+| V9.1.2 | 1 | Algorithm allowlist, never `none` | Covered | T26 |
+| V9.1.3 | 1 | Keys only from trusted configuration | Covered | T22 |
+| V9.2.1 | 1 | `exp` and `nbf` enforced | Covered | T21 |
 | V9.2.2 | 2 | Right token type for the purpose | Not applicable | The only JWT issued is the access token. Refresh tokens are random values checked against the database, never accepted as access tokens |
 | V9.2.3 | 2 | Audience checked | Covered | T2 |
 | V9.2.4 | 2 | Distinct audiences when one key serves several | Not applicable | One audience |
@@ -152,14 +152,14 @@ requirement names directly.
 | V3.3.3 | 2 | `__Host-` prefix unless shared | Partial | Summary #17 |
 | V3.3.4 | 2 | Session cookie `HttpOnly`, set only by `Set-Cookie` | Covered | L1, L2 |
 | V4.1.3 | 2 | Proxy headers cannot be forged by users | Covered | L17 |
-| V11.4.1 | 1 | Only approved hash functions | Partial | Summary #28 |
+| V11.4.1 | 1 | Only approved hash functions | Covered | T25 |
 | V11.4.2 | 2 | Passwords stored with a slow password hash | Covered | R13, L6, T7 (bcrypt, work factor 12) |
 | V11.4.3 | 2 | Hash output 256+ bits where collisions matter | Covered | T6 (64 hex characters) |
 | V11.4.4 | 2 | Key derivation from passwords | Not applicable | No keys are derived from passwords |
 | V11.5.1 | 2 | Secure random values with 128+ bits | Partial | Summary #22 (6-digit codes fall under V6.5.4 instead) |
 | V13.3.1 | 2 | Secrets in a vault, not in source | Covered | W17 (Key Vault), T4, T5 (placeholder refused in production) |
 | V13.3.2 | 2 | Least privilege on secrets | Not applicable | Deployment and vault access policy, outside what the app's tests can prove |
-| V14.2.1 | 1 | No sensitive data in URLs | Partial | Summary #26 |
+| V14.2.1 | 1 | No sensitive data in URLs | Covered | T23 |
 | V16.2.5 | 2 | Sensitive data kept out of logs | Partial | Summary #19 |
 | V16.3.1 | 2 | All authentication attempts logged | Missing | Summary #5 |
 | V16.3.2 | 2 | Failed authorization logged | Missing | Summary #9 |

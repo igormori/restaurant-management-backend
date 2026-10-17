@@ -48,7 +48,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private static async Task<SessionResult> LoginAsync(IdentityTestDatabase database)
         {
             using var context = database.CreateContext();
-            return await CreateSut(context).LoginAsync(new LoginRequest { Email = UserEmail, Password = Password }, TestClients.KitchenTablet);
+            return await CreateSut(context).LoginAsync(new LoginRequest { Email = UserEmail, Password = Password }, TestClients.KitchenTablet, null);
         }
 
         private static string? OrganizationClaimOf(string? token)

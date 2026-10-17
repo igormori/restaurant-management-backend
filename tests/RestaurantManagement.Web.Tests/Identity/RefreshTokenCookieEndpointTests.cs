@@ -114,7 +114,7 @@ public class RefreshTokenCookieEndpointTests : IDisposable
     public async Task Login_ValidCredentials_SetsHttpOnlySecureStrictCookieOnAuthPath()
     {
         // Arrange
-        _factory.SessionService.LoginAsync(Arg.Any<LoginRequest>(), Arg.Any<ClientInfo>()).Returns(IssuedSession());
+        _factory.SessionService.LoginAsync(Arg.Any<LoginRequest>(), Arg.Any<ClientInfo>(), Arg.Any<string?>()).Returns(IssuedSession());
         var client = CreateClient();
 
         // Act
@@ -130,7 +130,7 @@ public class RefreshTokenCookieEndpointTests : IDisposable
     public async Task Login_ValidCredentials_DoesNotSetTheOldCookieName()
     {
         // Arrange
-        _factory.SessionService.LoginAsync(Arg.Any<LoginRequest>(), Arg.Any<ClientInfo>()).Returns(IssuedSession());
+        _factory.SessionService.LoginAsync(Arg.Any<LoginRequest>(), Arg.Any<ClientInfo>(), Arg.Any<string?>()).Returns(IssuedSession());
         var client = CreateClient();
 
         // Act
@@ -165,7 +165,7 @@ public class RefreshTokenCookieEndpointTests : IDisposable
     public async Task Login_ValidCredentials_ResponseBodyHasNoRefreshToken()
     {
         // Arrange
-        _factory.SessionService.LoginAsync(Arg.Any<LoginRequest>(), Arg.Any<ClientInfo>()).Returns(IssuedSession());
+        _factory.SessionService.LoginAsync(Arg.Any<LoginRequest>(), Arg.Any<ClientInfo>(), Arg.Any<string?>()).Returns(IssuedSession());
         var client = CreateClient();
 
         // Act
@@ -185,7 +185,7 @@ public class RefreshTokenCookieEndpointTests : IDisposable
     public async Task Login_FromKitchenTablet_PassesUserAgentAndIpAddressToSession()
     {
         // Arrange
-        _factory.SessionService.LoginAsync(Arg.Any<LoginRequest>(), Arg.Any<ClientInfo>()).Returns(IssuedSession());
+        _factory.SessionService.LoginAsync(Arg.Any<LoginRequest>(), Arg.Any<ClientInfo>(), Arg.Any<string?>()).Returns(IssuedSession());
         var client = CreateClient();
         var request = LoginRequest();
         request.Headers.UserAgent.ParseAdd(TabletUserAgent);
@@ -197,7 +197,8 @@ public class RefreshTokenCookieEndpointTests : IDisposable
         // Assert
         await _factory.SessionService.Received(1).LoginAsync(
             Arg.Any<LoginRequest>(),
-            Arg.Is<ClientInfo>(c => c.DeviceDescription == TabletUserAgent && c.IpAddress == TabletIp));
+            Arg.Is<ClientInfo>(c => c.DeviceDescription == TabletUserAgent && c.IpAddress == TabletIp),
+            Arg.Any<string?>());
     }
 
     // Scenario 50

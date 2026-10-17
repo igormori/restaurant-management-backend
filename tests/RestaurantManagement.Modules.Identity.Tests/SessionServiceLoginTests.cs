@@ -78,8 +78,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var wrongPasswordSut = CreateSut(wrongPasswordContext);
 
             // Act
-            var unknownEmailAct = () => unknownEmailSut.LoginAsync(new LoginRequest { Email = "nobody@test.com", Password = Password }, TestClients.KitchenTablet);
-            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
+            var unknownEmailAct = () => unknownEmailSut.LoginAsync(new LoginRequest { Email = "nobody@test.com", Password = Password }, TestClients.KitchenTablet, null);
+            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet, null);
 
             // Assert
             var unknownEmailThrown = await unknownEmailAct.Should().ThrowAsync<BusinessException>();
@@ -122,8 +122,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var unverifiedSut = CreateSut(unverifiedContext);
 
             // Act
-            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
-            var unverifiedAct = () => unverifiedSut.LoginAsync(new LoginRequest { Email = "unverified@test.com", Password = Password }, TestClients.KitchenTablet);
+            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet, null);
+            var unverifiedAct = () => unverifiedSut.LoginAsync(new LoginRequest { Email = "unverified@test.com", Password = Password }, TestClients.KitchenTablet, null);
 
             // Assert
             var wrongPasswordThrown = await wrongPasswordAct.Should().ThrowAsync<BusinessException>();
@@ -169,8 +169,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var wrongPasswordSut = CreateSut(wrongPasswordContext);
 
             // Act: correct password supplied, but the account is locked
-            var lockedAct = () => lockedSut.LoginAsync(new LoginRequest { Email = "locked@test.com", Password = Password }, TestClients.KitchenTablet);
-            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
+            var lockedAct = () => lockedSut.LoginAsync(new LoginRequest { Email = "locked@test.com", Password = Password }, TestClients.KitchenTablet, null);
+            var wrongPasswordAct = () => wrongPasswordSut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet, null);
 
             // Assert
             var lockedThrown = await lockedAct.Should().ThrowAsync<BusinessException>();
@@ -207,7 +207,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context, maxFailedLoginAttempts: 1);
 
             // Act
-            var act = () => sut.LoginAsync(new LoginRequest { Email = "locked@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
+            var act = () => sut.LoginAsync(new LoginRequest { Email = "locked@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet, null);
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
@@ -244,7 +244,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context, maxFailedLoginAttempts: 1, hub: hub);
 
             // Act
-            var act = () => sut.LoginAsync(new LoginRequest { Email = "marina.souza@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet);
+            var act = () => sut.LoginAsync(new LoginRequest { Email = "marina.souza@test.com", Password = "WrongPassword1!" }, TestClients.KitchenTablet, null);
             await act.Should().ThrowAsync<BusinessException>();
 
             // Assert
@@ -289,7 +289,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 TestPasswordHasher.Create());
 
             // Act
-            var response = await sut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = Password }, TestClients.KitchenTablet);
+            var response = await sut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = Password }, TestClients.KitchenTablet, null);
 
             // Assert
             var token = new JwtSecurityTokenHandler().ReadJwtToken(response.Auth.Token);
@@ -317,7 +317,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context);
 
             // Act
-            var response = await sut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = Password }, TestClients.KitchenTablet);
+            var response = await sut.LoginAsync(new LoginRequest { Email = "verified@test.com", Password = Password }, TestClients.KitchenTablet, null);
 
             // Assert
             response.Auth.Token.Should().NotBeNullOrEmpty("a valid login returns an access token");
@@ -345,7 +345,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context);
 
             // Act
-            var response = await sut.LoginAsync(new LoginRequest { Email = "  Ana@CantinaDaNonna.com.br ", Password = Password }, TestClients.KitchenTablet);
+            var response = await sut.LoginAsync(new LoginRequest { Email = "  Ana@CantinaDaNonna.com.br ", Password = Password }, TestClients.KitchenTablet, null);
 
             // Assert
             response.Auth.Token.Should().NotBeNullOrEmpty("an email in other casing or with spaces still logs in");
@@ -363,7 +363,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = new SessionService(context, TestSecurityOptions.Create(), jwtOptions, TestLocalizer.Create(), Substitute.For<IHub>(), Substitute.For<RestaurantManagement.Shared.Services.Organization.IOrganizationLookup>(), new RefreshTokenService(context, jwtOptions), hasher);
 
             // Act
-            var act = () => sut.LoginAsync(new LoginRequest { Email = "nobody@test.com", Password = Password }, TestClients.KitchenTablet);
+            var act = () => sut.LoginAsync(new LoginRequest { Email = "nobody@test.com", Password = Password }, TestClients.KitchenTablet, null);
             await act.Should().ThrowAsync<BusinessException>();
 
             // Assert
@@ -394,7 +394,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context);
 
             // Act
-            var response = await sut.LoginAsync(new LoginRequest { Email = "maria@cantinadanonna.com.br", Password = Password }, TestClients.KitchenTablet);
+            var response = await sut.LoginAsync(new LoginRequest { Email = "maria@cantinadanonna.com.br", Password = Password }, TestClients.KitchenTablet, null);
 
             // Assert
             response.Auth.Token.ShouldNotBeNullOrEmpty("once the lock has expired the correct password logs in");
@@ -426,7 +426,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context);
 
             // Act
-            await sut.LoginAsync(new LoginRequest { Email = "marina@cantinadanonna.com.br", Password = Password }, TestClients.KitchenTablet);
+            await sut.LoginAsync(new LoginRequest { Email = "marina@cantinadanonna.com.br", Password = Password }, TestClients.KitchenTablet, null);
 
             // Assert
             using var readContext = database.CreateContext();
@@ -459,7 +459,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context);
 
             // Act
-            var response = await sut.LoginAsync(new LoginRequest { Email = "marina@cantinadanonna.com.br", Password = Password }, TestClients.KitchenTablet);
+            var response = await sut.LoginAsync(new LoginRequest { Email = "marina@cantinadanonna.com.br", Password = Password }, TestClients.KitchenTablet, null);
 
             // Assert
             response.Auth.PhoneNumber.ShouldBeNull("the login response never returns the phone number");
@@ -487,7 +487,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             {
                 using var context = database.CreateContext();
                 var sut = CreateSut(context, maxFailedLoginAttempts: 5, lockoutDurationMinutes: 15);
-                var act = () => sut.LoginAsync(new LoginRequest { Email = email, Password = "WrongPassword1!" }, TestClients.KitchenTablet);
+                var act = () => sut.LoginAsync(new LoginRequest { Email = email, Password = "WrongPassword1!" }, TestClients.KitchenTablet, null);
                 await act.ShouldThrowAsync<BusinessException>();
             }
         }

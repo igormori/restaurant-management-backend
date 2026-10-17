@@ -58,7 +58,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context);
 
             // Act
-            var act = () => sut.LoginAsync(new LoginRequest { Email = "unverified@test.com", Password = Password }, TestClients.KitchenTablet);
+            var act = () => sut.LoginAsync(new LoginRequest { Email = "unverified@test.com", Password = Password }, TestClients.KitchenTablet, null);
 
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>("an unverified account cannot log in");
@@ -111,7 +111,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var sut = CreateSut(context);
 
             // Act
-            var response = await sut.LoginAsync(new LoginRequest { Email = "toverify@test.com", Password = Password }, TestClients.KitchenTablet);
+            var response = await sut.LoginAsync(new LoginRequest { Email = "toverify@test.com", Password = Password }, TestClients.KitchenTablet, null);
 
             // Assert
             response.Auth.Token.Should().NotBeNullOrEmpty("once the email is verified the user can log in and gets an access token");
