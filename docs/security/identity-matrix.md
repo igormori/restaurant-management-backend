@@ -57,7 +57,7 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | R9 | Password of exactly 8 or 64 characters, or 72 bytes | Accepted | ✅ | `PasswordRulesAttributeTests.GetValidationResult_PasswordAtLengthLimits_ReturnsSuccess`, `PasswordRulesAttributeTests.GetValidationResult_PasswordOfExactly72Bytes_ReturnsSuccess` |
 | R10 | Missing email, first or last name; name over 100, email over 320, phone over 20 characters | 400 | ✅ | `RegisterRequestValidationTests.Validate_MissingOrTooLongField_ReturnsErrorOnThatField`, `RegisterRequestValidationTests.Validate_NamesOfExactly100Characters_ReturnsNoError` |
 | R11 | Invalid phone number | 400, translated message | ✅ | `IdentityMessagesEndpointTests.Register_InvalidPhoneNumber_ReturnsLocalizedPhoneError` |
-| R12 | Verification email fails to send | 200 anyway; account stays unverified | ✅ | `RegistrationServiceTests.RegisterAsync_EmailSendingFails_StillCreatesUnverifiedUser` |
+| R12 | Verification email fails to send | 200 anyway; account stays unverified; the log names the user ID, never the email address | ✅ | `RegistrationServiceTests.RegisterAsync_EmailSendingFails_StillCreatesUnverifiedUser`, `VerificationEmailFailureLogPrivacyTests.RegisterAsync_EmailSendingFails_LogsTheUserIdAndNotTheEmailAddress` |
 | R13 | Stored secrets | Password only as bcrypt (work factor 12); code only as its keyed fingerprint | ✅ | `RegistrationServiceTests.RegisterAsync_ValidRequest_StoresFingerprintOfEmailedCodeNotTheCode`, `BcryptPasswordHasherTests.Hash_Password_UsesWorkFactor12AndVerifies` |
 | R14 | Rate limit exceeded | 429 with `Retry-After` | ✅ | `AuthRateLimitingTests.PublicAuthEndpoint_LimitExceeded_ReturnsTooManyRequestsWithRetryAfter` |
 
@@ -84,7 +84,7 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | RS3 | Verification locked | No email (status: see V11) | ✅ | `VerificationServiceTests.ResendVerificationCodeAsync_AccountLocked_ThrowsAndSendsNoEmail` |
 | RS4 | Lock expired | New code sent; failed-attempt counter reset | ✅ | `VerificationServiceTests.ResendVerificationCodeAsync_LockoutExpired_SendsNewCodeAndResetsAttempts` |
 | RS5 | Rate limit exceeded | 429 | ✅ | `AuthRateLimitingTests.PublicAuthEndpoint_LimitExceeded_ReturnsTooManyRequestsWithRetryAfter` |
-| RS6 | Email fails to send | 500 `EmailSendingFailed`; the failure is logged | ✅ | `VerificationServiceTests.ResendVerificationCodeAsync_EmailSendingFails_ThrowsBusinessException`, `VerificationServiceEmailFailureLogTests.ResendVerificationCodeAsync_EmailSendingFails_LogsTheCaughtException` |
+| RS6 | Email fails to send | 500 `EmailSendingFailed`; the failure is logged with the user ID, never the email address | ✅ | `VerificationServiceTests.ResendVerificationCodeAsync_EmailSendingFails_ThrowsBusinessException`, `VerificationServiceEmailFailureLogTests.ResendVerificationCodeAsync_EmailSendingFails_LogsTheCaughtException`, `VerificationEmailFailureLogPrivacyTests.ResendVerificationCodeAsync_EmailSendingFails_LogsTheUserIdAndNotTheEmailAddress` |
 
 ## 4. Login: `POST /api/auth/login` (public)
 | ID | Case | Expected | Status | Test |
