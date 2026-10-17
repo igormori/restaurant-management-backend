@@ -637,6 +637,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
             thrown.Which.StatusCode.Should().Be(401, "the wrong code that trips the lock gets the same 401 as any wrong code, so the lock is not revealed");
+            thrown.Which.Message.Should().Be("InvalidEmailOrCode", "the wrong code that trips the lock gets the same generic message as any wrong code, so the lock is not revealed");
 
             using var verifyContext = database.CreateContext();
             var reloadedCode = await verifyContext.UserVerificationCodes.SingleAsync(v => v.UserId == user.Id);
@@ -683,6 +684,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             var thrown = await act.Should().ThrowAsync<BusinessException>();
             thrown.Which.StatusCode.Should().Be(401, "a locked account is refused with the generic 401 even with the correct code");
+            thrown.Which.Message.Should().Be("InvalidEmailOrCode", "a locked account gets the same generic message as any wrong code, so the lock is not revealed");
 
             using var verifyContext = database.CreateContext();
             var reloaded = await verifyContext.Users.SingleAsync(u => u.Email == "user@test.com");
