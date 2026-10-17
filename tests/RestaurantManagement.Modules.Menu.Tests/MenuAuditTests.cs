@@ -79,9 +79,9 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Assert
             using var readContext = database.CreateContext(TestTenant.Of(OrgA));
             var stored = await readContext.Menus.SingleAsync();
-            stored.OrganizationId.ShouldBe(OrgA);
-            stored.CreatedByUserId.ShouldBe(MariaId);
-            stored.CreatedAt.ShouldBe(CreationTime.UtcDateTime);
+            stored.OrganizationId.ShouldBe(OrgA, "every new menu is stamped with the organization of the signed-in user");
+            stored.CreatedByUserId.ShouldBe(MariaId, "a new menu records which user created it");
+            stored.CreatedAt.ShouldBe(CreationTime.UtcDateTime, "a new menu records when it was created");
             stored.UpdatedAt.ShouldBe(CreationTime.UtcDateTime);
             stored.UpdatedByUserId.ShouldBe(MariaId);
         }
@@ -104,10 +104,10 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Assert
             using var readContext = database.CreateContext(TestTenant.Of(OrgA));
             var stored = await readContext.Menus.SingleAsync();
-            stored.UpdatedAt.ShouldBe(UpdateTime.UtcDateTime);
-            stored.UpdatedByUserId.ShouldBe(CarlosId);
+            stored.UpdatedAt.ShouldBe(UpdateTime.UtcDateTime, "a changed menu records when it was last changed");
+            stored.UpdatedByUserId.ShouldBe(CarlosId, "a changed menu records which user last changed it");
             stored.CreatedAt.ShouldBe(CreationTime.UtcDateTime);
-            stored.CreatedByUserId.ShouldBe(MariaId);
+            stored.CreatedByUserId.ShouldBe(MariaId, "changing a menu never overwrites who created it");
         }
 
         // Scenario 3
@@ -124,10 +124,10 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var thrown = await Should.ThrowAsync<BusinessException>(() => context.SaveChangesAsync());
 
             // Assert
-            thrown.StatusCode.ShouldBe(ForbiddenStatusCode);
+            thrown.StatusCode.ShouldBe(ForbiddenStatusCode, "a write that names another organization is refused as forbidden");
             thrown.Message.ShouldBe(TenantMismatchKey);
             using var readContext = database.CreateContext(TestTenant.Of(OrgA));
-            (await readContext.Menus.IgnoreQueryFilters().CountAsync()).ShouldBe(0);
+            (await readContext.Menus.IgnoreQueryFilters().CountAsync()).ShouldBe(0, "a refused write stores nothing");
         }
 
         // Scenario 4
@@ -146,12 +146,12 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var thrown = await Should.ThrowAsync<BusinessException>(() => context.SaveChangesAsync());
 
             // Assert
-            thrown.StatusCode.ShouldBe(ForbiddenStatusCode);
+            thrown.StatusCode.ShouldBe(ForbiddenStatusCode, "a user may not change another organization's menu");
             thrown.Message.ShouldBe(TenantMismatchKey);
             using var readContext = database.CreateContext(TestTenant.Of(OrgA));
             var stored = await readContext.Menus.SingleAsync();
-            stored.Name.ShouldBe("Cardápio de Jantar");
-            stored.UpdatedByUserId.ShouldBe(MariaId);
+            stored.Name.ShouldBe("Cardápio de Jantar", "the other organization's menu keeps its name");
+            stored.UpdatedByUserId.ShouldBe(MariaId, "the refused change leaves no trace of the other user");
         }
 
         // Scenario 5
@@ -170,10 +170,10 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var thrown = await Should.ThrowAsync<BusinessException>(() => context.SaveChangesAsync());
 
             // Assert
-            thrown.StatusCode.ShouldBe(ForbiddenStatusCode);
+            thrown.StatusCode.ShouldBe(ForbiddenStatusCode, "moving a menu to another organization is refused as forbidden");
             thrown.Message.ShouldBe(TenantMismatchKey);
             using var readContext = database.CreateContext(TestTenant.Of(OrgA));
-            (await readContext.Menus.SingleAsync()).OrganizationId.ShouldBe(OrgA);
+            (await readContext.Menus.SingleAsync()).OrganizationId.ShouldBe(OrgA, "a menu never leaves the organization that owns it");
         }
 
         // Scenario 6
@@ -190,10 +190,10 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var thrown = await Should.ThrowAsync<BusinessException>(() => context.SaveChangesAsync());
 
             // Assert
-            thrown.StatusCode.ShouldBe(ForbiddenStatusCode);
+            thrown.StatusCode.ShouldBe(ForbiddenStatusCode, "a write with no organization chosen is refused as forbidden");
             thrown.Message.ShouldBe(OrganizationRequiredKey);
             using var readContext = database.CreateContext(TestTenant.Of(OrgA));
-            (await readContext.Menus.IgnoreQueryFilters().CountAsync()).ShouldBe(0);
+            (await readContext.Menus.IgnoreQueryFilters().CountAsync()).ShouldBe(0, "a refused write stores nothing");
         }
 
         // Scenario 7
@@ -213,10 +213,10 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Assert
             using var readContext = database.CreateContext(TestTenant.Of(OrgA));
             var stored = await readContext.MenuCategories.SingleAsync();
-            stored.OrganizationId.ShouldBe(OrgA);
+            stored.OrganizationId.ShouldBe(OrgA, "every new category is stamped with the organization of the signed-in user");
             stored.CreatedAt.ShouldBe(CreationTime.UtcDateTime);
-            stored.UpdatedAt.ShouldBe(CreationTime.UtcDateTime);
-            stored.CreatedByUserId.ShouldBe(MariaId);
+            stored.UpdatedAt.ShouldBe(CreationTime.UtcDateTime, "a new category records when it was saved");
+            stored.CreatedByUserId.ShouldBe(MariaId, "a new category records which user created it");
         }
 
         // Scenario 8
@@ -235,7 +235,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
 
             // Assert
             using var readContext = database.CreateContext(TestTenant.Of(OrgA));
-            (await readContext.MenuCategories.SingleAsync()).LocationId.ShouldBeNull();
+            (await readContext.MenuCategories.SingleAsync()).LocationId.ShouldBeNull("a category created without a location stays without one");
         }
 
         // Scenario 9
@@ -255,9 +255,9 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Assert
             using var readContext = database.CreateContext(TestTenant.Of(OrgA));
             var stored = await readContext.LocationMenus.SingleAsync();
-            stored.OrganizationId.ShouldBe(OrgA);
+            stored.OrganizationId.ShouldBe(OrgA, "a new menu-location link is stamped with the organization of the signed-in user");
             stored.UpdatedAt.ShouldBe(CreationTime.UtcDateTime);
-            stored.CreatedByUserId.ShouldBe(MariaId);
+            stored.CreatedByUserId.ShouldBe(MariaId, "a new link records which user created it");
         }
 
         // Scenario 10
@@ -283,9 +283,9 @@ namespace RestaurantManagement.Modules.Menu.Tests
             // Assert
             using var readContext = database.CreateContext(TestTenant.Of(OrgA));
             var stored = await readContext.MenuCategories.SingleAsync();
-            stored.UpdatedAt.ShouldBe(UpdateTime.UtcDateTime);
-            stored.UpdatedByUserId.ShouldBe(CarlosId);
-            stored.CreatedAt.ShouldBe(CreationTime.UtcDateTime);
+            stored.UpdatedAt.ShouldBe(UpdateTime.UtcDateTime, "a changed category records when it was last changed");
+            stored.UpdatedByUserId.ShouldBe(CarlosId, "a changed category records which user last changed it");
+            stored.CreatedAt.ShouldBe(CreationTime.UtcDateTime, "changing a category never overwrites when it was created");
         }
     }
 }

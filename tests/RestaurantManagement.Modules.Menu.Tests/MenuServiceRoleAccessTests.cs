@@ -85,8 +85,8 @@ public class MenuServiceRoleAccessTests
         var act = () => sut.GetMenusAsync(JoaoId);
 
         // Assert
-        var exception = await act.ShouldThrowAsync<BusinessException>();
-        exception.StatusCode.ShouldBe(403);
+        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "a user with a role only in another organization may not read this organization's menus");
+        exception.StatusCode.ShouldBe(403, "a role in another organization gives no access here");
     }
 
     // Scenario 45
@@ -105,8 +105,8 @@ public class MenuServiceRoleAccessTests
         var act = () => sut.GetMenusByLocationAsync(JoaoId, CentroLocationId);
 
         // Assert
-        var exception = await act.ShouldThrowAsync<BusinessException>();
-        exception.StatusCode.ShouldBe(403);
+        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "a user with a role only in another organization may not read this location's menus");
+        exception.StatusCode.ShouldBe(403, "a role in another organization gives no access here");
     }
 
     // Scenario 35
@@ -133,8 +133,8 @@ public class MenuServiceRoleAccessTests
         var act = () => sut.CreateMenuAsync(JoaoId, request);
 
         // Assert
-        var exception = await act.ShouldThrowAsync<BusinessException>();
-        exception.StatusCode.ShouldBe(403);
+        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "only an Owner or Admin may create a menu");
+        exception.StatusCode.ShouldBe(403, "Manager, Cashier, Waiter and Kitchen may never create a menu");
     }
 
     // Scenario 36
@@ -157,10 +157,10 @@ public class MenuServiceRoleAccessTests
         var act = () => sut.DeleteMenuAsync(JoaoId, DinnerMenuId);
 
         // Assert
-        var exception = await act.ShouldThrowAsync<BusinessException>();
-        exception.StatusCode.ShouldBe(403);
+        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "only an Owner or Admin may delete a menu");
+        exception.StatusCode.ShouldBe(403, "Manager, Cashier, Waiter and Kitchen may never delete a menu");
         using var checkContext = database.CreateContext(tenant);
-        checkContext.Menus.Count(m => m.Id == DinnerMenuId).ShouldBe(1);
+        checkContext.Menus.Count(m => m.Id == DinnerMenuId).ShouldBe(1, "a refused delete keeps the menu");
     }
 
     // Scenario 36
@@ -184,7 +184,7 @@ public class MenuServiceRoleAccessTests
         var act = () => sut.EditMenuAsync(JoaoId, DinnerMenuId, request);
 
         // Assert
-        var exception = await act.ShouldThrowAsync<BusinessException>();
+        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "only an Owner or Admin may edit a menu");
         exception.StatusCode.ShouldBe(403, "only an Owner or Admin may edit a menu");
         using var checkContext = database.CreateContext(tenant);
         var stored = checkContext.Menus.Single(m => m.Id == DinnerMenuId);
@@ -213,7 +213,7 @@ public class MenuServiceRoleAccessTests
         var act = () => sut.AttachMenuToLocationAsync(JoaoId, DinnerMenuId, otherLocationId);
 
         // Assert
-        var exception = await act.ShouldThrowAsync<BusinessException>();
+        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "only an Owner or Admin may link a menu to a location");
         exception.StatusCode.ShouldBe(403, "only an Owner or Admin may link a menu to a location");
         using var checkContext = database.CreateContext(tenant);
         checkContext.LocationMenus.Select(lm => lm.LocationId).ToList()
@@ -240,7 +240,7 @@ public class MenuServiceRoleAccessTests
         var act = () => sut.DetachMenuFromLocationAsync(JoaoId, DinnerMenuId, CentroLocationId);
 
         // Assert
-        var exception = await act.ShouldThrowAsync<BusinessException>();
+        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "only an Owner or Admin may unlink a menu from a location");
         exception.StatusCode.ShouldBe(403, "only an Owner or Admin may unlink a menu from a location");
         using var checkContext = database.CreateContext(tenant);
         checkContext.LocationMenus.Select(lm => lm.LocationId).ToList()
@@ -269,7 +269,7 @@ public class MenuServiceRoleAccessTests
         var menus = await sut.GetMenusAsync(JoaoId);
 
         // Assert
-        menus.Select(m => m.Id).ShouldBe(new[] { DinnerMenuId });
+        menus.Select(m => m.Id).ShouldBe(new[] { DinnerMenuId }, ignoreOrder: false, customMessage: "every role of the organization may read its menus");
     }
 
     // Scenario 33
@@ -294,6 +294,6 @@ public class MenuServiceRoleAccessTests
         var menus = await sut.GetMenusByLocationAsync(JoaoId, CentroLocationId);
 
         // Assert
-        menus.Select(m => m.Id).ShouldBe(new[] { DinnerMenuId });
+        menus.Select(m => m.Id).ShouldBe(new[] { DinnerMenuId }, ignoreOrder: false, customMessage: "every role of the organization may read a location's menus");
     }
 }

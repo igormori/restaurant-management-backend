@@ -73,7 +73,7 @@ public class MenuRoleEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden, "only an Owner or Admin may create a menu");
         await _menuService.DidNotReceive().CreateMenuAsync(Arg.Any<Guid>(), Arg.Any<CreateMenuRequest>());
     }
 
@@ -95,7 +95,7 @@ public class MenuRoleEndpointTests : IDisposable
         var response = await client.SendAsync(SignedIn(HttpMethod.Get, "/api/menus", role));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "every role of the organization may list its menus");
     }
 
     // Scenario 38
@@ -116,6 +116,6 @@ public class MenuRoleEndpointTests : IDisposable
         var response = await client.SendAsync(SignedIn(HttpMethod.Get, $"/api/menus/location/{CentroLocationId}", role));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "every role of the organization may list a location's menus");
     }
 }

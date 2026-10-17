@@ -73,12 +73,12 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound, "another organization's menu is answered as if it did not exist");
         var stored = await factory.InOrganizationAsync<MenuDbContext, Modules.Menu.Entities.Menu?>(TrattoriaId,
             db => db.Menus.Include(m => m.LocationMenus).SingleOrDefaultAsync(m => m.Id == TrattoriaLunchMenuId));
-        stored.ShouldNotBeNull();
-        stored.Name.ShouldBe("Pranzo");
-        stored.LocationMenus.ShouldBeEmpty();
+        stored.ShouldNotBeNull("the other organization's menu is not deleted");
+        stored.Name.ShouldBe("Pranzo", "the other organization's menu keeps its name");
+        stored.LocationMenus.ShouldBeEmpty(customMessage: "no location is linked to or unlinked from the other organization's menu");
     }
 
     // Scenario 10
@@ -98,11 +98,11 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.SendAsync(Request(method, $"/api/menu-categories/{TrattoriaPizzaCategoryId}", body));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound, "another organization's category is answered as if it did not exist");
         var stored = await factory.InOrganizationAsync<MenuDbContext, Modules.Menu.Entities.MenuCategory?>(TrattoriaId,
             db => db.MenuCategories.SingleOrDefaultAsync(c => c.Id == TrattoriaPizzaCategoryId));
-        stored.ShouldNotBeNull();
-        stored.Name.ShouldBe("Pizze");
+        stored.ShouldNotBeNull("the other organization's category is not deleted");
+        stored.Name.ShouldBe("Pizze", "the other organization's category keeps its name");
     }
 
     // Scenario 12
@@ -123,9 +123,9 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.SendAsync(Request(method, url, body));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden, "a user who has not chosen an organization is refused as forbidden");
         var error = await response.Content.ReadFromJsonAsync<ErrorBody>();
-        error!.Message.ShouldBe(factory.Message("OrganizationRequired"));
+        error!.Message.ShouldBe(factory.Message("OrganizationRequired"), "the refusal tells the user an organization is required");
     }
 
     private sealed record ErrorBody(string Message);
@@ -144,8 +144,8 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
             new { organizationId = TrattoriaId, name = "Almoço executivo", description = "Prato feito com arroz, feijão e bife" });
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        (await response.Content.ReadFromJsonAsync<Row>())!.OrganizationId.ShouldBe(CantinaId);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "the menu is created");
+        (await response.Content.ReadFromJsonAsync<Row>())!.OrganizationId.ShouldBe(CantinaId, "the menu is stored in the signed-in organization, whatever organization the request names");
     }
 
     // Scenario 14
@@ -162,8 +162,8 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
             new { menuId = CantinaDinnerMenuId, organizationId = TrattoriaId, name = "Sobremesas", sortOrder = 2 });
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Created);
-        (await response.Content.ReadFromJsonAsync<Row>())!.OrganizationId.ShouldBe(CantinaId);
+        response.StatusCode.ShouldBe(HttpStatusCode.Created, "the category is created");
+        (await response.Content.ReadFromJsonAsync<Row>())!.OrganizationId.ShouldBe(CantinaId, "the category is stored in the signed-in organization, whatever organization the request names");
     }
 
     // Scenario 15
@@ -179,9 +179,9 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.GetAsync("/api/menus");
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "an Owner may list the organization's menus");
         var menus = await response.Content.ReadFromJsonAsync<List<Row>>();
-        menus!.Select(m => m.Id).ShouldBe(new[] { CantinaDinnerMenuId });
+        menus!.Select(m => m.Id).ShouldBe(new[] { CantinaDinnerMenuId }, ignoreOrder: false, customMessage: "the list holds only the signed-in organization's menus, never another organization's");
     }
 
     // Scenario 16
@@ -197,9 +197,9 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.GetAsync("/api/menu-categories");
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "an Owner may list the organization's categories");
         var categories = await response.Content.ReadFromJsonAsync<List<Row>>();
-        categories!.Select(c => c.Id).ShouldBe(new[] { CantinaPastaCategoryId });
+        categories!.Select(c => c.Id).ShouldBe(new[] { CantinaPastaCategoryId }, ignoreOrder: false, customMessage: "the list holds only the signed-in organization's categories, never another organization's");
     }
 
     // Scenario 17
@@ -217,6 +217,6 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.GetAsync(url);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound, "the organization is never taken from the address, so the old routes no longer exist");
     }
 }

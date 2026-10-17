@@ -68,7 +68,7 @@ public class MenuDeleteCascadeTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.DeleteAsync($"/api/menus/{DinnerMenuId}");
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "an Owner may delete a menu");
         var remaining = await factory.InOrganizationAsync<MenuDbContext, (List<Guid> Menus, List<Guid> Categories, int Links)>(CantinaId, async db =>
             (await db.Menus.Select(m => m.Id).ToListAsync(),
              await db.MenuCategories.Select(c => c.Id).ToListAsync(),

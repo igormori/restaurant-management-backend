@@ -107,7 +107,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var act = () => sut.CreateAsync(userId, CreateRequest(menuId));
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a user with no role in the organization may not create menu categories");
         }
 
         [Fact]
@@ -129,9 +129,9 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var act = () => sut.CreateAsync(userId, CreateRequest(foreignMenuId));
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 404);
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 404, "a category cannot be added to another organization's menu; it answers as if the menu did not exist");
             using var readContext = database.CreateContext();
-            readContext.MenuCategories.Count().Should().Be(0);
+            readContext.MenuCategories.Count().Should().Be(0, "a refused category is not stored");
         }
 
         [Fact]
@@ -152,7 +152,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var act = () => sut.CreateAsync(userId, CreateRequest(Guid.NewGuid()));
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 404);
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 404, "a category cannot be added to a menu that does not exist");
         }
 
         [Fact]
@@ -179,9 +179,9 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var act = () => sut.CreateAsync(userId, request);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 404);
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 404, "a category cannot use another organization's location; it answers as if the location did not exist");
             using var readContext = database.CreateContext();
-            readContext.MenuCategories.Count().Should().Be(0);
+            readContext.MenuCategories.Count().Should().Be(0, "a refused category is not stored");
         }
 
         [Fact]
@@ -204,9 +204,9 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var act = () => sut.CreateAsync(userId, request);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 404);
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 404, "a category cannot use a location that does not exist");
             using var readContext = database.CreateContext();
-            readContext.MenuCategories.Count().Should().Be(0);
+            readContext.MenuCategories.Count().Should().Be(0, "a refused category is not stored");
         }
 
         [Fact]
@@ -233,7 +233,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var response = await sut.CreateAsync(userId, request);
 
             // Assert
-            response.LocationId.Should().Be(locationId);
+            response.LocationId.Should().Be(locationId, "a location of the same organization is kept on the category");
         }
 
         [Fact]
@@ -254,8 +254,8 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var response = await sut.CreateAsync(userId, CreateRequest(menuId));
 
             // Assert
-            response.Should().NotBeNull();
-            response.OrganizationId.Should().Be(organizationId);
+            response.Should().NotBeNull("an Owner or Admin may create a category");
+            response.OrganizationId.Should().Be(organizationId, "the new category belongs to the user's organization");
             response.Name.Should().Be("Starters");
         }
 
@@ -278,7 +278,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var act = () => sut.GetByIdAsync(userId, categoryId);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a user with no role in the organization may not read menu categories");
         }
 
         [Fact]
@@ -300,7 +300,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var response = await sut.GetByIdAsync(userId, categoryId);
 
             // Assert
-            response.Should().NotBeNull();
+            response.Should().NotBeNull("an Owner may read a category of the organization");
             response!.Id.Should().Be(categoryId);
         }
 
@@ -323,7 +323,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var act = () => sut.GetAllAsync(userId);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a user with no role in the organization may not list menu categories");
         }
 
         [Fact]
@@ -345,7 +345,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var act = () => sut.UpdateAsync(userId, categoryId, UpdateRequest);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a user with no role in the organization may not change menu categories");
         }
 
         [Fact]
@@ -367,8 +367,8 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var response = await sut.UpdateAsync(userId, categoryId, UpdateRequest);
 
             // Assert
-            response.Should().NotBeNull();
-            response!.Name.Should().Be(UpdateRequest.Name);
+            response.Should().NotBeNull("an Admin may change a category of the organization");
+            response!.Name.Should().Be(UpdateRequest.Name, "the category shows the new name after the change");
         }
 
         [Fact]
@@ -390,7 +390,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var act = () => sut.DeleteAsync(userId, categoryId);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a user with no role in the organization may not delete menu categories");
         }
 
         [Fact]
@@ -412,7 +412,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var result = await sut.DeleteAsync(userId, categoryId);
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().BeTrue("an Owner may delete a category of the organization");
         }
     }
 }

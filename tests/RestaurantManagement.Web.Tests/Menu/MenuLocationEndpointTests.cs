@@ -115,7 +115,7 @@ public class MenuLocationEndpointTests : IClassFixture<PostgresDatabaseFixture>
         });
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "an Owner may create a menu with locations");
         var menu = await response.Content.ReadFromJsonAsync<MenuBody>();
         menu!.IsActive.ShouldBeTrue("a new menu is stored active");
         menu.LocationIds.ShouldBe(new[] { CantinaCentroId }, ignoreOrder: false,

@@ -67,8 +67,8 @@ public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        (await MessageAsync(response)).ShouldBe(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound, "a menu that does not exist is answered as not found");
+        (await MessageAsync(response)).ShouldBe(expected, "the not-found message is written in the requested language");
     }
 
     // Scenario 8
@@ -88,8 +88,8 @@ public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        (await MessageAsync(response)).ShouldBe(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound, "another organization's category is answered as if it did not exist");
+        (await MessageAsync(response)).ShouldBe(expected, "the not-found message is written in the requested language");
     }
 
     // Scenario 9
@@ -108,8 +108,8 @@ public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "a menu without a name is refused");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, customMessage: "the refusal is written in the requested language");
     }
 
     // Scenario 10
@@ -129,8 +129,8 @@ public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "a menu name over 100 characters is refused");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, customMessage: "the refusal is written in the requested language");
     }
 
     // Scenario 11
@@ -149,8 +149,8 @@ public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "a category without a name is refused");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, customMessage: "the refusal is written in the requested language");
     }
 
     // Scenario 12
@@ -170,8 +170,8 @@ public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "a category description over 1000 characters is refused");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, customMessage: "the refusal is written in the requested language");
     }
 
     [Theory]
