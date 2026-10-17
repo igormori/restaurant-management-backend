@@ -24,13 +24,33 @@ public class HttpsHostingExtensionsTests : IDisposable
         _certificate.Dispose();
     }
 
+    // Ports come from 20000–29999, outside the operating system's random range (macOS 49152+,
+    // Linux 32768+) that Docker also maps test database containers into. A port taken from the
+    // random range could be handed to a Postgres container between this check and the server
+    // starting, and database tests running in parallel then reached this HTTPS server instead.
+    private const int FirstTestPort = 20000;
+    private const int TestPortCount = 10000;
+
     private static int GetFreePort()
     {
-        var listener = new TcpListener(IPAddress.Loopback, 0);
-        listener.Start();
-        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
-        listener.Stop();
-        return port;
+        var offset = Random.Shared.Next(TestPortCount);
+        for (var attempt = 0; attempt < TestPortCount; attempt++)
+        {
+            var port = FirstTestPort + (offset + attempt) % TestPortCount;
+            try
+            {
+                var listener = new TcpListener(IPAddress.Any, port);
+                listener.Start();
+                listener.Stop();
+                return port;
+            }
+            catch (SocketException)
+            {
+                // In use: try the next one.
+            }
+        }
+
+        throw new InvalidOperationException($"No free port between {FirstTestPort} and {FirstTestPort + TestPortCount - 1}.");
     }
 
     private Dictionary<string, string?> CertificateSettings(int? port) => new()
