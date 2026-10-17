@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RestaurantManagement.Modules.Identity.Services;
@@ -18,8 +17,8 @@ public class PasswordResetEmailWorkerWiringTests
     public void HostedServices_EmailWorkerEnabled_RegistersWorker()
     {
         // Arrange
-        using var factory = new AuthApiFactory().WithWebHostBuilder(builder => builder.ConfigureAppConfiguration((_, configuration) =>
-            configuration.AddInMemoryCollection(new Dictionary<string, string?> { ["PasswordResetEmails:Enabled"] = "true" })));
+        // UseSetting, unlike ConfigureAppConfiguration, is visible while Program.cs registers services.
+        using var factory = new AuthApiFactory().WithWebHostBuilder(builder => builder.UseSetting("PasswordResetEmails:Enabled", "true"));
 
         // Act
         var hostedServices = factory.Services.GetServices<IHostedService>();
