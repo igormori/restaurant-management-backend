@@ -20,7 +20,7 @@ from pathlib import Path
 
 TRX = "{http://microsoft.com/schemas/VisualStudio/TeamTest/2010}"
 NAMED_TEST = re.compile(r"`([A-Z]\w*Tests)\.(\w+)`")
-ROW_ID = re.compile(r"^[A-Z]{1,2}\d+$")
+ROW_ID = re.compile(r"^[A-Z]{1,3}\d+$")
 MAX_MESSAGE = 600
 
 

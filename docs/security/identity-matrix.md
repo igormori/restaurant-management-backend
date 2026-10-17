@@ -3,7 +3,7 @@
 The record of every rule the Identity module must keep, on the security and the behaviour side,
 and the test that proves each one. The pipeline (`.github/workflows/dotnet.yml`) runs on every
 pull request and every push to `main`. It runs every test named here, and
-`.claude/scripts/check-identity-matrix.py` fails the build when this file and the tests drift
+`.claude/scripts/check-security-matrices.py` fails the build when this file and the tests drift
 apart: a named test that no longer exists, an Identity test mapped nowhere, or a ✅ row with no
 test.
 

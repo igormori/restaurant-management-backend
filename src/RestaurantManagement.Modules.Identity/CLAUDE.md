@@ -4,7 +4,7 @@ Context beyond the root CLAUDE.md and the code itself. See docs/specs/identity/ 
 docs/plans/identity/ for the full reasoning.
 
 Every change here updates docs/security/identity-matrix.md in the same commit (rules in the
-root CLAUDE.md, "Identity security matrix"). Endpoint and database tests go in
+root CLAUDE.md, "Security matrices"). Endpoint and database tests go in
 tests/RestaurantManagement.Web.Tests/Identity/.
 
 Verification is account-level, never organization-scoped: a user has no UserRole (and no

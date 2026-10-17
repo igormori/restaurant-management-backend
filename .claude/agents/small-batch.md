@@ -53,7 +53,7 @@ Read `.claude/skills/architecture/SKILL.md`, `.claude/skills/testing/SKILL.md`, 
 3. **Implement** the minimum code to make them pass, in the folders the architecture skill allows.
 4. Run that item's test classes again until they pass. Run `dotnet format`; if it changes a file
    this item did not touch, revert only that file by path.
-5. **Identity matrix:** Identity or authentication change: update `docs/security/identity-matrix.md` in the same commit — a row for every new or changed behaviour, ✅ only with the name of a passing test, and every new Identity test named in a row. Run `python3 .claude/scripts/check-identity-matrix.py` before committing.
+5. **Security matrix:** change to a module with a matrix (root `CLAUDE.md`, "Security matrices"): update `docs/security/<module>-matrix.md` in the same commit — a row for every new or changed behaviour, ✅ only with the name of a passing test, every new test of that module named in a row and tagged `[Trait("Rule", "<row ID>")]`, with rule messages on its key assertions. Run `python3 .claude/scripts/check-security-matrices.py` before committing.
 6. **Self-check the diff:** location, size limits, one responsibility per class, only "why"
    comments, no secrets, nothing beyond the item.
 7. **Commit the item alone**, staged by path (never `git add -A` or `git add .`). Conventional

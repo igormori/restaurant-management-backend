@@ -41,7 +41,7 @@ If the branch has no baseline commit yet, commit the spec, plan folder, stubs an
    done yet** (they stay failing until their task). Any other failure must be fixed before committing.
 4. Run `dotnet format`.
 5. Self-check the diff (`git diff`) against Section 4 before committing.
-6. Identity or authentication task: turn the task's rows in `docs/security/identity-matrix.md` to ✅ now that their tests pass, and run `python3 .claude/scripts/check-identity-matrix.py`. Never mark a row ✅ whose test fails. Commit the matrix with the task.
+6. Task in a module with a security matrix (root `CLAUDE.md`, "Security matrices"): turn the task's rows in `docs/security/<module>-matrix.md` to ✅ now that their tests pass, and run `python3 .claude/scripts/check-security-matrices.py`. Never mark a row ✅ whose test fails. Commit the matrix with the task.
 7. Write the task's **Delivered** note in the batch file (what was built, where, any difference from the plan or guide), tick the task in the `plan.md` Checklist and set Status to `In progress`. Edit these files with the Edit tool, never with `sed`.
 8. Commit the code, the Delivered note, the tick and any matrix rows **together**: one commit per task, Conventional Commits (see root `CLAUDE.md`), with the task's scenario numbers in the body: `Scenarios: 1–3`.
 9. Stage **only the files this task changed**, by path (`git add <path> <path>`). Never `git add -A`, `git add .` or `git commit -a`. Files you did not change are not yours to commit.

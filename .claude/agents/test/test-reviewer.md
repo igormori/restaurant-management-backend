@@ -46,9 +46,9 @@ Coverage:
   currencies (BRL, USD, CAD).
 - The coverage counts at the top of `scenarios.md` match the table.
 - The "Spec Outcome coverage" table lists every spec Outcome.
-- Identity or authentication plans: every Security, Failure and Edge scenario has a row in
-  `docs/security/identity-matrix.md` naming its test, still ❌ (✅ only for a `Guard` scenario). A missing row, or a non-guard row
-  already marked ✅, is Fix first. Run `python3 .claude/scripts/check-identity-matrix.py`: a test
+- Plans that touch a module with a matrix: every Security, Failure and Edge scenario has a row in
+  `docs/security/<module>-matrix.md` naming its test, still ❌ (✅ only for a `Guard` scenario). A missing row, or a non-guard row
+  already marked ✅, is Fix first. Run `python3 .claude/scripts/check-security-matrices.py`: a test
   without its `[Trait("Rule", ...)]` tag is Fix first; key assertions without a rule message
   are Watch out.
 - A `Guard` covers behaviour that is truly correct today; a new behaviour marked `Guard` is a finding.
@@ -90,7 +90,7 @@ Trimmed output: test names and the exception for each.
 - Fix first only for: a missing spec Outcome or security scenario, a test that fails for the
   wrong reason or passes (except guards), a test that a trivial implementation would satisfy, a
   stub outside the Implementation guide, a non-stub change in `src/`, a task without an
-  Implementation guide, or a missing Identity matrix row.
+  Implementation guide, or a missing security matrix row.
 - 10 findings maximum across Watch out and Questions. More than that: say so and stop.
 - Every finding names a file and line or a scenario number, and a concrete change.
 - Never edit, stage, commit, or push anything.

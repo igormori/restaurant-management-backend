@@ -15,8 +15,8 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Check the Identity security matrix matches the tests
-        run: python3 .claude/scripts/check-identity-matrix.py
+      - name: Check the security matrices match the tests
+        run: python3 .claude/scripts/check-security-matrices.py
 
       - run: dotnet restore RestaurantManagement.sln
       - run: dotnet build RestaurantManagement.sln --no-restore
