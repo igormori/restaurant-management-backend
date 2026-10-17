@@ -144,7 +144,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var results = Validate(request);
 
             // Assert
-            results.SelectMany(r => r.MemberNames).Distinct().ShouldBe(new[] { invalidField });
+            results.SelectMany(r => r.MemberNames).Distinct().ShouldBe(new[] { invalidField }, ignoreOrder: false, customMessage: "a location with a missing or invalid field is refused, and the error names only that field");
         }
 
         // Scenario 12
@@ -159,7 +159,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var results = Validate(request);
 
             // Assert
-            results.ShouldBeEmpty();
+            results.ShouldBeEmpty(customMessage: "a location with a supported time zone, type and code is accepted");
         }
 
         // Scenario 13
@@ -179,10 +179,10 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             // Assert: read the stored location back through the location list
             using var listContext = database.CreateContext(TestTenant.Of(organizationId));
-            var stored = (await CreateService(listContext, userId, organizationId, Roles.Owner).GetLocationsAsync(userId)).ShouldHaveSingleItem();
-            stored.TimeZone.ShouldBe("America/Sao_Paulo");
-            stored.Type.ShouldBe(LocationType.Store);
-            stored.Code.ShouldBe("PAU1");
+            var stored = (await CreateService(listContext, userId, organizationId, Roles.Owner).GetLocationsAsync(userId)).ShouldHaveSingleItem(customMessage: "the new location is stored once");
+            stored.TimeZone.ShouldBe("America/Sao_Paulo", "the location keeps the time zone chosen for it");
+            stored.Type.ShouldBe(LocationType.Store, "a location created without a type is a Store");
+            stored.Code.ShouldBe("PAU1", "a location code is always stored in uppercase");
         }
 
         // Scenario 14
@@ -202,9 +202,9 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var response = await sut.EditLocationAsync(userId, locationId, EditRequest("America/Toronto", "CentralKitchen", "yyz1"));
 
             // Assert
-            response.TimeZone.ShouldBe("America/Toronto");
-            response.Type.ShouldBe(LocationType.CentralKitchen);
-            response.Code.ShouldBe("YYZ1");
+            response.TimeZone.ShouldBe("America/Toronto", "editing a location changes its time zone");
+            response.Type.ShouldBe(LocationType.CentralKitchen, "editing a location changes its type");
+            response.Code.ShouldBe("YYZ1", "editing a location changes its code");
         }
 
         // Scenario 24
@@ -225,8 +225,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             // Assert: read the stored location back through the location list
             using var listContext = database.CreateContext(TestTenant.Of(organizationId));
-            var stored = (await CreateService(listContext, userId, organizationId, Roles.Owner).GetLocationsAsync(userId)).ShouldHaveSingleItem();
-            stored.Type.ShouldBe(LocationType.CentralKitchen);
+            var stored = (await CreateService(listContext, userId, organizationId, Roles.Owner).GetLocationsAsync(userId)).ShouldHaveSingleItem(customMessage: "the edited location is still stored once");
+            stored.Type.ShouldBe(LocationType.CentralKitchen, "an edit that leaves the type out keeps the type the location already had");
         }
 
         // Scenario 19
@@ -251,9 +251,9 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             // Assert
             var exception = await act.ShouldThrowAsync<BusinessException>();
-            exception.StatusCode.ShouldBe(403);
+            exception.StatusCode.ShouldBe(403, "only an Owner or Admin may edit a location");
             using var verifyContext = database.CreateContext(TestTenant.Of(organizationId));
-            (await verifyContext.Locations.SingleAsync(l => l.Id == locationId)).Name.ShouldBe("Unidade Paulista");
+            (await verifyContext.Locations.SingleAsync(l => l.Id == locationId)).Name.ShouldBe("Unidade Paulista", "a refused edit leaves the location unchanged");
         }
     }
 }

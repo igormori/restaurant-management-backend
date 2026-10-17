@@ -93,12 +93,12 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
         var response = await client.SendAsync(Request(method, $"/api/locations/{TrattoriaCentroId}", LocationBody));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound, "another organization's location is answered as not found, as if it did not exist");
         var stored = await factory.InOrganizationAsync<OrganizationDbContext, Location?>(TrattoriaId,
             db => db.Locations.SingleOrDefaultAsync(l => l.Id == TrattoriaCentroId));
-        stored.ShouldNotBeNull();
-        stored.Name.ShouldBe("Unidade Centro");
-        stored.Status.ShouldBe(LocationStatus.Active);
+        stored.ShouldNotBeNull("the other organization's location still exists");
+        stored.Name.ShouldBe("Unidade Centro", "the other organization's location keeps its name");
+        stored.Status.ShouldBe(LocationStatus.Active, "the other organization's location stays open");
     }
 
     // Scenario 22
@@ -114,9 +114,9 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
         var response = await client.GetAsync("/api/locations");
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "a signed-in user may list locations");
         var locations = await response.Content.ReadFromJsonAsync<List<Row>>();
-        locations!.Select(l => l.Id).ShouldBe(new[] { CantinaBatelId });
+        locations!.Select(l => l.Id).ShouldBe(new[] { CantinaBatelId }, ignoreOrder: false, customMessage: "the list holds only the token organization's locations");
     }
 
     // Scenario 23
@@ -132,8 +132,8 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
         var response = await client.PostAsJsonAsync("/api/locations", LocationBody);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        (await response.Content.ReadFromJsonAsync<Row>())!.OrganizationId.ShouldBe(CantinaId);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "a location may be created even when the body names another organization");
+        (await response.Content.ReadFromJsonAsync<Row>())!.OrganizationId.ShouldBe(CantinaId, "the location is created in the token organization, never the one named in the body");
     }
 
     // Scenario 24
@@ -149,11 +149,11 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
         var response = await client.PutAsJsonAsync("/api/organizations/edit", OrganizationBody);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "an Owner may edit the organization they are signed in to");
         var names = await factory.InOrganizationAsync<OrganizationDbContext, Dictionary<Guid, string>>(CantinaId,
             db => db.Organizations.ToDictionaryAsync(o => o.Id, o => o.Name));
-        names[CantinaId].ShouldBe("Cantina da Nonna Batel");
-        names[TrattoriaId].ShouldBe("Trattoria do Sol");
+        names[CantinaId].ShouldBe("Cantina da Nonna Batel", "the organization signed in to is the one edited");
+        names[TrattoriaId].ShouldBe("Trattoria do Sol", "the user's other organization is left unchanged");
     }
 
     // Scenario 25
@@ -191,7 +191,7 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
         var response = await client.SendAsync(Request(method, url, LocationBody));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
-        (await response.Content.ReadFromJsonAsync<ErrorBody>())!.Message.ShouldBe(factory.Message("OrganizationRequired"));
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden, "a token with no organization chosen is refused");
+        (await response.Content.ReadFromJsonAsync<ErrorBody>())!.Message.ShouldBe(factory.Message("OrganizationRequired"), "the refusal says an organization is required");
     }
 }

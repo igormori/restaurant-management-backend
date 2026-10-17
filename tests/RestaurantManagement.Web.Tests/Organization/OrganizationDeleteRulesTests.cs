@@ -108,8 +108,8 @@ public class OrganizationDeleteRulesTests : IClassFixture<PostgresDatabaseFixtur
             () => context.Database.ExecuteSqlAsync($"DELETE FROM organizations WHERE id = {CantinaId}"));
 
         // Assert
-        exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation);
-        (await context.Locations.IgnoreQueryFilters().SingleAsync()).Id.ShouldBe(CentroLocationId);
+        exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation, "an organization that has a location cannot be deleted");
+        (await context.Locations.IgnoreQueryFilters().SingleAsync()).Id.ShouldBe(CentroLocationId, "a refused deletion leaves the location in place");
     }
 
     // Scenario 2
@@ -127,8 +127,8 @@ public class OrganizationDeleteRulesTests : IClassFixture<PostgresDatabaseFixtur
             () => context.Database.ExecuteSqlAsync($"DELETE FROM organizations WHERE id = {CantinaId}"));
 
         // Assert
-        exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation);
-        (await context.Locations.IgnoreQueryFilters().SingleAsync()).Id.ShouldBe(CentroLocationId);
+        exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation, "an organization whose only location is closed still cannot be deleted");
+        (await context.Locations.IgnoreQueryFilters().SingleAsync()).Id.ShouldBe(CentroLocationId, "a refused deletion leaves the closed location in place");
     }
 
     // Scenario 3
@@ -146,8 +146,8 @@ public class OrganizationDeleteRulesTests : IClassFixture<PostgresDatabaseFixtur
             () => context.Database.ExecuteSqlAsync($"DELETE FROM organizations WHERE id = {CantinaId}"));
 
         // Assert
-        exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation);
-        (await context.OrganizationSettings.IgnoreQueryFilters().SingleAsync()).Id.ShouldBe(CantinaSettingsId);
+        exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation, "an organization that has settings cannot be deleted");
+        (await context.OrganizationSettings.IgnoreQueryFilters().SingleAsync()).Id.ShouldBe(CantinaSettingsId, "a refused deletion leaves the settings in place");
     }
 
     // Scenario 4
@@ -163,8 +163,8 @@ public class OrganizationDeleteRulesTests : IClassFixture<PostgresDatabaseFixtur
         var deleted = await context.Database.ExecuteSqlAsync($"DELETE FROM organizations WHERE id = {CantinaId}");
 
         // Assert
-        deleted.ShouldBe(1);
-        (await context.Organizations.CountAsync()).ShouldBe(0);
+        deleted.ShouldBe(1, "an organization with no locations and no settings can be deleted");
+        (await context.Organizations.CountAsync()).ShouldBe(0, "the deleted organization is gone");
     }
 
     // Scenario 5
@@ -181,7 +181,7 @@ public class OrganizationDeleteRulesTests : IClassFixture<PostgresDatabaseFixtur
         // Assert
         deleteRules.ShouldBe(
             "fk_locations_organizations_organization_id:RESTRICT,"
-            + "fk_organization_settings_organizations_organization_id:RESTRICT");
+            + "fk_organization_settings_organizations_organization_id:RESTRICT", "no organization foreign key may cascade a delete to locations or settings");
     }
 
     // Scenario 6

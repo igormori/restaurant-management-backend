@@ -113,8 +113,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var response = await sut.CreateLocationAsync(userId, ValidCreateRequest);
 
             // Assert
-            response.Should().NotBeNull();
-            response.Name.Should().Be(ValidCreateRequest.Name);
+            response.Should().NotBeNull("an Owner or Admin can create a location");
+            response.Name.Should().Be(ValidCreateRequest.Name, "the location keeps the name the user chose");
         }
 
         [Fact]
@@ -134,8 +134,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var response = await sut.CreateLocationAsync(userId, ValidCreateRequest);
 
             // Assert
-            response.Should().NotBeNull();
-            response.Name.Should().Be(ValidCreateRequest.Name);
+            response.Should().NotBeNull("an Owner or Admin can create a location");
+            response.Name.Should().Be(ValidCreateRequest.Name, "the location keeps the name the user chose");
         }
 
         [Fact]
@@ -161,8 +161,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var noRoleAct = () => noRoleSut.CreateLocationAsync(noRoleUserId, ValidCreateRequest);
 
             // Assert
-            await waiterAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
-            await noRoleAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
+            await waiterAct.Should().ThrowAsync<BusinessException>("a Waiter may not create a location").Where(e => e.StatusCode == 403);
+            await noRoleAct.Should().ThrowAsync<BusinessException>("a user with no role may not create a location").Where(e => e.StatusCode == 403);
         }
 
         [Fact]
@@ -183,8 +183,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var response = await sut.EditLocationAsync(userId, locationId, ValidEditRequest);
 
             // Assert
-            response.Should().NotBeNull();
-            response.Name.Should().Be(ValidEditRequest.Name);
+            response.Should().NotBeNull("an Owner or Admin can edit a location");
+            response.Name.Should().Be(ValidEditRequest.Name, "the edit changes the location name");
         }
 
         [Fact]
@@ -205,8 +205,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var response = await sut.EditLocationAsync(userId, locationId, ValidEditRequest);
 
             // Assert
-            response.Should().NotBeNull();
-            response.Name.Should().Be(ValidEditRequest.Name);
+            response.Should().NotBeNull("an Owner or Admin can edit a location");
+            response.Name.Should().Be(ValidEditRequest.Name, "the edit changes the location name");
         }
 
         [Fact]
@@ -233,8 +233,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var noRoleAct = () => noRoleSut.EditLocationAsync(noRoleUserId, locationId, ValidEditRequest);
 
             // Assert
-            await waiterAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
-            await noRoleAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
+            await waiterAct.Should().ThrowAsync<BusinessException>("a Waiter may not edit a location").Where(e => e.StatusCode == 403);
+            await noRoleAct.Should().ThrowAsync<BusinessException>("a user with no role may not edit a location").Where(e => e.StatusCode == 403);
         }
 
         [Fact]
@@ -257,7 +257,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Assert
             using var verifyContext = database.CreateContext(TestTenant.Of(organizationId));
             var location = await verifyContext.Locations.FirstAsync(l => l.Id == locationId);
-            location.Status.Should().Be(LocationStatus.Closed);
+            location.Status.Should().Be(LocationStatus.Closed, "deleting a location closes it, it is never removed");
         }
 
         [Fact]
@@ -280,7 +280,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Assert
             using var verifyContext = database.CreateContext(TestTenant.Of(organizationId));
             var location = await verifyContext.Locations.FirstAsync(l => l.Id == locationId);
-            location.Status.Should().Be(LocationStatus.Closed);
+            location.Status.Should().Be(LocationStatus.Closed, "deleting a location closes it, it is never removed");
         }
 
         [Fact]
@@ -307,8 +307,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var noRoleAct = () => noRoleSut.DeleteLocationAsync(noRoleUserId, locationId);
 
             // Assert
-            await waiterAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
-            await noRoleAct.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403);
+            await waiterAct.Should().ThrowAsync<BusinessException>("a Waiter may not close a location").Where(e => e.StatusCode == 403);
+            await noRoleAct.Should().ThrowAsync<BusinessException>("a user with no role may not close a location").Where(e => e.StatusCode == 403);
         }
 
         // Scenario 27
@@ -333,9 +333,9 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             // Assert
             var exception = await act.ShouldThrowAsync<BusinessException>();
-            exception.StatusCode.ShouldBe(403);
+            exception.StatusCode.ShouldBe(403, "only an Owner or Admin may create a location");
             using var verifyContext = database.CreateContext(tenant);
-            (await verifyContext.Locations.IgnoreQueryFilters().CountAsync()).ShouldBe(0);
+            (await verifyContext.Locations.IgnoreQueryFilters().CountAsync()).ShouldBe(0, "a refused creation stores no location");
         }
     }
 }

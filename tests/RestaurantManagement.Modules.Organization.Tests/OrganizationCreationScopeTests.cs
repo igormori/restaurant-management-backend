@@ -76,7 +76,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Assert
             using var readContext = database.CreateContext();
             var settings = await readContext.OrganizationSettings.IgnoreQueryFilters().SingleAsync();
-            settings.OrganizationId.ShouldBe(response.Id);
+            settings.OrganizationId.ShouldBe(response.Id, "the new organization's settings belong to the new organization");
         }
 
         // Scenario 2
@@ -96,8 +96,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Assert
             using var readContext = database.CreateContext();
             var settings = await readContext.OrganizationSettings.IgnoreQueryFilters().SingleAsync();
-            settings.OrganizationId.ShouldBe(response.Id);
-            settings.OrganizationId.ShouldNotBe(ExistingOrgA);
+            settings.OrganizationId.ShouldBe(response.Id, "the new organization's settings belong to the new organization");
+            settings.OrganizationId.ShouldNotBe(ExistingOrgA, "the settings never go to the organization the creator already belongs to");
         }
 
         // Scenario 3
@@ -118,9 +118,9 @@ namespace RestaurantManagement.Modules.Organization.Tests
             using var readContext = database.CreateContext();
             var organization = await readContext.Organizations.SingleAsync(o => o.Id == response.Id);
             var settings = await readContext.OrganizationSettings.IgnoreQueryFilters().SingleAsync();
-            organization.CreatedByUserId.ShouldBe(MariaId);
+            organization.CreatedByUserId.ShouldBe(MariaId, "the creator is recorded as the author of the organization");
             organization.CreatedAt.ShouldBe(CreationTime.UtcDateTime);
-            settings.CreatedByUserId.ShouldBe(MariaId);
+            settings.CreatedByUserId.ShouldBe(MariaId, "the creator is recorded as the author of the settings");
             settings.CreatedAt.ShouldBe(CreationTime.UtcDateTime);
         }
 
@@ -148,7 +148,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             // Assert
             await harness.RoleAssigner.Received(1).AssignRoleAsync(MariaId, response.Id, Roles.Owner);
-            scopeDuringAssignment.ShouldBe(response.Id);
+            scopeDuringAssignment.ShouldBe(response.Id, "the Owner role is assigned inside the new organization, not the creator's current one");
         }
 
         // Scenario 5
@@ -166,7 +166,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             await sut.CreateOrganizationAsync(MariaId, CantinaDaNonna);
 
             // Assert
-            harness.TenantScope.OrganizationId.ShouldBeNull();
+            harness.TenantScope.OrganizationId.ShouldBeNull("the new-organization scope is closed once the creation is done");
         }
 
         // Scenario 6
@@ -187,10 +187,10 @@ namespace RestaurantManagement.Modules.Organization.Tests
             await Should.ThrowAsync<InvalidOperationException>(() => sut.CreateOrganizationAsync(MariaId, CantinaDaNonna));
 
             // Assert
-            harness.TenantScope.OrganizationId.ShouldBeNull();
+            harness.TenantScope.OrganizationId.ShouldBeNull("the new-organization scope is closed even when the creation fails");
             using var readContext = database.CreateContext();
-            (await readContext.Organizations.CountAsync()).ShouldBe(0);
-            (await readContext.OrganizationSettings.IgnoreQueryFilters().CountAsync()).ShouldBe(0);
+            (await readContext.Organizations.CountAsync()).ShouldBe(0, "a failed creation keeps no organization");
+            (await readContext.OrganizationSettings.IgnoreQueryFilters().CountAsync()).ShouldBe(0, "a failed creation keeps no settings");
         }
     }
 }

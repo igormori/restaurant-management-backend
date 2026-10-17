@@ -37,9 +37,9 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var response = await sut.CreateOrganizationAsync(userId, request);
 
             // Assert
-            response.Name.ShouldBe(name);
+            response.Name.ShouldBe(name, "an organization may use any name, including former test-hook names");
             using var verifyContext = database.CreateContext();
-            (await verifyContext.Organizations.CountAsync(o => o.Name == name)).ShouldBe(1);
+            (await verifyContext.Organizations.CountAsync(o => o.Name == name)).ShouldBe(1, "the organization is stored once");
         }
     }
 }

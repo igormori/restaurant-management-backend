@@ -56,8 +56,8 @@ public class OrganizationMessagesEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "an invalid color is refused");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, customMessage: "the color error is in the language the user asked for");
     }
 
     // Scenario 16
@@ -75,8 +75,8 @@ public class OrganizationMessagesEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "an organization without a name is refused");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, customMessage: "the missing-name error is in the language the user asked for");
     }
 
     // Scenario 17
@@ -107,8 +107,8 @@ public class OrganizationMessagesEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "an invalid setting is refused");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, customMessage: "the setting error is in Portuguese, the language asked for");
     }
 
     // Scenario 23
@@ -128,7 +128,7 @@ public class OrganizationMessagesEndpointTests : IDisposable
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "a text longer than the maximum is refused");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, customMessage: "the length error is in the language the user asked for");
     }
 }

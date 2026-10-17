@@ -97,8 +97,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var edit = () => sut.EditOrganizationAsync(AnaId, EditRequest(serviceChargeRate: 12m));
 
             // Assert
-            (await Should.ThrowAsync<BusinessException>(edit)).StatusCode.ShouldBe(403);
-            auditLog.ReceivedCalls().ShouldBeEmpty();
+            (await Should.ThrowAsync<BusinessException>(edit)).StatusCode.ShouldBe(403, "a refused edit is rejected with 403");
+            auditLog.ReceivedCalls().ShouldBeEmpty(customMessage: "a refused edit is not recorded in the audit log");
         }
 
         // Scenario 19
@@ -120,9 +120,9 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var response = await sut.EditOrganizationAsync(AnaId, EditRequest(serviceChargeRate: 12m));
 
             // Assert
-            response.ServiceChargeRate.ShouldBe(12m);
+            response.ServiceChargeRate.ShouldBe(12m, "the edit is returned even when the audit entry cannot be recorded");
             using var readContext = database.CreateContext(tenant);
-            (await readContext.OrganizationSettings.SingleAsync()).ServiceChargeRate.ShouldBe(12m);
+            (await readContext.OrganizationSettings.SingleAsync()).ServiceChargeRate.ShouldBe(12m, "the edit is saved even when the audit entry cannot be recorded");
             logger.Received().Log(
                 LogLevel.Error,
                 Arg.Any<EventId>(),
@@ -151,16 +151,16 @@ namespace RestaurantManagement.Modules.Organization.Tests
                 EditRequest((decimal)serviceChargeRate, (decimal)discountApprovalLimit, businessDayCutoff));
 
             // Assert
-            var call = auditLog.ReceivedCalls().ShouldHaveSingleItem();
+            var call = auditLog.ReceivedCalls().ShouldHaveSingleItem(customMessage: "a settings change records exactly one audit entry");
             var entry = call.GetArguments()[0].ShouldBeOfType<AuditEntryDto>();
-            entry.Action.ShouldBe(AuditActions.SettingsChanged);
+            entry.Action.ShouldBe(AuditActions.SettingsChanged, "the audit entry says the settings changed");
             entry.EntityType.ShouldBe("OrganizationSettings");
-            entry.EntityId.ShouldBe(CantinaSettingsId);
+            entry.EntityId.ShouldBe(CantinaSettingsId, "the audit entry points at the settings that changed");
             entry.LocationId.ShouldBeNull();
-            ReadDecimal(entry.Before, "serviceChargeRate").ShouldBe(10m);
+            ReadDecimal(entry.Before, "serviceChargeRate").ShouldBe(10m, "the audit entry keeps the service charge from before the change");
             ReadDecimal(entry.Before, "discountApprovalLimit").ShouldBe(5m);
             ReadText(entry.Before, "businessDayCutoff").ShouldBe("04:00");
-            ReadDecimal(entry.After, "serviceChargeRate").ShouldBe((decimal)serviceChargeRate);
+            ReadDecimal(entry.After, "serviceChargeRate").ShouldBe((decimal)serviceChargeRate, "the audit entry keeps the service charge from after the change");
             ReadDecimal(entry.After, "discountApprovalLimit").ShouldBe((decimal)discountApprovalLimit);
             ReadText(entry.After, "businessDayCutoff").ShouldBe(businessDayCutoff);
         }
@@ -182,7 +182,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             await sut.EditOrganizationAsync(AnaId, EditRequest(serviceChargeRate: 10m, name: name));
 
             // Assert
-            auditLog.ReceivedCalls().ShouldBeEmpty();
+            auditLog.ReceivedCalls().ShouldBeEmpty(customMessage: "an edit that changes no setting is not recorded in the audit log");
         }
     }
 }

@@ -30,7 +30,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             Action act = () => sut.GetBusinessDate(Utc("2026-10-15T05:30:00"), timeZoneId!, FourAm);
 
             // Assert
-            act.ShouldThrow<ArgumentException>();
+            act.ShouldThrow<ArgumentException>("a location with an unknown time zone cannot have a business day");
         }
 
         // Scenario 21
@@ -47,7 +47,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var businessDate = sut.GetBusinessDate(Utc(utcMoment), timeZoneId, FourAm);
 
             // Assert
-            businessDate.ShouldBe(new DateOnly(2026, 10, 14));
+            businessDate.ShouldBe(new DateOnly(2026, 10, 14), "a sale made before the cutoff belongs to the previous business day");
         }
 
         // Scenario 22
@@ -71,7 +71,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var businessDate = sut.GetBusinessDate(Utc(utcMoment), timeZoneId, TimeOnly.Parse(cutoff, System.Globalization.CultureInfo.InvariantCulture));
 
             // Assert
-            businessDate.ShouldBe(DateOnly.Parse(expectedDate, System.Globalization.CultureInfo.InvariantCulture));
+            businessDate.ShouldBe(DateOnly.Parse(expectedDate, System.Globalization.CultureInfo.InvariantCulture), "a sale at or after the cutoff belongs to the local business day");
         }
     }
 }

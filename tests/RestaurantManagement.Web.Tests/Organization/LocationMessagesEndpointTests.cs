@@ -76,8 +76,8 @@ public class LocationMessagesEndpointTests : IClassFixture<PostgresDatabaseFixtu
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await FieldErrorsAsync(response)).ShouldContain(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "an invalid location field is refused");
+        (await FieldErrorsAsync(response)).ShouldContain(expected, customMessage: "the field error is in the language the user asked for");
     }
 
     // Scenario 19
@@ -103,7 +103,7 @@ public class LocationMessagesEndpointTests : IClassFixture<PostgresDatabaseFixtu
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
-        (await MessageAsync(response)).ShouldBe(expected);
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "a token whose user identifier is not a user ID is refused");
+        (await MessageAsync(response)).ShouldBe(expected, "the refusal is in the language the user asked for");
     }
 }

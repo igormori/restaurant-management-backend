@@ -33,7 +33,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var results = Validate(request);
 
             // Assert
-            results.SelectMany(r => r.MemberNames).ShouldContain(nameof(CreateOrganizationRequest.Currency));
+            results.SelectMany(r => r.MemberNames).ShouldContain(nameof(CreateOrganizationRequest.Currency), customMessage: "a missing or unsupported currency is refused with an error on the currency field");
         }
     }
 }

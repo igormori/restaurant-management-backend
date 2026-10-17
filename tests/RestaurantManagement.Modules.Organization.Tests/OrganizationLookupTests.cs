@@ -42,7 +42,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
             // Assert
             result.OrderBy(o => o.Name).Select(o => (o.Id, o.Name, o.IsActive)).ToList()
-                .ShouldBe(new[] { (CantinaId, CantinaName, true), (TrattoriaId, TrattoriaName, false) });
+                .ShouldBe(new[] { (CantinaId, CantinaName, true), (TrattoriaId, TrattoriaName, false) }, ignoreOrder: false, customMessage: "other modules get the name and active flag of each requested organization");
         }
 
         // Scenario 27
@@ -59,7 +59,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var result = await CreateSut(context).GetOrganizationsAsync(new[] { CantinaId });
 
             // Assert
-            result.Select(o => o.Id).ShouldBe(new[] { CantinaId });
+            result.Select(o => o.Id).ShouldBe(new[] { CantinaId }, ignoreOrder: false, customMessage: "an organization that was not requested is never returned");
         }
 
         // Scenario 28
@@ -76,7 +76,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var result = await CreateSut(context).GetOrganizationsAsync(new[] { PizzariaId, UnknownId });
 
             // Assert
-            result.Select(o => o.Id).ShouldBe(new[] { PizzariaId });
+            result.Select(o => o.Id).ShouldBe(new[] { PizzariaId }, ignoreOrder: false, customMessage: "a requested organization that does not exist is left out");
         }
 
         // Scenario 29
@@ -93,7 +93,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var result = await CreateSut(context).GetOrganizationsAsync(Array.Empty<Guid>());
 
             // Assert
-            result.ShouldBeEmpty();
+            result.ShouldBeEmpty(customMessage: "asking for no organizations returns none");
         }
 
         // Scenario 30
@@ -110,7 +110,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var result = await CreateSut(context).GetOrganizationsAsync(new[] { PizzariaId });
 
             // Assert
-            result.Single().IsActive.ShouldBeTrue();
+            result.Single().IsActive.ShouldBeTrue("an organization with no stored active setting counts as active");
         }
     }
 }

@@ -82,8 +82,8 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.PostAsJsonAsync("/api/locations", LocationBody("Unidade Moema", code));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await ListCodesAsync(client)).Keys.ShouldBe(new[] { "Unidade Batel", "Unidade Mercado Municipal" }, ignoreOrder: true);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "a location code already used in the organization is refused, even by a closed location");
+        (await ListCodesAsync(client)).Keys.ShouldBe(new[] { "Unidade Batel", "Unidade Mercado Municipal" }, ignoreOrder: true, customMessage: "a refused location is not stored");
     }
 
     // Scenario 16
@@ -100,9 +100,9 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await cantinaClient.PostAsJsonAsync("/api/locations", LocationBody("Unidade Mercado Municipal", "MM"));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "a code used only by another organization is free to use");
         var code = JsonNode.Parse(await response.Content.ReadAsStringAsync())!["code"]?.ToString();
-        code.ShouldBe("MM");
+        code.ShouldBe("MM", "the location is stored with the code chosen");
     }
 
     // Scenario 17
@@ -120,8 +120,8 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.PutAsJsonAsync($"/api/locations/{batelId}", LocationBody("Unidade Batel", "MM"));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await ListCodesAsync(client))["Unidade Batel"].ShouldBe("BT");
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "a location cannot take a code another location of the organization uses");
+        (await ListCodesAsync(client))["Unidade Batel"].ShouldBe("BT", "a refused edit keeps the location's own code");
     }
 
     // Scenario 18
@@ -139,9 +139,9 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
         // Assert
         var statuses = responses.Select(r => r.StatusCode).ToList();
-        statuses.ShouldNotContain(HttpStatusCode.InternalServerError);
-        statuses.Count(s => s == HttpStatusCode.OK).ShouldBe(1);
-        statuses.Count(s => s == HttpStatusCode.BadRequest).ShouldBe(4);
+        statuses.ShouldNotContain(HttpStatusCode.InternalServerError, customMessage: "two requests for the same code at once never cause a server error");
+        statuses.Count(s => s == HttpStatusCode.OK).ShouldBe(1, "when the same code is sent at once, exactly one location is created");
+        statuses.Count(s => s == HttpStatusCode.BadRequest).ShouldBe(4, "when the same code is sent at once, the other requests are refused as duplicates");
     }
 
     // Scenario 25
@@ -171,9 +171,9 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.PutAsJsonAsync($"/api/locations/{batelId}", bodyWithoutStatus);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, "an edit that leaves the status out is accepted");
         var locations = JsonNode.Parse(await client.GetStringAsync("/api/locations"))!.AsArray();
         var status = locations.Single(l => l!["id"]!.GetValue<Guid>() == batelId)!["status"]?.ToString();
-        status.ShouldBe("Closed");
+        status.ShouldBe("Closed", "an edit that leaves the status out keeps the status the location already had");
     }
 }

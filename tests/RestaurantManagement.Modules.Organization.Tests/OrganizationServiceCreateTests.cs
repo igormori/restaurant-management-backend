@@ -48,11 +48,11 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
 
             // Assert
-            await act.Should().ThrowAsync<Exception>();
+            await act.Should().ThrowAsync<Exception>("the creation fails when the Owner role cannot be assigned");
 
             using var verifyContext = database.CreateContext();
-            (await verifyContext.Organizations.CountAsync()).Should().Be(0);
-            (await verifyContext.OrganizationSettings.IgnoreQueryFilters().CountAsync()).Should().Be(0);
+            (await verifyContext.Organizations.CountAsync()).Should().Be(0, "no organization is kept when the Owner role could not be assigned");
+            (await verifyContext.OrganizationSettings.IgnoreQueryFilters().CountAsync()).Should().Be(0, "no settings are kept when the Owner role could not be assigned");
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             {
                 var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
                 var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
-                await act.Should().ThrowAsync<Exception>();
+                await act.Should().ThrowAsync<Exception>("the creation fails when the Owner role cannot be assigned");
             }
 
             // Act: since role assignment never succeeded, Identity holds no organization id for this user.
@@ -81,7 +81,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var organizations = await listSut.GetOrganizationsAsync(userId);
 
             // Assert
-            organizations.Should().BeEmpty();
+            organizations.Should().BeEmpty("a failed creation leaves the user with no organization");
         }
 
         [Fact]
@@ -102,7 +102,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             {
                 var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
                 var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
-                await act.Should().ThrowAsync<Exception>();
+                await act.Should().ThrowAsync<Exception>("the first attempt fails when the Owner role cannot be assigned");
             }
 
             // Act: the failed attempt must not have consumed the one-trial-organization limit.
@@ -114,10 +114,10 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var response = await secondSut.CreateOrganizationAsync(userId, ValidRequest);
 
             // Assert
-            response.Should().NotBeNull();
+            response.Should().NotBeNull("a failed attempt does not use up the one-trial-organization limit, so a retry works");
 
             using var verifyContext = database.CreateContext();
-            (await verifyContext.Organizations.CountAsync()).Should().Be(1);
+            (await verifyContext.Organizations.CountAsync()).Should().Be(1, "after the retry the user has exactly one organization");
         }
 
         [Fact]
@@ -145,7 +145,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
 
             // Assert
-            await act.Should().ThrowAsync<Exception>();
+            await act.Should().ThrowAsync<Exception>("the creation fails when the Owner role cannot be assigned");
 
             logger.Received().Log(
                 LogLevel.Error,
@@ -175,7 +175,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
 
             // Assert
-            await act.Should().ThrowAsync<InvalidOperationException>();
+            await act.Should().ThrowAsync<InvalidOperationException>("the caller gets the failure, never a successful response, when the Owner role cannot be assigned");
         }
 
         [Fact]
@@ -211,7 +211,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Assert: the role assignment was made, but the caller still gets a failure,
             // not a successful response, and the compensating revoke was issued for the
             // same user/organization/role.
-            await act.Should().ThrowAsync<Exception>();
+            await act.Should().ThrowAsync<Exception>("the caller gets a failure when the organization cannot be saved");
 
             await userRoleAssigner.Received(1).AssignRoleAsync(userId, Arg.Any<Guid>(), Roles.Owner);
             await userRoleAssigner.Received(1).RevokeRoleAsync(userId, Arg.Any<Guid>(), Roles.Owner);
@@ -255,7 +255,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Assert: the exception surfaced to the caller is the original commit failure,
             // not the revoke failure, and the revoke failure is logged separately.
             var thrown = await act.Should().ThrowAsync<Exception>();
-            thrown.Which.Message.Should().NotContain("Identity database unavailable");
+            thrown.Which.Message.Should().NotContain("Identity database unavailable", "the caller sees the original save failure, not the failure of the clean-up");
 
             logger.Received().Log(
                 LogLevel.Error,
@@ -292,13 +292,13 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var response = await sut.CreateOrganizationAsync(userId, ValidRequest);
 
             // Assert
-            response.Should().NotBeNull();
-            response.Name.Should().Be(ValidRequest.Name);
-            response.PlanType.Should().Be("TRIAL");
+            response.Should().NotBeNull("a valid request creates the organization");
+            response.Name.Should().Be(ValidRequest.Name, "the organization keeps the name the user chose");
+            response.PlanType.Should().Be("TRIAL", "a new organization always starts on the TRIAL plan");
 
             using var verifyContext = database.CreateContext();
-            (await verifyContext.Organizations.CountAsync()).Should().Be(1);
-            (await verifyContext.OrganizationSettings.IgnoreQueryFilters().CountAsync()).Should().Be(1);
+            (await verifyContext.Organizations.CountAsync()).Should().Be(1, "exactly one organization is stored");
+            (await verifyContext.OrganizationSettings.IgnoreQueryFilters().CountAsync()).Should().Be(1, "the organization gets its own settings");
 
             await userRoleAssigner.Received(1).AssignRoleAsync(userId, response.Id, Roles.Owner);
         }
