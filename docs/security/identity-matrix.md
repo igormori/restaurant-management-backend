@@ -207,6 +207,7 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | T23 | Every Identity endpoint | Accepts POST only and reads nothing from the query string or route: secrets travel in the body or the cookie, never the URL | ✅ | `AuthEndpointSecretsNotInUrlTests.AuthEndpoints_AllActions_AcceptOnlyPostWithNoQueryOrRouteParameters` |
 | T24 | Database built only from the migrations | No users and no role assignments: no default accounts | ✅ | `FreshDatabaseHasNoUsersTests.Migrate_CleanDatabase_HasNoUsersOrRoles` |
 | T25 | Refresh token fingerprints and access token signatures | Fingerprint is the SHA-256 of the token; access tokens are signed with HS256 | ✅ | `ApprovedHashAlgorithmsTests.IssueAsync_NewSignIn_StoredFingerprintIsSha256OfTheIssuedToken`, `ApprovedHashAlgorithmsTests.LoginAsync_ValidCredentials_AccessTokenIsSignedWithHs256` |
+| T26 | Access token signed with an algorithm other than HS256 (HS384, HS512) using the right key | 401: only HS256 is allowed | ✅ | `AccessTokenValidationEndpointTests.LogoutAll_TokenSignedWithAlgorithmOtherThanHs256_ReturnsUnauthorized` |
 
 ## 11. Schema, migration and wiring tests
 These protect the database and the app setup rather than a rule users meet. They are listed so

@@ -84,6 +84,8 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtOptions.Issuer,
         ValidAudience = jwtOptions.Audience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
+        // Only the algorithm the app signs with, so a token cannot pick a different one.
+        ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
         // The framework default gives 5 minutes past expiry; access tokens are short-lived, so none.
         ClockSkew = TimeSpan.Zero
     };

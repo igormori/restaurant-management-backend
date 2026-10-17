@@ -183,4 +183,27 @@ public class AccessTokenValidationEndpointTests : IDisposable
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "a key named in the token's jku, x5u or jwk header is ignored, so a token signed by that key is refused");
         await _factory.SessionService.DidNotReceive().LogoutAllAsync(Arg.Any<Guid>());
     }
+
+    // Matrix T26
+    [Theory]
+    [InlineData(SecurityAlgorithms.HmacSha384)]
+    [InlineData(SecurityAlgorithms.HmacSha512)]
+    [Trait("Rule", "T26")]
+    public async Task LogoutAll_TokenSignedWithAlgorithmOtherThanHs256_ReturnsUnauthorized(string algorithm)
+    {
+        // Arrange
+        var jwt = AppJwt;
+        var credentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key)), algorithm);
+        var token = new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
+            jwt.Issuer, jwt.Audience,
+            [new Claim(ClaimTypes.NameIdentifier, MariaId.ToString()), new Claim(ClaimTypes.Role, "Owner")],
+            DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow.AddMinutes(15), credentials));
+
+        // Act
+        var response = await LogoutAllWithAsync(token);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, "only HS256 is accepted, even when the token is signed with the right key");
+        await _factory.SessionService.DidNotReceive().LogoutAllAsync(Arg.Any<Guid>());
+    }
 }
