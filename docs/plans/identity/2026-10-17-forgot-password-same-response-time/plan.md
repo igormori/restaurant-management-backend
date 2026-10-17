@@ -1,6 +1,6 @@
 # Plan: Forgot password takes the same time for every email
 
-**Spec:** docs/specs/identity/2026-10-17-forgot-password-same-response-time.md   **Date:** 2026-10-17   **Status:** Draft
+**Spec:** docs/specs/identity/2026-10-17-forgot-password-same-response-time.md   **Date:** 2026-10-17   **Status:** In progress
 **Risk:** High — new table and migration, a new background worker, and a behaviour change on a public (anonymous) endpoint
 
 ## Summary
@@ -40,7 +40,7 @@ which would make the tests unreliable.
 - [ ] `backlog/bugs/2026-10-16-forgot-password-response-time-reveals-account.md` deleted, deletion left uncommitted for the user
 
 ## Checklist
-- [ ] T1 — Pending reset request table
+- [x] T1 — Pending reset request table
 - [ ] T2 — Forgot password only queues the request
 - [ ] T3 — Processor sends reset emails and retries failures
 - [ ] T4 — Background worker runs the processor
