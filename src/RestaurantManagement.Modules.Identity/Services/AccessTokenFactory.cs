@@ -29,26 +29,30 @@ namespace RestaurantManagement.Modules.Identity.Services
                 new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
             };
 
-            var roles = selectedOrganizationId.HasValue
-                ? user.Roles.Where(r => r.OrganizationId == selectedOrganizationId).Select(r => r.Role).OrderBy(r => r)
-                : user.Roles.Select(r => r.Role);
-
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
-            }
-
-            if (selectedOrganizationId.HasValue)
-                claims.Add(new Claim(AppClaimTypes.OrganizationId, selectedOrganizationId.Value.ToString()));
-
             var organizationIds = user.Roles
                 .Select(r => r.OrganizationId)
                 .Distinct()
                 .ToList();
 
             // Users in several organizations must pick one, so only a single org is claimed automatically.
-            if (!selectedOrganizationId.HasValue && organizationIds.Count == 1)
-                claims.Add(new Claim(AppClaimTypes.OrganizationId, organizationIds[0].ToString()));
+            // Roles follow the same organization so the token never carries roles of another one.
+            var organizationId = selectedOrganizationId
+                ?? (organizationIds.Count == 1 ? organizationIds[0] : (Guid?)null);
+
+            if (organizationId.HasValue)
+            {
+                var roles = user.Roles
+                    .Where(r => r.OrganizationId == organizationId.Value)
+                    .Select(r => r.Role)
+                    .OrderBy(r => r);
+
+                foreach (var role in roles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+
+                claims.Add(new Claim(AppClaimTypes.OrganizationId, organizationId.Value.ToString()));
+            }
 
             var jwtKey = _jwtOptions.Key;
             if (string.IsNullOrEmpty(jwtKey))
