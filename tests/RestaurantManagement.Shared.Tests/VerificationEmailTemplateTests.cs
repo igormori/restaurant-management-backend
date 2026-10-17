@@ -1,5 +1,6 @@
 using FluentAssertions;
 using RestaurantManagement.Shared.Services.Email;
+using Shouldly;
 
 namespace RestaurantManagement.Shared.Tests
 {
@@ -97,6 +98,24 @@ namespace RestaurantManagement.Shared.Tests
             body.Should().Contain("The Ristorante team");
             body.Should().Contain("Reply to this email");
             body.Should().Contain("This message was sent to");
+        }
+
+        [Fact]
+        [Trait("Rule", "SH26")]
+        public void Build_NameAndAddressWithHtmlCharacters_AreShownAsTextNeverAsMarkup()
+        {
+            // Arrange
+            const string firstName = "<script>alert(1)</script>Ana";
+            const string recipient = "ana+\"x\"@cantina.com.br";
+
+            // Act
+            var body = VerificationEmailTemplate.Build(recipient, firstName, ValidCode, ValidExpiryMinutes);
+
+            // Assert
+            body.ShouldContain("&lt;script&gt;", customMessage: "a name with HTML must be shown as text");
+            body.ShouldNotContain("<script>", customMessage: "a name must never become markup in the email");
+            body.ShouldContain("&quot;", customMessage: "an address with quotes must be shown as text");
+            body.ShouldNotContain(recipient, customMessage: "the raw address with quotes must not appear in the email");
         }
 
         [Fact]
