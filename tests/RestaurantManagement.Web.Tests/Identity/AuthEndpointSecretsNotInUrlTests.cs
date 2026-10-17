@@ -25,6 +25,12 @@ public class AuthEndpointSecretsNotInUrlTests : IDisposable
             .Where(action => action.AttributeRouteInfo!.Template!.StartsWith("api/auth", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
+    // A parameter with no binding source is treated as a URL read: it could be bound from the query string or route
+    private static bool ReadsNothingFromUrl(BindingSource? source) =>
+        source is not null
+        && (source == BindingSource.Body || source == BindingSource.Header || source == BindingSource.Form
+            || source == BindingSource.FormFile || source == BindingSource.Services || source == BindingSource.Special);
+
     // Matrix T23
     [Fact]
     [Trait("Rule", "T23")]
@@ -35,12 +41,12 @@ public class AuthEndpointSecretsNotInUrlTests : IDisposable
 
         // Act
         var notPost = actions
-            .Where(action => !action.EndpointMetadata.OfType<HttpMethodMetadata>().All(m => m.HttpMethods.SequenceEqual(["POST"])))
+            .Where(action => !action.EndpointMetadata.OfType<HttpMethodMetadata>().SelectMany(m => m.HttpMethods).SequenceEqual(["POST"]))
             .Select(action => action.DisplayName)
             .ToList();
         var parametersInUrl = actions
             .SelectMany(action => action.Parameters
-                .Where(p => p.BindingInfo?.BindingSource == BindingSource.Query || p.BindingInfo?.BindingSource == BindingSource.Path)
+                .Where(p => !ReadsNothingFromUrl(p.BindingInfo?.BindingSource))
                 .Select(p => $"{action.AttributeRouteInfo!.Template}: {p.Name}"))
             .ToList();
 
