@@ -32,6 +32,8 @@ Test folders: unit tests (SQLite) in `tests/RestaurantManagement.Modules.Identit
 | 23 | T4 | Failure | A pass that throws is logged without the code or email address, and the next run still calls the processor | `RunOnceAsync_ProcessorThrows_LogsErrorWithoutSecretsAndNextRunStillCallsProcessor` | `PasswordResetEmailWorkerTests.cs` |
 | 24 | T4 | Happy | The worker is registered when switched on | `HostedServices_EmailWorkerEnabled_RegistersWorker` | `Web.Tests/Identity/PasswordResetEmailWorkerWiringTests.cs` |
 | 25 | T4 | Happy | The worker can be switched off with `PasswordResetEmails:Enabled=false`, as every test host does (passes now only because the worker does not exist yet) | `HostedServices_EmailWorkerDisabledInTests_DoesNotRegisterWorker` | `Web.Tests/Identity/PasswordResetEmailWorkerWiringTests.cs` |
+| 26 | T3 | Edge | One pass handles at most 100 due requests (oldest first); the rest wait for the next pass | `ProcessDueAsync_MoreDueRequestsThanBatchSize_HandlesOneBatchAndLeavesTheRest` | `PasswordResetEmailProcessorLimitsTests.cs` |
+| 27 | T3 | Security | A pass removes failed requests older than 7 days (they hold a raw email address) and keeps newer ones | `ProcessDueAsync_FailedRequestsOlderAndNewerThanRetention_RemovesOnlyTheOlder` | `PasswordResetEmailProcessorLimitsTests.cs` |
 
 ## Spec Outcome coverage
 | Outcome | Scenarios |

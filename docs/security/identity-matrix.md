@@ -174,6 +174,8 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | P19 | Sending the reset email: request failed, or claimed by another instance | Skipped, so nobody gets two emails | ✅ | `PasswordResetEmailProcessorTests.ProcessDueAsync_RequestMarkedFailed_IsNotTriedAgain`, `PasswordResetEmailProcessorTests.ProcessDueAsync_RequestClaimedByAnotherPass_IsSkipped` |
 | P20 | Forgot: known versus unknown email | Exactly the same database commands, so response times cannot tell them apart | ✅ | `PasswordResetServiceRequestTests.RequestResetCodeAsync_KnownAndUnknownEmail_RunTheSameDatabaseCommands` |
 | P21 | Sending the reset email: several due requests | One pass handles all; an eligible email gets exactly one email, unknown emails none | ✅ | `PasswordResetEmailProcessorTests.ProcessDueAsync_SeveralDueRequests_EligibleEmailGetsExactlyOneEmail` |
+| P22 | Sending the reset email: more due requests than one batch (100) | One pass handles one batch, oldest first; the rest wait for the next pass | ✅ | `PasswordResetEmailProcessorLimitsTests.ProcessDueAsync_MoreDueRequestsThanBatchSize_HandlesOneBatchAndLeavesTheRest` |
+| P23 | Sending the reset email: failed request older than 7 days | Removed by the next pass (the raw email address is not kept); a newer failed request is kept | ✅ | `PasswordResetEmailProcessorLimitsTests.ProcessDueAsync_FailedRequestsOlderAndNewerThanRetention_RemovesOnlyTheOlder` |
 
 ## 9. Change password: `POST /api/auth/change-password` (signed in)
 | ID | Case | Expected | Status | Test |

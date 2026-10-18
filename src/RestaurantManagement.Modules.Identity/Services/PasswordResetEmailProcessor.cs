@@ -12,6 +12,8 @@ namespace RestaurantManagement.Modules.Identity.Services
     public class PasswordResetEmailProcessor : IPasswordResetEmailProcessor
     {
         public const int MaxAttempts = 5;
+        public const int BatchSize = 100;
+        public static readonly TimeSpan FailedRetention = TimeSpan.FromDays(7);
         private const int ClaimMinutes = 5;
 
         private readonly IdentityDbContext _db;
@@ -36,11 +38,14 @@ namespace RestaurantManagement.Modules.Identity.Services
 
         public async Task<int> ProcessDueAsync(DateTime utcNow, CancellationToken cancellationToken)
         {
+            await DeleteOldFailedAsync(utcNow, cancellationToken);
+
             var due = await _db.PasswordResetRequests
                 .AsNoTracking()
                 .Where(r => r.FailedAt == null && r.NextAttemptAt <= utcNow
                     && (r.ClaimedUntil == null || r.ClaimedUntil <= utcNow))
                 .OrderBy(r => r.CreatedAt)
+                .Take(BatchSize)
                 .ToListAsync(cancellationToken);
 
             var handled = 0;
@@ -54,6 +59,15 @@ namespace RestaurantManagement.Modules.Identity.Services
             }
 
             return handled;
+        }
+
+        // A failed row holds the raw email address, so it is not kept longer than needed to investigate.
+        private Task DeleteOldFailedAsync(DateTime utcNow, CancellationToken ct)
+        {
+            var cutoff = utcNow - FailedRetention;
+            return _db.PasswordResetRequests
+                .Where(r => r.FailedAt != null && r.FailedAt < cutoff)
+                .ExecuteDeleteAsync(ct);
         }
 
         // The conditional update lets only one pass win a row, so nobody gets two emails.
