@@ -254,7 +254,11 @@ builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<IPasswordResetEmailProcessor, PasswordResetEmailProcessor>();
 if (builder.Configuration.GetValue("PasswordResetEmails:Enabled", true))
 {
-    builder.Services.AddHostedService<PasswordResetEmailWorker>();
+    var resetEmailInterval = TimeSpan.FromSeconds(builder.Configuration.GetValue("PasswordResetEmails:IntervalSeconds", PasswordResetEmailWorker.DefaultInterval.TotalSeconds));
+    builder.Services.AddHostedService(sp => new PasswordResetEmailWorker(
+        sp.GetRequiredService<IServiceScopeFactory>(),
+        sp.GetRequiredService<ILogger<PasswordResetEmailWorker>>(),
+        resetEmailInterval));
 }
 builder.Services.AddScoped<IPasswordChangeService, PasswordChangeService>();
 builder.Services.AddScoped<IPasswordAuditRecorder, PasswordAuditRecorder>();

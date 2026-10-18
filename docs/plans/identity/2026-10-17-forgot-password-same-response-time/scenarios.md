@@ -34,6 +34,7 @@ Test folders: unit tests (SQLite) in `tests/RestaurantManagement.Modules.Identit
 | 25 | T4 | Happy | The worker can be switched off with `PasswordResetEmails:Enabled=false`, as every test host does (passes now only because the worker does not exist yet) | `HostedServices_EmailWorkerDisabledInTests_DoesNotRegisterWorker` | `Web.Tests/Identity/PasswordResetEmailWorkerWiringTests.cs` |
 | 26 | T3 | Edge | One pass handles at most 100 due requests (oldest first); the rest wait for the next pass | `ProcessDueAsync_MoreDueRequestsThanBatchSize_HandlesOneBatchAndLeavesTheRest` | `PasswordResetEmailProcessorLimitsTests.cs` |
 | 27 | T3 | Security | A pass removes failed requests older than 7 days (they hold a raw email address) and keeps newer ones | `ProcessDueAsync_FailedRequestsOlderAndNewerThanRetention_RemovesOnlyTheOlder` | `PasswordResetEmailProcessorLimitsTests.cs` |
+| 28 | T4 | Happy | With the worker on and a 1-second interval, asking for a reset over HTTP is enough: the worker emails the user and removes the queued request, with no test calling the processor | `ForgotPassword_WorkerEnabledWithShortInterval_EmailsMariaAndRemovesRequestWithoutAnyoneCallingTheProcessor` | `Web.Tests/Identity/PasswordResetEmailWorkerEndpointTests.cs` |
 
 ## Spec Outcome coverage
 | Outcome | Scenarios |

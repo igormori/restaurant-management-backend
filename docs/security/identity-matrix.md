@@ -248,3 +248,4 @@ every Identity test maps somewhere; a new one goes here or in a row above.
 | D19 | `PasswordResetEmailWorkerWiringTests.HostedServices_EmailWorkerEnabled_RegistersWorker` | Reset email worker runs when enabled |
 | D20 | `PasswordResetEmailWorkerWiringTests.HostedServices_EmailWorkerDisabledInTests_DoesNotRegisterWorker` | Reset email worker can be switched off |
 | D21 | `PasswordResetEmailWorkerTests.RunOnceAsync_ProcessorThrows_LogsErrorWithoutSecretsAndNextRunStillCallsProcessor` | A failing pass is logged without code or email and the worker keeps running |
+| D22 | `PasswordResetEmailWorkerEndpointTests.ForgotPassword_WorkerEnabledWithShortInterval_EmailsMariaAndRemovesRequestWithoutAnyoneCallingTheProcessor` | The real worker loop sends the queued reset email and removes the request on its own |

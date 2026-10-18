@@ -10,15 +10,22 @@ namespace RestaurantManagement.Modules.Identity.Services
     /// </summary>
     public class PasswordResetEmailWorker : BackgroundService
     {
-        private static readonly TimeSpan Interval = TimeSpan.FromSeconds(5);
+        public static readonly TimeSpan DefaultInterval = TimeSpan.FromSeconds(5);
 
+        private readonly TimeSpan _interval;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<PasswordResetEmailWorker> _logger;
 
         public PasswordResetEmailWorker(IServiceScopeFactory scopeFactory, ILogger<PasswordResetEmailWorker> logger)
+            : this(scopeFactory, logger, DefaultInterval)
+        {
+        }
+
+        public PasswordResetEmailWorker(IServiceScopeFactory scopeFactory, ILogger<PasswordResetEmailWorker> logger, TimeSpan interval)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
+            _interval = interval;
         }
 
         /// <summary>One processor pass; a failure is logged and never thrown.</summary>
@@ -39,7 +46,7 @@ namespace RestaurantManagement.Modules.Identity.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            using var timer = new PeriodicTimer(Interval);
+            using var timer = new PeriodicTimer(_interval);
             do
             {
                 await RunOnceAsync(stoppingToken);
