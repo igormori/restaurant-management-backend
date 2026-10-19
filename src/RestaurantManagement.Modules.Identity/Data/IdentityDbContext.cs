@@ -79,6 +79,7 @@ namespace RestaurantManagement.Modules.Identity.Data
             {
                 entity.ToTable("password_reset_requests");
                 entity.HasKey(r => r.Id);
+                entity.Property(r => r.Purpose).IsRequired();
                 entity.HasIndex(r => r.NextAttemptAt);
                 // The purge of old failed rows runs every pass and would otherwise scan the whole table.
                 entity.HasIndex(r => r.FailedAt);

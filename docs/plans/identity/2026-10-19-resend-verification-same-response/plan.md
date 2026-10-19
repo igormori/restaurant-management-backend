@@ -1,6 +1,6 @@
 # Plan: Resend verification answers every email the same way
 
-**Spec:** docs/specs/identity/2026-10-19-resend-verification-same-response.md   **Date:** 2026-10-19   **Status:** Draft
+**Spec:** docs/specs/identity/2026-10-19-resend-verification-same-response.md   **Date:** 2026-10-19   **Status:** In progress
 **Risk:** High — schema change on the pending-email queue, and a security fix on a public endpoint (`POST /api/auth/resend-verification`)
 
 ## Summary
@@ -45,6 +45,6 @@ T3 runs last so that, at every commit, a queued verification row has a processor
 - [ ] `src/RestaurantManagement.Modules.Identity/CLAUDE.md` describes the queued resend flow
 
 ## Checklist
-- [ ] T1 — Queue rows record their purpose
+- [x] T1 — Queue rows record their purpose
 - [ ] T2 — Verification email processor
 - [ ] T3 — Resend only queues and always returns the same acknowledgement

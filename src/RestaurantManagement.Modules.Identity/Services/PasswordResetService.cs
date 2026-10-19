@@ -50,6 +50,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             var now = DateTime.UtcNow;
             _db.PasswordResetRequests.Add(new PasswordResetRequest
             {
+                Purpose = PasswordResetRequestPurpose.PasswordReset,
                 Email = request.Email,
                 CreatedAt = now,
                 NextAttemptAt = now
