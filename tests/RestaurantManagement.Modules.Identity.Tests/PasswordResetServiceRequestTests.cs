@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Modules.Identity.Services;
@@ -23,8 +22,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private const string UnknownEmail = "ninguem@cantinadanonna.com.br";
 
         private static readonly Guid MariaId = Guid.Parse("11111111-aaaa-4aaa-8aaa-00000000000a");
-
-        private readonly IEmailService _emailService = Substitute.For<IEmailService>();
 
         private static async Task<IdentityTestDatabase> CreateDatabaseAsync()
         {
@@ -115,37 +112,15 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         [Fact]
         [Trait("Rule", "P5")]
-        public async Task RequestResetCodeAsync_EmailServiceThrows_SameAcknowledgementAndEmailServiceNotCalled()
+        public void RequestResetCodeAsync_ServiceHasNoEmailService_RequestNeverDependsOnSending()
         {
-            // Arrange
-            using var database = await CreateDatabaseAsync();
-            _emailService.SendPasswordResetEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>())
-                .ThrowsAsync(new InvalidOperationException("SMTP server unavailable"));
-            var unknown = await RequestAsync(database, UnknownEmail);
-
             // Act
-            var response = await RequestAsync(database, MariaEmail);
+            var dependencies = typeof(PasswordResetService).GetConstructors()
+                .SelectMany(c => c.GetParameters())
+                .Select(p => p.ParameterType);
 
             // Assert
-            response.Message.ShouldBe(unknown.Message, "a failing email service must not change what the caller sees");
-            await _emailService.DidNotReceiveWithAnyArgs().SendPasswordResetEmailAsync(default!, default!, default!, default);
-        }
-
-        [Fact]
-        [Trait("Rule", "P5")]
-        public async Task RequestResetCodeAsync_EmailServiceNeverAnswers_RequestStillCompletes()
-        {
-            // Arrange
-            using var database = await CreateDatabaseAsync();
-            _emailService.SendPasswordResetEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>())
-                .Returns(new TaskCompletionSource().Task);
-
-            // Act
-            var request = RequestAsync(database, MariaEmail);
-            var finished = await Task.WhenAny(request, Task.Delay(TimeSpan.FromSeconds(10)));
-
-            // Assert
-            finished.ShouldBe(request, "the request must never wait for an email to be sent");
+            dependencies.ShouldNotContain(typeof(IEmailService), "the request must never depend on sending an email, so the reset service must not be able to reach the email service");
         }
     }
 }

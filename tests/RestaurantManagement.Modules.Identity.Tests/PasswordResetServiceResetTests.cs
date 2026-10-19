@@ -6,7 +6,6 @@ using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Modules.Identity.Services;
 using RestaurantManagement.Shared.Services.AuditLog;
-using RestaurantManagement.Shared.Services.Email;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Shouldly;
 using Xunit;
@@ -28,19 +27,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         private static readonly Guid MariaId = Guid.Parse("11111111-aaaa-4aaa-8aaa-00000000000a");
 
-        private readonly IEmailService _emailService = Substitute.For<IEmailService>();
         private readonly IPasswordAuditRecorder _auditRecorder = Substitute.For<IPasswordAuditRecorder>();
         private string? _lastEmailedCode;
-
-        public PasswordResetServiceResetTests()
-        {
-            _emailService.SendPasswordResetEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>())
-                .Returns(call =>
-                {
-                    _lastEmailedCode = call.ArgAt<string>(2);
-                    return Task.CompletedTask;
-                });
-        }
 
         private static async Task<IdentityTestDatabase> CreateDatabaseAsync()
         {
