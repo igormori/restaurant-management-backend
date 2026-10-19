@@ -11,7 +11,7 @@ Verification is account-level, never organization-scoped: a user has no UserRole
 OrganizationId) until after verification, when they create/join an organization.
 Login collapses unknown email, wrong password, locked account, and unverified account into
 one generic 401; verify collapses unknown email, wrong code and a verification-locked account
-into one generic 401; resend always returns the same acknowledgement, locked or not.
+into one generic 401; resend only queues the email and always returns the same acknowledgement, whatever the account state.
 Login hashes against a fixed dummy password when no user row exists, so an unregistered
 email does the same work as a wrong password for a real one. Don't remove it as dead code.
 Verification has its own lockout (VerificationFailedAttempts/VerificationLockedUntil,
@@ -20,12 +20,12 @@ from login's FailedAttempts/LockedUntil.
 Email uniqueness is enforced in the database via a computed, lowercased shadow column
 and unique index (IdentityDbContext.UniqueEmailIndexName); RegistrationService catches
 the Postgres unique-violation as the real guard, the AnyAsync check is just a fast path.
-Resend invalidates all previously unused codes, not just the latest. The cooldown check
-still reads only the newest code's CreatedAt, used or not.
+Resend only adds a verification row to password_reset_requests; VerificationEmailProcessor invalidates
+all previously unused codes, applies the 60 s wait (newest code's CreatedAt, used or not) and sends.
 IsUsed means "no longer usable" by design, covering both consumed and invalidated by a
 newer resend.
 Registration swallows email-send failures and returns 200 with an unverified account.
-Resend throws BusinessException(500) on the same failure. The asymmetry is deliberate.
+Resend never sends in the request, so a sending failure never reaches the requester either.
 Verification codes are generated with RandomNumberGenerator, never new Random().
 Codes are stored only as keyed fingerprints (CodeHash); the readable code goes only to the email.
 SendVerificationEmailAsync(to, firstName, code, expiryMinutes) takes three adjacent

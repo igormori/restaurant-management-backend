@@ -42,7 +42,8 @@ namespace RestaurantManagement.Modules.Identity.Services
 
             var due = await _db.PasswordResetRequests
                 .AsNoTracking()
-                .Where(r => r.FailedAt == null && r.NextAttemptAt <= utcNow
+                .Where(r => r.Purpose == PasswordResetRequestPurpose.PasswordReset
+                    && r.FailedAt == null && r.NextAttemptAt <= utcNow
                     && (r.ClaimedUntil == null || r.ClaimedUntil <= utcNow))
                 .OrderBy(r => r.CreatedAt)
                 .Take(BatchSize)
@@ -67,7 +68,8 @@ namespace RestaurantManagement.Modules.Identity.Services
         {
             var cutoff = utcNow - FailedRetention;
             return _db.PasswordResetRequests
-                .Where(r => r.FailedAt != null && r.FailedAt < cutoff)
+                .Where(r => r.Purpose == PasswordResetRequestPurpose.PasswordReset
+                    && r.FailedAt != null && r.FailedAt < cutoff)
                 .ExecuteDeleteAsync(ct);
         }
 
@@ -78,7 +80,8 @@ namespace RestaurantManagement.Modules.Identity.Services
         {
             var claimedUntil = DateTime.UtcNow.AddMinutes(ClaimMinutes);
             var updated = await _db.PasswordResetRequests
-                .Where(r => r.Id == id && (r.ClaimedUntil == null || r.ClaimedUntil <= utcNow))
+                .Where(r => r.Id == id && r.Purpose == PasswordResetRequestPurpose.PasswordReset
+                    && (r.ClaimedUntil == null || r.ClaimedUntil <= utcNow))
                 .ExecuteUpdateAsync(s => s.SetProperty(r => r.ClaimedUntil, claimedUntil), ct);
             if (updated == 0)
                 return null;

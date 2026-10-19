@@ -44,8 +44,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
     }
 
     /// <summary>
-    /// The real context plus the pending reset request table, so tests can use the queue before the
-    /// module's own configuration of it exists. Registering an entity twice is harmless.
+    /// The real context plus the queue's purpose column, so SQLite tests can store it before the module
+    /// maps it (until then the property is [NotMapped]; mapping it again afterwards is harmless).
     /// </summary>
     internal sealed class QueueAwareIdentityDbContext : IdentityDbContext
     {
@@ -54,7 +54,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Entities.PasswordResetRequest>();
+            modelBuilder.Entity<Entities.PasswordResetRequest>().Property(r => r.Purpose);
         }
     }
 

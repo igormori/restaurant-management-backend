@@ -44,13 +44,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         private static VerificationService CreateVerificationService(IdentityDbContext context)
         {
-            return new VerificationService(
-                context,
-                TestSecurityOptions.Create(),
-                TestLocalizer.Create(),
-                Substitute.For<IEmailService>(),
-                Substitute.For<ILogger<VerificationService>>(),
-                TestVerificationCodeHasher.Create());
+            return TestVerificationService.Create(context);
         }
 
         [Fact]

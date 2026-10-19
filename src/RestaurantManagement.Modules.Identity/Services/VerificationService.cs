@@ -3,13 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Security.Cryptography;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Utils.Exceptions;
-using RestaurantManagement.Shared.Services.Email;
 
 namespace RestaurantManagement.Modules.Identity.Services
 {
@@ -18,7 +16,6 @@ namespace RestaurantManagement.Modules.Identity.Services
         private readonly IdentityDbContext _db;
         private readonly SecurityOptions _securityOptions;
         private readonly IStringLocalizer<SharedResource> _localizer;
-        private readonly IEmailService _emailService;
         private readonly ILogger<VerificationService> _logger;
         private readonly IVerificationCodeHasher _hasher;
 
@@ -26,14 +23,12 @@ namespace RestaurantManagement.Modules.Identity.Services
             IdentityDbContext db,
             IOptions<SecurityOptions> securityOptions,
             IStringLocalizer<SharedResource> localizer,
-            IEmailService emailService,
             ILogger<VerificationService> logger,
             IVerificationCodeHasher hasher)
         {
             _db = db;
             _securityOptions = securityOptions.Value;
             _localizer = localizer;
-            _emailService = emailService;
             _logger = logger;
             _hasher = hasher;
         }
@@ -74,72 +69,20 @@ namespace RestaurantManagement.Modules.Identity.Services
             return new MessageResponse { Message = _localizer["UserVerified"].Value };
         }
 
+        // The request only queues the email, whatever it is: it never reads accounts and never sends,
+        // so response time cannot reveal the account state. The verification processor decides later.
         public async Task<MessageResponse> ResendVerificationCodeAsync(ResendVerificationRequest request)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-
-            // Unknown email and an already-verified account return the same acknowledgement
-            // so neither can be told apart from the outside.
-            if (user == null)
-                return new MessageResponse { Message = _localizer["VerificationResendAcknowledged"].Value };
-
-            if (user.IsVerified)
-                return new MessageResponse { Message = _localizer["VerificationResendAcknowledged"].Value };
-
-            // 🔒 A locked account gets the same acknowledgement as an unknown email, so the lock never reveals the account.
-            if (user.VerificationLockedUntil.HasValue && user.VerificationLockedUntil > DateTime.UtcNow)
-                return new MessageResponse { Message = _localizer["VerificationResendAcknowledged"].Value };
-
-            // Check cooldown: prevent resending too often. Hitting it returns the same
-            // acknowledgement as the cases above instead of a distinct "please wait" signal.
-            var lastCode = await _db.UserVerificationCodes
-                .Where(v => v.UserId == user.Id)
-                .OrderByDescending(v => v.CreatedAt)
-                .FirstOrDefaultAsync();
-
-            if (lastCode != null && (DateTime.UtcNow - lastCode.CreatedAt).TotalSeconds < _securityOptions.ResendCooldownSeconds)
-                return new MessageResponse { Message = _localizer["VerificationResendAcknowledged"].Value };
-
-            // Invalidate all previously issued, unused codes
-            var unusedCodes = await _db.UserVerificationCodes
-                .Where(v => v.UserId == user.Id && !v.IsUsed)
-                .ToListAsync();
-
-            foreach (var unusedCode in unusedCodes)
+            var now = DateTime.UtcNow;
+            _db.PasswordResetRequests.Add(new PasswordResetRequest
             {
-                unusedCode.IsUsed = true;
-            }
-
-            // Generate new code
-            var code = RandomNumberGenerator.GetInt32(100_000, 1_000_000).ToString();
-
-            user.VerificationFailedAttempts = 0;
-            user.VerificationLockedUntil = null;
-
-            var verification = new UserVerificationCode
-            {
-                UserId = user.Id,
-                CodeHash = _hasher.ComputeHash(user.Id, code),
-                ExpiresAt = DateTime.UtcNow.AddMinutes(_securityOptions.VerificationCodeExpiryMinutes)
-            };
-
-            _db.UserVerificationCodes.Add(verification);
+                Purpose = PasswordResetRequestPurpose.Verification,
+                Email = request.Email,
+                CreatedAt = now,
+                NextAttemptAt = now
+            });
             await _db.SaveChangesAsync();
-
-            // Send email
-            try
-            {
-                await _emailService.SendVerificationEmailAsync(user.Email, user.FirstName, code, _securityOptions.VerificationCodeExpiryMinutes);
-            }
-            catch (Exception ex)
-            {
-                // Decide if we fail the whole request or just log.
-                // fail the request because the user will not receive the code
-                _logger.LogError(ex, "Failed to send verification email to user {UserId}", user.Id);
-                throw new BusinessException(_localizer["EmailSendingFailed"].Value, 500);
-            }
-
-            return new MessageResponse { Message = _localizer["VerificationCodeResent"].Value };
+            return new MessageResponse { Message = _localizer["VerificationResendAcknowledged"].Value };
         }
 
         private async Task RegisterFailedVerificationAttemptAsync(User user)

@@ -252,6 +252,7 @@ if (builder.Configuration.GetValue("RefreshTokenCleanup:Enabled", true))
 builder.Services.AddScoped<IVerificationService, VerificationService>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<IPasswordResetEmailProcessor, PasswordResetEmailProcessor>();
+builder.Services.AddScoped<IVerificationEmailProcessor, VerificationEmailProcessor>();
 if (builder.Configuration.GetValue("PasswordResetEmails:Enabled", true))
 {
     var resetEmailIntervalSeconds = builder.Configuration.GetValue("PasswordResetEmails:IntervalSeconds", PasswordResetEmailWorker.DefaultInterval.TotalSeconds);

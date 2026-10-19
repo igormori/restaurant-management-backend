@@ -97,7 +97,6 @@ public class RetireVerificationCodesMigrationTests : IClassFixture<PostgresDatab
             context,
             Microsoft.Extensions.Options.Options.Create(new SecurityOptions { MaxVerificationAttempts = 5, VerificationLockoutDurationMinutes = 15, VerificationCodeExpiryMinutes = 15, ResendCooldownSeconds = 60 }),
             localizer,
-            Substitute.For<IEmailService>(),
             Substitute.For<ILogger<VerificationService>>(),
             hasher);
     }

@@ -1,11 +1,9 @@
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Shouldly;
-using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Modules.Identity.Services;
 using RestaurantManagement.Shared.Services.Email;
-using RestaurantManagement.Shared.Utils.Exceptions;
 using Xunit;
 
 namespace RestaurantManagement.Modules.Identity.Tests
@@ -32,30 +30,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
             logger.Entries.ShouldNotBeEmpty("a failed verification email is logged");
             logger.Entries.ShouldAllBe(entry => !entry.Contains(Email), "the email address never reaches the logs");
             logger.Entries.ShouldContain(entry => entry.Contains(userId.ToString()), "the log names the user by ID");
-        }
-
-        [Fact]
-        [Trait("Rule", "RS6")]
-        public async Task ResendVerificationCodeAsync_EmailSendingFails_LogsTheUserIdAndNotTheEmailAddress()
-        {
-            // Arrange
-            using var database = new IdentityTestDatabase();
-            using var seedContext = database.CreateContext();
-            var user = new User { Email = Email, PasswordHash = "hash", FirstName = "Maria", LastName = "Silva", IsVerified = false };
-            seedContext.Users.Add(user);
-            await seedContext.SaveChangesAsync();
-
-            using var context = database.CreateContext();
-            var logger = new CapturingLogger<VerificationService>();
-            var sut = new VerificationService(context, TestSecurityOptions.Create(), TestLocalizer.Create(), FailingEmailService(), logger, TestVerificationCodeHasher.Create());
-
-            // Act
-            await Should.ThrowAsync<BusinessException>(() => sut.ResendVerificationCodeAsync(new ResendVerificationRequest { Email = Email }));
-
-            // Assert
-            logger.Entries.ShouldNotBeEmpty("a failed verification email is logged");
-            logger.Entries.ShouldAllBe(entry => !entry.Contains(Email), "the email address never reaches the logs");
-            logger.Entries.ShouldContain(entry => entry.Contains(user.Id.ToString()), "the log names the user by ID");
         }
 
         private static IEmailService FailingEmailService()

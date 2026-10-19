@@ -95,6 +95,10 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("next_attempt_at");
 
+                    b.Property<int>("Purpose")
+                        .HasColumnType("integer")
+                        .HasColumnName("purpose");
+
                     b.HasKey("Id")
                         .HasName("pk_password_reset_requests");
 

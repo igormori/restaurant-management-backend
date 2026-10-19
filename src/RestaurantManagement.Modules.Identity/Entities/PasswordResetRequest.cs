@@ -5,6 +5,7 @@ namespace RestaurantManagement.Modules.Identity.Entities
     public class PasswordResetRequest
     {
         public Guid Id { get; set; }
+        public PasswordResetRequestPurpose Purpose { get; set; } = PasswordResetRequestPurpose.PasswordReset;
         public string Email { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int Attempts { get; set; }
