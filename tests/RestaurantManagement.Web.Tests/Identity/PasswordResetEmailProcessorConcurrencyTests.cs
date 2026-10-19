@@ -30,6 +30,17 @@ public class PasswordResetEmailProcessorConcurrencyTests : IClassFixture<Postgre
     {
         // Arrange
         var emailService = Substitute.For<IEmailService>();
+        // The first two sends wait for each other, so both passes have claimed rows before either finishes.
+        using var overlap = new Barrier(2);
+        var sendCalls = 0;
+        var passesOverlapped = true;
+        emailService.SendPasswordResetEmailAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>())
+            .Returns(_ =>
+            {
+                if (Interlocked.Increment(ref sendCalls) <= 2 && !overlap.SignalAndWait(TimeSpan.FromSeconds(10)))
+                    passesOverlapped = false;
+                return Task.CompletedTask;
+            });
         await using var tenantFactory = await TenantApiFactory.CreateAsync(_postgres);
         var factory = tenantFactory.WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>
         {
@@ -54,11 +65,13 @@ public class PasswordResetEmailProcessorConcurrencyTests : IClassFixture<Postgre
         var processorB = scopeB.ServiceProvider.GetRequiredService<IPasswordResetEmailProcessor>();
 
         // Act
-        await Task.WhenAll(
+        var handled = await Task.WhenAll(
             Task.Run(() => processorA.ProcessDueAsync(now, CancellationToken.None)),
             Task.Run(() => processorB.ProcessDueAsync(now, CancellationToken.None)));
 
         // Assert
+        passesOverlapped.ShouldBeTrue("both passes must be sending at the same time, or the claim is not tested under contention");
+        handled.ShouldAllBe(count => count > 0, "each pass handles some requests, so the two really competed for them");
         await emailService.ReceivedWithAnyArgs(RequestCount).SendPasswordResetEmailAsync(default!, default!, default!, default);
         var sentTo = emailService.ReceivedCalls().Select(c => (string)c.GetArguments()[0]!).ToList();
         sentTo.Distinct().Count().ShouldBe(RequestCount, "each eligible request gets exactly one email, even when two instances run a pass together");
