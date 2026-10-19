@@ -40,6 +40,8 @@ Test folders: unit tests (SQLite) in `tests/RestaurantManagement.Modules.Identit
 | 31 | T3 | Security | Two processors running a pass together over the same due requests on PostgreSQL send exactly one email per eligible request | `ProcessDueAsync_TwoProcessorsRunningTogether_SendExactlyOneEmailPerEligibleRequest` | `Web.Tests/Identity/PasswordResetEmailProcessorConcurrencyTests.cs` |
 | 32 | T3 | Security | A pass that started long ago still claims each request for 5 minutes counted from the moment of the claim, so a slow email provider cannot make a later claim already expired | `ProcessDueAsync_PassStartedLongAgo_ClaimLastsFromTheMomentItIsTaken` | `PasswordResetEmailProcessorClaimTests.cs` |
 | 33 | T3 | Security | A request that another instance changed after the pass loaded it (its code was already stored) is dropped without a second email, because the row is read again after the claim | `ProcessDueAsync_RowChangedByAnotherInstanceAfterLoading_ActsOnTheRowAsClaimed` | `PasswordResetEmailProcessorClaimTests.cs` |
+| 34 | T4 | Failure | A reset email interval of 0 or below (0 and -5 tried) stops the app at startup with an error naming `PasswordResetEmails:IntervalSeconds` | `Startup_EmailWorkerIntervalZeroOrBelow_RefusesToStartNamingTheSetting` | `Web.Tests/Identity/PasswordResetEmailIntervalTests.cs` |
+| 35 | T4 | Happy | A positive interval starts the app and registers the worker | `Startup_EmailWorkerIntervalAboveZero_StartsAndRegistersWorker` | `Web.Tests/Identity/PasswordResetEmailIntervalTests.cs` |
 
 ## Spec Outcome coverage
 | Outcome | Scenarios |
