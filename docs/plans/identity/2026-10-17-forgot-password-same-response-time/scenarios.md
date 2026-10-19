@@ -35,6 +35,9 @@ Test folders: unit tests (SQLite) in `tests/RestaurantManagement.Modules.Identit
 | 26 | T3 | Edge | One pass handles at most 100 due requests (oldest first); the rest wait for the next pass | `ProcessDueAsync_MoreDueRequestsThanBatchSize_HandlesOneBatchAndLeavesTheRest` | `PasswordResetEmailProcessorLimitsTests.cs` |
 | 27 | T3 | Security | A pass removes failed requests older than 7 days (they hold a raw email address) and keeps newer ones | `ProcessDueAsync_FailedRequestsOlderAndNewerThanRetention_RemovesOnlyTheOlder` | `PasswordResetEmailProcessorLimitsTests.cs` |
 | 28 | T4 | Happy | With the worker on and a 1-second interval, asking for a reset over HTTP is enough: the worker emails the user and removes the queued request, with no test calling the processor | `ForgotPassword_WorkerEnabledWithShortInterval_EmailsMariaAndRemovesRequestWithoutAnyoneCallingTheProcessor` | `Web.Tests/Identity/PasswordResetEmailWorkerEndpointTests.cs` |
+| 29 | T3 | Failure | A claimed request whose code was already stored (a pass crashed before finishing) is dropped without sending again; a warning logs the request id only | `ProcessDueAsync_ClaimedRequestWithCodeAlreadyIssued_DropsItWithoutSendingAndLogsOnlyItsId` | `PasswordResetEmailProcessorCrashTests.cs` |
+| 30 | T3 | Edge | The request is marked code-issued before the send and the mark is cleared when the send fails, so the retry still sends | `ProcessDueAsync_SendInProgressOrFailed_MarkSetThenClearedSoRetryStillSends` | `PasswordResetEmailProcessorCrashTests.cs` |
+| 31 | T3 | Security | Two processors running a pass together over the same due requests on PostgreSQL send exactly one email per eligible request | `ProcessDueAsync_TwoProcessorsRunningTogether_SendExactlyOneEmailPerEligibleRequest` | `Web.Tests/Identity/PasswordResetEmailProcessorConcurrencyTests.cs` |
 
 ## Spec Outcome coverage
 | Outcome | Scenarios |
@@ -51,6 +54,9 @@ Forced by the plan's changes (the request no longer creates codes or sends email
 - `PasswordResetServiceResetTests.cs`, `PasswordResetInactiveUserTests.cs`, `PasswordAuditFailureTests.cs`: they got a code by calling the forgot-password request and reading the email. They now store the code the way the processor does, so they keep proving the reset rules and stay green after T2. Assertions unchanged.
 - `PasswordResetEndpointTests.cs`: the two reset tests (`ResetPassword_ValidCode_*`) store the code directly instead of asking for it; `ForgotPassword_KnownAndUnknownEmail_IdenticalStatusAndBody` now expects no email during the request (scenario 7).
 - Test helpers: `IdentityTestDatabase.CreateContext` accepts interceptors and returns a context that also knows the queue table (`QueueAwareIdentityDbContext`, removable after T1); new helpers `CapturingLogger.cs`, `QueryCommandRecorder.cs`; `TestHostSettings.cs` switches the new worker off for test hosts.
+
+## Fix round
+Scenario 1 (D18) now also expects the `code_issued_at` column; the user approved this one assertion change.
 
 ## Decisions at Gate 2
 - Outcome #2 (no timing difference) is accepted as proved by comparing database commands (scenarios 3 and 4), not by measuring time.

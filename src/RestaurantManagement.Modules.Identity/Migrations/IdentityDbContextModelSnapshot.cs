@@ -74,6 +74,10 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("claimed_until");
 
+                    b.Property<DateTime?>("CodeIssuedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("code_issued_at");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");

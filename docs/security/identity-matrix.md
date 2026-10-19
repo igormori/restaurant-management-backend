@@ -176,6 +176,8 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | P21 | Sending the reset email: several due requests | One pass handles all; an eligible email gets exactly one email, unknown emails none | ✅ | `PasswordResetEmailProcessorTests.ProcessDueAsync_SeveralDueRequests_EligibleEmailGetsExactlyOneEmail` |
 | P22 | Sending the reset email: more due requests than one batch (100) | One pass handles one batch, oldest first; the rest wait for the next pass | ✅ | `PasswordResetEmailProcessorLimitsTests.ProcessDueAsync_MoreDueRequestsThanBatchSize_HandlesOneBatchAndLeavesTheRest` |
 | P23 | Sending the reset email: failed request older than 7 days | Removed by the next pass (the raw email address is not kept); a newer failed request is kept | ✅ | `PasswordResetEmailProcessorLimitsTests.ProcessDueAsync_FailedRequestsOlderAndNewerThanRetention_RemovesOnlyTheOlder` |
+| P24 | Sending the reset email: a pass crashed after storing the code | The request is dropped without a second email (it would break the first code); a warning logs the request id only; a normally failed send still retries | ✅ | `PasswordResetEmailProcessorCrashTests.ProcessDueAsync_ClaimedRequestWithCodeAlreadyIssued_DropsItWithoutSendingAndLogsOnlyItsId`, `PasswordResetEmailProcessorCrashTests.ProcessDueAsync_SendInProgressOrFailed_MarkSetThenClearedSoRetryStillSends` |
+| P25 | Sending the reset email: two instances run a pass together | Exactly one email per eligible request | ✅ | `PasswordResetEmailProcessorConcurrencyTests.ProcessDueAsync_TwoProcessorsRunningTogether_SendExactlyOneEmailPerEligibleRequest` |
 
 ## 9. Change password: `POST /api/auth/change-password` (signed in)
 | ID | Case | Expected | Status | Test |
@@ -244,7 +246,7 @@ every Identity test maps somewhere; a new one goes here or in a row above.
 | D15 | `RetireVerificationCodesMigrationTests.Migrate_CodesStoredBeforeRelease_BlanksEveryStoredCode` | Readable codes from before fingerprints are blanked |
 | D16 | `RetireVerificationCodesMigrationTests.Migrate_CodesStoredBeforeRelease_MarksEveryCodeUsed` | Same codes can no longer be used |
 | D17 | `RetireVerificationCodesMigrationTests.Migrate_CodesStoredBeforeRelease_KeepsCreatedAt` | Same migration keeps the resend wait working |
-| D18 | `PasswordResetRequestsTableTests.Migrate_CleanDatabase_CreatesResetRequestTableWithDueTimeIndexAndNoUserLink` | Queue table, due-time index and no link to users created |
+| D18 | `PasswordResetRequestsTableTests.Migrate_CleanDatabase_CreatesResetRequestTableWithDueTimeIndexAndNoUserLink` | Queue table (with its code-issued mark), due-time index and no link to users created |
 | D19 | `PasswordResetEmailWorkerWiringTests.HostedServices_EmailWorkerEnabled_RegistersWorker` | Reset email worker runs when enabled |
 | D20 | `PasswordResetEmailWorkerWiringTests.HostedServices_EmailWorkerDisabledInTests_DoesNotRegisterWorker` | Reset email worker can be switched off |
 | D21 | `PasswordResetEmailWorkerTests.RunOnceAsync_ProcessorThrows_LogsErrorWithoutSecretsAndNextRunStillCallsProcessor` | A failing pass is logged without code or email and the worker keeps running |

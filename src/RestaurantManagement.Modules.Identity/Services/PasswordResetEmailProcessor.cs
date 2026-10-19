@@ -82,6 +82,14 @@ namespace RestaurantManagement.Modules.Identity.Services
 
         private async Task HandleAsync(PasswordResetRequest request, DateTime utcNow, CancellationToken ct)
         {
+            // Sending again could replace a code the user already received, so at most once wins.
+            if (request.CodeIssuedAt != null)
+            {
+                _logger.LogWarning("Password reset request {RequestId} was interrupted after its code was stored; dropped without sending again", request.Id);
+                await DeleteAsync(request.Id, ct);
+                return;
+            }
+
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email, ct);
             if (user == null || !user.IsActive || !user.IsVerified || IsResetLocked(user, utcNow)
                 || await IsWithinResendWaitAsync(request, user.Id, utcNow, ct))
@@ -91,7 +99,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             }
 
             var code = RandomNumberGenerator.GetInt32(100_000, 1_000_000).ToString();
-            await StoreCodeAsync(user, code, utcNow, ct);
+            await StoreCodeAsync(user, request.Id, code, utcNow, ct);
 
             try
             {
@@ -119,7 +127,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             return lastCode != null && (utcNow - lastCode.CreatedAt).TotalSeconds < _securityOptions.ResendCooldownSeconds;
         }
 
-        private async Task StoreCodeAsync(User user, string code, DateTime utcNow, CancellationToken ct)
+        private async Task StoreCodeAsync(User user, Guid requestId, string code, DateTime utcNow, CancellationToken ct)
         {
             var unusedCodes = await _db.PasswordResetCodes
                 .Where(c => c.UserId == user.Id && !c.IsUsed)
@@ -135,6 +143,9 @@ namespace RestaurantManagement.Modules.Identity.Services
                 CreatedAt = utcNow,
                 ExpiresAt = utcNow.AddMinutes(_securityOptions.VerificationCodeExpiryMinutes)
             });
+
+            var marked = new PasswordResetRequest { Id = requestId, CodeIssuedAt = utcNow };
+            _db.PasswordResetRequests.Attach(marked).Property(r => r.CodeIssuedAt).IsModified = true;
             await _db.SaveChangesAsync(ct);
         }
 
@@ -150,6 +161,7 @@ namespace RestaurantManagement.Modules.Identity.Services
                     .SetProperty(r => r.Attempts, attempts)
                     .SetProperty(r => r.NextAttemptAt, nextAttemptAt)
                     .SetProperty(r => r.ClaimedUntil, (DateTime?)null)
+                    .SetProperty(r => r.CodeIssuedAt, (DateTime?)null)
                     .SetProperty(r => r.FailedAt, failedAt), ct);
 
             // Neither the code, the email address nor the exception message may reach the logs.

@@ -65,7 +65,7 @@ public class PasswordResetRequestsTableTests : IClassFixture<PostgresDatabaseFix
         var foreignKeys = await ReadScalarAsync(context, ForeignKeysSql);
 
         // Assert
-        columns.ShouldBe("attempts,claimed_until,created_at,email,failed_at,id,next_attempt_at", "a queued request holds the email as typed, its attempts, claim, failure and next attempt time");
+        columns.ShouldBe("attempts,claimed_until,code_issued_at,created_at,email,failed_at,id,next_attempt_at", "a queued request holds the email as typed, its attempts, claim, code-issued mark, failure and next attempt time");
         indexes.ShouldBe("ix_password_reset_requests_next_attempt_at,pk_password_reset_requests", "finding the due requests must be indexed");
         foreignKeys.ShouldBe("0", "a queued request has no user, so the table must not link to users");
     }

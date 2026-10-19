@@ -35,4 +35,6 @@ because they prove constraint races and migration-on-existing-data; other tests 
 the SQLite in-memory database.
 Forgot password only queues the email in password_reset_requests; PasswordResetEmailProcessor decides
 eligibility, creates the code, sends and retries (1, 2, 4, 8 min; failed after the 5th).
+Delivery is at most once after a crash: a request still marked code-issued when claimed again is
+dropped without sending (a second code would break the first). Failed rows are purged after 7 days.
 Out-of-scope findings and accepted gaps are tracked in backlog/; don't fix them as drive-by changes.

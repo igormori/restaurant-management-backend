@@ -11,5 +11,8 @@ namespace RestaurantManagement.Modules.Identity.Entities
         public DateTime NextAttemptAt { get; set; } = DateTime.UtcNow;
         public DateTime? ClaimedUntil { get; set; }
         public DateTime? FailedAt { get; set; }
+        // Set together with the new code and cleared when a send fails; still set on a claimed row
+        // means a pass crashed after storing the code, so whether the email went out is unknown.
+        public DateTime? CodeIssuedAt { get; set; }
     }
 }
