@@ -44,4 +44,4 @@ which would make the tests unreliable.
 - [x] T2 — Forgot password only queues the request (`8ee57b5`)
 - [x] T3 — Processor sends reset emails and retries failures (`830523b`)
 - [x] T4 — Background worker runs the processor (`19758cf`)
-- [x] Fix round — `5b3293e`, `9283fc3`, `945ecb2` (first review); `3e37ac0`, `c0105f1`, `d461f49`, `3ea7226` (second review); `dd2aea8` (failed_at index)
+- [x] Fix round — `5b3293e`, `9283fc3`, `945ecb2` (first review); `3e37ac0`, `c0105f1`, `d461f49`, `3ea7226` (second review); `dd2aea8` (failed_at index); `4a323e7` (third review: code time per row)
