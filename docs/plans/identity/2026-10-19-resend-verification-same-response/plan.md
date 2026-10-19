@@ -40,9 +40,9 @@ T3 runs last so that, at every commit, a queued verification row has a processor
 - [x] All spec Outcomes met
 - [x] Full test suite green after the last batch
 - [x] No out-of-scope changes; findings in the backlog
-- [ ] `python3 .claude/scripts/check-security-matrices.py` passes
+- [x] `python3 .claude/scripts/check-security-matrices.py` passes
 - [x] Forgot-password rows P1 to P27 stay ✅ with unchanged behaviour
-- [ ] `src/RestaurantManagement.Modules.Identity/CLAUDE.md` describes the queued resend flow
+- [x] `src/RestaurantManagement.Modules.Identity/CLAUDE.md` describes the queued resend flow
 
 ## Checklist
 - [x] T1 — Queue rows record their purpose

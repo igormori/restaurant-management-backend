@@ -11,13 +11,14 @@ After resend verification always returns `VerificationResendAcknowledged`, the m
 English and Portuguese resource files of the Shared project.
 
 ## Evidence
-- `src/RestaurantManagement.Modules.Identity/Services/VerificationService.cs:139` — only use of `EmailSendingFailed`
-- `src/RestaurantManagement.Modules.Identity/Services/VerificationService.cs:142` — only use of `VerificationCodeResent`
-- `src/RestaurantManagement.Shared/Localization/SharedResource.resx` and `SharedResource.pt.resx` — both keys defined
+- `src/RestaurantManagement.Shared/Localization/SharedResource.resx:81` and `:120` — `VerificationCodeResent` and `EmailSendingFailed` defined
+- `src/RestaurantManagement.Shared/Localization/SharedResource.pt.resx:81` and `:120` — same two keys defined
+- `tests/RestaurantManagement.Modules.Identity.Tests/AuthControllerTests.cs:47` — the mock still returns `"VerificationCodeResent"`
 
 ## Acceptance criteria
 - [ ] Neither key is defined in `SharedResource.resx` or `SharedResource.pt.resx`
 - [ ] A search of `src/` and `tests/` finds no use of either key
+- [ ] The mock string in `AuthControllerTests.cs:47` changes too; this is a test edit that needs the user's approval
 - [ ] Build and full test suite pass
 
 ## Related
