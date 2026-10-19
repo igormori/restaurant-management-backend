@@ -27,6 +27,12 @@ public class PasswordResetRequestsTableTests : IClassFixture<PostgresDatabaseFix
         WHERE table_name = 'password_reset_requests' AND constraint_type = 'FOREIGN KEY'
         """;
 
+    private const string PurposeNullableSql = """
+        SELECT coalesce(max(is_nullable), '')
+        FROM information_schema.columns
+        WHERE table_name = 'password_reset_requests' AND column_name = 'purpose'
+        """;
+
     private readonly PostgresDatabaseFixture _fixture;
 
     public PasswordResetRequestsTableTests(PostgresDatabaseFixture fixture) => _fixture = fixture;
@@ -65,8 +71,22 @@ public class PasswordResetRequestsTableTests : IClassFixture<PostgresDatabaseFix
         var foreignKeys = await ReadScalarAsync(context, ForeignKeysSql);
 
         // Assert
-        columns.ShouldBe("attempts,claimed_until,code_issued_at,created_at,email,failed_at,id,next_attempt_at", "a queued request holds the email as typed, its attempts, claim, code-issued mark, failure and next attempt time");
+        columns.ShouldBe("attempts,claimed_until,code_issued_at,created_at,email,failed_at,id,next_attempt_at,purpose", "a queued request holds the email as typed, its purpose, attempts, claim, code-issued mark, failure and next attempt time");
         indexes.ShouldBe("ix_password_reset_requests_failed_at,ix_password_reset_requests_next_attempt_at,pk_password_reset_requests", "finding the due requests and the old failed ones must be indexed");
         foreignKeys.ShouldBe("0", "a queued request has no user, so the table must not link to users");
+    }
+
+    [Fact]
+    [Trait("Rule", "D25")]
+    public async Task Migrate_CleanDatabase_PurposeColumnIsRequired()
+    {
+        // Arrange
+        await using var context = await CreateFullyMigratedContextAsync();
+
+        // Act
+        var isNullable = await ReadScalarAsync(context, PurposeNullableSql);
+
+        // Assert
+        isNullable.ShouldBe("NO", "every queued request must say whether it is for a password reset or a verification, so none can be taken for the wrong kind");
     }
 }

@@ -96,13 +96,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             using (var verificationContext = database.CreateContext())
             {
-                var verificationService = new VerificationService(
-                    verificationContext,
-                    TestSecurityOptions.Create(),
-                    TestLocalizer.Create(),
-                    Substitute.For<IEmailService>(),
-                    Substitute.For<ILogger<VerificationService>>(),
-                    TestVerificationCodeHasher.Create());
+                var verificationService = TestVerificationService.Create(verificationContext);
 
                 await verificationService.VerifyEmailAsync(new VerifyEmailRequest { Email = "toverify@test.com", Code = "123456" });
             }

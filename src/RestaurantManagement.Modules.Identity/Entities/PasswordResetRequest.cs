@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace RestaurantManagement.Modules.Identity.Entities
 {
     // One pending "forgot password" request. It has no user: the email is stored as typed and
@@ -5,6 +7,10 @@ namespace RestaurantManagement.Modules.Identity.Entities
     public class PasswordResetRequest
     {
         public Guid Id { get; set; }
+        // STUB (tester): [NotMapped] keeps the model equal to the migrations until T1 adds the column.
+        // T1 removes [NotMapped], makes the column required and generates the migration.
+        [NotMapped]
+        public PasswordResetRequestPurpose Purpose { get; set; } = PasswordResetRequestPurpose.PasswordReset;
         public string Email { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int Attempts { get; set; }

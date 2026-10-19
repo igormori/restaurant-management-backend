@@ -38,7 +38,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
-        [Trait("Rule", "RS2")]
+        [Trait("Rule", "RS1")]
         public async Task ResendVerification_ValidRequest_ReturnsOkWithMessageBody()
         {
             // Arrange

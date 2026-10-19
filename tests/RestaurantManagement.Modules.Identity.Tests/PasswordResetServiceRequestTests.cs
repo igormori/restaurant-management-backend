@@ -77,6 +77,22 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "P1")]
+        public async Task RequestResetCodeAsync_AnyEmail_QueuesTheRequestWithThePasswordResetPurpose()
+        {
+            // Arrange
+            using var database = await CreateDatabaseAsync();
+
+            // Act
+            await RequestAsync(database, MariaEmail);
+
+            // Assert
+            using var context = database.CreateContext();
+            var queued = await context.Set<PasswordResetRequest>().SingleAsync();
+            queued.Purpose.ShouldBe(PasswordResetRequestPurpose.PasswordReset, "a forgot-password request must never be taken for a verification request");
+        }
+
+        [Fact]
         [Trait("Rule", "P20")]
         public async Task RequestResetCodeAsync_KnownAndUnknownEmail_RunTheSameDatabaseCommands()
         {
