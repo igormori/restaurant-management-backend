@@ -2,7 +2,7 @@ namespace RestaurantManagement.Modules.Identity.Services
 {
     public interface IPasswordResetEmailProcessor
     {
-        /// <summary>One pass over the queued reset requests due at <paramref name="utcNow"/>. Returns how many were handled.</summary>
+        // The count of handled requests lets callers and tests see whether a pass did any work.
         Task<int> ProcessDueAsync(DateTime utcNow, CancellationToken cancellationToken);
     }
 }

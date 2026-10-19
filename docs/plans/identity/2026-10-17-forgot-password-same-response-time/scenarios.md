@@ -42,6 +42,8 @@ Test folders: unit tests (SQLite) in `tests/RestaurantManagement.Modules.Identit
 | 33 | T3 | Security | A request that another instance changed after the pass loaded it (its code was already stored) is dropped without a second email, because the row is read again after the claim | `ProcessDueAsync_RowChangedByAnotherInstanceAfterLoading_ActsOnTheRowAsClaimed` | `PasswordResetEmailProcessorClaimTests.cs` |
 | 34 | T4 | Failure | A reset email interval of 0 or below (0 and -5 tried) stops the app at startup with an error naming `PasswordResetEmails:IntervalSeconds` | `Startup_EmailWorkerIntervalZeroOrBelow_RefusesToStartNamingTheSetting` | `Web.Tests/Identity/PasswordResetEmailIntervalTests.cs` |
 | 35 | T4 | Happy | A positive interval starts the app and registers the worker | `Startup_EmailWorkerIntervalAboveZero_StartsAndRegistersWorker` | `Web.Tests/Identity/PasswordResetEmailIntervalTests.cs` |
+| 36 | T4 | Failure | A cancellation that is not a shutdown (a timeout) during a pass is logged as an error and does not stop the worker | `RunOnceAsync_TimeoutCancellationWhileNotStopping_LogsErrorAndDoesNotThrow` | `PasswordResetEmailWorkerCancellationTests.cs` |
+| 37 | T4 | Edge | A cancellation while the app is stopping ends the pass without being logged as an error | `RunOnceAsync_CancellationWhileStopping_Propagates` | `PasswordResetEmailWorkerCancellationTests.cs` |
 
 ## Spec Outcome coverage
 | Outcome | Scenarios |

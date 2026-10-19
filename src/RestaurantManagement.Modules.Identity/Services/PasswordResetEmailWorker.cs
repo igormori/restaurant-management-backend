@@ -4,10 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace RestaurantManagement.Modules.Identity.Services
 {
-    /// <summary>
-    /// Runs one pass of the password reset email processor every few seconds.
-    /// Safe to run on several instances at once: the processor claims rows conditionally.
-    /// </summary>
+    // Safe on several instances at once: the processor claims each row with a conditional update.
     public class PasswordResetEmailWorker : BackgroundService
     {
         public static readonly TimeSpan DefaultInterval = TimeSpan.FromSeconds(5);
@@ -28,7 +25,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             _interval = interval;
         }
 
-        /// <summary>One processor pass; a failure is logged and never thrown.</summary>
+        // A failed pass is logged, never thrown, so one bad pass cannot stop the worker.
         public async Task RunOnceAsync(CancellationToken stoppingToken)
         {
             try
@@ -37,7 +34,7 @@ namespace RestaurantManagement.Modules.Identity.Services
                 var processor = scope.ServiceProvider.GetRequiredService<IPasswordResetEmailProcessor>();
                 await processor.ProcessDueAsync(DateTime.UtcNow, stoppingToken);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
             {
                 // Only the type is logged: the exception message can hold the email address or code.
                 _logger.LogError("Password reset email pass failed with {ExceptionType}", ex.GetType().Name);
