@@ -1,7 +1,7 @@
 # Scenarios: Forgot password takes the same time for every email
 
 **Plan:** docs/plans/identity/2026-10-17-forgot-password-same-response-time/plan.md
-**Coverage:** 25 scenarios — 7 happy · 8 edge · 6 failure · 4 security · 0 guard
+**Coverage:** 25 scenarios — 7 happy · 8 edge · 6 failure · 4 security · 0 guard (scenarios 26 to 33 were added in fix rounds)
 
 Test folders: unit tests (SQLite) in `tests/RestaurantManagement.Modules.Identity.Tests/`; endpoint, schema and wiring tests (PostgreSQL) in `tests/RestaurantManagement.Web.Tests/Identity/`. Short names below: Request = `PasswordResetServiceRequestTests.cs`, Processor = `PasswordResetEmailProcessorTests.cs`.
 
@@ -38,6 +38,8 @@ Test folders: unit tests (SQLite) in `tests/RestaurantManagement.Modules.Identit
 | 29 | T3 | Failure | A claimed request whose code was already stored (a pass crashed before finishing) is dropped without sending again; a warning logs the request id only | `ProcessDueAsync_ClaimedRequestWithCodeAlreadyIssued_DropsItWithoutSendingAndLogsOnlyItsId` | `PasswordResetEmailProcessorCrashTests.cs` |
 | 30 | T3 | Edge | The request is marked code-issued before the send and the mark is cleared when the send fails, so the retry still sends | `ProcessDueAsync_SendInProgressOrFailed_MarkSetThenClearedSoRetryStillSends` | `PasswordResetEmailProcessorCrashTests.cs` |
 | 31 | T3 | Security | Two processors running a pass together over the same due requests on PostgreSQL send exactly one email per eligible request | `ProcessDueAsync_TwoProcessorsRunningTogether_SendExactlyOneEmailPerEligibleRequest` | `Web.Tests/Identity/PasswordResetEmailProcessorConcurrencyTests.cs` |
+| 32 | T3 | Security | A pass that started long ago still claims each request for 5 minutes counted from the moment of the claim, so a slow email provider cannot make a later claim already expired | `ProcessDueAsync_PassStartedLongAgo_ClaimLastsFromTheMomentItIsTaken` | `PasswordResetEmailProcessorClaimTests.cs` |
+| 33 | T3 | Security | A request that another instance changed after the pass loaded it (its code was already stored) is dropped without a second email, because the row is read again after the claim | `ProcessDueAsync_RowChangedByAnotherInstanceAfterLoading_ActsOnTheRowAsClaimed` | `PasswordResetEmailProcessorClaimTests.cs` |
 
 ## Spec Outcome coverage
 | Outcome | Scenarios |
@@ -57,6 +59,8 @@ Forced by the plan's changes (the request no longer creates codes or sends email
 
 ## Fix round
 Scenario 1 (D18) now also expects the `code_issued_at` column; the user approved this one assertion change.
+
+Fix round 2 (after the second review): scenarios 32 and 33 (claim from the real clock, row read again after the claim) are new. Scenario 31 keeps its name and assertion but the user approved changing its body so the two passes really overlap.
 
 ## Decisions at Gate 2
 - Outcome #2 (no timing difference) is accepted as proved by comparing database commands (scenarios 3 and 4), not by measuring time.

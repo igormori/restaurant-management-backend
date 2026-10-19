@@ -49,9 +49,10 @@ namespace RestaurantManagement.Modules.Identity.Services
                 .ToListAsync(cancellationToken);
 
             var handled = 0;
-            foreach (var request in due)
+            foreach (var loaded in due)
             {
-                if (!await TryClaimAsync(request.Id, utcNow, cancellationToken))
+                var request = await TryClaimAsync(loaded.Id, utcNow, cancellationToken);
+                if (request == null)
                     continue;
 
                 await HandleAsync(request, utcNow, cancellationToken);
@@ -70,14 +71,19 @@ namespace RestaurantManagement.Modules.Identity.Services
                 .ExecuteDeleteAsync(ct);
         }
 
-        // The conditional update lets only one pass win a row, so nobody gets two emails.
-        private async Task<bool> TryClaimAsync(Guid id, DateTime utcNow, CancellationToken ct)
+        // The conditional update lets only one pass win a row, so nobody gets two emails. The claim counts
+        // from the real clock because a slow pass would otherwise claim later rows with an expired time.
+        // The row is read again because another instance may have changed it since the pass loaded it.
+        private async Task<PasswordResetRequest?> TryClaimAsync(Guid id, DateTime utcNow, CancellationToken ct)
         {
-            var claimedUntil = utcNow.AddMinutes(ClaimMinutes);
+            var claimedUntil = DateTime.UtcNow.AddMinutes(ClaimMinutes);
             var updated = await _db.PasswordResetRequests
                 .Where(r => r.Id == id && (r.ClaimedUntil == null || r.ClaimedUntil <= utcNow))
                 .ExecuteUpdateAsync(s => s.SetProperty(r => r.ClaimedUntil, claimedUntil), ct);
-            return updated > 0;
+            if (updated == 0)
+                return null;
+
+            return await _db.PasswordResetRequests.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id, ct);
         }
 
         private async Task HandleAsync(PasswordResetRequest request, DateTime utcNow, CancellationToken ct)
