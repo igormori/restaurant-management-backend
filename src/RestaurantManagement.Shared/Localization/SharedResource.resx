@@ -78,9 +78,6 @@
   <data name="InvalidOrExpiredCode" xml:space="preserve">
     <value>The verification code is invalid or has expired.</value>
   </data>
-  <data name="VerificationCodeResent" xml:space="preserve">
-    <value>A new verification code has been sent to your email.</value>
-  </data>
   <data name="UserAlreadyVerified" xml:space="preserve">
     <value>Your account is already verified.</value>
   </data>
@@ -116,9 +113,6 @@
   </data>
   <data name="UserNotMemberOfOrganization" xml:space="preserve">
     <value>User is not a member of this organization.</value>
-  </data>
-  <data name="EmailSendingFailed" xml:space="preserve">
-    <value>Failed to send verification email. Please try again later.</value>
   </data>
   <data name="MenuDeletedSuccessfully" xml:space="preserve">
     <value>Menu deleted successfully.</value>

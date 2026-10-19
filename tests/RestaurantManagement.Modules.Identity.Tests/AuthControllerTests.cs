@@ -44,7 +44,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Arrange
             var verificationService = Substitute.For<IVerificationService>();
             verificationService.ResendVerificationCodeAsync(Arg.Any<ResendVerificationRequest>())
-                .Returns(new MessageResponse { Message = "VerificationCodeResent" });
+                .Returns(new MessageResponse { Message = "VerificationResendAcknowledged" });
             var sut = CreateSut(verificationService);
 
             // Act
