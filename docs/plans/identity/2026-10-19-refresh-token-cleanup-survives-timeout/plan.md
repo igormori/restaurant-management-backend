@@ -1,6 +1,6 @@
 # Plan: Daily expired-session cleanup keeps running after a timeout
 
-**Spec:** docs/specs/identity/2026-10-19-refresh-token-cleanup-survives-timeout.md   **Date:** 2026-10-19   **Status:** Draft
+**Spec:** docs/specs/identity/2026-10-19-refresh-token-cleanup-survives-timeout.md   **Date:** 2026-10-19   **Status:** In progress
 **Risk:** Low — one background job's error handling changes; no data, schema, contract or endpoint change
 
 ## Summary
@@ -21,4 +21,4 @@ None
 - [ ] No out-of-scope changes; findings in the backlog
 
 ## Checklist
-- [ ] T1 — Cleanup worker tells a shutdown apart from a timeout
+- [x] T1 — Cleanup worker tells a shutdown apart from a timeout

@@ -40,9 +40,10 @@ namespace RestaurantManagement.Modules.Identity.Services
                 var deleted = await cleanup.PurgeExpiredAsync(DateTime.UtcNow, stoppingToken);
                 _logger.LogInformation("Refresh token cleanup deleted {Count} expired tokens", deleted);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
             {
-                // A failed run must not stop the host; the next tick retries.
+                // A failed run, including a database timeout, must not stop the host; the next tick retries.
+                // A cancellation during shutdown is not caught, so it ends the worker quietly.
                 _logger.LogError(ex, "Refresh token cleanup failed");
             }
         }
