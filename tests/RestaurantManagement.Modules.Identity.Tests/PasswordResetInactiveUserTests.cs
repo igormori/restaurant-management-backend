@@ -5,7 +5,6 @@ using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Modules.Identity.Services;
 using RestaurantManagement.Shared.Services.AuditLog;
-using RestaurantManagement.Shared.Services.Email;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Shouldly;
 using Xunit;
@@ -45,14 +44,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             }
 
             string? emailedCode = null;
-            var emailService = Substitute.For<IEmailService>();
             var auditRecorder = Substitute.For<IPasswordAuditRecorder>();
 
             PasswordResetService CreateSut(RestaurantManagement.Modules.Identity.Data.IdentityDbContext context) => new(
                 context,
                 TestSecurityOptions.Create(resendCooldownSeconds: 0, maxVerificationAttempts: 5),
                 TestLocalizer.Create(),
-                emailService,
                 Substitute.For<ILogger<PasswordResetService>>(),
                 TestVerificationCodeHasher.Create(),
                 new RefreshTokenService(context, TestJwtOptions.Create()),

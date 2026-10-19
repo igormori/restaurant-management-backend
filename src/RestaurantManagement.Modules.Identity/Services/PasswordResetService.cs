@@ -8,7 +8,6 @@ using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Services.AuditLog;
-using RestaurantManagement.Shared.Services.Email;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
 namespace RestaurantManagement.Modules.Identity.Services
@@ -28,7 +27,6 @@ namespace RestaurantManagement.Modules.Identity.Services
             IdentityDbContext db,
             IOptions<SecurityOptions> securityOptions,
             IStringLocalizer<SharedResource> localizer,
-            IEmailService emailService,
             ILogger<PasswordResetService> logger,
             IVerificationCodeHasher hasher,
             IRefreshTokenService refreshTokenService,

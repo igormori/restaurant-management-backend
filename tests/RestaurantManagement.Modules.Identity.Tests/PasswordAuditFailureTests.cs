@@ -6,7 +6,6 @@ using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Modules.Identity.Services;
-using RestaurantManagement.Shared.Services.Email;
 using Shouldly;
 using Xunit;
 
@@ -25,7 +24,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private static readonly Guid MariaId = Guid.Parse("11111111-aaaa-4aaa-8aaa-00000000000a");
 
         private readonly IPasswordAuditRecorder _auditRecorder = Substitute.For<IPasswordAuditRecorder>();
-        private readonly IEmailService _emailService = Substitute.For<IEmailService>();
         private string? _emailedCode;
 
         public PasswordAuditFailureTests()
@@ -90,7 +88,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 context,
                 TestSecurityOptions.Create(resendCooldownSeconds: 0, maxVerificationAttempts: 5),
                 TestLocalizer.Create(),
-                _emailService,
                 logger,
                 TestVerificationCodeHasher.Create(),
                 new RefreshTokenService(context, TestJwtOptions.Create()),
