@@ -46,5 +46,5 @@ T3 runs last so that, at every commit, a queued verification row has a processor
 
 ## Checklist
 - [x] T1 — Queue rows record their purpose
-- [ ] T2 — Verification email processor
+- [x] T2 — Verification email processor
 - [ ] T3 — Resend only queues and always returns the same acknowledgement
