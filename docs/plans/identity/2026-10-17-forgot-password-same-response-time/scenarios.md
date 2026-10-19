@@ -1,7 +1,7 @@
 # Scenarios: Forgot password takes the same time for every email
 
 **Plan:** docs/plans/identity/2026-10-17-forgot-password-same-response-time/plan.md
-**Coverage:** 25 scenarios — 7 happy · 8 edge · 6 failure · 4 security · 0 guard (scenarios 26 to 33 were added in fix rounds)
+**Coverage:** 25 scenarios — 7 happy · 8 edge · 6 failure · 4 security · 0 guard (scenarios 26 to 38 were added in fix rounds)
 
 Test folders: unit tests (SQLite) in `tests/RestaurantManagement.Modules.Identity.Tests/`; endpoint, schema and wiring tests (PostgreSQL) in `tests/RestaurantManagement.Web.Tests/Identity/`. Short names below: Request = `PasswordResetServiceRequestTests.cs`, Processor = `PasswordResetEmailProcessorTests.cs`.
 
@@ -44,6 +44,7 @@ Test folders: unit tests (SQLite) in `tests/RestaurantManagement.Modules.Identit
 | 35 | T4 | Happy | A positive interval starts the app and registers the worker | `Startup_EmailWorkerIntervalAboveZero_StartsAndRegistersWorker` | `Web.Tests/Identity/PasswordResetEmailIntervalTests.cs` |
 | 36 | T4 | Failure | A cancellation that is not a shutdown (a timeout) during a pass is logged as an error and does not stop the worker | `RunOnceAsync_TimeoutCancellationWhileNotStopping_LogsErrorAndDoesNotThrow` | `PasswordResetEmailWorkerCancellationTests.cs` |
 | 37 | T4 | Edge | A cancellation while the app is stopping ends the pass without being logged as an error | `RunOnceAsync_CancellationWhileStopping_Propagates` | `PasswordResetEmailWorkerCancellationTests.cs` |
+| 38 | T3 | Edge | A row handled late in a slow pass gets a code whose creation and expiry count from when the row is handled, not from the pass start | `ProcessDueAsync_PassStartedLongAgo_CodeExpiryCountsFromWhenTheRowIsHandled` | `PasswordResetEmailProcessorClockTests.cs` |
 
 ## Spec Outcome coverage
 | Outcome | Scenarios |
@@ -64,7 +65,9 @@ Forced by the plan's changes (the request no longer creates codes or sends email
 ## Fix round
 Scenario 1 (D18) now also expects the `code_issued_at` column; the user approved this one assertion change.
 
-Fix round 2 (after the second review): scenarios 32 and 33 (claim from the real clock, row read again after the claim) are new. Scenario 31 keeps its name and assertion but the user approved changing its body so the two passes really overlap.
+Fix round 2 (after the second review): scenarios 32 and 33 (claim from the real clock, row read again after the claim) are new. Scenario 31 keeps its name and assertion but the user approved changing its body so the two passes really overlap. Scenarios 34 to 37 are new (reset email interval of 0 or below refused at startup, positive interval starts, timeout cancellation logged and the worker keeps running, shutdown cancellation ends the pass). The D18 index list now also names the `failed_at` index; the user approved this one assertion change.
+
+Fix round 3 (after the third review): scenario 38 is new (a row handled late in a slow pass gets a code whose expiry counts from when it is handled). Retry times still count from the pass start.
 
 ## Decisions at Gate 2
 - Outcome #2 (no timing difference) is accepted as proved by comparing database commands (scenarios 3 and 4), not by measuring time.

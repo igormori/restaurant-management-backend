@@ -88,6 +88,9 @@ namespace RestaurantManagement.Modules.Identity.Services
 
         private async Task HandleAsync(PasswordResetRequest request, DateTime utcNow, CancellationToken ct)
         {
+            // The pass-start time only chooses the due rows; a slow pass must not give a late row an expired code.
+            var handledAt = DateTime.UtcNow;
+
             // Sending again could replace a code the user already received, so at most once wins.
             if (request.CodeIssuedAt != null)
             {
@@ -97,15 +100,15 @@ namespace RestaurantManagement.Modules.Identity.Services
             }
 
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email, ct);
-            if (user == null || !user.IsActive || !user.IsVerified || IsResetLocked(user, utcNow)
-                || await IsWithinResendWaitAsync(request, user.Id, utcNow, ct))
+            if (user == null || !user.IsActive || !user.IsVerified || IsResetLocked(user, handledAt)
+                || await IsWithinResendWaitAsync(request, user.Id, handledAt, ct))
             {
                 await DeleteAsync(request.Id, ct);
                 return;
             }
 
             var code = RandomNumberGenerator.GetInt32(100_000, 1_000_000).ToString();
-            await StoreCodeAsync(user, request.Id, code, utcNow, ct);
+            await StoreCodeAsync(user, request.Id, code, handledAt, ct);
 
             try
             {
@@ -113,6 +116,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             }
             catch (Exception ex)
             {
+                // Retry times stay on the pass clock so the 1, 2, 4, 8 minute schedule is counted from the pass.
                 await RegisterFailureAsync(request, utcNow, ex, ct);
                 return;
             }
