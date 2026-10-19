@@ -247,7 +247,7 @@ every Identity test maps somewhere; a new one goes here or in a row above.
 | D15 | `RetireVerificationCodesMigrationTests.Migrate_CodesStoredBeforeRelease_BlanksEveryStoredCode` | Readable codes from before fingerprints are blanked |
 | D16 | `RetireVerificationCodesMigrationTests.Migrate_CodesStoredBeforeRelease_MarksEveryCodeUsed` | Same codes can no longer be used |
 | D17 | `RetireVerificationCodesMigrationTests.Migrate_CodesStoredBeforeRelease_KeepsCreatedAt` | Same migration keeps the resend wait working |
-| D18 | `PasswordResetRequestsTableTests.Migrate_CleanDatabase_CreatesResetRequestTableWithDueTimeIndexAndNoUserLink` | Queue table (with its code-issued mark), due-time index and no link to users created |
+| D18 | `PasswordResetRequestsTableTests.Migrate_CleanDatabase_CreatesResetRequestTableWithDueTimeIndexAndNoUserLink` | Queue table (with its code-issued mark), due-time and failed-time indexes and no link to users created |
 | D19 | `PasswordResetEmailWorkerWiringTests.HostedServices_EmailWorkerEnabled_RegistersWorker` | Reset email worker runs when enabled |
 | D20 | `PasswordResetEmailWorkerWiringTests.HostedServices_EmailWorkerDisabledInTests_DoesNotRegisterWorker` | Reset email worker can be switched off |
 | D21 | `PasswordResetEmailWorkerTests.RunOnceAsync_ProcessorThrows_LogsErrorWithoutSecretsAndNextRunStillCallsProcessor` | A failing pass is logged without code or email and the worker keeps running |

@@ -98,6 +98,9 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                     b.HasKey("Id")
                         .HasName("pk_password_reset_requests");
 
+                    b.HasIndex("FailedAt")
+                        .HasDatabaseName("ix_password_reset_requests_failed_at");
+
                     b.HasIndex("NextAttemptAt")
                         .HasDatabaseName("ix_password_reset_requests_next_attempt_at");
 

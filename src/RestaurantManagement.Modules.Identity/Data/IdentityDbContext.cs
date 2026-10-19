@@ -80,6 +80,8 @@ namespace RestaurantManagement.Modules.Identity.Data
                 entity.ToTable("password_reset_requests");
                 entity.HasKey(r => r.Id);
                 entity.HasIndex(r => r.NextAttemptAt);
+                // The purge of old failed rows runs every pass and would otherwise scan the whole table.
+                entity.HasIndex(r => r.FailedAt);
             });
 
             // One row per device session; tokens go with the user. OrganizationId has no foreign key
