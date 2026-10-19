@@ -1,6 +1,6 @@
 # Plan: Resend verification answers every email the same way
 
-**Spec:** docs/specs/identity/2026-10-19-resend-verification-same-response.md   **Date:** 2026-10-19   **Status:** In progress
+**Spec:** docs/specs/identity/2026-10-19-resend-verification-same-response.md   **Date:** 2026-10-19   **Status:** Done
 **Risk:** High — schema change on the pending-email queue, and a security fix on a public endpoint (`POST /api/auth/resend-verification`)
 
 ## Summary
@@ -36,15 +36,15 @@ T3 runs last so that, at every commit, a queued verification row has a processor
 | T3 | — | — | Public endpoint behaviour change (`POST /api/auth/resend-verification`) that closes an account-state leak. No role, auth or tenancy change; no raw SQL (Structured Query Language) |
 
 ## Overall Definition of Done
-- [ ] All tasks done, tests passing
-- [ ] All spec Outcomes met
-- [ ] Full test suite green after the last batch
-- [ ] No out-of-scope changes; findings in the backlog
+- [x] All tasks done, tests passing
+- [x] All spec Outcomes met
+- [x] Full test suite green after the last batch
+- [x] No out-of-scope changes; findings in the backlog
 - [ ] `python3 .claude/scripts/check-security-matrices.py` passes
-- [ ] Forgot-password rows P1 to P27 stay ✅ with unchanged behaviour
+- [x] Forgot-password rows P1 to P27 stay ✅ with unchanged behaviour
 - [ ] `src/RestaurantManagement.Modules.Identity/CLAUDE.md` describes the queued resend flow
 
 ## Checklist
 - [x] T1 — Queue rows record their purpose
 - [x] T2 — Verification email processor
-- [ ] T3 — Resend only queues and always returns the same acknowledgement
+- [x] T3 — Resend only queues and always returns the same acknowledgement

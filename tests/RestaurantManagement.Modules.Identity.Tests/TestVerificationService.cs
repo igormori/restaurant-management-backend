@@ -25,7 +25,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 context,
                 securityOptions ?? TestSecurityOptions.Create(),
                 TestLocalizer.Create(),
-                Substitute.For<Shared.Services.Email.IEmailService>(),
                 logger ?? Substitute.For<ILogger<VerificationService>>(),
                 hasher ?? TestVerificationCodeHasher.Create());
         }
