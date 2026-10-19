@@ -73,7 +73,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 context,
                 TestSecurityOptions.Create(resendCooldownSeconds: 0, maxVerificationAttempts: maxAttempts),
                 TestLocalizer.Create(),
-                _emailService,
                 Substitute.For<ILogger<PasswordResetService>>(),
                 TestVerificationCodeHasher.Create(),
                 new RefreshTokenService(context, TestJwtOptions.Create()),

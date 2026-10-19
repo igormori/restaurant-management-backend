@@ -46,7 +46,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 context,
                 TestSecurityOptions.Create(verificationCodeExpiryMinutes: 20, resendCooldownSeconds: 60),
                 TestLocalizer.Create(),
-                _emailService,
                 Substitute.For<ILogger<PasswordResetService>>(),
                 TestVerificationCodeHasher.Create(),
                 new RefreshTokenService(context, TestJwtOptions.Create()),

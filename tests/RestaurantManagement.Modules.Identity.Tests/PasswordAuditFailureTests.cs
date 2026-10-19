@@ -90,7 +90,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 context,
                 TestSecurityOptions.Create(resendCooldownSeconds: 0, maxVerificationAttempts: 5),
                 TestLocalizer.Create(),
-                _emailService,
                 logger,
                 TestVerificationCodeHasher.Create(),
                 new RefreshTokenService(context, TestJwtOptions.Create()),
