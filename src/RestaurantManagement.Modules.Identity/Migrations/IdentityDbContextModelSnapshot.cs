@@ -59,6 +59,54 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                     b.ToTable("password_reset_codes", (string)null);
                 });
 
+            modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.PasswordResetRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempts");
+
+                    b.Property<DateTime?>("ClaimedUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("claimed_until");
+
+                    b.Property<DateTime?>("CodeIssuedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("code_issued_at");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("email");
+
+                    b.Property<DateTime?>("FailedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("failed_at");
+
+                    b.Property<DateTime>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_password_reset_requests");
+
+                    b.HasIndex("FailedAt")
+                        .HasDatabaseName("ix_password_reset_requests_failed_at");
+
+                    b.HasIndex("NextAttemptAt")
+                        .HasDatabaseName("ix_password_reset_requests_next_attempt_at");
+
+                    b.ToTable("password_reset_requests", (string)null);
+                });
+
             modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")

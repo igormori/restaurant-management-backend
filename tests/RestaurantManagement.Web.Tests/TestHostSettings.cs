@@ -14,5 +14,9 @@ internal static class TestHostSettings
         // The cleanup job would otherwise delete rows from whatever database the host points at,
         // including a developer's local database.
         Environment.SetEnvironmentVariable("RefreshTokenCleanup__Enabled", "false");
+
+        // The reset email worker would otherwise send queued emails on its own timer, making endpoint
+        // tests unpredictable; tests run the processor themselves.
+        Environment.SetEnvironmentVariable("PasswordResetEmails__Enabled", "false");
     }
 }

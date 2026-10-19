@@ -251,6 +251,19 @@ if (builder.Configuration.GetValue("RefreshTokenCleanup:Enabled", true))
 }
 builder.Services.AddScoped<IVerificationService, VerificationService>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
+builder.Services.AddScoped<IPasswordResetEmailProcessor, PasswordResetEmailProcessor>();
+if (builder.Configuration.GetValue("PasswordResetEmails:Enabled", true))
+{
+    var resetEmailIntervalSeconds = builder.Configuration.GetValue("PasswordResetEmails:IntervalSeconds", PasswordResetEmailWorker.DefaultInterval.TotalSeconds);
+    // A zero or negative interval makes the worker's timer throw, which stops the whole app.
+    if (resetEmailIntervalSeconds <= 0)
+        throw new InvalidOperationException("PasswordResetEmails:IntervalSeconds must be greater than 0");
+    var resetEmailInterval = TimeSpan.FromSeconds(resetEmailIntervalSeconds);
+    builder.Services.AddHostedService(sp => new PasswordResetEmailWorker(
+        sp.GetRequiredService<IServiceScopeFactory>(),
+        sp.GetRequiredService<ILogger<PasswordResetEmailWorker>>(),
+        resetEmailInterval));
+}
 builder.Services.AddScoped<IPasswordChangeService, PasswordChangeService>();
 builder.Services.AddScoped<IPasswordAuditRecorder, PasswordAuditRecorder>();
 builder.Services.AddSingleton<IVerificationCodeHasher, VerificationCodeHasher>();

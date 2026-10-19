@@ -14,8 +14,8 @@ using Xunit;
 namespace RestaurantManagement.Modules.Identity.Tests
 {
     /// <summary>
-    /// Setting a new password with an emailed code (plan T7). Codes are obtained the way a user gets
-    /// them: by asking for one and reading the email. A rejected reset changes nothing; a successful one
+    /// Setting a new password with an emailed code (plan T7). A code is stored the way the reset
+    /// processor stores it, and its readable form is kept so the test can type it in. A rejected reset changes nothing; a successful one
     /// replaces the password, ends every session of the user and is audited.
     /// Maria owns the account; she is signed in on the kitchen tablet and the manager's laptop.
     /// </summary>
@@ -80,12 +80,24 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 _auditRecorder,
                 TestPasswordHasher.Create());
 
-        /// <summary>Asks for a code for Maria and returns the one that was emailed.</summary>
+        /// <summary>
+        /// Gives Maria a new code the way the reset processor does (earlier unused codes stop working)
+        /// and returns the readable code, as if she had read it in the email.
+        /// </summary>
         private async Task<string> RequestCodeAsync(IdentityTestDatabase database)
         {
             using var context = database.CreateContext();
-            await CreateSut(context, maxAttempts: 5).RequestResetCodeAsync(new ForgotPasswordRequest { Email = MariaEmail });
-            return _lastEmailedCode!;
+            foreach (var earlier in await context.PasswordResetCodes.Where(c => c.UserId == MariaId && !c.IsUsed).ToListAsync())
+                earlier.IsUsed = true;
+            _lastEmailedCode = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100_000, 1_000_000).ToString();
+            context.PasswordResetCodes.Add(new PasswordResetCode
+            {
+                UserId = MariaId,
+                CodeHash = TestVerificationCodeHasher.Create().ComputeHash(MariaId, _lastEmailedCode),
+                ExpiresAt = DateTime.UtcNow.AddMinutes(10)
+            });
+            await context.SaveChangesAsync();
+            return _lastEmailedCode;
         }
 
         private async Task<MessageResponse> ResetAsync(IdentityTestDatabase database, string email, string code, string newPassword, int maxAttempts = 5)

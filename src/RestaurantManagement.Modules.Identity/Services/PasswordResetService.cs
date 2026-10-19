@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -19,7 +18,6 @@ namespace RestaurantManagement.Modules.Identity.Services
         private readonly IdentityDbContext _db;
         private readonly SecurityOptions _securityOptions;
         private readonly IStringLocalizer<SharedResource> _localizer;
-        private readonly IEmailService _emailService;
         private readonly ILogger<PasswordResetService> _logger;
         private readonly IVerificationCodeHasher _hasher;
         private readonly IRefreshTokenService _refreshTokenService;
@@ -40,7 +38,6 @@ namespace RestaurantManagement.Modules.Identity.Services
             _db = db;
             _securityOptions = securityOptions.Value;
             _localizer = localizer;
-            _emailService = emailService;
             _logger = logger;
             _hasher = hasher;
             _refreshTokenService = refreshTokenService;
@@ -48,45 +45,19 @@ namespace RestaurantManagement.Modules.Identity.Services
             _passwordHasher = passwordHasher;
         }
 
+        // The request only queues the email, whatever it is: it never reads accounts and never sends,
+        // so response time cannot reveal whether the email has an account. The processor decides later.
         public async Task<MessageResponse> RequestResetCodeAsync(ForgotPasswordRequest request)
         {
-            var acknowledgement = new MessageResponse { Message = _localizer["PasswordResetAcknowledged"].Value };
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-
-            // Every case that must not receive a code returns the same acknowledgement.
-            if (user == null || !user.IsActive || !user.IsVerified || IsResetLocked(user))
-                return acknowledgement;
-
-            var lastCode = await _db.PasswordResetCodes
-                .Where(c => c.UserId == user.Id)
-                .OrderByDescending(c => c.CreatedAt)
-                .FirstOrDefaultAsync();
-            if (lastCode != null && (DateTime.UtcNow - lastCode.CreatedAt).TotalSeconds < _securityOptions.ResendCooldownSeconds)
-                return acknowledgement;
-
-            await MarkUnusedCodesAsUsedAsync(user.Id);
-
-            var code = RandomNumberGenerator.GetInt32(100_000, 1_000_000).ToString();
-            user.PasswordResetFailedAttempts = 0;
-            _db.PasswordResetCodes.Add(new PasswordResetCode
+            var now = DateTime.UtcNow;
+            _db.PasswordResetRequests.Add(new PasswordResetRequest
             {
-                UserId = user.Id,
-                CodeHash = _hasher.ComputeHash(user.Id, code),
-                ExpiresAt = DateTime.UtcNow.AddMinutes(_securityOptions.VerificationCodeExpiryMinutes)
+                Email = request.Email,
+                CreatedAt = now,
+                NextAttemptAt = now
             });
             await _db.SaveChangesAsync();
-
-            try
-            {
-                await _emailService.SendPasswordResetEmailAsync(user.Email, user.FirstName, code, _securityOptions.VerificationCodeExpiryMinutes);
-            }
-            catch (Exception ex)
-            {
-                // Only the exception type is logged: neither the code nor the email body may reach the logs.
-                _logger.LogError("Failed to send password reset email ({ExceptionType})", ex.GetType().Name);
-            }
-
-            return acknowledgement;
+            return new MessageResponse { Message = _localizer["PasswordResetAcknowledged"].Value };
         }
 
         public async Task<MessageResponse> ResetPasswordAsync(ResetPasswordRequest request)

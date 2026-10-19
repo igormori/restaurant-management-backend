@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NSubstitute;
@@ -81,6 +82,22 @@ public class PasswordResetEndpointTests : IClassFixture<PostgresDatabaseFixture>
         return factory;
     }
 
+    /// <summary>Stores a reset code for Maria the way the processor does and returns the readable code.</summary>
+    private static async Task<string> SeedResetCodeAsync(WebApplicationFactory<Program> factory)
+    {
+        const string code = "482913";
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+        db.PasswordResetCodes.Add(new PasswordResetCode
+        {
+            UserId = MariaId,
+            CodeHash = scope.ServiceProvider.GetRequiredService<IVerificationCodeHasher>().ComputeHash(MariaId, code),
+            ExpiresAt = DateTime.UtcNow.AddMinutes(10)
+        });
+        await db.SaveChangesAsync();
+        return code;
+    }
+
     private static async Task<List<string>> IssueTwoRefreshTokensAsync(WebApplicationFactory<Program> factory)
     {
         using var scope = factory.Services.CreateScope();
@@ -115,7 +132,31 @@ public class PasswordResetEndpointTests : IClassFixture<PostgresDatabaseFixture>
         known.StatusCode.ShouldBe(HttpStatusCode.OK, "asking for a reset always gets the same acknowledgement");
         unknown.StatusCode.ShouldBe(known.StatusCode, "an unknown email must look exactly like a real one, so nobody can discover who has an account");
         (await unknown.Content.ReadAsStringAsync()).ShouldBe(await known.Content.ReadAsStringAsync(), "the body must not reveal whether the email has an account");
+        await _emailService.DidNotReceiveWithAnyArgs().SendPasswordResetEmailAsync(default!, default!, default!, default);
+        using var scope = factory.Services.CreateScope();
+        var queued = await scope.ServiceProvider.GetRequiredService<IdentityDbContext>().Set<PasswordResetRequest>().CountAsync();
+        queued.ShouldBe(2, "each request only queues its email; nothing is sent during the request");
+    }
+
+    // Outcome 4: a known email still gets its code, now sent by the processor after the request
+    [Fact]
+    [Trait("Rule", "P2")]
+    public async Task ForgotPassword_ThenProcessorPass_EmailsOneCodeThatResetsThePassword()
+    {
+        // Arrange
+        await using var tenantFactory = await TenantApiFactory.CreateAsync(_postgres);
+        var factory = await CreateFactoryAsync(tenantFactory);
+        var client = factory.CreateClient();
+        await client.PostAsJsonAsync(ForgotUrl, new { email = MariaEmail });
+        using (var scope = factory.Services.CreateScope())
+            await scope.ServiceProvider.GetRequiredService<IPasswordResetEmailProcessor>().ProcessDueAsync(DateTime.UtcNow, CancellationToken.None);
+
+        // Act
+        var reset = await client.PostAsJsonAsync(ResetUrl, new { email = MariaEmail, code = _lastEmailedCode, newPassword = NewPassword });
+
+        // Assert
         await _emailService.ReceivedWithAnyArgs(1).SendPasswordResetEmailAsync(default!, default!, default!, default);
+        reset.StatusCode.ShouldBe(HttpStatusCode.OK, "the code emailed after the request resets the password");
     }
 
     // Scenario 37
@@ -128,8 +169,7 @@ public class PasswordResetEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var factory = await CreateFactoryAsync(tenantFactory);
         var earlierTokens = await IssueTwoRefreshTokensAsync(factory);
         var client = factory.CreateClient();
-        await client.PostAsJsonAsync(ForgotUrl, new { email = MariaEmail });
-        var code = _lastEmailedCode!;
+        var code = await SeedResetCodeAsync(factory);
 
         // Act
         var response = await client.PostAsJsonAsync(ResetUrl, new { email = MariaEmail, code, newPassword = NewPassword });
@@ -152,8 +192,8 @@ public class PasswordResetEndpointTests : IClassFixture<PostgresDatabaseFixture>
         await using var tenantFactory = await TenantApiFactory.CreateAsync(_postgres);
         var factory = await CreateFactoryAsync(tenantFactory);
         var client = factory.CreateClient();
-        await client.PostAsJsonAsync(ForgotUrl, new { email = MariaEmail });
-        var reset = await client.PostAsJsonAsync(ResetUrl, new { email = MariaEmail, code = _lastEmailedCode, newPassword = NewPassword });
+        var code = await SeedResetCodeAsync(factory);
+        var reset = await client.PostAsJsonAsync(ResetUrl, new { email = MariaEmail, code, newPassword = NewPassword });
         var ownerClient = factory.CreateClient();
         ownerClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
             "Bearer", TestAccessTokens.Create(factory.Services, MariaId, CantinaId, Roles.Owner));

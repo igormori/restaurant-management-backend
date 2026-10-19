@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Models;
@@ -26,18 +27,34 @@ namespace RestaurantManagement.Modules.Identity.Tests
             context.Database.EnsureCreated();
         }
 
-        public IdentityDbContext CreateContext()
+        public IdentityDbContext CreateContext(params IInterceptor[] interceptors)
         {
             var options = new DbContextOptionsBuilder<IdentityDbContext>()
                 .UseSqlite(_connection)
+                .AddInterceptors(interceptors)
                 .Options;
 
-            return new IdentityDbContext(options);
+            return new QueueAwareIdentityDbContext(options);
         }
 
         public void Dispose()
         {
             _connection.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// The real context plus the pending reset request table, so tests can use the queue before the
+    /// module's own configuration of it exists. Registering an entity twice is harmless.
+    /// </summary>
+    internal sealed class QueueAwareIdentityDbContext : IdentityDbContext
+    {
+        public QueueAwareIdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options) { }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Entities.PasswordResetRequest>();
         }
     }
 

@@ -16,6 +16,7 @@ namespace RestaurantManagement.Modules.Identity.Data
         public DbSet<UserVerificationCode> UserVerificationCodes { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
+        public DbSet<PasswordResetRequest> PasswordResetRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -71,6 +72,16 @@ namespace RestaurantManagement.Modules.Identity.Data
                     .HasForeignKey(c => c.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
                 entity.HasIndex(c => c.UserId);
+            });
+
+            // A pending request has no user (the email may belong to nobody), so no foreign key.
+            modelBuilder.Entity<PasswordResetRequest>(entity =>
+            {
+                entity.ToTable("password_reset_requests");
+                entity.HasKey(r => r.Id);
+                entity.HasIndex(r => r.NextAttemptAt);
+                // The purge of old failed rows runs every pass and would otherwise scan the whole table.
+                entity.HasIndex(r => r.FailedAt);
             });
 
             // One row per device session; tokens go with the user. OrganizationId has no foreign key
