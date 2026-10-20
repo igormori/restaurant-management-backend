@@ -16,7 +16,7 @@ namespace RestaurantManagement.Modules.Organization.Services
 {
     public class LocationService : ILocationService
     {
-        private static readonly string[] ManagerRoles = [Roles.Owner, Roles.Admin];
+        private static readonly string[] OwnerOrAdminRoles = [Roles.Owner, Roles.Admin];
 
         private readonly OrganizationDbContext _orgDb;
         private readonly IUserRoleLookup _userRoleLookup;
@@ -48,7 +48,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             // 1. Verify User is Owner or Admin of the Organization
             var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
 
-            if (assignments == null || !AccessDecision.AllowsOrganizationWide(assignments, ManagerRoles))
+            if (assignments == null || !AccessDecision.AllowsOrganizationWide(assignments, OwnerOrAdminRoles))
                 throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
 
             // 2. Create Location
@@ -84,8 +84,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             if (location == null)
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
-            // Verify User is Owner or Admin of the Organization (derived from location)
-            await RequireManagerAtAsync(userId, location);
+            await RequireOwnerOrAdminAtAsync(userId, location);
 
             var previousStatus = location.Status;
             location.Name = request.Name;
@@ -114,8 +113,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             if (location == null)
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
-            // Verify User is Owner or Admin
-            await RequireManagerAtAsync(userId, location);
+            await RequireOwnerOrAdminAtAsync(userId, location);
 
             // Soft delete by setting status to Closed (or logic as discussed: status is status)
             // User requested "If status closes ... do not delete". But "Delete" endpoint generally means "I want it gone or inactive".
@@ -173,11 +171,11 @@ namespace RestaurantManagement.Modules.Organization.Services
             return locations.Select(MapToResponse).ToList();
         }
 
-        private async Task RequireManagerAtAsync(Guid userId, Location location)
+        private async Task RequireOwnerOrAdminAtAsync(Guid userId, Location location)
         {
             var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, location.OrganizationId);
 
-            if (assignments == null || !AccessDecision.AllowsAtLocation(assignments, location.Id, ManagerRoles))
+            if (assignments == null || !AccessDecision.AllowsAtLocation(assignments, location.Id, OwnerOrAdminRoles))
                 throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
         }
 

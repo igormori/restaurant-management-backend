@@ -42,7 +42,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             var organizationId = GetTokenOrganizationId();
 
             // 1. Verify user permissions
-            await _access.CheckWriteAsync(userId, organizationId);
+            await _access.RequireOrganizationAdminAsync(userId, organizationId);
 
             // 2. Organization check (redundant but safe)
             var organizationExists = await _organizationLookup.OrganizationExistsAsync(organizationId);
@@ -98,7 +98,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (menu == null)
                 throw new BusinessException(_localizer["MenuNotFound"].Value, 404);
 
-            await _access.CheckWriteAsync(userId, menu.OrganizationId);
+            await _access.RequireOrganizationAdminAsync(userId, menu.OrganizationId);
 
             menu.Name = request.Name;
             menu.Description = request.Description;
@@ -116,7 +116,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (menu == null)
                 throw new BusinessException(_localizer["MenuNotFound"].Value, 404);
 
-            await _access.CheckWriteAsync(userId, menu.OrganizationId);
+            await _access.RequireOrganizationAdminAsync(userId, menu.OrganizationId);
 
             _menuDb.Menus.Remove(menu);
             await _menuDb.SaveChangesAsync();
@@ -128,7 +128,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (menu == null)
                 throw new BusinessException(_localizer["MenuNotFound"].Value, 404);
 
-            await _access.CheckWriteAsync(userId, menu.OrganizationId);
+            await _access.RequireOrganizationAdminAsync(userId, menu.OrganizationId);
 
             var location = await _organizationLookup.GetLocationAsync(locationId);
             if (location == null || location.OrganizationId != menu.OrganizationId)
@@ -158,7 +158,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (menu == null)
                 throw new BusinessException(_localizer["MenuNotFound"].Value, 404);
 
-            await _access.CheckWriteAsync(userId, menu.OrganizationId);
+            await _access.RequireOrganizationAdminAsync(userId, menu.OrganizationId);
 
             var link = await _menuDb.LocationMenus
                 .FirstOrDefaultAsync(lm => lm.MenuId == menuId && lm.LocationId == locationId);

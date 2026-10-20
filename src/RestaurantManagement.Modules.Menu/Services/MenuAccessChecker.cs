@@ -24,7 +24,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             _localizer = localizer;
         }
 
-        public async Task CheckWriteAsync(Guid userId, Guid organizationId)
+        public async Task RequireOrganizationAdminAsync(Guid userId, Guid organizationId)
         {
             var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
 

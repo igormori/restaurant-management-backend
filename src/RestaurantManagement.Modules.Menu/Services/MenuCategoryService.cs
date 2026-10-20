@@ -36,7 +36,7 @@ namespace RestaurantManagement.Modules.Menu.Services
         public async Task<MenuCategoryResponse> CreateAsync(Guid userId, CreateMenuCategoryRequest request)
         {
             var organizationId = GetTokenOrganizationId();
-            await _access.CheckWriteAsync(userId, organizationId);
+            await _access.RequireOrganizationAdminAsync(userId, organizationId);
 
             // The tenant query filter hides other organizations' menus, so a foreign MenuId looks missing.
             var menuExists = await _context.Menus.AnyAsync(m => m.Id == request.MenuId);
@@ -87,7 +87,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (menu == null)
                 return Enumerable.Empty<MenuCategoryResponse>();
 
-            await _access.CheckWriteAsync(userId, menu.OrganizationId);
+            await _access.RequireOrganizationAdminAsync(userId, menu.OrganizationId);
 
             var categories = await _context.MenuCategories
                 .Where(c => c.MenuId == menuId)
@@ -101,7 +101,7 @@ namespace RestaurantManagement.Modules.Menu.Services
         public async Task<IEnumerable<MenuCategoryResponse>> GetAllAsync(Guid userId)
         {
             var organizationId = GetTokenOrganizationId();
-            await _access.CheckWriteAsync(userId, organizationId);
+            await _access.RequireOrganizationAdminAsync(userId, organizationId);
 
             var categories = await _context.MenuCategories
                 .Where(c => c.OrganizationId == organizationId)
@@ -135,7 +135,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (category == null)
                 return null;
 
-            await _access.CheckWriteAsync(userId, category.OrganizationId);
+            await _access.RequireOrganizationAdminAsync(userId, category.OrganizationId);
 
             category.Name = request.Name;
             category.Description = request.Description;
@@ -152,7 +152,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (category == null)
                 return false;
 
-            await _access.CheckWriteAsync(userId, category.OrganizationId);
+            await _access.RequireOrganizationAdminAsync(userId, category.OrganizationId);
 
             _context.MenuCategories.Remove(category);
             await _context.SaveChangesAsync();

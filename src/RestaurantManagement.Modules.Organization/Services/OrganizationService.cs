@@ -20,6 +20,8 @@ namespace RestaurantManagement.Modules.Organization.Services
 {
     public class OrganizationService : IOrganizationService
     {
+        private static readonly string[] OwnerOrAdminRoles = [Roles.Owner, Roles.Admin];
+
         private readonly OrganizationDbContext _orgDb;
         private readonly IUserRoleLookup _userRoleLookup;
         private readonly IUserRoleAssigner _userRoleAssigner;
@@ -202,7 +204,7 @@ namespace RestaurantManagement.Modules.Organization.Services
 
             // 3. Only Owner or Admin of this organization may edit it
             var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
-            if (assignments == null || !AccessDecision.AllowsOrganizationWide(assignments, [Roles.Owner, Roles.Admin]))
+            if (assignments == null || !AccessDecision.AllowsOrganizationWide(assignments, OwnerOrAdminRoles))
                 throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
 
             var before = (organizationSettings.ServiceChargeRate, organizationSettings.DiscountApprovalLimit, organizationSettings.BusinessDayCutoff);

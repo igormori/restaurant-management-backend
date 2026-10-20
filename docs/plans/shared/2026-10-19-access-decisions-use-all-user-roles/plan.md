@@ -38,7 +38,7 @@ No public endpoint, no raw SQL (Structured Query Language), no migration, no tok
 - [x] No check counts a role held in another organization (Outcome 4)
 - [x] A Manager, alone or with other non-Admin roles, is still refused menu writes
 - [x] `python3 .claude/scripts/check-security-matrices.py` passes (Shared, Identity, Menu, Organization matrices)
-- [x] `backlog/tech-debt/2026-10-15-user-role-lookup-single-role.md` stays deleted, uncommitted (the user commits it)
+- [x] `backlog/tech-debt/2026-10-15-user-role-lookup-single-role.md` is deleted and the deletion is uncommitted for the user to commit (it was committed by mistake in the baseline, then restored in commits 80b765f and 60df7c0)
 
 ## Checklist
 - [x] T1 — Role assignment DTO and access decision helper
