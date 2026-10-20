@@ -1,12 +1,10 @@
-using RestaurantManagement.Shared.Auth;
 using FluentAssertions;
 using NSubstitute;
 using RestaurantManagement.Modules.Menu.Entities;
 using RestaurantManagement.Modules.Menu.Models;
 using RestaurantManagement.Modules.Menu.Services;
-using RestaurantManagement.Shared;
+using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Data;
-using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Xunit;
@@ -69,46 +67,45 @@ namespace RestaurantManagement.Modules.Menu.Tests
             return categoryId;
         }
 
-        private static IUserRoleLookup CreateUserRoleLookup(Guid userId, Guid organizationId, string? role)
-        {
-            var userRoleLookup = Substitute.For<IUserRoleLookup>();
-            userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId).Returns(role is null ? new List<RoleAssignmentDto>() : new List<RoleAssignmentDto> { new() { Role = role } });
-            return userRoleLookup;
-        }
+        // Access is not what most tests here check: the guard allows everything unless the test says otherwise.
+        private static IAccessGuard CreateGuard(Guid userId, Guid organizationId, string? role)
+            => role is null
+                ? TestAccess.Guard(userId, organizationId, TestAccess.NoAccessGrid, Guid.NewGuid())
+                : TestAccess.Permissive();
 
         private static MenuCategoryService CreateSut(
             Data.MenuDbContext context,
-            IUserRoleLookup userRoleLookup,
+            IAccessGuard accessGuard,
             ITenantContext tenantContext,
             IOrganizationLookup? organizationLookup = null)
         {
             return new MenuCategoryService(
                 context,
                 organizationLookup ?? Substitute.For<IOrganizationLookup>(),
-                userRoleLookup,
+                accessGuard,
                 tenantContext,
                 TestLocalizer.Create());
         }
 
         [Fact]
         [Trait("Rule", "M5")]
-        public async Task CreateAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
+        public async Task CreateAsync_MemberWithNoAccessYet_ThrowsForbidden()
         {
             // Arrange
             using var database = new MenuTestDatabase();
             var (menuId, organizationId) = await SeedMenuAsync(database);
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, role: null);
+            var accessGuard = CreateGuard(userId, organizationId, role: null);
 
             var tenant = TestTenant.Of(organizationId);
             using var context = database.CreateContext(tenant);
-            var sut = CreateSut(context, userRoleLookup, tenant);
+            var sut = CreateSut(context, accessGuard, tenant);
 
             // Act
             var act = () => sut.CreateAsync(userId, CreateRequest(menuId));
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a user with no role in the organization may not create menu categories");
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a member who has been given no access yet may not create menu categories");
         }
 
         [Fact]
@@ -120,11 +117,11 @@ namespace RestaurantManagement.Modules.Menu.Tests
             var (foreignMenuId, _) = await SeedMenuAsync(database);
             var ownOrganizationId = Guid.NewGuid();
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, ownOrganizationId, Roles.Owner);
+            var accessGuard = CreateGuard(userId, ownOrganizationId, "Owner");
 
             var tenant = TestTenant.Of(ownOrganizationId);
             using var context = database.CreateContext(tenant);
-            var sut = CreateSut(context, userRoleLookup, tenant);
+            var sut = CreateSut(context, accessGuard, tenant);
 
             // Act
             var act = () => sut.CreateAsync(userId, CreateRequest(foreignMenuId));
@@ -143,11 +140,11 @@ namespace RestaurantManagement.Modules.Menu.Tests
             using var database = new MenuTestDatabase();
             var organizationId = Guid.NewGuid();
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
+            var accessGuard = CreateGuard(userId, organizationId, "Owner");
 
             var tenant = TestTenant.Of(organizationId);
             using var context = database.CreateContext(tenant);
-            var sut = CreateSut(context, userRoleLookup, tenant);
+            var sut = CreateSut(context, accessGuard, tenant);
 
             // Act
             var act = () => sut.CreateAsync(userId, CreateRequest(Guid.NewGuid()));
@@ -164,7 +161,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             using var database = new MenuTestDatabase();
             var (menuId, organizationId) = await SeedMenuAsync(database);
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
+            var accessGuard = CreateGuard(userId, organizationId, "Owner");
             var foreignLocationId = Guid.NewGuid();
             var organizationLookup = Substitute.For<IOrganizationLookup>();
             organizationLookup.GetLocationAsync(foreignLocationId).Returns(
@@ -172,7 +169,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
 
             var tenant = TestTenant.Of(organizationId);
             using var context = database.CreateContext(tenant);
-            var sut = CreateSut(context, userRoleLookup, tenant, organizationLookup);
+            var sut = CreateSut(context, accessGuard, tenant, organizationLookup);
             var request = CreateRequest(menuId);
             request.LocationId = foreignLocationId;
 
@@ -193,11 +190,11 @@ namespace RestaurantManagement.Modules.Menu.Tests
             using var database = new MenuTestDatabase();
             var (menuId, organizationId) = await SeedMenuAsync(database);
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
+            var accessGuard = CreateGuard(userId, organizationId, "Owner");
 
             var tenant = TestTenant.Of(organizationId);
             using var context = database.CreateContext(tenant);
-            var sut = CreateSut(context, userRoleLookup, tenant);
+            var sut = CreateSut(context, accessGuard, tenant);
             var request = CreateRequest(menuId);
             request.LocationId = Guid.NewGuid();
 
@@ -218,7 +215,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
             using var database = new MenuTestDatabase();
             var (menuId, organizationId) = await SeedMenuAsync(database);
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
+            var accessGuard = CreateGuard(userId, organizationId, "Owner");
             var locationId = Guid.NewGuid();
             var organizationLookup = Substitute.For<IOrganizationLookup>();
             organizationLookup.GetLocationAsync(locationId).Returns(
@@ -226,7 +223,7 @@ namespace RestaurantManagement.Modules.Menu.Tests
 
             var tenant = TestTenant.Of(organizationId);
             using var context = database.CreateContext(tenant);
-            var sut = CreateSut(context, userRoleLookup, tenant, organizationLookup);
+            var sut = CreateSut(context, accessGuard, tenant, organizationLookup);
             var request = CreateRequest(menuId);
             request.LocationId = locationId;
 
@@ -239,181 +236,181 @@ namespace RestaurantManagement.Modules.Menu.Tests
 
         [Fact]
         [Trait("Rule", "M19")]
-        public async Task CreateAsync_WhenUserIsOwnerOrAdmin_CreatesCategory()
+        public async Task CreateAsync_WhenAccessIsAllowed_CreatesCategory()
         {
             // Arrange
             using var database = new MenuTestDatabase();
             var (menuId, organizationId) = await SeedMenuAsync(database);
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
+            var accessGuard = CreateGuard(userId, organizationId, "Owner");
 
             var tenant = TestTenant.Of(organizationId);
             using var context = database.CreateContext(tenant);
-            var sut = CreateSut(context, userRoleLookup, tenant);
+            var sut = CreateSut(context, accessGuard, tenant);
 
             // Act
             var response = await sut.CreateAsync(userId, CreateRequest(menuId));
 
             // Assert
-            response.Should().NotBeNull("an Owner or Admin may create a category");
+            response.Should().NotBeNull("a member who is allowed may create a category");
             response.OrganizationId.Should().Be(organizationId, "the new category belongs to the user's organization");
             response.Name.Should().Be("Starters");
         }
 
         [Fact]
         [Trait("Rule", "M5")]
-        public async Task GetByIdAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
+        public async Task GetByIdAsync_MemberWithNoAccessYet_ThrowsForbidden()
         {
             // Arrange
             using var database = new MenuTestDatabase();
             var (menuId, organizationId) = await SeedMenuAsync(database);
             var categoryId = await SeedCategoryAsync(database, menuId, organizationId);
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, role: null);
+            var accessGuard = CreateGuard(userId, organizationId, role: null);
 
             var tenant = TestTenant.Of(organizationId);
             using var context = database.CreateContext(tenant);
-            var sut = CreateSut(context, userRoleLookup, tenant);
+            var sut = CreateSut(context, accessGuard, tenant);
 
             // Act
             var act = () => sut.GetByIdAsync(userId, categoryId);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a user with no role in the organization may not read menu categories");
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a member who has been given no access yet may not read menu categories");
         }
 
         [Fact]
         [Trait("Rule", "M19")]
-        public async Task GetByIdAsync_WhenUserIsOwnerOfOrganization_ReturnsCategory()
+        public async Task GetByIdAsync_WhenAccessIsAllowed_ReturnsCategory()
         {
             // Arrange
             using var database = new MenuTestDatabase();
             var (menuId, organizationId) = await SeedMenuAsync(database);
             var categoryId = await SeedCategoryAsync(database, menuId, organizationId);
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
+            var accessGuard = CreateGuard(userId, organizationId, "Owner");
 
             var tenant = TestTenant.Of(organizationId);
             using var context = database.CreateContext(tenant);
-            var sut = CreateSut(context, userRoleLookup, tenant);
+            var sut = CreateSut(context, accessGuard, tenant);
 
             // Act
             var response = await sut.GetByIdAsync(userId, categoryId);
 
             // Assert
-            response.Should().NotBeNull("an Owner may read a category of the organization");
+            response.Should().NotBeNull("a member who is allowed may read a category of the organization");
             response!.Id.Should().Be(categoryId);
         }
 
         [Fact]
         [Trait("Rule", "M5")]
-        public async Task GetAllAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
+        public async Task GetAllAsync_MemberWithNoAccessYet_ThrowsForbidden()
         {
             // Arrange
             using var database = new MenuTestDatabase();
             var (menuId, organizationId) = await SeedMenuAsync(database);
             await SeedCategoryAsync(database, menuId, organizationId);
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, role: null);
+            var accessGuard = CreateGuard(userId, organizationId, role: null);
 
             var tenant = TestTenant.Of(organizationId);
             using var context = database.CreateContext(tenant);
-            var sut = CreateSut(context, userRoleLookup, tenant);
+            var sut = CreateSut(context, accessGuard, tenant);
 
             // Act
             var act = () => sut.GetAllAsync(userId);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a user with no role in the organization may not list menu categories");
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a member who has been given no access yet may not list menu categories");
         }
 
         [Fact]
         [Trait("Rule", "M5")]
-        public async Task UpdateAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
+        public async Task UpdateAsync_MemberWithNoAccessYet_ThrowsForbidden()
         {
             // Arrange
             using var database = new MenuTestDatabase();
             var (menuId, organizationId) = await SeedMenuAsync(database);
             var categoryId = await SeedCategoryAsync(database, menuId, organizationId);
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, role: null);
+            var accessGuard = CreateGuard(userId, organizationId, role: null);
 
             var tenant = TestTenant.Of(organizationId);
             using var context = database.CreateContext(tenant);
-            var sut = CreateSut(context, userRoleLookup, tenant);
+            var sut = CreateSut(context, accessGuard, tenant);
 
             // Act
             var act = () => sut.UpdateAsync(userId, categoryId, UpdateRequest);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a user with no role in the organization may not change menu categories");
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a member who has been given no access yet may not change menu categories");
         }
 
         [Fact]
         [Trait("Rule", "M19")]
-        public async Task UpdateAsync_WhenUserIsAdminOfOrganization_UpdatesCategory()
+        public async Task UpdateAsync_WhenAccessIsAllowed_UpdatesCategory()
         {
             // Arrange
             using var database = new MenuTestDatabase();
             var (menuId, organizationId) = await SeedMenuAsync(database);
             var categoryId = await SeedCategoryAsync(database, menuId, organizationId);
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Admin);
+            var accessGuard = CreateGuard(userId, organizationId, "Admin");
 
             var tenant = TestTenant.Of(organizationId);
             using var context = database.CreateContext(tenant);
-            var sut = CreateSut(context, userRoleLookup, tenant);
+            var sut = CreateSut(context, accessGuard, tenant);
 
             // Act
             var response = await sut.UpdateAsync(userId, categoryId, UpdateRequest);
 
             // Assert
-            response.Should().NotBeNull("an Admin may change a category of the organization");
+            response.Should().NotBeNull("a member who is allowed may change a category of the organization");
             response!.Name.Should().Be(UpdateRequest.Name, "the category shows the new name after the change");
         }
 
         [Fact]
         [Trait("Rule", "M5")]
-        public async Task DeleteAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
+        public async Task DeleteAsync_MemberWithNoAccessYet_ThrowsForbidden()
         {
             // Arrange
             using var database = new MenuTestDatabase();
             var (menuId, organizationId) = await SeedMenuAsync(database);
             var categoryId = await SeedCategoryAsync(database, menuId, organizationId);
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, role: null);
+            var accessGuard = CreateGuard(userId, organizationId, role: null);
 
             var tenant = TestTenant.Of(organizationId);
             using var context = database.CreateContext(tenant);
-            var sut = CreateSut(context, userRoleLookup, tenant);
+            var sut = CreateSut(context, accessGuard, tenant);
 
             // Act
             var act = () => sut.DeleteAsync(userId, categoryId);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a user with no role in the organization may not delete menu categories");
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a member who has been given no access yet may not delete menu categories");
         }
 
         [Fact]
         [Trait("Rule", "M19")]
-        public async Task DeleteAsync_WhenUserIsOwnerOfOrganization_DeletesCategory()
+        public async Task DeleteAsync_WhenAccessIsAllowed_DeletesCategory()
         {
             // Arrange
             using var database = new MenuTestDatabase();
             var (menuId, organizationId) = await SeedMenuAsync(database);
             var categoryId = await SeedCategoryAsync(database, menuId, organizationId);
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, Roles.Owner);
+            var accessGuard = CreateGuard(userId, organizationId, "Owner");
 
             var tenant = TestTenant.Of(organizationId);
             using var context = database.CreateContext(tenant);
-            var sut = CreateSut(context, userRoleLookup, tenant);
+            var sut = CreateSut(context, accessGuard, tenant);
 
             // Act
             var result = await sut.DeleteAsync(userId, categoryId);
 
             // Assert
-            result.Should().BeTrue("an Owner may delete a category of the organization");
+            result.Should().BeTrue("a member who is allowed may delete a category of the organization");
         }
     }
 }

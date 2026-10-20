@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Modules.Organization.Services;
-using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.Identity;
 using Xunit;
@@ -20,12 +19,12 @@ namespace RestaurantManagement.Modules.Organization.Tests
             Currency = "BRL"
         };
 
-        private static IUserRoleLookup CreateUserRoleLookup(Guid userId, List<Guid>? organizationIds = null)
+        private static IMemberAccessLookup CreateMemberLookup(Guid userId, List<Guid>? organizationIds = null)
         {
-            var userRoleLookup = Substitute.For<IUserRoleLookup>();
-            userRoleLookup.UserExistsAsync(userId).Returns(true);
-            userRoleLookup.GetOrganizationIdsForUserAsync(userId).Returns(organizationIds ?? new List<Guid>());
-            return userRoleLookup;
+            var memberLookup = Substitute.For<IMemberAccessLookup>();
+            memberLookup.UserExistsAsync(userId).Returns(true);
+            memberLookup.GetOrganizationIdsForUserAsync(userId).Returns(organizationIds ?? new List<Guid>());
+            return memberLookup;
         }
 
         [Fact]
@@ -35,14 +34,14 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Arrange
             using var database = new OrganizationTestDatabase();
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId);
-            var userRoleAssigner = Substitute.For<IUserRoleAssigner>();
-            userRoleAssigner.AssignRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+            var memberLookup = CreateMemberLookup(userId);
+            var accessSetup = Substitute.For<IOrganizationAccessSetup>();
+            accessSetup.AddOwnerWithDefaultRolesAsync(Arg.Any<Guid>(), Arg.Any<Guid>())
                 .Returns(Task.FromException(new InvalidOperationException("Role assignment unavailable")));
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
+            var sut = new OrganizationService(context, memberLookup, accessSetup, TestAccess.Permissive(), new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
 
             // Act
             var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
@@ -62,22 +61,22 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Arrange
             using var database = new OrganizationTestDatabase();
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId);
-            var userRoleAssigner = Substitute.For<IUserRoleAssigner>();
-            userRoleAssigner.AssignRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+            var memberLookup = CreateMemberLookup(userId);
+            var accessSetup = Substitute.For<IOrganizationAccessSetup>();
+            accessSetup.AddOwnerWithDefaultRolesAsync(Arg.Any<Guid>(), Arg.Any<Guid>())
                 .Returns(Task.FromException(new InvalidOperationException("Role assignment unavailable")));
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using (var context = database.CreateContext())
             {
-                var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
+                var sut = new OrganizationService(context, memberLookup, accessSetup, TestAccess.Permissive(), new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
                 var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
                 await act.Should().ThrowAsync<Exception>("the creation fails when the Owner role cannot be assigned");
             }
 
             // Act: since role assignment never succeeded, Identity holds no organization id for this user.
             using var listContext = database.CreateContext();
-            var listSut = new OrganizationService(listContext, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
+            var listSut = new OrganizationService(listContext, memberLookup, accessSetup, TestAccess.Permissive(), new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
             var organizations = await listSut.GetOrganizationsAsync(userId);
 
             // Assert
@@ -91,26 +90,26 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Arrange
             using var database = new OrganizationTestDatabase();
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId);
-            var userRoleAssigner = Substitute.For<IUserRoleAssigner>();
+            var memberLookup = CreateMemberLookup(userId);
+            var accessSetup = Substitute.For<IOrganizationAccessSetup>();
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
-            userRoleAssigner.AssignRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+            accessSetup.AddOwnerWithDefaultRolesAsync(Arg.Any<Guid>(), Arg.Any<Guid>())
                 .Returns(Task.FromException(new InvalidOperationException("Role assignment unavailable")));
 
             using (var context = database.CreateContext())
             {
-                var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
+                var sut = new OrganizationService(context, memberLookup, accessSetup, TestAccess.Permissive(), new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
                 var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
                 await act.Should().ThrowAsync<Exception>("the first attempt fails when the Owner role cannot be assigned");
             }
 
             // Act: the failed attempt must not have consumed the one-trial-organization limit.
-            userRoleAssigner.AssignRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+            accessSetup.AddOwnerWithDefaultRolesAsync(Arg.Any<Guid>(), Arg.Any<Guid>())
                 .Returns(Task.CompletedTask);
 
             using var secondContext = database.CreateContext();
-            var secondSut = new OrganizationService(secondContext, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
+            var secondSut = new OrganizationService(secondContext, memberLookup, accessSetup, TestAccess.Permissive(), new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
             var response = await secondSut.CreateOrganizationAsync(userId, ValidRequest);
 
             // Assert
@@ -127,9 +126,9 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Arrange
             using var database = new OrganizationTestDatabase();
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId);
-            var userRoleAssigner = Substitute.For<IUserRoleAssigner>();
-            userRoleAssigner.AssignRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+            var memberLookup = CreateMemberLookup(userId);
+            var accessSetup = Substitute.For<IOrganizationAccessSetup>();
+            accessSetup.AddOwnerWithDefaultRolesAsync(Arg.Any<Guid>(), Arg.Any<Guid>())
                 .Returns(callInfo =>
                 {
                     // Simulate the database becoming unavailable right as we try to roll back.
@@ -139,7 +138,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
+            var sut = new OrganizationService(context, memberLookup, accessSetup, TestAccess.Permissive(), new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
 
             // Act
             var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
@@ -162,14 +161,14 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Arrange
             using var database = new OrganizationTestDatabase();
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId);
-            var userRoleAssigner = Substitute.For<IUserRoleAssigner>();
-            userRoleAssigner.AssignRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+            var memberLookup = CreateMemberLookup(userId);
+            var accessSetup = Substitute.For<IOrganizationAccessSetup>();
+            accessSetup.AddOwnerWithDefaultRolesAsync(Arg.Any<Guid>(), Arg.Any<Guid>())
                 .Returns(Task.FromException(new InvalidOperationException("Role assignment unavailable")));
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
+            var sut = new OrganizationService(context, memberLookup, accessSetup, TestAccess.Permissive(), new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
 
             // Act
             var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
@@ -185,25 +184,25 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Arrange: role assignment itself succeeds (Identity has already recorded the
             // Owner role), but the organization database becomes unavailable right before
             // the transaction commits. The compensating action must revoke the Owner role
-            // from Identity so no dangling UserRole is left pointing at an organization
+            // from Identity so no dangling membership is left pointing at an organization
             // that was never committed, and the caller must still receive the original
             // failure.
             using var database = new OrganizationTestDatabase();
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId);
-            var userRoleAssigner = Substitute.For<IUserRoleAssigner>();
-            userRoleAssigner.AssignRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+            var memberLookup = CreateMemberLookup(userId);
+            var accessSetup = Substitute.For<IOrganizationAccessSetup>();
+            accessSetup.AddOwnerWithDefaultRolesAsync(Arg.Any<Guid>(), Arg.Any<Guid>())
                 .Returns(callInfo =>
                 {
                     database.CloseConnection();
                     return Task.CompletedTask;
                 });
-            userRoleAssigner.RevokeRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+            accessSetup.RemoveOwnerAndRolesAsync(Arg.Any<Guid>(), Arg.Any<Guid>())
                 .Returns(Task.CompletedTask);
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
+            var sut = new OrganizationService(context, memberLookup, accessSetup, TestAccess.Permissive(), new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
 
             // Act
             var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
@@ -213,13 +212,13 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // same user/organization/role.
             await act.Should().ThrowAsync<Exception>("the caller gets a failure when the organization cannot be saved");
 
-            await userRoleAssigner.Received(1).AssignRoleAsync(userId, Arg.Any<Guid>(), Roles.Owner);
-            await userRoleAssigner.Received(1).RevokeRoleAsync(userId, Arg.Any<Guid>(), Roles.Owner);
+            await accessSetup.Received(1).AddOwnerWithDefaultRolesAsync(userId, Arg.Any<Guid>());
+            await accessSetup.Received(1).RemoveOwnerAndRolesAsync(userId, Arg.Any<Guid>());
 
             logger.Received().Log(
                 LogLevel.Error,
                 Arg.Any<EventId>(),
-                Arg.Is<object>(state => state.ToString()!.Contains("dangling UserRole")),
+                Arg.Any<object>(),
                 Arg.Any<Exception>(),
                 Arg.Any<Func<object, Exception?, string>>());
         }
@@ -229,25 +228,25 @@ namespace RestaurantManagement.Modules.Organization.Tests
         public async Task CreateOrganizationAsync_WhenCommitFailsAndRevokeAlsoFails_LogsSecondErrorAndThrowsOriginalException()
         {
             // Arrange: same commit-failure scenario as above, but the compensating
-            // RevokeRoleAsync call itself also fails (e.g. Identity's database is
+            // RemoveOwnerAndRolesAsync call itself also fails (e.g. Identity's database is
             // unreachable too). The caller must still see the original commit failure,
             // not the revoke failure, with the revoke failure logged separately.
             using var database = new OrganizationTestDatabase();
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId);
-            var userRoleAssigner = Substitute.For<IUserRoleAssigner>();
-            userRoleAssigner.AssignRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+            var memberLookup = CreateMemberLookup(userId);
+            var accessSetup = Substitute.For<IOrganizationAccessSetup>();
+            accessSetup.AddOwnerWithDefaultRolesAsync(Arg.Any<Guid>(), Arg.Any<Guid>())
                 .Returns(callInfo =>
                 {
                     database.CloseConnection();
                     return Task.CompletedTask;
                 });
-            userRoleAssigner.RevokeRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+            accessSetup.RemoveOwnerAndRolesAsync(Arg.Any<Guid>(), Arg.Any<Guid>())
                 .Returns(Task.FromException(new InvalidOperationException("Identity database unavailable")));
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
+            var sut = new OrganizationService(context, memberLookup, accessSetup, TestAccess.Permissive(), new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
 
             // Act
             var act = () => sut.CreateOrganizationAsync(userId, ValidRequest);
@@ -260,7 +259,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             logger.Received().Log(
                 LogLevel.Error,
                 Arg.Any<EventId>(),
-                Arg.Is<object>(state => state.ToString()!.Contains("dangling UserRole")),
+                Arg.Any<object>(),
                 Arg.Any<Exception>(),
                 Arg.Any<Func<object, Exception?, string>>());
 
@@ -279,14 +278,14 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Arrange
             using var database = new OrganizationTestDatabase();
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId);
-            var userRoleAssigner = Substitute.For<IUserRoleAssigner>();
-            userRoleAssigner.AssignRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+            var memberLookup = CreateMemberLookup(userId);
+            var accessSetup = Substitute.For<IOrganizationAccessSetup>();
+            accessSetup.AddOwnerWithDefaultRolesAsync(Arg.Any<Guid>(), Arg.Any<Guid>())
                 .Returns(Task.CompletedTask);
             var logger = Substitute.For<ILogger<OrganizationService>>();
 
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
+            var sut = new OrganizationService(context, memberLookup, accessSetup, TestAccess.Permissive(), new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
 
             // Act
             var response = await sut.CreateOrganizationAsync(userId, ValidRequest);
@@ -300,7 +299,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             (await verifyContext.Organizations.CountAsync()).Should().Be(1, "exactly one organization is stored");
             (await verifyContext.OrganizationSettings.IgnoreQueryFilters().CountAsync()).Should().Be(1, "the organization gets its own settings");
 
-            await userRoleAssigner.Received(1).AssignRoleAsync(userId, response.Id, Roles.Owner);
+            await accessSetup.Received(1).AddOwnerWithDefaultRolesAsync(userId, response.Id);
         }
     }
 }

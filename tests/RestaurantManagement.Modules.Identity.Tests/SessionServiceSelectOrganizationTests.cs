@@ -20,9 +20,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private const string Password = "Password1!";
         private const string UserEmail = "maria@cantinadanonna.com.br";
         private const string OtherUserEmail = "paolo@trattoriadelsole.com.br";
-        private const string OwnerRole = "Owner";
-        private const string AdminRole = "Admin";
-        private const string StaffRole = "Staff";
         private const string CantinaName = "Cantina da Nonna";
         private const string TrattoriaName = "Trattoria do Sol";
         private const string NotMemberKey = "UserNotMemberOfOrganization";
@@ -58,7 +55,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         private static async Task<Guid> SeedUserAsync(
             IdentityTestDatabase database,
-            UserRole[] roles,
+            OrganizationMember[] members,
             string email = UserEmail,
             bool isActive = true,
             bool isVerified = true,
@@ -75,18 +72,23 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 IsVerified = isVerified,
                 LockedUntil = lockedUntil
             };
-            foreach (var role in roles)
-                user.Roles.Add(role);
-
             context.Users.Add(user);
+            await context.SaveChangesAsync();
+            foreach (var member in members)
+            {
+                member.UserId = user.Id;
+                context.Set<OrganizationMember>().Add(member);
+            }
+
             await context.SaveChangesAsync();
             return user.Id;
         }
 
-        private static UserRole[] RolesInBothOrganizations() => new[]
+        // The user is the Owner of Cantina da Nonna and a member without the Owner flag of Trattoria do Sol.
+        private static OrganizationMember[] RolesInBothOrganizations() => new[]
         {
-            new UserRole { Role = OwnerRole, OrganizationId = CantinaId },
-            new UserRole { Role = StaffRole, OrganizationId = TrattoriaId }
+            TestMembers.Owner(Guid.Empty, CantinaId),
+            TestMembers.Member(Guid.Empty, TrattoriaId)
         };
 
         private static async Task<SessionResult> LoginAsync(IdentityTestDatabase database, IOrganizationLookup lookup, ClientInfo? client = null)
@@ -143,11 +145,11 @@ namespace RestaurantManagement.Modules.Identity.Tests
         // Scenario 2
         [Fact]
         [Trait("Rule", "S3")]
-        public async Task SelectOrganizationAsync_UserWithNoRoleInOrganization_ThrowsNotMemberWith403()
+        public async Task SelectOrganizationAsync_UserNotAMemberOfTheOrganization_ThrowsNotMemberWith403()
         {
             // Arrange
             using var database = new IdentityTestDatabase();
-            var userId = await SeedUserAsync(database, new[] { new UserRole { Role = OwnerRole, OrganizationId = CantinaId } });
+            var userId = await SeedUserAsync(database, new[] { TestMembers.Owner(Guid.Empty, CantinaId) });
             var lookup = CreateLookup(Cantina(), Trattoria());
 
             // Act
@@ -166,7 +168,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         {
             // Arrange
             using var database = new IdentityTestDatabase();
-            var userId = await SeedUserAsync(database, new[] { new UserRole { Role = OwnerRole, OrganizationId = CantinaId } });
+            var userId = await SeedUserAsync(database, new[] { TestMembers.Owner(Guid.Empty, CantinaId) });
             var lookup = CreateLookup(Cantina());
 
             // Act
@@ -181,14 +183,14 @@ namespace RestaurantManagement.Modules.Identity.Tests
         // Scenario 4
         [Fact]
         [Trait("Rule", "S3")]
-        public async Task SelectOrganizationAsync_UserHasRoleButOrganizationNoLongerExists_ThrowsSameRejectionAsNonMember()
+        public async Task SelectOrganizationAsync_UserIsMemberButOrganizationNoLongerExists_ThrowsSameRejectionAsNonMember()
         {
             // Arrange
             using var database = new IdentityTestDatabase();
             var userId = await SeedUserAsync(database, new[]
             {
-                new UserRole { Role = OwnerRole, OrganizationId = CantinaId },
-                new UserRole { Role = StaffRole, OrganizationId = DeletedOrganizationId }
+                TestMembers.Owner(Guid.Empty, CantinaId),
+                TestMembers.Member(Guid.Empty, DeletedOrganizationId)
             });
             var lookup = CreateLookup(Cantina());
 
@@ -227,8 +229,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
         {
             // Arrange
             using var database = new IdentityTestDatabase();
-            var mariaId = await SeedUserAsync(database, new[] { new UserRole { Role = OwnerRole, OrganizationId = CantinaId } });
-            await SeedUserAsync(database, new[] { new UserRole { Role = OwnerRole, OrganizationId = TrattoriaId } }, email: OtherUserEmail);
+            var mariaId = await SeedUserAsync(database, new[] { TestMembers.Owner(Guid.Empty, CantinaId) });
+            await SeedUserAsync(database, new[] { TestMembers.Owner(Guid.Empty, TrattoriaId) }, email: OtherUserEmail);
             var lookup = CreateLookup(Cantina(), Trattoria());
 
             // Act
@@ -332,7 +334,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         // Scenario 12
         [Fact]
         [Trait("Rule", "S5")]
-        public async Task SelectOrganizationAsync_OwnerInCantinaStaffInTrattoria_TokenHasOnlyRolesOfSelectedOrganization()
+        public async Task SelectOrganizationAsync_OwnerInCantinaMemberInTrattoria_TokenCarriesTheSelectedOrganizationAndNoRoleClaim()
         {
             // Arrange
             using var database = new IdentityTestDatabase();
@@ -343,29 +345,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await SelectAsync(database, lookup, userId, TrattoriaId);
 
             // Assert
-            RoleClaimsOf(response.Auth.Token).ShouldBe(new[] { StaffRole }, ignoreOrder: false, customMessage: "the token carries only the roles the user holds in the chosen organization");
-        }
-
-        // Scenario 13
-        [Fact]
-        [Trait("Rule", "S5")]
-        public async Task SelectOrganizationAsync_TwoRolesInSelectedOrganization_TokenHasBothRolesAndNoneFromOthers()
-        {
-            // Arrange
-            using var database = new IdentityTestDatabase();
-            var userId = await SeedUserAsync(database, new[]
-            {
-                new UserRole { Role = OwnerRole, OrganizationId = CantinaId },
-                new UserRole { Role = AdminRole, OrganizationId = CantinaId },
-                new UserRole { Role = StaffRole, OrganizationId = TrattoriaId }
-            });
-            var lookup = CreateLookup(Cantina(), Trattoria());
-
-            // Act
-            var response = await SelectAsync(database, lookup, userId, CantinaId);
-
-            // Assert
-            RoleClaimsOf(response.Auth.Token).OrderBy(r => r).ToList().ShouldBe(new[] { AdminRole, OwnerRole }, ignoreOrder: false, customMessage: "the token carries both roles of the chosen organization and none from another one");
+            OrganizationClaimOf(response.Auth.Token).ShouldBe(TrattoriaId.ToString(), "the token carries the organization the user chose");
+            RoleClaimsOf(response.Auth.Token).ShouldBeEmpty("the token carries only the user and the organization, never a role");
         }
 
         // Scenario 14
@@ -375,7 +356,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         {
             // Arrange
             using var database = new IdentityTestDatabase();
-            var userId = await SeedUserAsync(database, new[] { new UserRole { Role = OwnerRole, OrganizationId = CantinaId } });
+            var userId = await SeedUserAsync(database, new[] { TestMembers.Owner(Guid.Empty, CantinaId) });
             var lookup = CreateLookup(Cantina());
 
             // Act
@@ -446,7 +427,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         // Scenario 18
         [Fact]
         [Trait("Rule", "F6")]
-        public async Task RefreshTokenAsync_AfterSelectingOrganization_KeepsSelectedOrganizationAndItsRolesOnly()
+        public async Task RefreshTokenAsync_AfterSelectingOrganization_KeepsSelectedOrganizationAndCarriesNoRoleClaim()
         {
             // Arrange
             using var database = new IdentityTestDatabase();
@@ -459,7 +440,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             OrganizationClaimOf(refreshed.Auth.Token).ShouldBe(TrattoriaId.ToString(), "a refresh keeps the organization the user chose");
-            RoleClaimsOf(refreshed.Auth.Token).ShouldBe(new[] { StaffRole }, ignoreOrder: false, customMessage: "a refresh keeps only the roles of the chosen organization");
+            RoleClaimsOf(refreshed.Auth.Token).ShouldBeEmpty("a refresh never puts a role in the token");
         }
 
         // Scenario 19
@@ -474,8 +455,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var selected = await SelectAsync(database, lookup, userId, TrattoriaId);
             using (var context = database.CreateContext())
             {
-                var staffRole = context.UserRoles.Single(r => r.UserId == userId && r.OrganizationId == TrattoriaId);
-                context.UserRoles.Remove(staffRole);
+                var membership = context.Set<OrganizationMember>().Single(m => m.UserId == userId && m.OrganizationId == TrattoriaId);
+                context.Set<OrganizationMember>().Remove(membership);
                 await context.SaveChangesAsync();
             }
 
@@ -533,7 +514,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Arrange
             using var database = new IdentityTestDatabase();
             await SeedUserAsync(database, RolesInBothOrganizations());
-            await SeedUserAsync(database, new[] { new UserRole { Role = OwnerRole, OrganizationId = DeletedOrganizationId } }, email: OtherUserEmail);
+            await SeedUserAsync(database, new[] { TestMembers.Owner(Guid.Empty, DeletedOrganizationId) }, email: OtherUserEmail);
             var thirdOrganization = new OrganizationSummaryDto { Id = DeletedOrganizationId, Name = "Pizzaria Vila Madalena", IsActive = true };
             var lookup = CreateLookup(Cantina(), Trattoria(), thirdOrganization);
 
@@ -553,7 +534,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         {
             // Arrange
             using var database = new IdentityTestDatabase();
-            await SeedUserAsync(database, Array.Empty<UserRole>());
+            await SeedUserAsync(database, Array.Empty<OrganizationMember>());
             var lookup = CreateLookup(Cantina(), Trattoria());
 
             // Act
@@ -703,7 +684,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             OrganizationClaimOf(refreshed.Auth.Token).ShouldBe(CantinaId.ToString(), "switching organization on the laptop does not change the tablet's organization");
-            RoleClaimsOf(refreshed.Auth.Token).ShouldBe(new[] { OwnerRole }, ignoreOrder: false, customMessage: "the tablet keeps only the roles of its own organization");
+            RoleClaimsOf(refreshed.Auth.Token).ShouldBeEmpty("the tablet's token carries no role");
         }
 
         // refresh-tokens-own-table Scenario 70
@@ -714,7 +695,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Arrange: Paolo's cookie is sent with Maria's access pass
             using var database = new IdentityTestDatabase();
             var mariaId = await SeedUserAsync(database, RolesInBothOrganizations());
-            var paoloId = await SeedUserAsync(database, new[] { new UserRole { Role = OwnerRole, OrganizationId = DeletedOrganizationId } }, email: OtherUserEmail);
+            var paoloId = await SeedUserAsync(database, new[] { TestMembers.Owner(Guid.Empty, DeletedOrganizationId) }, email: OtherUserEmail);
             IssuedRefreshToken paoloToken;
             using (var context = database.CreateContext())
             {

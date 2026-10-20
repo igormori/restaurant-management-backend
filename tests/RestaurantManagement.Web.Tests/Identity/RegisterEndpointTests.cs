@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Data;
+using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Services;
 using RestaurantManagement.Shared.Services.Email;
 using Shouldly;
@@ -61,7 +62,7 @@ public class RegisterEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     [Fact]
     [Trait("Rule", "R15")]
-    public async Task Register_BodyCarriesProtectedFields_UserIsStillUnverifiedActiveAndWithoutRoles()
+    public async Task Register_BodyCarriesProtectedFields_UserIsStillUnverifiedActiveAndWithoutMemberships()
     {
         // Arrange
         await using var tenantFactory = await TenantApiFactory.CreateAsync(_postgres);
@@ -98,6 +99,6 @@ public class RegisterEndpointTests : IClassFixture<PostgresDatabaseFixture>
         user.IsVerified.ShouldBeFalse("a caller cannot register an already verified account");
         user.IsActive.ShouldBeTrue("a caller cannot register a deactivated account");
         user.FailedAttempts.ShouldBe(0, "a caller cannot set the login failure counter");
-        (await db.UserRoles.IgnoreQueryFilters().AnyAsync(r => r.UserId == user.Id)).ShouldBeFalse("registering never grants a role");
+        (await db.Set<OrganizationMember>().IgnoreQueryFilters().AnyAsync(m => m.UserId == user.Id)).ShouldBeFalse("registering never makes the user a member of an organization");
     }
 }

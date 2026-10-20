@@ -36,7 +36,7 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
 
     public PasswordChangeEndpointTests(PostgresDatabaseFixture postgres) => _postgres = postgres;
 
-    private static async Task SeedUserAsync(TenantApiFactory factory, Guid userId, string email, string firstName, string password, string role)
+    private static async Task SeedUserAsync(TenantApiFactory factory, Guid userId, string email, string firstName, string password, bool isOwner)
     {
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
@@ -49,9 +49,9 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
             LastName = "Souza",
             IsVerified = true
         };
-        user.Roles.Add(new UserRole { OrganizationId = CantinaId, Role = role });
         db.Users.Add(user);
         await db.SaveChangesAsync();
+        await factory.AddMembershipAsync(userId, new OrganizationMember { OrganizationId = CantinaId, IsOwner = isOwner });
     }
 
     private static async Task<string> IssueRefreshTokenAsync(TenantApiFactory factory, Guid userId)
@@ -78,7 +78,7 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
     private static HttpRequestMessage ChangeRequestAsMaria(TenantApiFactory factory, object body)
     {
         var request = new HttpRequestMessage(HttpMethod.Post, ChangeUrl) { Content = JsonContent.Create(body) };
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", TestAccessTokens.Create(factory.Services, MariaId, organizationId: null, Roles.Owner));
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", TestAccessTokens.Create(factory.Services, MariaId, organizationId: null));
         return request;
     }
 
@@ -105,8 +105,8 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
     {
         // Arrange
         await using var factory = await TenantApiFactory.CreateAsync(_postgres);
-        await SeedUserAsync(factory, MariaId, "maria@cantinadanonna.com.br", "Maria", MariaPassword, Roles.Owner);
-        await SeedUserAsync(factory, JoaoId, "joao@cantinadanonna.com.br", "João", JoaoPassword, Roles.Cashier);
+        await SeedUserAsync(factory, MariaId, "maria@cantinadanonna.com.br", "Maria", MariaPassword, isOwner: true);
+        await SeedUserAsync(factory, JoaoId, "joao@cantinadanonna.com.br", "João", JoaoPassword, isOwner: false);
         var joaoToken = await IssueRefreshTokenAsync(factory, JoaoId);
         var client = factory.CreateClient();
 
@@ -127,7 +127,7 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
     {
         // Arrange
         await using var factory = await TenantApiFactory.CreateAsync(_postgres);
-        await SeedUserAsync(factory, MariaId, "maria@cantinadanonna.com.br", "Maria", MariaPassword, Roles.Owner);
+        await SeedUserAsync(factory, MariaId, "maria@cantinadanonna.com.br", "Maria", MariaPassword, isOwner: true);
         var earlierToken = await IssueRefreshTokenAsync(factory, MariaId);
         var client = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false });
         var request = ChangeRequestAsMaria(factory, new { currentPassword = MariaPassword, newPassword = NewPassword });
@@ -159,7 +159,7 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
         using var factory = new AuthApiFactory();
         var client = factory.CreateClient();
         var request = LocalizedResponses.Request("POST", ChangeUrl, culture, new { currentPassword = CurrentPasswordOf73Bytes, newPassword = NewPassword });
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", TestAccessTokens.Create(factory.Services, MariaId, organizationId: null, Roles.Owner));
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", TestAccessTokens.Create(factory.Services, MariaId, organizationId: null));
 
         // Act
         var response = await client.SendAsync(request);
@@ -177,7 +177,7 @@ public class PasswordChangeEndpointTests : IClassFixture<PostgresDatabaseFixture
         using var factory = new AuthApiFactory();
         var client = factory.CreateClient();
         var request = LocalizedResponses.Request("POST", ChangeUrl, "en", new { currentPassword = CurrentPasswordOf72Bytes, newPassword = NewPassword });
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", TestAccessTokens.Create(factory.Services, MariaId, organizationId: null, Roles.Owner));
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", TestAccessTokens.Create(factory.Services, MariaId, organizationId: null));
 
         // Act
         var response = await client.SendAsync(request);

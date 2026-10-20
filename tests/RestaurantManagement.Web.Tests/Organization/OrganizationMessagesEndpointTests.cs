@@ -27,7 +27,7 @@ public class OrganizationMessagesEndpointTests : IDisposable
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-            "Bearer", TestAccessTokens.Create(_factory.Services, AnaId, CantinaId, Roles.Owner));
+            "Bearer", TestAccessTokens.Create(_factory.Services, AnaId, CantinaId));
         return client;
     }
 

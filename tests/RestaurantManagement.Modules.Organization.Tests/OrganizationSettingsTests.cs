@@ -86,20 +86,20 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Arrange
             using var database = new OrganizationTestDatabase();
             var userId = Guid.NewGuid();
-            var userRoleLookup = Substitute.For<IUserRoleLookup>();
-            userRoleLookup.UserExistsAsync(userId).Returns(true);
-            userRoleLookup.GetOrganizationIdsForUserAsync(userId).Returns(new List<Guid>());
+            var memberLookup = Substitute.For<IMemberAccessLookup>();
+            memberLookup.UserExistsAsync(userId).Returns(true);
+            memberLookup.GetOrganizationIdsForUserAsync(userId).Returns(new List<Guid>());
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, Substitute.For<IUserRoleAssigner>(), new TenantScope(),
+            var sut = new OrganizationService(context, memberLookup, Substitute.For<IOrganizationAccessSetup>(), TestAccess.Permissive(), new TenantScope(),
                 TestTenant.None, TestLocalizer.Create(), Substitute.For<ILogger<OrganizationService>>(), Substitute.For<IAuditLog>());
 
             // Act
             var created = await sut.CreateOrganizationAsync(userId, new CreateOrganizationRequest { Name = "Maple Leaf Bistro", Currency = "CAD" });
 
             // Assert: read the stored settings back through the organization list
-            userRoleLookup.GetOrganizationIdsForUserAsync(userId).Returns(new List<Guid> { created.Id });
+            memberLookup.GetOrganizationIdsForUserAsync(userId).Returns(new List<Guid> { created.Id });
             using var listContext = database.CreateContext();
-            var listSut = new OrganizationService(listContext, userRoleLookup, Substitute.For<IUserRoleAssigner>(), new TenantScope(),
+            var listSut = new OrganizationService(listContext, memberLookup, Substitute.For<IOrganizationAccessSetup>(), TestAccess.Permissive(), new TenantScope(),
                 TestTenant.None, TestLocalizer.Create(), Substitute.For<ILogger<OrganizationService>>(), Substitute.For<IAuditLog>());
             var stored = (await listSut.GetOrganizationsAsync(userId)).ShouldHaveSingleItem(customMessage: "the user has the one organization just created");
             stored.ServiceChargeRate.ShouldBe(0m, "a new organization starts with no service charge");

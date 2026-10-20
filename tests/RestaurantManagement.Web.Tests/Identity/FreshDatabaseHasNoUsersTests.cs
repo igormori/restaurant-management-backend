@@ -18,7 +18,7 @@ public class FreshDatabaseHasNoUsersTests : IClassFixture<PostgresDatabaseFixtur
     // Matrix T24
     [Fact]
     [Trait("Rule", "T24")]
-    public async Task Migrate_CleanDatabase_HasNoUsersOrRoles()
+    public async Task Migrate_CleanDatabase_HasNoUsersOrMembers()
     {
         // Arrange
         var options = new DbContextOptionsBuilder<IdentityDbContext>()
@@ -32,7 +32,7 @@ public class FreshDatabaseHasNoUsersTests : IClassFixture<PostgresDatabaseFixtur
 
         // Assert
         (await context.Users.CountAsync()).ShouldBe(0, "a freshly migrated database has no default accounts");
-        (await context.Database.SqlQueryRaw<int>("SELECT count(*)::int AS \"Value\" FROM user_roles").SingleAsync())
-            .ShouldBe(0, "a freshly migrated database has no default role assignments");
+        (await context.Database.SqlQueryRaw<int>("SELECT count(*)::int AS \"Value\" FROM organization_members").SingleAsync())
+            .ShouldBe(0, "a freshly migrated database has no members, so nobody holds access to any organization");
     }
 }

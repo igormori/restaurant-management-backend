@@ -6,6 +6,7 @@ namespace RestaurantManagement.Shared.Services.AuditLog
     public static class AuditActions
     {
         public const string MemberRoleChanged = "member.role_changed";
+        public const string MemberAccessChanged = "member.access_changed";
         public const string SettingsChanged = "settings.changed";
         public const string LocationStatusChanged = "location.status_changed";
 

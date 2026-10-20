@@ -26,6 +26,9 @@ namespace RestaurantManagement.Modules.Organization.Services
                 .ToListAsync();
         }
 
+        public Task<List<Guid>> GetNonClosedLocationIdsAsync(Guid organizationId)
+            => throw new NotImplementedException();
+
         public async Task<List<OrganizationSummaryDto>> GetOrganizationsAsync(IReadOnlyCollection<Guid> organizationIds)
         {
             return await _orgDb.Organizations

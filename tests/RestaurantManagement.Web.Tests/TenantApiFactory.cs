@@ -11,6 +11,7 @@ using RestaurantManagement.Modules.Menu.Entities;
 using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Shared;
+using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Data;
 
 namespace RestaurantManagement.Web.Tests;
@@ -50,11 +51,15 @@ public sealed class TenantApiFactory : AuthApiFactory
         builder.ConfigureLogging(logging => logging.ClearProviders());
     }
 
-    public HttpClient ClientFor(Guid userId, Guid? organizationId, string role, string? locationHeader = null)
+    /// <summary>
+    /// A client signed in as the user in the organization. The pass holds no role: what the user
+    /// may do comes from the access grid stored with <see cref="SeedUserAsync"/> and <see cref="GrantAsync"/>.
+    /// </summary>
+    public HttpClient ClientFor(Guid userId, Guid? organizationId, string? locationHeader = null)
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-            "Bearer", TestAccessTokens.Create(Services, userId, organizationId, role));
+            "Bearer", TestAccessTokens.Create(Services, userId, organizationId));
         if (locationHeader is not null)
             client.DefaultRequestHeaders.Add(LocationHeader, locationHeader);
         return client;
@@ -63,23 +68,82 @@ public sealed class TenantApiFactory : AuthApiFactory
     public string Message(string key)
         => Services.GetRequiredService<IStringLocalizer<SharedResource>>()[key].Value;
 
-    public async Task SeedUserAsync(Guid userId, string email, string firstName, params UserRole[] roles)
+    /// <summary>
+    /// Stores a verified user and the given memberships (an Owner is a membership with the Owner
+    /// flag). A member who is not the Owner has no access until <see cref="GrantAsync"/> gives it.
+    /// </summary>
+    public async Task SeedUserAsync(Guid userId, string email, string firstName, params OrganizationMember[] memberships)
     {
-        using var scope = Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
-        var user = new User
+        using (var scope = Services.CreateScope())
         {
-            Id = userId,
-            Email = email,
-            PasswordHash = "not-used-by-token-signed-requests",
-            FirstName = firstName,
-            LastName = "Silva",
-            IsVerified = true
-        };
-        foreach (var role in roles)
-            user.Roles.Add(role);
-        db.Users.Add(user);
-        await db.SaveChangesAsync();
+            var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+            db.Users.Add(new User
+            {
+                Id = userId,
+                Email = email,
+                PasswordHash = "not-used-by-token-signed-requests",
+                FirstName = firstName,
+                LastName = "Silva",
+                IsVerified = true
+            });
+            await db.SaveChangesAsync();
+        }
+
+        foreach (var membership in memberships)
+            await AddMembershipAsync(userId, membership);
+    }
+
+    /// <summary>Stores a membership for a user that already exists, inside a tenant scope for its organization.</summary>
+    public async Task AddMembershipAsync(Guid userId, OrganizationMember membership)
+    {
+        membership.UserId = userId;
+        await InOrganizationAsync<IdentityDbContext>(membership.OrganizationId, async db =>
+        {
+            db.Set<OrganizationMember>().Add(membership);
+            await db.SaveChangesAsync();
+        });
+    }
+
+    /// <summary>A membership of the organization who is not the Owner (no access until granted).</summary>
+    public static OrganizationMember MemberOf(Guid organizationId) => new() { OrganizationId = organizationId };
+
+    /// <summary>A membership of the organization with the Owner flag (full access, never restricted).</summary>
+    public static OrganizationMember OwnerOf(Guid organizationId) => new() { OrganizationId = organizationId, IsOwner = true };
+
+    /// <summary>
+    /// Stores the member's levels at one location: one stored cell per module and level, exactly as
+    /// the access grid keeps them (a level of None is no row).
+    /// </summary>
+    public async Task GrantAsync(Guid userId, Guid organizationId, Guid locationId, params (AccessModule Module, AccessLevel Level)[] levels)
+    {
+        await InOrganizationAsync<IdentityDbContext>(organizationId, async db =>
+        {
+            foreach (var (module, level) in levels)
+                db.Set<MemberLocationLevel>().Add(new MemberLocationLevel
+                {
+                    UserId = userId,
+                    OrganizationId = organizationId,
+                    LocationId = locationId,
+                    Module = module,
+                    Level = level
+                });
+            await db.SaveChangesAsync();
+        });
+    }
+
+    /// <summary>Changes one stored cell, as a later grid change would (the next request sees it); None removes the cell.</summary>
+    public async Task SetLevelAsync(Guid userId, Guid organizationId, Guid locationId, AccessModule module, AccessLevel level)
+    {
+        await InOrganizationAsync<IdentityDbContext>(organizationId, async db =>
+        {
+            var cell = await db.Set<MemberLocationLevel>().SingleAsync(c =>
+                c.UserId == userId && c.OrganizationId == organizationId && c.LocationId == locationId && c.Module == module);
+            if (level == AccessLevel.None)
+                db.Set<MemberLocationLevel>().Remove(cell);
+            else
+                cell.Level = level;
+            await db.SaveChangesAsync();
+        });
     }
 
     public async Task SeedOrganizationAsync(Guid organizationId, string name, Currency currency)

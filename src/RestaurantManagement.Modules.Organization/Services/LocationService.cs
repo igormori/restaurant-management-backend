@@ -7,7 +7,6 @@ using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.AuditLog;
@@ -16,10 +15,8 @@ namespace RestaurantManagement.Modules.Organization.Services
 {
     public class LocationService : ILocationService
     {
-        private static readonly string[] OwnerOrAdminRoles = [Roles.Owner, Roles.Admin];
-
         private readonly OrganizationDbContext _orgDb;
-        private readonly IUserRoleLookup _userRoleLookup;
+        private readonly IAccessGuard _accessGuard;
         private readonly ITenantContext _tenantContext;
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly IAuditLog _auditLog;
@@ -27,14 +24,14 @@ namespace RestaurantManagement.Modules.Organization.Services
 
         public LocationService(
             OrganizationDbContext orgDb,
-            IUserRoleLookup userRoleLookup,
+            IAccessGuard accessGuard,
             ITenantContext tenantContext,
             IStringLocalizer<SharedResource> localizer,
             IAuditLog auditLog,
             ILogger<LocationService> logger)
         {
             _orgDb = orgDb;
-            _userRoleLookup = userRoleLookup;
+            _accessGuard = accessGuard;
             _tenantContext = tenantContext;
             _localizer = localizer;
             _auditLog = auditLog;
@@ -45,11 +42,8 @@ namespace RestaurantManagement.Modules.Organization.Services
         {
             var organizationId = RequireOrganizationId();
 
-            // 1. Verify User is Owner or Admin of the Organization
-            var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
-
-            if (assignments == null || !AccessDecision.AllowsOrganizationWide(assignments, OwnerOrAdminRoles))
-                throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
+            // 1. Only the Owner creates a location
+            await RequireOwnerAsync();
 
             // 2. Create Location
             var location = new Location
@@ -84,7 +78,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             if (location == null)
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
-            await RequireOwnerOrAdminAtAsync(userId, location);
+            await RequireManageLocationAsync(location, request.Status);
 
             var previousStatus = location.Status;
             location.Name = request.Name;
@@ -113,7 +107,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             if (location == null)
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
-            await RequireOwnerOrAdminAtAsync(userId, location);
+            await RequireOwnerAsync();
 
             // Soft delete by setting status to Closed (or logic as discussed: status is status)
             // User requested "If status closes ... do not delete". But "Delete" endpoint generally means "I want it gone or inactive".
@@ -158,11 +152,8 @@ namespace RestaurantManagement.Modules.Organization.Services
         {
             var organizationId = RequireOrganizationId();
 
-            // Verify User belongs to Organization (any role)
-            var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
-
-            if (assignments == null || assignments.Count == 0)
-                throw new BusinessException(_localizer["UserNotMemberOfOrganization"].Value, 403);
+            // Any access at all (the Owner or any cell) may list the locations
+            await RequireAnyAccessAsync();
 
             var locations = await _orgDb.Locations
                 .OrderBy(l => l.Name)
@@ -171,13 +162,13 @@ namespace RestaurantManagement.Modules.Organization.Services
             return locations.Select(MapToResponse).ToList();
         }
 
-        private async Task RequireOwnerOrAdminAtAsync(Guid userId, Location location)
-        {
-            var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, location.OrganizationId);
+        // Stubs for T8: the rules live on the access grid, through the guard.
+        private Task RequireOwnerAsync() => throw new NotImplementedException();
 
-            if (assignments == null || !AccessDecision.AllowsAtLocation(assignments, location.Id, OwnerOrAdminRoles))
-                throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
-        }
+        private Task RequireAnyAccessAsync() => throw new NotImplementedException();
+
+        // Locations Manage at the location; an edit that sets the status Closed needs the Owner.
+        private Task RequireManageLocationAsync(Location location, LocationStatus? requestedStatus) => throw new NotImplementedException();
 
         private static LocationType? ParseType(string? type)
             => type is null ? null : Enum.Parse<LocationType>(type);

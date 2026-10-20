@@ -33,7 +33,7 @@ public class MenuDeleteCascadeTests : IClassFixture<PostgresDatabaseFixture>
         var factory = await TenantApiFactory.CreateAsync(_postgres);
         await factory.SeedOrganizationAsync(CantinaId, "Cantina da Nonna", Currency.BRL);
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana",
-            new UserRole { OrganizationId = CantinaId, Role = Roles.Owner });
+            TenantApiFactory.OwnerOf(CantinaId));
         await factory.SeedLocationAsync(CantinaId, CentroLocationId, "Unidade Centro", "CENTRO", "America/Sao_Paulo");
         await factory.SeedMenuAsync(CantinaId, DinnerMenuId, "Jantar");
         await factory.SeedMenuAsync(CantinaId, LunchMenuId, "Almoço");
@@ -62,7 +62,7 @@ public class MenuDeleteCascadeTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange
         await using var factory = await CreateFactoryAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.DeleteAsync($"/api/menus/{DinnerMenuId}");

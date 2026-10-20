@@ -1,9 +1,7 @@
 using NSubstitute;
 using RestaurantManagement.Modules.Menu.Services;
-using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Data;
-using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Services.Organization;
 using Shouldly;
 
@@ -45,15 +43,13 @@ public class MenuLocationLinkTests
 
     private static MenuService CreateOwnerSut(Data.MenuDbContext context, ITenantContext tenant)
     {
-        var userRoleLookup = Substitute.For<IUserRoleLookup>();
-        userRoleLookup.GetRoleAssignmentsAsync(AnaId, CantinaId).Returns(new List<RoleAssignmentDto> { new() { Role = Roles.Owner } });
         var organizationLookup = Substitute.For<IOrganizationLookup>();
         organizationLookup.GetLocationAsync(CentroLocationId).Returns(new LocationSummaryDto
         {
             Id = CentroLocationId,
             OrganizationId = CantinaId
         });
-        return new MenuService(context, organizationLookup, userRoleLookup, tenant, TestLocalizer.Create());
+        return new MenuService(context, organizationLookup, TestAccess.Permissive(), tenant, TestLocalizer.Create());
     }
 
     // Scenario 48

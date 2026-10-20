@@ -23,6 +23,17 @@ namespace RestaurantManagement.Modules.Identity.Data
             // Apply any entity configurations from this assembly
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(IdentityDbContext).Assembly);
 
+            // Test stub for T3-T5, remove with the real mapping and migrations: the new access entities are in the
+            // model only on SQLite (unit tests), so the PostgreSQL model still matches the migrations until then.
+            if (Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
+            {
+                modelBuilder.Entity<OrganizationMember>();
+                modelBuilder.Entity<OrganizationRole>();
+                modelBuilder.Entity<OrganizationRoleLevel>();
+                modelBuilder.Entity<MemberLocationLevel>();
+                modelBuilder.Entity<MemberLocationRole>();
+            }
+
             // Case-insensitive uniqueness on email, enforced at the database level via a
             // stored computed shadow column so the constraint holds regardless of write path.
             modelBuilder.Entity<User>(entity =>

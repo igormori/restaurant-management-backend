@@ -9,7 +9,7 @@ using RestaurantManagement.Modules.Menu.Data;
 using RestaurantManagement.Modules.Menu.Entities;
 using RestaurantManagement.Modules.Menu.Models;
 using RestaurantManagement.Shared.Services.Organization;
-using RestaurantManagement.Shared.Services.Identity;
+using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using RestaurantManagement.Shared.Data;
 
@@ -26,13 +26,13 @@ namespace RestaurantManagement.Modules.Menu.Services
         public MenuService(
             MenuDbContext menuDb,
             IOrganizationLookup organizationLookup,
-            IUserRoleLookup userRoleLookup,
+            IAccessGuard accessGuard,
             ITenantContext tenantContext,
             IStringLocalizer<SharedResource> localizer)
         {
             _menuDb = menuDb;
             _organizationLookup = organizationLookup;
-            _access = new MenuAccessChecker(userRoleLookup, localizer);
+            _access = new MenuAccessChecker(accessGuard, localizer);
             _tenantContext = tenantContext;
             _localizer = localizer;
         }

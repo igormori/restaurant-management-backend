@@ -65,16 +65,16 @@ namespace RestaurantManagement.Modules.Organization.Tests
             await context.SaveChangesAsync();
         }
 
-        private static OrganizationService CreateService(Data.OrganizationDbContext context, IUserRoleLookup userRoleLookup, ITenantContext tenant)
-            => new(context, userRoleLookup, Substitute.For<IUserRoleAssigner>(), new TenantScope(), tenant,
+        private static OrganizationService CreateService(Data.OrganizationDbContext context, IMemberAccessLookup memberLookup, ITenantContext tenant)
+            => new(context, memberLookup, Substitute.For<IOrganizationAccessSetup>(), TestAccess.Permissive(), new TenantScope(), tenant,
                 TestLocalizer.Create(), Substitute.For<ILogger<OrganizationService>>(), Substitute.For<IAuditLog>());
 
-        private static IUserRoleLookup AnaBelongsTo(params Guid[] organizationIds)
+        private static IMemberAccessLookup AnaBelongsTo(params Guid[] organizationIds)
         {
-            var userRoleLookup = Substitute.For<IUserRoleLookup>();
-            userRoleLookup.UserExistsAsync(AnaId).Returns(true);
-            userRoleLookup.GetOrganizationIdsForUserAsync(AnaId).Returns(organizationIds.ToList());
-            return userRoleLookup;
+            var memberLookup = Substitute.For<IMemberAccessLookup>();
+            memberLookup.UserExistsAsync(AnaId).Returns(true);
+            memberLookup.GetOrganizationIdsForUserAsync(AnaId).Returns(organizationIds.ToList());
+            return memberLookup;
         }
 
         // Scenario 19

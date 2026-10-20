@@ -65,8 +65,8 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
     {
         var factory = await TenantApiFactory.CreateAsync(_postgres);
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana",
-            new UserRole { OrganizationId = CantinaId, Role = Roles.Owner },
-            new UserRole { OrganizationId = TrattoriaId, Role = Roles.Owner });
+            TenantApiFactory.OwnerOf(CantinaId),
+            TenantApiFactory.OwnerOf(TrattoriaId));
         await factory.SeedOrganizationAsync(CantinaId, "Cantina da Nonna", Currency.BRL);
         await factory.SeedOrganizationAsync(TrattoriaId, "Trattoria do Sol", Currency.BRL);
         await factory.SeedLocationAsync(CantinaId, CantinaBatelId, "Unidade Batel", "BATEL", "America/Sao_Paulo");
@@ -87,7 +87,7 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
     {
         // Arrange
         await using var factory = await CreateFactoryWithTwoOrganizationsAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.SendAsync(Request(method, $"/api/locations/{TrattoriaCentroId}", LocationBody));
@@ -108,7 +108,7 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
     {
         // Arrange
         await using var factory = await CreateFactoryWithTwoOrganizationsAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.GetAsync("/api/locations");
@@ -126,7 +126,7 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
     {
         // Arrange
         await using var factory = await CreateFactoryWithTwoOrganizationsAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.PostAsJsonAsync("/api/locations", LocationBody);
@@ -143,7 +143,7 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
     {
         // Arrange
         await using var factory = await CreateFactoryWithTwoOrganizationsAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.PutAsJsonAsync("/api/organizations/edit", OrganizationBody);
@@ -166,7 +166,7 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
     {
         // Arrange
         await using var factory = await CreateFactoryWithTwoOrganizationsAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.SendAsync(Request(method, url, LocationBody));
@@ -185,7 +185,7 @@ public class OrganizationTenantEndpointTests : IClassFixture<PostgresDatabaseFix
     {
         // Arrange
         await using var factory = await CreateFactoryWithTwoOrganizationsAsync();
-        var client = factory.ClientFor(AnaId, organizationId: null, Roles.Owner);
+        var client = factory.ClientFor(AnaId, organizationId: null);
 
         // Act
         var response = await client.SendAsync(Request(method, url, LocationBody));

@@ -88,13 +88,13 @@ public class PrivateByDefaultTests : IDisposable
     // Scenario 29
     [Fact]
     [Trait("Rule", "W4")]
-    public async Task UndeclaredEndpoint_SignedInWaiter_ReturnsOk()
+    public async Task UndeclaredEndpoint_SignedInUser_ReturnsOk()
     {
         // Arrange
         var client = CreateClient();
         var request = new HttpRequestMessage(HttpMethod.Get, UndeclaredUrl);
         request.Headers.Authorization = new AuthenticationHeaderValue(
-            "Bearer", TestAccessTokens.Create(_factory.Services, MariaId, Roles.Waiter));
+            "Bearer", TestAccessTokens.Create(_factory.Services, MariaId));
 
         // Act
         var response = await client.SendAsync(request);

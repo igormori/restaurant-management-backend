@@ -38,8 +38,8 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         var factory = await TenantApiFactory.CreateAsync(_postgres);
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana",
-            new UserRole { OrganizationId = CantinaId, Role = Roles.Owner },
-            new UserRole { OrganizationId = TrattoriaId, Role = Roles.Owner });
+            TenantApiFactory.OwnerOf(CantinaId),
+            TenantApiFactory.OwnerOf(TrattoriaId));
         await factory.SeedOrganizationAsync(CantinaId, "Cantina da Nonna", Currency.BRL);
         await factory.SeedOrganizationAsync(TrattoriaId, "Trattoria do Sol", Currency.BRL);
         await factory.SeedLocationAsync(TrattoriaId, TrattoriaCentroId, "Unidade Centro", "CENTRO", "America/Sao_Paulo");
@@ -65,7 +65,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange
         await using var factory = await CreateFactoryWithTwoOrganizationsAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
         var request = Request(method, $"/api/menus/{TrattoriaLunchMenuId}{pathAfterMenuId}",
             new { name = "Cardápio Invadido", description = "Alterado por outra organização", isActive = false });
 
@@ -91,7 +91,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange
         await using var factory = await CreateFactoryWithTwoOrganizationsAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
         var body = new { name = "Categoria Invadida", description = "Alterada", sortOrder = 9 };
 
         // Act
@@ -116,7 +116,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange
         await using var factory = await CreateFactoryWithTwoOrganizationsAsync();
-        var client = factory.ClientFor(AnaId, organizationId: null, Roles.Owner);
+        var client = factory.ClientFor(AnaId, organizationId: null);
         var body = new { menuId = CantinaDinnerMenuId, name = "Almoço executivo" };
 
         // Act
@@ -137,7 +137,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange
         await using var factory = await CreateFactoryWithTwoOrganizationsAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.PostAsJsonAsync("/api/menus/create",
@@ -155,7 +155,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange
         await using var factory = await CreateFactoryWithTwoOrganizationsAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.PostAsJsonAsync("/api/menu-categories",
@@ -173,7 +173,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange
         await using var factory = await CreateFactoryWithTwoOrganizationsAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.GetAsync("/api/menus");
@@ -191,7 +191,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange
         await using var factory = await CreateFactoryWithTwoOrganizationsAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.GetAsync("/api/menu-categories");
@@ -211,7 +211,7 @@ public class MenuTenantEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange
         await using var factory = await CreateFactoryWithTwoOrganizationsAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.GetAsync(url);

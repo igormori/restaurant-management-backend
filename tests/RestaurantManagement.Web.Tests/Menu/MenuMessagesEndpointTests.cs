@@ -34,9 +34,9 @@ public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
         await factory.SeedOrganizationAsync(CantinaId, "Cantina da Nonna", Currency.BRL);
         await factory.SeedOrganizationAsync(TrattoriaId, "Trattoria do Sol", Currency.BRL);
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana",
-            new UserRole { OrganizationId = CantinaId, Role = Roles.Owner });
+            TenantApiFactory.OwnerOf(CantinaId));
         await factory.SeedUserAsync(BrunoId, "bruno@trattoriadosol.com.br", "Bruno",
-            new UserRole { OrganizationId = TrattoriaId, Role = Roles.Owner });
+            TenantApiFactory.OwnerOf(TrattoriaId));
         await factory.SeedMenuAsync(CantinaId, CantinaDinnerMenuId, "Jantar");
         await factory.SeedMenuAsync(TrattoriaId, TrattoriaLunchMenuId, "Pranzo");
         await factory.SeedCategoryAsync(TrattoriaId, TrattoriaLunchMenuId, TrattoriaPizzaCategoryId, "Pizze");
@@ -47,7 +47,7 @@ public class MenuMessagesEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
-            "Bearer", TestAccessTokens.Create(factory.Services, AnaId, CantinaId, Roles.Owner));
+            "Bearer", TestAccessTokens.Create(factory.Services, AnaId, CantinaId));
         return client;
     }
 

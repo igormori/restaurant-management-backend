@@ -233,7 +233,7 @@ public class RefreshTokenCookieEndpointTests : IDisposable
         {
             Content = JsonContent.Create(new SelectOrganizationRequest { OrganizationId = CantinaId })
         };
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", TestAccessTokens.Create(_factory.Services, MariaId, "Owner"));
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", TestAccessTokens.Create(_factory.Services, MariaId));
         request.Headers.Add("Cookie", $"{CookieName}={CurrentCookieToken}");
 
         // Act

@@ -315,7 +315,7 @@ public class AuthRateLimitingTests : IDisposable
         });
         _disposables.Add(factory);
         var client = factory.CreateClient();
-        var accessToken = TestAccessTokens.Create(factory.Services, Guid.Parse("11111111-aaaa-4aaa-8aaa-00000000000a"), "Owner");
+        var accessToken = TestAccessTokens.Create(factory.Services, Guid.Parse("11111111-aaaa-4aaa-8aaa-00000000000a"));
         HttpRequestMessage PasswordRequest()
         {
             var request = new HttpRequestMessage(HttpMethod.Post, url)

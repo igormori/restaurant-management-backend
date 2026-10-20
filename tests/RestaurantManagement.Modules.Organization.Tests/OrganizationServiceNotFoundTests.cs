@@ -22,10 +22,10 @@ namespace RestaurantManagement.Modules.Organization.Tests
             BusinessDayCutoff = "04:00"
         };
 
-        private static OrganizationService CreateSut(OrganizationTestDatabase database, ITenantContext tenant, IUserRoleLookup lookup)
+        private static OrganizationService CreateSut(OrganizationTestDatabase database, ITenantContext tenant, IMemberAccessLookup lookup)
         {
             var context = database.CreateContext(tenant);
-            return new OrganizationService(context, lookup, Substitute.For<IUserRoleAssigner>(), new TenantScope(), tenant,
+            return new OrganizationService(context, lookup, Substitute.For<IOrganizationAccessSetup>(), TestAccess.Permissive(), new TenantScope(), tenant,
                 TestLocalizer.Create(), Substitute.For<ILogger<OrganizationService>>(), Substitute.For<IAuditLog>());
         }
 
@@ -35,7 +35,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         {
             // Arrange
             using var database = new OrganizationTestDatabase();
-            var lookup = Substitute.For<IUserRoleLookup>();
+            var lookup = Substitute.For<IMemberAccessLookup>();
             lookup.UserExistsAsync(Arg.Any<Guid>()).Returns(false);
             var sut = CreateSut(database, TestTenant.Of(Guid.NewGuid()), lookup);
 
@@ -54,7 +54,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         {
             // Arrange
             using var database = new OrganizationTestDatabase();
-            var lookup = Substitute.For<IUserRoleLookup>();
+            var lookup = Substitute.For<IMemberAccessLookup>();
             lookup.UserExistsAsync(Arg.Any<Guid>()).Returns(false);
             var sut = CreateSut(database, TestTenant.Of(Guid.NewGuid()), lookup);
 
@@ -73,7 +73,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         {
             // Arrange
             using var database = new OrganizationTestDatabase();
-            var sut = CreateSut(database, TestTenant.Of(Guid.NewGuid()), Substitute.For<IUserRoleLookup>());
+            var sut = CreateSut(database, TestTenant.Of(Guid.NewGuid()), Substitute.For<IMemberAccessLookup>());
 
             // Act
             var act = () => sut.EditOrganizationAsync(Guid.NewGuid(), EditRequest);
@@ -103,7 +103,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
                 });
                 await seed.SaveChangesAsync();
             }
-            var sut = CreateSut(database, TestTenant.Of(organizationId), Substitute.For<IUserRoleLookup>());
+            var sut = CreateSut(database, TestTenant.Of(organizationId), Substitute.For<IMemberAccessLookup>());
 
             // Act
             var act = () => sut.EditOrganizationAsync(Guid.NewGuid(), EditRequest);
