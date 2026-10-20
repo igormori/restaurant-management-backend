@@ -1,6 +1,6 @@
 # Plan: Invite a member and edit their access grid
 
-**Spec:** docs/specs/shared/2026-10-20-invite-member-and-edit-access-grid.md   **Date:** 2026-10-20   **Status:** In progress
+**Spec:** docs/specs/shared/2026-10-20-invite-member-and-edit-access-grid.md   **Date:** 2026-10-20   **Status:** Done
 **Risk:** High — new public endpoint that creates accounts and memberships, new authorization (delegation) rules, a Shared contract change and new Identity tables (no data, pre-launch)
 
 ## Summary
@@ -37,12 +37,12 @@ Terms: DoD (Definition of Done: the checks a task must pass to count as finished
 Email uses the existing email service; no new library, no backfill (pre-launch, root `CLAUDE.md`).
 
 ## Overall Definition of Done
-- [ ] All tasks done, tests passing
-- [ ] All spec Outcomes met
-- [ ] Full test suite green after the last batch
-- [ ] No out-of-scope changes; findings in the backlog
-- [ ] `python3 .claude/scripts/check-security-matrices.py` passes
-- [ ] Spec Backlog Impact kept: the deletion of `backlog/features/2026-10-19-invite-member-and-edit-access-grid.md` stays uncommitted for the user
+- [x] All tasks done, tests passing
+- [x] All spec Outcomes met
+- [x] Full test suite green after the last batch
+- [x] No out-of-scope changes; findings in the backlog
+- [x] `python3 .claude/scripts/check-security-matrices.py` passes
+- [x] Spec Backlog Impact kept: the deletion of `backlog/features/2026-10-19-invite-member-and-edit-access-grid.md` stays uncommitted for the user
 
 ## Checklist
 - [x] T1 — Location lookup returns the location name
