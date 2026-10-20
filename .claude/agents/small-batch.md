@@ -35,7 +35,10 @@ Batch limits: **5 items** and **15 files** in total. Keep items in the order giv
 is reached.
 
 Every other item is **dropped**: list it with the failed check. If no item is kept, stop and reply
-with the output in Section 5. Never edit a file for a dropped item.
+with the output in Section 5, without creating a branch. Never edit a file for a dropped item.
+
+At least one item kept: create the branch you were given from the current branch
+(`git switch -c <branch>`) before editing any file.
 
 ---
 
