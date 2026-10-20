@@ -45,7 +45,13 @@ T5 (remove the single-role lookup) has no scenario of its own: it is proved by t
 | 36 | T4 | Guard | Over HTTP, an Admin role held only in another organization plus Waiter here gets 403 editing the organization | `EditOrganization_AdminOfAnotherOrganizationPlusWaiterHere_ReturnsForbidden` | `tests/RestaurantManagement.Web.Tests/Organization/OrganizationMultiRoleEndpointTests.cs` |
 | 37 | T4 | Happy | A Waiter assigned to one location only can still list the locations | `GetLocationsAsync_WaiterAssignedOnlyToOneLocation_ReturnsLocations` | `tests/RestaurantManagement.Modules.Organization.Tests/OrganizationMultiRoleAccessTests.cs` |
 | 38 | T4 | Happy | Admin for all locations plus Waiter at one location closes a different location, in either order | `DeleteLocationAsync_AdminForAllLocationsPlusWaiterAtBatelClosesCentro_ClosesInEveryOrder` | `tests/RestaurantManagement.Modules.Organization.Tests/OrganizationMultiRoleAccessTests.cs` |
-| 39 | T3 | Security | Admin for one location only cannot read a menu category | `GetByIdAsync_AdminAssignedOnlyToOneLocation_ThrowsForbidden` | `tests/RestaurantManagement.Modules.Menu.Tests/MenuMultiRoleAccessTests.cs` |
+| 39 | T3 | Happy | Admin of location A (with or without Waiter elsewhere, either order) reads a category of location A | `GetByIdAsync_AdminOfBatelPlusWaiterAtCentro_ReadsBatelCategoryInEveryOrder` | `tests/RestaurantManagement.Modules.Menu.Tests/MenuMultiRoleAccessTests.cs` |
+| 40 | T3 | Security | Admin of location A (plus Waiter at B, either order) cannot read a category of location B | `GetByIdAsync_AdminOfBatelPlusWaiterAtCentro_ThrowsForbiddenForCentroCategoryInEveryOrder` | `tests/RestaurantManagement.Modules.Menu.Tests/MenuMultiRoleAccessTests.cs` |
+| 41 | T3 | Security | Admin of location A cannot read a category with no location | `GetByIdAsync_AdminOfBatelOnCategoryWithoutLocation_ThrowsForbidden` | `tests/RestaurantManagement.Modules.Menu.Tests/MenuMultiRoleAccessTests.cs` |
+| 42 | T3 | Happy | Admin of location A lists the categories of location A | `GetByLocationIdAsync_AdminOfBatelForBatel_ReturnsBatelCategories` | `tests/RestaurantManagement.Modules.Menu.Tests/MenuMultiRoleAccessTests.cs` |
+| 43 | T3 | Security | Admin of location A cannot list the categories of location B | `GetByLocationIdAsync_AdminOfBatelForCentro_ThrowsForbidden` | `tests/RestaurantManagement.Modules.Menu.Tests/MenuMultiRoleAccessTests.cs` |
+| 44 | T3 | Security | Admin of location A cannot list all categories of the organization | `GetAllAsync_AdminOfBatelOnly_ThrowsForbidden` | `tests/RestaurantManagement.Modules.Menu.Tests/MenuMultiRoleAccessTests.cs` |
+| 45 | T3 | Security | Waiter at location A cannot read a category of location A | `GetByIdAsync_WaiterAtBatelOnBatelCategory_ThrowsForbidden` | `tests/RestaurantManagement.Modules.Menu.Tests/MenuMultiRoleAccessTests.cs` |
 
 ## Spec Outcome coverage
 | Outcome | Scenarios |
@@ -61,7 +67,7 @@ T5 (remove the single-role lookup) has no scenario of its own: it is proved by t
 | #9 Waiter for all plus Manager at A is refused organization-wide actions | 2, 13 |
 | #10 Manager (here Admin) at A, B and C separately is refused organization-wide actions | 3, 15 |
 | #11 Admin for all locations is allowed organization-wide and at a newly added location | 1, 6, 23 |
-| #12 Applies to menu, menu category, location and organization actions | Menu 12-16, category 17-19, location 23-29, organization 30-32 |
+| #12 Applies to menu, menu category, location and organization actions | Menu 12-16, category 17-19, 39-45, location 23-29, organization 30-32 |
 
 ## Existing tests updated
 These tests substituted the removed single-role lookup. They now return the same one role through the new all-assignments lookup (a user with no role returns an empty list). Their expectations are unchanged, so single-role behaviour keeps its meaning (Outcome 6). Until T3 and T4 are built the old service code still asks the old method, so these tests return "no role": the refusal ones pass for the wrong reason and the allow ones fail.

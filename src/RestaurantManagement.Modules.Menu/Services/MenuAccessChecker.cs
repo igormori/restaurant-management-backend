@@ -32,6 +32,20 @@ namespace RestaurantManagement.Modules.Menu.Services
                 throw Refused();
         }
 
+        public async Task CheckAdminAtLocationAsync(Guid userId, Guid organizationId, Guid? locationId)
+        {
+            var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
+            if (assignments == null)
+                throw Refused();
+
+            // A category with no location belongs to the whole organization.
+            var allowed = locationId is { } id
+                ? AccessDecision.AllowsAtLocation(assignments, id, WriteRoles)
+                : AccessDecision.AllowsOrganizationWide(assignments, WriteRoles);
+            if (!allowed)
+                throw Refused();
+        }
+
         public async Task CheckReadAsync(Guid userId, Guid organizationId)
         {
             var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);

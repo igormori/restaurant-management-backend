@@ -76,7 +76,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (category == null)
                 return null;
 
-            await _access.CheckWriteAsync(userId, category.OrganizationId);
+            await _access.CheckAdminAtLocationAsync(userId, category.OrganizationId, category.LocationId);
 
             return MapToResponse(category);
         }
@@ -118,7 +118,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (location == null)
                 return Enumerable.Empty<MenuCategoryResponse>();
 
-            await _access.CheckWriteAsync(userId, location.OrganizationId);
+            await _access.CheckAdminAtLocationAsync(userId, location.OrganizationId, locationId);
 
             var categories = await _context.MenuCategories
                 .Where(c => c.LocationId == locationId)

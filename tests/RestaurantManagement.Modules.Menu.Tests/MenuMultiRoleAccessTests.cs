@@ -51,8 +51,8 @@ public class MenuMultiRoleAccessTests
     private static MenuService CreateMenuService(Data.MenuDbContext context, IUserRoleLookup roles)
         => new(context, CantinaExists(), roles, TestTenant.Of(CantinaId), TestLocalizer.Create());
 
-    private static MenuCategoryService CreateCategoryService(Data.MenuDbContext context, IUserRoleLookup roles)
-        => new(context, CantinaExists(), roles, TestTenant.Of(CantinaId), TestLocalizer.Create());
+    private static MenuCategoryService CreateCategoryService(Data.MenuDbContext context, IUserRoleLookup roles, IOrganizationLookup? organizations = null)
+        => new(context, organizations ?? CantinaExists(), roles, TestTenant.Of(CantinaId), TestLocalizer.Create());
 
     private static CreateMenuRequest NewMenu => new()
     {
@@ -248,29 +248,162 @@ public class MenuMultiRoleAccessTests
         exception.StatusCode.ShouldBe(403, "a role for one location never counts for an action on the whole organization");
     }
 
+    private static async Task<Guid> SeedCategoryAsync(MenuTestDatabase database, Guid? locationId)
+    {
+        var categoryId = Guid.NewGuid();
+        using var seed = database.CreateContext();
+        seed.MenuCategories.Add(new Entities.MenuCategory { Id = categoryId, OrganizationId = CantinaId, MenuId = DinnerMenuId, LocationId = locationId, Name = "Massas", SortOrder = 1 });
+        await seed.SaveChangesAsync();
+        return categoryId;
+    }
+
     // Scenario 39
-    [Fact]
-    [Trait("Rule", "M27")]
-    public async Task GetByIdAsync_AdminAssignedOnlyToOneLocation_ThrowsForbidden()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    [Trait("Rule", "M29")]
+    public async Task GetByIdAsync_AdminOfBatelPlusWaiterAtCentro_ReadsBatelCategoryInEveryOrder(bool adminStoredFirst)
     {
         // Arrange
         using var database = new MenuTestDatabase();
         await SeedDinnerMenuAsync(database);
-        var categoryId = Guid.NewGuid();
-        using (var seed = database.CreateContext())
-        {
-            seed.MenuCategories.Add(new Entities.MenuCategory { Id = categoryId, OrganizationId = CantinaId, MenuId = DinnerMenuId, Name = "Massas", SortOrder = 1 });
-            await seed.SaveChangesAsync();
-        }
-        var tenant = TestTenant.Of(CantinaId);
-        using var context = database.CreateContext(tenant);
+        var categoryId = await SeedCategoryAsync(database, BatelId);
+        using var context = database.CreateContext(TestTenant.Of(CantinaId));
+        var sut = CreateCategoryService(context, Holding(InOrder(At(Roles.Admin, BatelId), At(Roles.Waiter, CentroId), adminStoredFirst)));
+
+        // Act
+        var category = await sut.GetByIdAsync(JoaoId, categoryId);
+
+        // Assert
+        category.ShouldNotBeNull("an Admin assigned to a location may read that location's categories");
+        category.Id.ShouldBe(categoryId, "the category of the Admin's own location is returned");
+    }
+
+    // Scenario 40
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    [Trait("Rule", "M30")]
+    public async Task GetByIdAsync_AdminOfBatelPlusWaiterAtCentro_ThrowsForbiddenForCentroCategoryInEveryOrder(bool adminStoredFirst)
+    {
+        // Arrange
+        using var database = new MenuTestDatabase();
+        await SeedDinnerMenuAsync(database);
+        var categoryId = await SeedCategoryAsync(database, CentroId);
+        using var context = database.CreateContext(TestTenant.Of(CantinaId));
+        var sut = CreateCategoryService(context, Holding(InOrder(At(Roles.Admin, BatelId), At(Roles.Waiter, CentroId), adminStoredFirst)));
+
+        // Act
+        var act = () => sut.GetByIdAsync(JoaoId, categoryId);
+
+        // Assert
+        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "an Admin of one location may not read another location's categories");
+        exception.StatusCode.ShouldBe(403, "a role for one location never counts at another location, whatever other role the user holds");
+    }
+
+    // Scenario 41
+    [Fact]
+    [Trait("Rule", "M30")]
+    public async Task GetByIdAsync_AdminOfBatelOnCategoryWithoutLocation_ThrowsForbidden()
+    {
+        // Arrange
+        using var database = new MenuTestDatabase();
+        await SeedDinnerMenuAsync(database);
+        var categoryId = await SeedCategoryAsync(database, null);
+        using var context = database.CreateContext(TestTenant.Of(CantinaId));
         var sut = CreateCategoryService(context, Holding(At(Roles.Admin, BatelId)));
 
         // Act
         var act = () => sut.GetByIdAsync(JoaoId, categoryId);
 
         // Assert
-        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "an Admin for one location may not read the organization's categories");
-        exception.StatusCode.ShouldBe(403, "a role for one location never counts for an action on the whole organization");
+        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "a category without a location belongs to the whole organization");
+        exception.StatusCode.ShouldBe(403, "only an Admin or Owner for all locations reads a category without a location");
+    }
+
+    // Scenario 42
+    [Fact]
+    [Trait("Rule", "M29")]
+    public async Task GetByLocationIdAsync_AdminOfBatelForBatel_ReturnsBatelCategories()
+    {
+        // Arrange
+        using var database = new MenuTestDatabase();
+        await SeedDinnerMenuAsync(database);
+        var categoryId = await SeedCategoryAsync(database, BatelId);
+        using var context = database.CreateContext(TestTenant.Of(CantinaId));
+        var sut = CreateCategoryService(context, Holding(At(Roles.Admin, BatelId)), LocationInCantina(BatelId));
+
+        // Act
+        var categories = await sut.GetByLocationIdAsync(JoaoId, BatelId);
+
+        // Assert
+        categories.Select(c => c.Id).ShouldBe(new[] { categoryId }, "an Admin of a location lists that location's categories");
+    }
+
+    // Scenario 43
+    [Fact]
+    [Trait("Rule", "M30")]
+    public async Task GetByLocationIdAsync_AdminOfBatelForCentro_ThrowsForbidden()
+    {
+        // Arrange
+        using var database = new MenuTestDatabase();
+        await SeedDinnerMenuAsync(database);
+        await SeedCategoryAsync(database, CentroId);
+        using var context = database.CreateContext(TestTenant.Of(CantinaId));
+        var sut = CreateCategoryService(context, Holding(At(Roles.Admin, BatelId)), LocationInCantina(CentroId));
+
+        // Act
+        var act = () => sut.GetByLocationIdAsync(JoaoId, CentroId);
+
+        // Assert
+        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "an Admin of one location may not list another location's categories");
+        exception.StatusCode.ShouldBe(403, "a role for one location never counts at another location");
+    }
+
+    // Scenario 44
+    [Fact]
+    [Trait("Rule", "M30")]
+    public async Task GetAllAsync_AdminOfBatelOnly_ThrowsForbidden()
+    {
+        // Arrange
+        using var database = new MenuTestDatabase();
+        await SeedDinnerMenuAsync(database);
+        await SeedCategoryAsync(database, BatelId);
+        using var context = database.CreateContext(TestTenant.Of(CantinaId));
+        var sut = CreateCategoryService(context, Holding(At(Roles.Admin, BatelId)));
+
+        // Act
+        var act = () => sut.GetAllAsync(JoaoId);
+
+        // Assert
+        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "the organization-wide category list needs an Admin or Owner for all locations");
+        exception.StatusCode.ShouldBe(403, "an Admin of one location is refused the whole list");
+    }
+
+    // Scenario 45
+    [Fact]
+    [Trait("Rule", "M30")]
+    public async Task GetByIdAsync_WaiterAtBatelOnBatelCategory_ThrowsForbidden()
+    {
+        // Arrange
+        using var database = new MenuTestDatabase();
+        await SeedDinnerMenuAsync(database);
+        var categoryId = await SeedCategoryAsync(database, BatelId);
+        using var context = database.CreateContext(TestTenant.Of(CantinaId));
+        var sut = CreateCategoryService(context, Holding(At(Roles.Waiter, BatelId)));
+
+        // Act
+        var act = () => sut.GetByIdAsync(JoaoId, categoryId);
+
+        // Assert
+        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "only an Admin or Owner reads categories, even at the Waiter's own location");
+        exception.StatusCode.ShouldBe(403, "a Waiter is refused category reads");
+    }
+
+    private static IOrganizationLookup LocationInCantina(Guid locationId)
+    {
+        var lookup = CantinaExists();
+        lookup.GetLocationAsync(locationId).Returns(new LocationSummaryDto { Id = locationId, OrganizationId = CantinaId });
+        return lookup;
     }
 }

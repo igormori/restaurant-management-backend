@@ -32,6 +32,7 @@ Every access check on menus, locations and organizations considers all roles the
 | 4 | The result does not depend on the order of the user's roles. |
 | 5 | Actions that belong to the organization as a whole (not to one location, e.g. menus today) count only roles assigned for all locations. Roles assigned to specific locations never count for them, even when the user holds that role at every current location as separate assignments. |
 | 6 | An all-locations assignment also covers locations added later; a specific-location assignment does not. |
+| 7 | Exception for reading menu categories, decided by the user after review: an Admin assigned to a location may read that location's categories, and never another location's. A category with no location, and the lists of all categories or of a menu's categories, need Owner or Admin for all locations. Changing categories stays organization-wide. |
 
 ## Outcomes
 | # | Outcome | How we know it is achieved |
@@ -47,7 +48,7 @@ Every access check on menus, locations and organizations considers all roles the
 | 9 | Waiter for all locations plus Manager at A only | Refused for organization-wide actions such as managing menus |
 | 10 | Manager at A, B and C as separate assignments | Refused for organization-wide actions |
 | 11 | Admin for all locations | Allowed for organization-wide actions and at a newly added location |
-| 12 | Applies to menu, menu category, location and organization actions | Outcomes 1 and 2 hold for each of these areas |
+| 12 | Applies to menu, menu category, location and organization actions | Outcomes 1 and 2 hold for each of these areas; category reads follow Rule 7 (decided by the user after review) |
 
 ## Out of Scope
 | Item | Backlog file |
