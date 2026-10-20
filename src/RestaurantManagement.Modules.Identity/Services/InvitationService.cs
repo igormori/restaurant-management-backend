@@ -17,7 +17,7 @@ using RestaurantManagement.Shared.Utils.Exceptions;
 
 namespace RestaurantManagement.Modules.Identity.Services
 {
-    public class InvitationService : IInvitationService
+    public partial class InvitationService : IInvitationService
     {
         private const int InvitationLifetimeDays = 7;
 
@@ -210,10 +210,45 @@ namespace RestaurantManagement.Modules.Identity.Services
             }
         }
 
-        public Task CancelAsync(Guid invitationId) => throw new NotImplementedException();
+        public async Task CancelAsync(Guid invitationId)
+        {
+            var organizationId = _tenantContext.OrganizationId
+                ?? throw new BusinessException(_localizer["OrganizationRequired"].Value, 403);
+            var invitation = await _db.OrganizationInvitations.FirstOrDefaultAsync(i => i.Id == invitationId
+                    && i.OrganizationId == organizationId && i.UsedAt == null && i.CancelledAt == null && i.ReplacedAt == null)
+                ?? throw new BusinessException(_localizer["InvitationNotFound"].Value, 404);
 
-        public Task AcceptAsync(AcceptInvitationRequest request) => throw new NotImplementedException();
+            // Only the Members = Manage check applies to a cancel, so the cap never refuses it.
+            var locationIds = await _db.OrganizationInvitationLevels.Where(l => l.InvitationId == invitation.Id)
+                .Select(l => l.LocationId).Union(_db.OrganizationInvitationRoles.Where(r => r.InvitationId == invitation.Id)
+                    .Select(r => r.LocationId)).ToListAsync();
+            var membersOnly = new Dictionary<AccessModule, AccessLevel> { [AccessModule.Members] = AccessLevel.Manage };
+            await _rules.RequireAsync(null, locationIds.Select(id => new LocationGrant(id, membersOnly)).ToList());
 
-        public Task AcceptWithNewAccountAsync(AcceptInvitationWithAccountRequest request) => throw new NotImplementedException();
+            var before = await DescribeAsync(invitation);
+            invitation.CancelledAt = _timeProvider.GetUtcNow().UtcDateTime;
+            await _db.SaveChangesAsync();
+            await RecordCancelledAsync(invitation, before);
+        }
+
+        // The invitation is already cancelled; a failed audit write must not undo it or fail the request.
+        private async Task RecordCancelledAsync(OrganizationInvitation invitation, string before)
+        {
+            try
+            {
+                await _auditLog.RecordAsync(new AuditEntryDto
+                {
+                    Action = AuditActions.MemberInvitationCancelled,
+                    EntityType = "Invitation",
+                    EntityId = invitation.Id,
+                    Before = before,
+                    After = JsonSerializer.Serialize(new { State = "cancelled" })
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to record the audit entry of cancelled invitation {InvitationId}.", invitation.Id);
+            }
+        }
     }
 }

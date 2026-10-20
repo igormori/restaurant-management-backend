@@ -24,10 +24,20 @@ namespace RestaurantManagement.Modules.Identity.Controllers
 
         // DELETE api/invitations/{invitationId}
         [HttpDelete("{invitationId:guid}")]
-        public Task<IActionResult> Cancel(Guid invitationId) => throw new NotImplementedException();
+        [Authorize]
+        public async Task<IActionResult> Cancel(Guid invitationId)
+        {
+            await _invitationService.CancelAsync(invitationId);
+            return NoContent();
+        }
 
         // POST api/invitations/accept
         [HttpPost("accept")]
-        public Task<IActionResult> Accept([FromBody] AcceptInvitationRequest request) => throw new NotImplementedException();
+        [Authorize]
+        public async Task<IActionResult> Accept([FromBody] AcceptInvitationRequest request)
+        {
+            await _invitationService.AcceptAsync(request);
+            return NoContent();
+        }
     }
 }

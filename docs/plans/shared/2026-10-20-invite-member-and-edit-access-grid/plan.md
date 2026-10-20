@@ -51,5 +51,5 @@ Email uses the existing email service; no new library, no backfill (pre-launch, 
 - [x] T4 — Edit a member's access at a location
 - [x] T5 — Create an invitation
 - [x] T6 — Invitation email
-- [ ] T7 — Accept an invitation
-- [ ] T8 — Cancel a pending invitation
+- [x] T7 — Accept an invitation
+- [x] T8 — Cancel a pending invitation

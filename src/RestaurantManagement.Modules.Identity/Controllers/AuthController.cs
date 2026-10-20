@@ -60,11 +60,15 @@ namespace RestaurantManagement.Modules.Identity.Controllers
             return RespondWithCookie(result);
         }
 
-        // POST api/auth/accept-invitation (no rate limit attribute yet: the implementer adds Verify)
+        // POST api/auth/accept-invitation
         [HttpPost("accept-invitation")]
         [AllowAnonymous]
-        public Task<IActionResult> AcceptInvitation([FromBody] AcceptInvitationWithAccountRequest request)
-            => throw new NotImplementedException();
+        [EnableRateLimiting(AuthRateLimitPolicies.Verify)]
+        public async Task<IActionResult> AcceptInvitation([FromBody] AcceptInvitationWithAccountRequest request)
+        {
+            await _invitationService.AcceptWithNewAccountAsync(request);
+            return NoContent();
+        }
 
         // POST api/auth/select-organization
         [HttpPost("select-organization")]

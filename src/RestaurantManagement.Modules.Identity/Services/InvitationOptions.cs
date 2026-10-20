@@ -16,7 +16,9 @@ namespace RestaurantManagement.Modules.Identity.Services
     {
         public ValidateOptionsResult Validate(string? name, InvitationOptions options)
         {
-            if (!Uri.TryCreate(options.AcceptPageUrl?.Trim(), UriKind.Absolute, out _))
+            // On Unix a path such as "/accept" also parses as an absolute (file) address, so the scheme is checked.
+            if (!Uri.TryCreate(options.AcceptPageUrl?.Trim(), UriKind.Absolute, out var uri)
+                || (uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != Uri.UriSchemeHttp))
                 return ValidateOptionsResult.Fail("Invitation:AcceptPageUrl must be an absolute address.");
 
             return ValidateOptionsResult.Success;

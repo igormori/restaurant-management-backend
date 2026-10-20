@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace RestaurantManagement.Modules.Identity.Models
 {
     /// <summary>Role names and changed cells for one location; Levels maps a module name to a level name (None, Read, Manage).</summary>
@@ -29,17 +31,26 @@ namespace RestaurantManagement.Modules.Identity.Models
 
     public class AcceptInvitationRequest
     {
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
         public string Token { get; set; } = string.Empty;
     }
 
     public class AcceptInvitationWithAccountRequest
     {
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
         public string Token { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(100, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string FirstName { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [MaxLength(100, ErrorMessage = "MaxLengthAttribute_ValidationError")]
         public string LastName { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "RequiredAttribute_ValidationError")]
+        [PasswordRules]
+        [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
     }
 
