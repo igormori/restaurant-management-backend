@@ -29,17 +29,17 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await sut.ProcessDueAsync(now, CancellationToken.None);
         }
 
-        private static async Task AddRequestsAsync(IdentityTestDatabase database, params PasswordResetRequest[] requests)
+        private static async Task AddRequestsAsync(IdentityTestDatabase database, params PendingEmail[] requests)
         {
             using var context = database.CreateContext();
-            context.Set<PasswordResetRequest>().AddRange(requests);
+            context.Set<PendingEmail>().AddRange(requests);
             await context.SaveChangesAsync();
         }
 
-        private static async Task<List<PasswordResetRequest>> ReadQueueAsync(IdentityTestDatabase database)
+        private static async Task<List<PendingEmail>> ReadQueueAsync(IdentityTestDatabase database)
         {
             using var context = database.CreateContext();
-            return await context.Set<PasswordResetRequest>().ToListAsync();
+            return await context.Set<PendingEmail>().ToListAsync();
         }
 
         // Scenario 26
@@ -50,8 +50,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Arrange
             using var database = new IdentityTestDatabase();
             var now = DateTime.UtcNow;
-            var requests = Enumerable.Range(0, PasswordResetEmailProcessor.BatchSize + 1)
-                .Select(i => new PasswordResetRequest { Email = $"ninguem{i}@cantinadanonna.com.br", CreatedAt = now.AddSeconds(-10 + i * 0.001), NextAttemptAt = now.AddSeconds(-1) })
+            var requests = Enumerable.Range(0, PendingEmailQueue.BatchSize + 1)
+                .Select(i => new PendingEmail { Email = $"ninguem{i}@cantinadanonna.com.br", CreatedAt = now.AddSeconds(-10 + i * 0.001), NextAttemptAt = now.AddSeconds(-1) })
                 .ToArray();
             await AddRequestsAsync(database, requests);
 
@@ -72,8 +72,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Arrange
             using var database = new IdentityTestDatabase();
             var now = DateTime.UtcNow;
-            var older = new PasswordResetRequest { Email = "antigo@cantinadanonna.com.br", Attempts = 5, FailedAt = now - PasswordResetEmailProcessor.FailedRetention - TimeSpan.FromMinutes(1) };
-            var newer = new PasswordResetRequest { Email = "recente@cantinadanonna.com.br", Attempts = 5, FailedAt = now - PasswordResetEmailProcessor.FailedRetention + TimeSpan.FromMinutes(1) };
+            var older = new PendingEmail { Email = "antigo@cantinadanonna.com.br", Attempts = 5, FailedAt = now - PendingEmailQueue.FailedRetention - TimeSpan.FromMinutes(1) };
+            var newer = new PendingEmail { Email = "recente@cantinadanonna.com.br", Attempts = 5, FailedAt = now - PendingEmailQueue.FailedRetention + TimeSpan.FromMinutes(1) };
             await AddRequestsAsync(database, older, newer);
 
             // Act

@@ -64,10 +64,10 @@ namespace RestaurantManagement.Modules.Identity.Tests
             Guid? id = null)
         {
             using var context = database.CreateContext();
-            context.Set<PasswordResetRequest>().Add(new PasswordResetRequest
+            context.Set<PendingEmail>().Add(new PendingEmail
             {
                 Id = id ?? Guid.NewGuid(),
-                Purpose = PasswordResetRequestPurpose.Verification,
+                Purpose = PendingEmailPurpose.Verification,
                 Email = email,
                 CreatedAt = now.AddSeconds(-5),
                 Attempts = attempts,
@@ -90,10 +90,10 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await sut.ProcessDueAsync(now, CancellationToken.None);
         }
 
-        private static async Task<List<PasswordResetRequest>> ReadQueueAsync(IdentityTestDatabase database)
+        private static async Task<List<PendingEmail>> ReadQueueAsync(IdentityTestDatabase database)
         {
             using var context = database.CreateContext();
-            return await context.Set<PasswordResetRequest>().ToListAsync();
+            return await context.Set<PendingEmail>().ToListAsync();
         }
 
         private static async Task<int> CountCodesAsync(IdentityTestDatabase database)

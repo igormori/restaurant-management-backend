@@ -26,8 +26,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             using var context = database.CreateContext();
             context.Users.Add(new User { Email = MariaEmail, PasswordHash = "hash", FirstName = "Maria", LastName = "Souza", IsVerified = true });
             context.Users.Add(new User { Email = JoaoEmail, PasswordHash = "hash", FirstName = "Joao", LastName = "Lima", IsVerified = true });
-            context.Set<PasswordResetRequest>().Add(new PasswordResetRequest { Email = MariaEmail, CreatedAt = passStart.AddMinutes(-10), NextAttemptAt = passStart.AddMinutes(-9) });
-            context.Set<PasswordResetRequest>().Add(new PasswordResetRequest { Email = JoaoEmail, CreatedAt = passStart.AddMinutes(-8), NextAttemptAt = passStart.AddMinutes(-7) });
+            context.Set<PendingEmail>().Add(new PendingEmail { Email = MariaEmail, CreatedAt = passStart.AddMinutes(-10), NextAttemptAt = passStart.AddMinutes(-9) });
+            context.Set<PendingEmail>().Add(new PendingEmail { Email = JoaoEmail, CreatedAt = passStart.AddMinutes(-8), NextAttemptAt = passStart.AddMinutes(-7) });
             await context.SaveChangesAsync();
             return database;
         }
@@ -44,10 +44,10 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await sut.ProcessDueAsync(passStart, CancellationToken.None);
         }
 
-        private static async Task<List<PasswordResetRequest>> ReadQueueAsync(IdentityTestDatabase database)
+        private static async Task<List<PendingEmail>> ReadQueueAsync(IdentityTestDatabase database)
         {
             using var context = database.CreateContext();
-            return await context.Set<PasswordResetRequest>().OrderBy(r => r.CreatedAt).ToListAsync();
+            return await context.Set<PendingEmail>().OrderBy(r => r.CreatedAt).ToListAsync();
         }
 
         // Scenario 32
@@ -102,7 +102,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
         private static async Task MarkSecondRequestCodeIssuedAsync(IdentityTestDatabase database, DateTime at)
         {
             using var context = database.CreateContext();
-            await context.Set<PasswordResetRequest>()
+            await context.Set<PendingEmail>()
                 .Where(r => r.Email == JoaoEmail)
                 .ExecuteUpdateAsync(s => s.SetProperty(r => r.CodeIssuedAt, at));
         }

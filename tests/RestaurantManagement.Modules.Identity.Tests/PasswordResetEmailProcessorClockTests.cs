@@ -24,7 +24,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             using (var seed = database.CreateContext())
             {
                 seed.Users.Add(new User { Email = MariaEmail, PasswordHash = "hash", FirstName = "Maria", LastName = "Souza", IsVerified = true });
-                seed.Set<PasswordResetRequest>().Add(new PasswordResetRequest { Email = MariaEmail, CreatedAt = passStart.AddMinutes(-10), NextAttemptAt = passStart.AddMinutes(-9) });
+                seed.Set<PendingEmail>().Add(new PendingEmail { Email = MariaEmail, CreatedAt = passStart.AddMinutes(-10), NextAttemptAt = passStart.AddMinutes(-9) });
                 await seed.SaveChangesAsync();
             }
             using var context = database.CreateContext();

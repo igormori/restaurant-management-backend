@@ -134,7 +134,7 @@ public class PasswordResetEndpointTests : IClassFixture<PostgresDatabaseFixture>
         (await unknown.Content.ReadAsStringAsync()).ShouldBe(await known.Content.ReadAsStringAsync(), "the body must not reveal whether the email has an account");
         await _emailService.DidNotReceiveWithAnyArgs().SendPasswordResetEmailAsync(default!, default!, default!, default);
         using var scope = factory.Services.CreateScope();
-        var queued = await scope.ServiceProvider.GetRequiredService<IdentityDbContext>().Set<PasswordResetRequest>().CountAsync();
+        var queued = await scope.ServiceProvider.GetRequiredService<IdentityDbContext>().Set<PendingEmail>().CountAsync();
         queued.ShouldBe(2, "each request only queues its email; nothing is sent during the request");
     }
 

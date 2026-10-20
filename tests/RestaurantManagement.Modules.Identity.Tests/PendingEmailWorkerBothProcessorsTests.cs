@@ -12,22 +12,22 @@ namespace RestaurantManagement.Modules.Identity.Tests
     /// Each worker pass runs the password reset processor and the verification processor. A failure in
     /// one is logged without any code or email address and never stops the other.
     /// </summary>
-    public class PasswordResetEmailWorkerBothProcessorsTests
+    public class PendingEmailWorkerBothProcessorsTests
     {
         private const string MariaEmail = "maria@cantinadanonna.com.br";
         private const string EmailedCode = "482913";
 
         private readonly IPasswordResetEmailProcessor _resetProcessor = Substitute.For<IPasswordResetEmailProcessor>();
         private readonly IVerificationEmailProcessor _verificationProcessor = Substitute.For<IVerificationEmailProcessor>();
-        private readonly CapturingLogger<PasswordResetEmailWorker> _logger = new();
+        private readonly CapturingLogger<PendingEmailWorker> _logger = new();
 
-        private PasswordResetEmailWorker CreateSut()
+        private PendingEmailWorker CreateSut()
         {
             var services = new ServiceCollection()
                 .AddSingleton(_resetProcessor)
                 .AddSingleton(_verificationProcessor)
                 .BuildServiceProvider();
-            return new PasswordResetEmailWorker(services.GetRequiredService<IServiceScopeFactory>(), _logger);
+            return new PendingEmailWorker(services.GetRequiredService<IServiceScopeFactory>(), _logger);
         }
 
         [Fact]

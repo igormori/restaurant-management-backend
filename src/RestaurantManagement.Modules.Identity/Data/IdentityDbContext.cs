@@ -17,6 +17,8 @@ namespace RestaurantManagement.Modules.Identity.Data
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
         public DbSet<PasswordResetRequest> PasswordResetRequests { get; set; }
+        // STUB (tester): not mapped yet; the implementer replaces the old DbSet with this one.
+        public DbSet<PendingEmail> PendingEmails => throw new NotImplementedException();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

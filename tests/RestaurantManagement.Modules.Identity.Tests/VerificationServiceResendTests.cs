@@ -61,8 +61,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             using var context = database.CreateContext();
-            var queued = (await context.Set<PasswordResetRequest>().ToListAsync()).ShouldHaveSingleItem("every email, known or not, adds exactly one queued request");
-            queued.Purpose.ShouldBe(PasswordResetRequestPurpose.Verification, "the request is queued for the verification email processor");
+            var queued = (await context.Set<PendingEmail>().ToListAsync()).ShouldHaveSingleItem("every email, known or not, adds exactly one queued request");
+            queued.Purpose.ShouldBe(PendingEmailPurpose.Verification, "the request is queued for the verification email processor");
             queued.Email.ShouldBe(email, "the request keeps the email as typed; the account is checked later, outside the request");
             (await context.UserVerificationCodes.CountAsync()).ShouldBe(codesBefore, "the request itself creates no code, so it cannot reveal which emails have an account");
             var usersAfter = await context.Users.OrderBy(u => u.Email)

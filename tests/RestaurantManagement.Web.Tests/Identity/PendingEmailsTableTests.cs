@@ -9,33 +9,33 @@ namespace RestaurantManagement.Web.Tests;
 /// Storage for queued forgot-password requests on a real PostgreSQL database: its own table with no
 /// link to users (the email may belong to nobody), and an index so due requests are found quickly.
 /// </summary>
-public class PasswordResetRequestsTableTests : IClassFixture<PostgresDatabaseFixture>
+public class PendingEmailsTableTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string ColumnsSql = """
         SELECT coalesce(string_agg(column_name, ',' ORDER BY column_name), '')
         FROM information_schema.columns
-        WHERE table_name = 'password_reset_requests'
+        WHERE table_name = 'pending_emails'
         """;
     private const string IndexesSql = """
         SELECT coalesce(string_agg(indexname, ',' ORDER BY indexname), '')
         FROM pg_indexes
-        WHERE tablename = 'password_reset_requests'
+        WHERE tablename = 'pending_emails'
         """;
     private const string ForeignKeysSql = """
         SELECT count(*)::text
         FROM information_schema.table_constraints
-        WHERE table_name = 'password_reset_requests' AND constraint_type = 'FOREIGN KEY'
+        WHERE table_name = 'pending_emails' AND constraint_type = 'FOREIGN KEY'
         """;
 
     private const string PurposeNullableSql = """
         SELECT coalesce(max(is_nullable), '')
         FROM information_schema.columns
-        WHERE table_name = 'password_reset_requests' AND column_name = 'purpose'
+        WHERE table_name = 'pending_emails' AND column_name = 'purpose'
         """;
 
     private readonly PostgresDatabaseFixture _fixture;
 
-    public PasswordResetRequestsTableTests(PostgresDatabaseFixture fixture) => _fixture = fixture;
+    public PendingEmailsTableTests(PostgresDatabaseFixture fixture) => _fixture = fixture;
 
     private async Task<IdentityDbContext> CreateFullyMigratedContextAsync()
     {
@@ -60,7 +60,7 @@ public class PasswordResetRequestsTableTests : IClassFixture<PostgresDatabaseFix
 
     [Fact]
     [Trait("Rule", "D18")]
-    public async Task Migrate_CleanDatabase_CreatesResetRequestTableWithDueTimeIndexAndNoUserLink()
+    public async Task Migrate_CleanDatabase_CreatesPendingEmailTableWithDueTimeIndexAndNoUserLink()
     {
         // Arrange
         await using var context = await CreateFullyMigratedContextAsync();
@@ -72,7 +72,7 @@ public class PasswordResetRequestsTableTests : IClassFixture<PostgresDatabaseFix
 
         // Assert
         columns.ShouldBe("attempts,claimed_until,code_issued_at,created_at,email,failed_at,id,next_attempt_at,purpose", "a queued request holds the email as typed, its purpose, attempts, claim, code-issued mark, failure and next attempt time");
-        indexes.ShouldBe("ix_password_reset_requests_failed_at,ix_password_reset_requests_next_attempt_at,pk_password_reset_requests", "finding the due requests and the old failed ones must be indexed");
+        indexes.ShouldBe("ix_pending_emails_failed_at,ix_pending_emails_next_attempt_at,pk_pending_emails", "finding the due requests and the old failed ones must be indexed");
         foreignKeys.ShouldBe("0", "a queued request has no user, so the table must not link to users");
     }
 
