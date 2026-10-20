@@ -45,6 +45,13 @@ namespace RestaurantManagement.Modules.Identity.Services
             _gridBuilder = gridBuilder;
         }
 
+        public Task<MemberLocationAccessResponse> SetAccessAsync(
+            Guid userId,
+            Guid locationId,
+            IReadOnlyCollection<string> roleNames,
+            Dictionary<string, string> levelNames)
+            => SetAccessAsync(userId, locationId, roleNames, InvitationGrids.ParseLevels(levelNames, _localizer));
+
         public async Task<MemberLocationAccessResponse> SetAccessAsync(
             Guid userId,
             Guid locationId,

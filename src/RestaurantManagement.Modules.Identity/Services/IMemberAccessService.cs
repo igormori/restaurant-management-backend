@@ -22,6 +22,16 @@ namespace RestaurantManagement.Modules.Identity.Services
             IReadOnlyCollection<string> roleNames,
             IReadOnlyDictionary<AccessModule, AccessLevel> changedLevels);
 
+        /// <summary>
+        /// Same as the typed overload, for level names as the client sent them. An unknown module
+        /// or level name is a 400 and nothing is stored.
+        /// </summary>
+        Task<MemberLocationAccessResponse> SetAccessAsync(
+            Guid userId,
+            Guid locationId,
+            IReadOnlyCollection<string> roleNames,
+            Dictionary<string, string> levelNames);
+
         /// <summary>The member's current role names and levels, per location.</summary>
         Task<List<MemberLocationAccessResponse>> GetAccessAsync(Guid userId);
     }
