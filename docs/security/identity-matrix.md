@@ -284,8 +284,8 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | T82 | A weak password when accepting with a new account | 400, same rules as registration (R6–R8) | ✅ | `InvitationAuthEndpointTests.AcceptWithNewAccount_WeakPassword_ReturnsBadRequest` |
 | T83 | `POST api/invitations` with a missing, malformed or longer than 320 characters email | 400 (same rules as registration); nothing stored, no email sent | ✅ | `InvitationEmailValidationEndpointTests.CreateInvitation_MissingOrMalformedEmail_ReturnsBadRequestAndStoresNothing`, `InvitationEmailValidationEndpointTests.CreateInvitation_EmailLongerThan320Characters_ReturnsBadRequestAndStoresNothing` |
 | T84 | An invitation or access edit body with more than the allowed locations (50), role names (20) or levels (20) | 400; nothing stored or changed | ✅ | `InvitationSizeLimitEndpointTests.CreateInvitation_OversizedCollection_ReturnsBadRequestAndStoresNothing`, `InvitationSizeLimitEndpointTests.SetAccess_OversizedCollection_ReturnsBadRequestAndChangesNothing` |
-| T85 | A token longer than 200 characters when accepting an invitation (signed in or with a new account) | 400 before any lookup | ✅ | `InvitationSizeLimitEndpointTests.Accept_TokenLongerThanTheLimit_ReturnsBadRequest` |
-| T86 | An invitation that lists the same location twice | 400 before any lookup; nothing stored | ✅ | `InvitationSizeLimitEndpointTests.CreateInvitation_SameLocationTwice_ReturnsBadRequestAndStoresNothing` |
+| T85 | A token longer than 200 characters when accepting an invitation (signed in or with a new account) | 400; nothing stored | ✅ | `InvitationSizeLimitEndpointTests.Accept_TokenLongerThanTheLimit_ReturnsBadRequest` |
+| T86 | An invitation that lists the same location twice | 400; nothing stored | ✅ | `InvitationSizeLimitEndpointTests.CreateInvitation_SameLocationTwice_ReturnsBadRequestAndStoresNothing` |
 
 ## 11. Schema, migration and wiring tests
 These protect the database and the app setup rather than a rule users meet. They are listed so

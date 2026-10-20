@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using NSubstitute;
+using RestaurantManagement.Shared.Services.Email;
 using Shouldly;
 using static RestaurantManagement.Web.Tests.InvitationWebSupport;
 
@@ -34,6 +36,8 @@ public class InvitationEmailValidationEndpointTests : IClassFixture<PostgresData
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "an invitation needs a well-formed email address");
         (await InvitationsAsync(factory, CantinaId)).ShouldBeEmpty("nothing is stored");
+        factory.EmailService.ReceivedCalls().Where(c => c.GetMethodInfo().Name == nameof(IEmailService.SendEmailAsync))
+            .ShouldBeEmpty("no email goes out for a refused invitation");
     }
 
     [Fact]
@@ -51,5 +55,7 @@ public class InvitationEmailValidationEndpointTests : IClassFixture<PostgresData
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "an email longer than 320 characters is refused, not a database error");
         (await InvitationsAsync(factory, CantinaId)).ShouldBeEmpty("nothing is stored");
+        factory.EmailService.ReceivedCalls().Where(c => c.GetMethodInfo().Name == nameof(IEmailService.SendEmailAsync))
+            .ShouldBeEmpty("no email goes out for a refused invitation");
     }
 }
