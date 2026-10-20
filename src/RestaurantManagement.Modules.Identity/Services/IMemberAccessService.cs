@@ -12,8 +12,9 @@ namespace RestaurantManagement.Modules.Identity.Services
         /// <summary>
         /// Sets a member's access at one location: the chosen roles are merged (higher level per
         /// cell wins), the changed levels are applied on top, and the final levels and role labels
-        /// are stored. Refused by the delegation rules (403): nothing stored. A non-member, or a role or location of
-        /// another organization: 404 and nothing stored. One audit entry per change. Returns the member's access at that location. Returns the member's access at that location.
+        /// are stored. Refused by the delegation rules (403): nothing stored. A non-member, or a
+        /// role or location of another organization: 404 and nothing stored. One audit entry per
+        /// change. Returns the member's access at that location.
         /// </summary>
         Task<MemberLocationAccessResponse> SetAccessAsync(
             Guid userId,

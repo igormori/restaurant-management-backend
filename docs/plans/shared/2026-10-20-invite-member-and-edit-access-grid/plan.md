@@ -45,11 +45,12 @@ Email uses the existing email service; no new library, no backfill (pre-launch, 
 - [x] Spec Backlog Impact kept: the deletion of `backlog/features/2026-10-19-invite-member-and-edit-access-grid.md` stays uncommitted for the user
 
 ## Checklist
-- [x] T1 — Location lookup returns the location name
-- [x] T2 — Audit actions and messages for invitations and delegation
-- [x] T3 — Delegation rules and shared grid builder
-- [x] T4 — Edit a member's access at a location
-- [x] T5 — Create an invitation
-- [x] T6 — Invitation email
-- [x] T7 — Accept an invitation
-- [x] T8 — Cancel a pending invitation
+Commit hash after each task. Fix commits after review: `a14ba38` (email validation, size limits, repeated location), `3bf9602` (no email asserted for a refused invitation), `8a9a8d0` (empty and null locations, concurrent invitations).
+- [x] T1 — Location lookup returns the location name (`927ab31`)
+- [x] T2 — Audit actions and messages for invitations and delegation (`59c4b08`)
+- [x] T3 — Delegation rules and shared grid builder (`71cdd0c`)
+- [x] T4 — Edit a member's access at a location (`ba517e3`; fix-round test file `InvitationSizeLimitEndpointTests.cs`)
+- [x] T5 — Create an invitation (`80ffd4a`; extra file `InvitationTokens.cs`; fix-round test files `InvitationEmailValidationEndpointTests.cs`, `InvitationSizeLimitEndpointTests.cs`, `InvitationCreateRefusalEndpointTests.cs`)
+- [x] T6 — Invitation email (`1a9a207`; extra file `InvitationGrids.cs`)
+- [x] T7 — Accept an invitation (`121c85c`, shared with T8; extra file `InvitationService.Accept.cs`)
+- [x] T8 — Cancel a pending invitation (`121c85c`, shared with T7)
