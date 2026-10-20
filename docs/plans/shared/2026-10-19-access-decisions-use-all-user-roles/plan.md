@@ -24,6 +24,8 @@
 | T4 | — | — | Authorization change on location and organization endpoints |
 | T5 | — | — | Shared contract change (`GetRoleAsync` removed) |
 
+T3 also moves the menu permission checks out of `MenuService` into `MenuAccessChecker` (decided by the user during implementation: `MenuService` was over the then 200-line limit, since raised to 300).
+
 No public endpoint, no raw SQL (Structured Query Language), no migration, no token or controller attribute change.
 
 ## Overall Definition of Done
@@ -41,6 +43,6 @@ No public endpoint, no raw SQL (Structured Query Language), no migration, no tok
 ## Checklist
 - [x] T1 — Role assignment DTO and access decision helper
 - [x] T2 — Role lookup returns every assignment in the organization
-- [ ] T3 — Menu and menu category checks use all assignments
+- [x] T3 — Menu and menu category checks use all assignments
 - [ ] T4 — Location and organization checks use all assignments
 - [ ] T5 — Remove the single-role lookup

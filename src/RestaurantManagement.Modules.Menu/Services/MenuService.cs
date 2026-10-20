@@ -19,7 +19,7 @@ namespace RestaurantManagement.Modules.Menu.Services
     {
         private readonly MenuDbContext _menuDb;
         private readonly IOrganizationLookup _organizationLookup;
-        private readonly IUserRoleLookup _userRoleLookup;
+        private readonly MenuAccessChecker _access;
         private readonly ITenantContext _tenantContext;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
@@ -32,7 +32,7 @@ namespace RestaurantManagement.Modules.Menu.Services
         {
             _menuDb = menuDb;
             _organizationLookup = organizationLookup;
-            _userRoleLookup = userRoleLookup;
+            _access = new MenuAccessChecker(userRoleLookup, localizer);
             _tenantContext = tenantContext;
             _localizer = localizer;
         }
@@ -42,7 +42,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             var organizationId = GetTokenOrganizationId();
 
             // 1. Verify user permissions
-            await CheckUserPermission(userId, organizationId);
+            await _access.CheckWriteAsync(userId, organizationId);
 
             // 2. Organization check (redundant but safe)
             var organizationExists = await _organizationLookup.OrganizationExistsAsync(organizationId);
@@ -98,7 +98,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (menu == null)
                 throw new BusinessException(_localizer["MenuNotFound"].Value, 404);
 
-            await CheckUserPermission(userId, menu.OrganizationId);
+            await _access.CheckWriteAsync(userId, menu.OrganizationId);
 
             menu.Name = request.Name;
             menu.Description = request.Description;
@@ -116,7 +116,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (menu == null)
                 throw new BusinessException(_localizer["MenuNotFound"].Value, 404);
 
-            await CheckUserPermission(userId, menu.OrganizationId);
+            await _access.CheckWriteAsync(userId, menu.OrganizationId);
 
             _menuDb.Menus.Remove(menu);
             await _menuDb.SaveChangesAsync();
@@ -128,7 +128,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (menu == null)
                 throw new BusinessException(_localizer["MenuNotFound"].Value, 404);
 
-            await CheckUserPermission(userId, menu.OrganizationId);
+            await _access.CheckWriteAsync(userId, menu.OrganizationId);
 
             var location = await _organizationLookup.GetLocationAsync(locationId);
             if (location == null || location.OrganizationId != menu.OrganizationId)
@@ -158,7 +158,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (menu == null)
                 throw new BusinessException(_localizer["MenuNotFound"].Value, 404);
 
-            await CheckUserPermission(userId, menu.OrganizationId);
+            await _access.CheckWriteAsync(userId, menu.OrganizationId);
 
             var link = await _menuDb.LocationMenus
                 .FirstOrDefaultAsync(lm => lm.MenuId == menuId && lm.LocationId == locationId);
@@ -173,7 +173,7 @@ namespace RestaurantManagement.Modules.Menu.Services
         public async Task<List<MenuResponse>> GetMenusAsync(Guid userId)
         {
             var organizationId = GetTokenOrganizationId();
-            await CheckReadPermission(userId, organizationId);
+            await _access.CheckReadAsync(userId, organizationId);
 
             var menus = await _menuDb.Menus
                 .Where(m => m.OrganizationId == organizationId)
@@ -197,7 +197,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (location == null)
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
-            await CheckReadPermission(userId, location.OrganizationId);
+            await _access.CheckReadAsync(userId, location.OrganizationId);
 
             var menus = await _menuDb.LocationMenus
                 .Where(lm => lm.LocationId == locationId)
@@ -221,31 +221,6 @@ namespace RestaurantManagement.Modules.Menu.Services
         {
             return _tenantContext.OrganizationId
                 ?? throw new BusinessException(_localizer["OrganizationRequired"].Value, 403);
-        }
-
-        private async Task CheckUserPermission(Guid userId, Guid organizationId)
-        {
-            var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
-
-            if (role == null || (role != Roles.Owner && role != Roles.Admin))
-            {
-                throw new BusinessException(_localizer["UnauthorizedMessage"].Value, 403);
-            }
-        }
-
-        private static readonly string[] ReadRoles =
-        {
-            Roles.Owner, Roles.Admin, Roles.Manager, Roles.Cashier, Roles.Waiter, Roles.Kitchen
-        };
-
-        private async Task CheckReadPermission(Guid userId, Guid organizationId)
-        {
-            var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
-
-            if (role == null || !ReadRoles.Contains(role))
-            {
-                throw new BusinessException(_localizer["UnauthorizedMessage"].Value, 403);
-            }
         }
 
         private async Task<MenuResponse> GetMenuResponseAsync(Guid menuId)
