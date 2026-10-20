@@ -7,18 +7,23 @@ namespace RestaurantManagement.Web.Auth
     {
         public static IServiceCollection AddPermissionPolicies(this IServiceCollection services)
         {
-            services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
+            // Scoped: the handler uses the request-scoped access guard.
+            services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
             services.AddAuthorization(options =>
             {
                 options.FallbackPolicy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
 
-                foreach (var permission in Permissions.All)
+                foreach (var module in Enum.GetValues<AccessModule>())
                 {
-                    options.AddPolicy(permission, policy => policy
-                        .RequireAuthenticatedUser()
-                        .AddRequirements(new PermissionRequirement(permission)));
+                    foreach (var level in new[] { AccessLevel.Read, AccessLevel.Manage })
+                    {
+                        var name = $"{module}.{level}".ToLowerInvariant();
+                        options.AddPolicy(name, policy => policy
+                            .RequireAuthenticatedUser()
+                            .AddRequirements(new PermissionRequirement(module, level)));
+                    }
                 }
             });
             return services;

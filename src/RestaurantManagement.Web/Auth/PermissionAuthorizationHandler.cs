@@ -1,29 +1,35 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using RestaurantManagement.Shared.Auth;
+using RestaurantManagement.Shared.Utils.Exceptions;
 
 namespace RestaurantManagement.Web.Auth
 {
     /// <summary>
-    /// Succeeds only when the token names an organization and one of its roles grants the permission.
-    /// A token without an organization claim (none selected) never passes, so roles from other
-    /// organizations cannot leak into the decision.
+    /// Succeeds when the access guard allows the level at every non-closed location of the token
+    /// organization (the Owner always passes). No organization in the token, or no access, leaves the
+    /// requirement unmet, so the forbidden event answers 403. Role claims are never read.
     /// </summary>
     public sealed class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
     {
-        protected override Task HandleRequirementAsync(
+        private readonly IAccessGuard _guard;
+
+        public PermissionAuthorizationHandler(IAccessGuard guard)
+        {
+            _guard = guard;
+        }
+
+        protected override async Task HandleRequirementAsync(
             AuthorizationHandlerContext context, PermissionRequirement requirement)
         {
-            if (context.User.FindFirst(AppClaimTypes.OrganizationId) is null)
-                return Task.CompletedTask;
-
-            var granted = context.User.FindAll(ClaimTypes.Role)
-                .Any(role => RolePermissions.HasPermission(role.Value, requirement.Permission));
-
-            if (granted)
+            try
+            {
+                await _guard.RequireAtEveryLocationAsync(requirement.Module, requirement.Level);
                 context.Succeed(requirement);
-
-            return Task.CompletedTask;
+            }
+            catch (BusinessException ex) when (ex.StatusCode == 403)
+            {
+                // The guard refused: leave the requirement unmet.
+            }
         }
     }
 }

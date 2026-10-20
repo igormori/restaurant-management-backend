@@ -1,11 +1,18 @@
 using Microsoft.AspNetCore.Authorization;
+using RestaurantManagement.Shared.Auth;
 
 namespace RestaurantManagement.Web.Auth
 {
     public sealed class PermissionRequirement : IAuthorizationRequirement
     {
-        public PermissionRequirement(string permission) => Permission = permission;
+        public PermissionRequirement(AccessModule module, AccessLevel level)
+        {
+            Module = module;
+            Level = level;
+        }
 
-        public string Permission { get; }
+        public AccessModule Module { get; }
+
+        public AccessLevel Level { get; }
     }
 }

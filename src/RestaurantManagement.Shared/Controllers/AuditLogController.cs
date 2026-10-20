@@ -8,7 +8,7 @@ namespace RestaurantManagement.Shared.Controllers
 {
     [ApiController]
     [Route("api/audit-log")]
-    [Authorize(Policy = Permissions.ReportsView)]
+    [Authorize(Policy = "reports.read")]
     public class AuditLogController : ControllerBase
     {
         private readonly IAuditLogReader _reader;
