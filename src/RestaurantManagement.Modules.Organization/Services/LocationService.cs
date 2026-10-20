@@ -165,7 +165,7 @@ namespace RestaurantManagement.Modules.Organization.Services
         // Stubs for T8: the rules live on the access grid, through the guard.
         private Task RequireOwnerAsync() => throw new NotImplementedException();
 
-        private Task RequireAnyAccessAsync() => throw new NotImplementedException();
+        private Task RequireAnyAccessAsync() => _accessGuard.RequireAnyAccessAsync();
 
         // Locations Manage at the location; an edit that sets the status Closed needs the Owner.
         private Task RequireManageLocationAsync(Location location, LocationStatus? requestedStatus) => throw new NotImplementedException();

@@ -53,8 +53,10 @@ namespace RestaurantManagement.Shared.Middleware
             await _next(context);
         }
 
-        // Stub: the Owner, or any cell at the location, in the token organization's grid (T6).
-        private static Task<bool> WorksAtAsync(IMemberAccessLookup memberAccessLookup, Guid userId, Guid organizationId, Guid locationId)
-            => throw new NotImplementedException();
+        private static async Task<bool> WorksAtAsync(IMemberAccessLookup memberAccessLookup, Guid userId, Guid organizationId, Guid locationId)
+        {
+            var grid = await memberAccessLookup.GetAccessGridAsync(userId, organizationId);
+            return AccessGridDecision.WorksAt(grid, locationId);
+        }
     }
 }
