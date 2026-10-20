@@ -54,6 +54,9 @@ Plan size is L (budget 40); scenarios 41–43 were added after the test-reviewer
 | 45 | T4, T5 | Security | An invitation or access edit body with an oversized locations, role names or levels list is a 400 and nothing changes (5 cases) | `CreateInvitation_OversizedCollection_ReturnsBadRequestAndStoresNothing`, `SetAccess_OversizedCollection_ReturnsBadRequestAndChangesNothing` | `tests/RestaurantManagement.Web.Tests/Identity/InvitationSizeLimitEndpointTests.cs` |
 | 46 | T7 | Security | A token longer than 200 characters is a 400 on both accept routes (2 cases) | `Accept_TokenLongerThanTheLimit_ReturnsBadRequest` | `tests/RestaurantManagement.Web.Tests/Identity/InvitationSizeLimitEndpointTests.cs` |
 | 47 | T5 | Security | An invitation listing the same location twice is a 400 and nothing is stored | `CreateInvitation_SameLocationTwice_ReturnsBadRequestAndStoresNothing` | `tests/RestaurantManagement.Web.Tests/Identity/InvitationSizeLimitEndpointTests.cs` |
+| 48 | T5 | Security | An invitation location with no roles and no levels is a 400 and nothing is stored | `CreateInvitation_LocationWithNoRolesAndNoLevels_ReturnsBadRequestAndStoresNothing` | `tests/RestaurantManagement.Web.Tests/Identity/InvitationCreateRefusalEndpointTests.cs` |
+| 49 | T5 | Security | A null entry in the locations list is a 400, not a server error, and nothing is stored | `CreateInvitation_NullLocationEntry_ReturnsBadRequestAndStoresNothing` | `tests/RestaurantManagement.Web.Tests/Identity/InvitationCreateRefusalEndpointTests.cs` |
+| 50 | T5 | Edge | Eight requests for the same email at the same moment: none is a server error and one open invitation remains (the race is not forced, so the test cannot fail every run without the fix) | `CreateInvitation_SameEmailAtTheSameMoment_NeverFailsWithAServerErrorAndLeavesOneOpenInvitation` | `tests/RestaurantManagement.Web.Tests/Identity/InvitationCreateRefusalEndpointTests.cs` |
 
 ## Spec Outcome coverage
 | Outcome | Scenarios |

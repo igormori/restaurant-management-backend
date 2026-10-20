@@ -286,6 +286,9 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | T84 | An invitation or access edit body with more than the allowed locations (50), role names (20) or levels (20) | 400; nothing stored or changed | ✅ | `InvitationSizeLimitEndpointTests.CreateInvitation_OversizedCollection_ReturnsBadRequestAndStoresNothing`, `InvitationSizeLimitEndpointTests.SetAccess_OversizedCollection_ReturnsBadRequestAndChangesNothing` |
 | T85 | A token longer than 200 characters when accepting an invitation (signed in or with a new account) | 400; nothing stored | ✅ | `InvitationSizeLimitEndpointTests.Accept_TokenLongerThanTheLimit_ReturnsBadRequest` |
 | T86 | An invitation that lists the same location twice | 400; nothing stored | ✅ | `InvitationSizeLimitEndpointTests.CreateInvitation_SameLocationTwice_ReturnsBadRequestAndStoresNothing` |
+| T87 | `POST api/invitations` with a location that has no roles and no levels | 400; nothing stored (a cancel must always find the invitation's locations) | ✅ | `InvitationCreateRefusalEndpointTests.CreateInvitation_LocationWithNoRolesAndNoLevels_ReturnsBadRequestAndStoresNothing` |
+| T88 | `POST api/invitations` with a null entry in `locations` | 400, not a server error; nothing stored | ✅ | `InvitationCreateRefusalEndpointTests.CreateInvitation_NullLocationEntry_ReturnsBadRequestAndStoresNothing` |
+| T89 | Two invitations to the same email at the same moment | One succeeds; any other gets a refusal (409), never a server error; one open invitation remains | ✅ | `InvitationCreateRefusalEndpointTests.CreateInvitation_SameEmailAtTheSameMoment_NeverFailsWithAServerErrorAndLeavesOneOpenInvitation` |
 
 ## 11. Schema, migration and wiring tests
 These protect the database and the app setup rather than a rule users meet. They are listed so

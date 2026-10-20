@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
@@ -76,11 +77,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             var organizationId = _tenantContext.OrganizationId
                 ?? throw new BusinessException(_localizer["OrganizationRequired"].Value, 403);
             var email = request.Email.Trim().ToLowerInvariant();
-            if (email.Length == 0 || request.Locations.Count == 0)
-                throw new BusinessException(_localizer["ValidationFailed"].Value, 400);
-
-            if (request.Locations.Select(l => l.LocationId).Distinct().Count() != request.Locations.Count)
-                throw new BusinessException(_localizer["ValidationFailed"].Value, 400);
+            RequireWellFormedLocations(email, request);
 
             await RequireNotMemberAsync(email, organizationId);
             var grids = await BuildGridsAsync(request, organizationId);
@@ -96,11 +93,32 @@ namespace RestaurantManagement.Modules.Identity.Services
                 replaced.ReplacedAt = invitation.CreatedAt;
             _db.OrganizationInvitations.Add(invitation);
             InvitationGrids.AddRows(_db, invitation, grids);
-            await _db.SaveChangesAsync();
+            await SaveOpenInvitationAsync();
 
             await RecordInvitedAsync(invitation, before, InvitationGrids.Describe(email, grids));
             await SendEmailAsync(invitation, token, grids);
             return new InvitationResponse { Id = invitation.Id, Email = email, ExpiresAt = invitation.ExpiresAt };
+        }
+
+        // A null entry or a repeated location is a bad request, not a crash or a database error.
+        private void RequireWellFormedLocations(string email, CreateInvitationRequest request)
+        {
+            if (email.Length == 0 || request.Locations.Count == 0 || request.Locations.Any(l => l is null)
+                || request.Locations.Select(l => l.LocationId).Distinct().Count() != request.Locations.Count)
+                throw new BusinessException(_localizer["ValidationFailed"].Value, 400);
+        }
+
+        // Two requests for the same address at once: the open-email index lets only one win.
+        private async Task SaveOpenInvitationAsync()
+        {
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is PostgresException { ConstraintName: IdentityDbContext.OpenInvitationIndexName })
+            {
+                throw new BusinessException(_localizer["ValidationFailed"].Value, 409);
+            }
         }
 
         private async Task RequireNotMemberAsync(string email, Guid organizationId)
@@ -124,6 +142,10 @@ namespace RestaurantManagement.Modules.Identity.Services
                     throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
                 var grid = await _gridBuilder.BuildAsync(organizationId, location.RoleNames, InvitationGrids.ParseLevels(location.Levels, _localizer));
+                // A location with no roles and no levels stores no rows, so a cancel could not find it.
+                if (grid.Roles.Count == 0 && grid.Levels.Count == 0)
+                    throw new BusinessException(_localizer["ValidationFailed"].Value, 400);
+
                 grids.Add(new LocationGridPlan(location.LocationId, summary.Name, grid));
             }
 
