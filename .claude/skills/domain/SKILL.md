@@ -49,19 +49,18 @@ Later: own point of sale with payments by PIX (Brazilian instant payment), card 
 (delivery platform) orders going straight into the system. Brazilian electronic fiscal receipts
 (NFC-e) are a known risk area.
 
-## 4. Roles and permissions
-- **Owner:** the only system role. Can do everything at every location. Cannot be edited or
-  deleted. Every organization always keeps at least one Owner. Only an Owner can make someone
-  else an Owner or remove that role.
-- **Admin, Manager, Cashier, Waiter, Kitchen:** fixed roles, the same in every organization;
-  organizations cannot create, edit or delete roles. Admin: all permissions, like the Owner.
-  Manager: menu management and reports. Cashier, Waiter and Kitchen: no management permissions;
-  they may read their organization's menus.
-- A user can have several roles at once; their permissions add up.
-- A role applies to one location or to all locations of the organization. A role for location A
-  gives nothing at location B.
-- A user always has at least one role.
-- The list of available permissions is fixed by the product; organizations cannot invent new ones.
+## 4. Access and roles
+- **Owner:** the only system role, a flag on the membership. Unrestricted at every location.
+  Cannot be edited or deleted. Every organization always keeps at least one Owner. Only an Owner
+  can make someone else an Owner or remove that role.
+- **Access grid:** each member has, per location and module, a level: None, Read or Manage. A
+  level at location A gives nothing at location B.
+- **Roles:** Admin, Manager, Cashier, Waiter and Kitchen are stored per organization as presets.
+  Each new organization starts with them; a role's default levels fill a member's grid, and
+  levels can then be changed per location. Changing a role later does not change existing grids.
+- Actions not tied to one location need the level at every location involved, or at every
+  non-closed location of the organization when none is involved.
+- Changes to a member's access are written to the audit log.
 
 ## 5. Standing business rules
 - An organization never sees or changes another organization's data.

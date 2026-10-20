@@ -12,7 +12,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         public static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<AccessModule, AccessLevel>> Levels =
             new Dictionary<string, IReadOnlyDictionary<AccessModule, AccessLevel>>
             {
-                [Roles.Admin] = new Dictionary<AccessModule, AccessLevel>
+                ["Admin"] = new Dictionary<AccessModule, AccessLevel>
                 {
                     [AccessModule.Locations] = AccessLevel.Manage,
                     [AccessModule.Menus] = AccessLevel.Manage,
@@ -22,7 +22,7 @@ namespace RestaurantManagement.Modules.Identity.Services
                     [AccessModule.Reports] = AccessLevel.Manage,
                     [AccessModule.Members] = AccessLevel.Manage
                 },
-                [Roles.Manager] = new Dictionary<AccessModule, AccessLevel>
+                ["Manager"] = new Dictionary<AccessModule, AccessLevel>
                 {
                     [AccessModule.Locations] = AccessLevel.Read,
                     [AccessModule.Menus] = AccessLevel.Manage,
@@ -30,20 +30,20 @@ namespace RestaurantManagement.Modules.Identity.Services
                     [AccessModule.Kitchen] = AccessLevel.Read,
                     [AccessModule.Reports] = AccessLevel.Manage
                 },
-                [Roles.Cashier] = new Dictionary<AccessModule, AccessLevel>
+                ["Cashier"] = new Dictionary<AccessModule, AccessLevel>
                 {
                     [AccessModule.Locations] = AccessLevel.Read,
                     [AccessModule.Menus] = AccessLevel.Read,
                     [AccessModule.Cashier] = AccessLevel.Manage,
                     [AccessModule.Orders] = AccessLevel.Read
                 },
-                [Roles.Waiter] = new Dictionary<AccessModule, AccessLevel>
+                ["Waiter"] = new Dictionary<AccessModule, AccessLevel>
                 {
                     [AccessModule.Locations] = AccessLevel.Read,
                     [AccessModule.Menus] = AccessLevel.Read,
                     [AccessModule.Orders] = AccessLevel.Manage
                 },
-                [Roles.Kitchen] = new Dictionary<AccessModule, AccessLevel>
+                ["Kitchen"] = new Dictionary<AccessModule, AccessLevel>
                 {
                     [AccessModule.Locations] = AccessLevel.Read,
                     [AccessModule.Menus] = AccessLevel.Read,

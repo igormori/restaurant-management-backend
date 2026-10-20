@@ -1,7 +1,7 @@
 # RestaurantManagement
 
 .NET 9 modular monolith (Identity, Menu, Organization, Shared, Web) on PostgreSQL. Multi-tenant:
-data belongs to an organization. Roles: Owner, Admin, Manager, Cashier, Waiter, Kitchen (access is checked by permission). Launch markets: Brazil, Canada and
+data belongs to an organization. Access is a per-location grid (location x module -> None, Read or Manage); roles are presets stored per organization; the Owner is unrestricted. Launch markets: Brazil, Canada and
 the USA. Each organization chooses its currency (BRL: Brazilian real, USD: US dollar, CAD:
 Canadian dollar) and each location its time zone; never assume a country default.
 
@@ -133,7 +133,8 @@ stop the flow when something is wrong.
    fixes its findings once.
    ⏸ Gate 2: the user approves `scenarios.md` (test coverage).
 4. Implement: implementer commits the baseline (spec, plan, stubs, tests), then one task per
-   commit with the full suite green, following each task's Implementation guide. After each
+   commit, following each task's Implementation guide. Only tests of tasks not built yet may
+   fail; the full suite is green after the last task. After each
    task it writes the task's Delivered note in its batch file and ticks the task in the
    `plan.md` Checklist. Batches run in order; a batch starts only when every task it depends
    on is ticked.

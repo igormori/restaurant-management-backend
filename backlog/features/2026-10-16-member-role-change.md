@@ -6,15 +6,15 @@
 **Date:** 2026-10-16
 
 ## Problem
-No feature lets a member's role be changed, for example from Waiter to Cashier. The audit log spec (Outcome #1) expects a "member role changed" entry. Its plan defines that action but cannot check the outcome until a role change feature exists. The business rules are undecided: who may change whose role, and how the Owner is protected (for example, nobody can demote or remove the last Owner).
+No feature lets a member's role be changed, for example from Waiter to Cashier. The audit log spec (Outcome #1) expects a "member role changed" entry. Its plan defines that action but cannot check the outcome until a role change feature exists. Decided in docs/specs/shared/2026-10-19-per-location-access-grid.md: roles are presets that fill a stored grid, and delegation rules (no self-edit, grant at most own level, Owner never edited). Still missing: the feature itself (slice 2) and last-Owner protection.
 
 ## Evidence
-- `src/RestaurantManagement.Shared/Services/Identity/IUserRoleAssigner.cs:5` — only assign and revoke exist, with no change operation
-- `src/RestaurantManagement.Modules.Organization/Services/OrganizationService.cs:129` — the only caller, which assigns Owner at organization creation
+- `src/RestaurantManagement.Modules.Identity/Services/MemberAccessService.cs` — `SetAccessAsync` stores a member's grid at a location, but no endpoint or delegation rules expose it
+- `src/RestaurantManagement.Shared/Services/Identity/IOrganizationAccessSetup.cs` — the only other writer, which sets up the Owner and default roles at organization creation
 - `docs/specs/shared/2026-10-15-audit-log.md` — Outcome #1 expects Before = Waiter, After = Cashier
 
 ## Acceptance criteria
-- [ ] A spec defines who may change whose role (permission, location-level or organization-wide) and how the Owner is protected
+- [ ] Slice 2 spec covers changing a member's preset or grid and protecting the last Owner
 - [ ] Changing a member's role from Waiter to Cashier writes one "member role changed" audit entry with Before = Waiter and After = Cashier (audit log Outcome #1)
 - [ ] Another organization's member returns not found; roles without members.manage are refused
 
