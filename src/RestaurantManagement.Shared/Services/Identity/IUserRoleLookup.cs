@@ -5,7 +5,6 @@ namespace RestaurantManagement.Shared.Services.Identity
     public interface IUserRoleLookup
     {
         Task<bool> UserExistsAsync(Guid userId);
-        Task<string?> GetRoleAsync(Guid userId, Guid organizationId);
 
         /// <summary>
         /// Every role the user holds in the organization (never another organization's), each with

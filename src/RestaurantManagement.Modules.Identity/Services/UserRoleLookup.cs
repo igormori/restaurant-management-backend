@@ -19,14 +19,6 @@ namespace RestaurantManagement.Modules.Identity.Services
             return await _db.Users.AnyAsync(u => u.Id == userId);
         }
 
-        public async Task<string?> GetRoleAsync(Guid userId, Guid organizationId)
-        {
-            var userRole = await _db.UserRoles
-                .FirstOrDefaultAsync(r => r.UserId == userId && r.OrganizationId == organizationId);
-
-            return userRole?.Role;
-        }
-
         public async Task<List<RoleAssignmentDto>> GetRoleAssignmentsAsync(Guid userId, Guid organizationId)
         {
             return await _db.UserRoles
