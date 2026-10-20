@@ -30,6 +30,10 @@ Otherwise, the change qualifies only if **all** are true:
 | Open business questions | None |
 
 If any check fails, **stop** and reply: `Not a small change: <which check failed>. Use /spec.`
+Do not create a branch.
+
+All checks pass: create the branch you were given from the current branch
+(`git switch -c <branch>`, or `git switch <branch>` if it already exists) before editing any file.
 
 ---
 

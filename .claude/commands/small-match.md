@@ -8,12 +8,12 @@ Items: $ARGUMENTS
 If no items were given, ask me for them and stop.
 
 1. Run `git status`. If anything is uncommitted, stop and list it: I commit or stash it first.
-2. Create the branch from the current branch:
-   `git switch -c backlog-fixes/<YYYY-MM-DD>`, using today's date. If that
-   branch already exists locally or on origin, add `-2`, `-3`, and so on
+2. Pick the branch name, but do not create it yet: `backlog-fixes/<YYYY-MM-DD>`, using today's
+   date. If that branch already exists locally or on origin, add `-2`, `-3`, and so on
    (`backlog-fixes/2026-10-16-2`).
-3. Use the small-batch subagent with the full list of items.
-   If it kept no items, show me its message and stop.
+3. Use the small-batch subagent with the full list of items and the branch name. It creates the
+   branch only after its size check keeps at least one item. If it kept no items, show me its
+   message and stop: no branch was created.
 4. Use the pr-reviewer subagent on the branch. There is no plan folder: it reviews the diff
    against the skills only, writes its review to `docs/reviews/<branch-name>.md` (with `/`
    replaced by `-`, e.g. `docs/reviews/backlog-fixes-2026-10-16.md`), and checks each commit is one item. The small-batch agent already ran the
