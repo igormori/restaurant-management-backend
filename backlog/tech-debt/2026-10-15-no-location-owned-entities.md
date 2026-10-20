@@ -8,3 +8,5 @@ The location query filter applies to entities derived from `LocationEntity`, but
 
 ## Why it matters
 Staff working in one location still see every location's menu links and categories. Each entity with a location should be reviewed and moved to `LocationEntity` where the data truly belongs to one location, keeping in mind that menu responses list all linked locations.
+
+Also: `MenuCategoryService.GetAllAsync` and `GetByMenuIdAsync` are refused to an Admin assigned to one location. Filtering these lists to that Admin's own locations was left out of the access-decisions fix.

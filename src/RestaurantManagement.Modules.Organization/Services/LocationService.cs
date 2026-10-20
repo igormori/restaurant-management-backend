@@ -6,6 +6,7 @@ using Npgsql;
 using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
+using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using RestaurantManagement.Shared.Data;
@@ -15,6 +16,8 @@ namespace RestaurantManagement.Modules.Organization.Services
 {
     public class LocationService : ILocationService
     {
+        private static readonly string[] OwnerOrAdminRoles = [Roles.Owner, Roles.Admin];
+
         private readonly OrganizationDbContext _orgDb;
         private readonly IUserRoleLookup _userRoleLookup;
         private readonly ITenantContext _tenantContext;
@@ -43,9 +46,9 @@ namespace RestaurantManagement.Modules.Organization.Services
             var organizationId = RequireOrganizationId();
 
             // 1. Verify User is Owner or Admin of the Organization
-            var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
+            var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
 
-            if (role != Roles.Owner && role != Roles.Admin)
+            if (assignments == null || !AccessDecision.AllowsOrganizationWide(assignments, OwnerOrAdminRoles))
                 throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
 
             // 2. Create Location
@@ -81,11 +84,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             if (location == null)
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
-            // Verify User is Owner or Admin of the Organization (derived from location)
-            var role = await _userRoleLookup.GetRoleAsync(userId, location.OrganizationId);
-
-            if (role != Roles.Owner && role != Roles.Admin)
-                throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
+            await RequireOwnerOrAdminAtAsync(userId, location);
 
             var previousStatus = location.Status;
             location.Name = request.Name;
@@ -114,11 +113,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             if (location == null)
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
-            // Verify User is Owner or Admin
-            var role = await _userRoleLookup.GetRoleAsync(userId, location.OrganizationId);
-
-            if (role != Roles.Owner && role != Roles.Admin)
-                throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
+            await RequireOwnerOrAdminAtAsync(userId, location);
 
             // Soft delete by setting status to Closed (or logic as discussed: status is status)
             // User requested "If status closes ... do not delete". But "Delete" endpoint generally means "I want it gone or inactive".
@@ -164,9 +159,9 @@ namespace RestaurantManagement.Modules.Organization.Services
             var organizationId = RequireOrganizationId();
 
             // Verify User belongs to Organization (any role)
-            var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
+            var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
 
-            if (role == null)
+            if (assignments == null || assignments.Count == 0)
                 throw new BusinessException(_localizer["UserNotMemberOfOrganization"].Value, 403);
 
             var locations = await _orgDb.Locations
@@ -174,6 +169,14 @@ namespace RestaurantManagement.Modules.Organization.Services
                 .ToListAsync();
 
             return locations.Select(MapToResponse).ToList();
+        }
+
+        private async Task RequireOwnerOrAdminAtAsync(Guid userId, Location location)
+        {
+            var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, location.OrganizationId);
+
+            if (assignments == null || !AccessDecision.AllowsAtLocation(assignments, location.Id, OwnerOrAdminRoles))
+                throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
         }
 
         private static LocationType? ParseType(string? type)

@@ -12,6 +12,7 @@ using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.AuditLog;
+using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
@@ -19,6 +20,8 @@ namespace RestaurantManagement.Modules.Organization.Services
 {
     public class OrganizationService : IOrganizationService
     {
+        private static readonly string[] OwnerOrAdminRoles = [Roles.Owner, Roles.Admin];
+
         private readonly OrganizationDbContext _orgDb;
         private readonly IUserRoleLookup _userRoleLookup;
         private readonly IUserRoleAssigner _userRoleAssigner;
@@ -200,8 +203,8 @@ namespace RestaurantManagement.Modules.Organization.Services
                 throw new BusinessException(_localizer["OrganizationSettingsNotFound"].Value, 404);
 
             // 3. Only Owner or Admin of this organization may edit it
-            var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
-            if (role != Roles.Owner && role != Roles.Admin)
+            var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
+            if (assignments == null || !AccessDecision.AllowsOrganizationWide(assignments, OwnerOrAdminRoles))
                 throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
 
             var before = (organizationSettings.ServiceChargeRate, organizationSettings.DiscountApprovalLimit, organizationSettings.BusinessDayCutoff);

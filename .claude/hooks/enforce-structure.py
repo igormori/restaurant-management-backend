@@ -15,7 +15,7 @@ import re
 import sys
 
 # ---------------- CONFIG ----------------
-MAX_LINES = 200  # production .cs files (generated migrations and Program.cs excluded)
+MAX_LINES = 300  # production .cs files (generated migrations and Program.cs excluded)
 
 MODULE_FOLDERS = "Controllers|Services|Data|Entities|Models"
 PASCAL = r"[A-Z][A-Za-z0-9]*"

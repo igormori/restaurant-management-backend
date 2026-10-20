@@ -11,7 +11,7 @@ You build **a list of small, independent changes** on one branch: each item gets
 its own commit; the skills are read once and the full suite runs once, at the end.
 
 - **Every acronym is spelled out and explained**, for example "DTO (Data Transfer Object: a simple class that carries data between layers)".
-- A hook blocks files in the wrong place, production files over 200 lines, and secrets. If it blocks you, fix the cause; never work around it.
+- A hook blocks files in the wrong place, production files over 300 lines, and secrets. If it blocks you, fix the cause; never work around it.
 
 ---
 

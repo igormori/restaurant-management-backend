@@ -1,3 +1,4 @@
+using RestaurantManagement.Shared.Auth;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using RestaurantManagement.Modules.Organization.Entities;
@@ -50,7 +51,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         private static LocationService CreateSut(OrganizationTestDatabase database, Guid organizationId, Guid userId, string? role)
         {
             var roleLookup = Substitute.For<IUserRoleLookup>();
-            roleLookup.GetRoleAsync(userId, organizationId).Returns(role);
+            roleLookup.GetRoleAssignmentsAsync(userId, organizationId).Returns(role is null ? new List<RoleAssignmentDto>() : new List<RoleAssignmentDto> { new() { Role = role } });
             var tenant = TestTenant.Of(organizationId);
             return new LocationService(database.CreateContext(tenant), roleLookup, tenant, TestLocalizer.Create(),
                 Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());

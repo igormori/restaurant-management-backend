@@ -15,7 +15,7 @@ namespace RestaurantManagement.Modules.Menu.Services
     {
         private readonly MenuDbContext _context;
         private readonly IOrganizationLookup _organizationLookup;
-        private readonly IUserRoleLookup _userRoleLookup;
+        private readonly MenuAccessChecker _access;
         private readonly ITenantContext _tenantContext;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
@@ -28,7 +28,7 @@ namespace RestaurantManagement.Modules.Menu.Services
         {
             _context = context;
             _organizationLookup = organizationLookup;
-            _userRoleLookup = userRoleLookup;
+            _access = new MenuAccessChecker(userRoleLookup, localizer);
             _tenantContext = tenantContext;
             _localizer = localizer;
         }
@@ -36,7 +36,7 @@ namespace RestaurantManagement.Modules.Menu.Services
         public async Task<MenuCategoryResponse> CreateAsync(Guid userId, CreateMenuCategoryRequest request)
         {
             var organizationId = GetTokenOrganizationId();
-            await CheckUserPermission(userId, organizationId);
+            await _access.RequireOrganizationAdminAsync(userId, organizationId);
 
             // The tenant query filter hides other organizations' menus, so a foreign MenuId looks missing.
             var menuExists = await _context.Menus.AnyAsync(m => m.Id == request.MenuId);
@@ -76,7 +76,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (category == null)
                 return null;
 
-            await CheckUserPermission(userId, category.OrganizationId);
+            await _access.CheckAdminAtLocationAsync(userId, category.OrganizationId, category.LocationId);
 
             return MapToResponse(category);
         }
@@ -87,7 +87,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (menu == null)
                 return Enumerable.Empty<MenuCategoryResponse>();
 
-            await CheckUserPermission(userId, menu.OrganizationId);
+            await _access.RequireOrganizationAdminAsync(userId, menu.OrganizationId);
 
             var categories = await _context.MenuCategories
                 .Where(c => c.MenuId == menuId)
@@ -101,7 +101,7 @@ namespace RestaurantManagement.Modules.Menu.Services
         public async Task<IEnumerable<MenuCategoryResponse>> GetAllAsync(Guid userId)
         {
             var organizationId = GetTokenOrganizationId();
-            await CheckUserPermission(userId, organizationId);
+            await _access.RequireOrganizationAdminAsync(userId, organizationId);
 
             var categories = await _context.MenuCategories
                 .Where(c => c.OrganizationId == organizationId)
@@ -118,7 +118,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (location == null)
                 return Enumerable.Empty<MenuCategoryResponse>();
 
-            await CheckUserPermission(userId, location.OrganizationId);
+            await _access.CheckAdminAtLocationAsync(userId, location.OrganizationId, locationId);
 
             var categories = await _context.MenuCategories
                 .Where(c => c.LocationId == locationId)
@@ -135,7 +135,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (category == null)
                 return null;
 
-            await CheckUserPermission(userId, category.OrganizationId);
+            await _access.RequireOrganizationAdminAsync(userId, category.OrganizationId);
 
             category.Name = request.Name;
             category.Description = request.Description;
@@ -152,7 +152,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (category == null)
                 return false;
 
-            await CheckUserPermission(userId, category.OrganizationId);
+            await _access.RequireOrganizationAdminAsync(userId, category.OrganizationId);
 
             _context.MenuCategories.Remove(category);
             await _context.SaveChangesAsync();
@@ -164,16 +164,6 @@ namespace RestaurantManagement.Modules.Menu.Services
         {
             return _tenantContext.OrganizationId
                 ?? throw new BusinessException(_localizer["OrganizationRequired"].Value, 403);
-        }
-
-        private async Task CheckUserPermission(Guid userId, Guid organizationId)
-        {
-            var role = await _userRoleLookup.GetRoleAsync(userId, organizationId);
-
-            if (role == null || (role != Roles.Owner && role != Roles.Admin))
-            {
-                throw new BusinessException(_localizer["UnauthorizedMessage"].Value, 403);
-            }
         }
 
         private static MenuCategoryResponse MapToResponse(MenuCategory category)

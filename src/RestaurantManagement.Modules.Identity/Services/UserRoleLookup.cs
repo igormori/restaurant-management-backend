@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Modules.Identity.Data;
+using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Services.Identity;
 
 namespace RestaurantManagement.Modules.Identity.Services
@@ -18,12 +19,12 @@ namespace RestaurantManagement.Modules.Identity.Services
             return await _db.Users.AnyAsync(u => u.Id == userId);
         }
 
-        public async Task<string?> GetRoleAsync(Guid userId, Guid organizationId)
+        public async Task<List<RoleAssignmentDto>> GetRoleAssignmentsAsync(Guid userId, Guid organizationId)
         {
-            var userRole = await _db.UserRoles
-                .FirstOrDefaultAsync(r => r.UserId == userId && r.OrganizationId == organizationId);
-
-            return userRole?.Role;
+            return await _db.UserRoles
+                .Where(r => r.UserId == userId && r.OrganizationId == organizationId)
+                .Select(r => new RoleAssignmentDto { Role = r.Role, LocationId = r.LocationId })
+                .ToListAsync();
         }
 
         public async Task<List<Guid>> GetOrganizationIdsForUserAsync(Guid userId)
