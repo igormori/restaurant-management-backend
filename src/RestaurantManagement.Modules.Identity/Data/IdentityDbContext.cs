@@ -6,6 +6,8 @@ namespace RestaurantManagement.Modules.Identity.Data
     public class IdentityDbContext : DbContext
     {
         public const string UniqueEmailIndexName = "ix_users_email_normalized";
+        public const string UniqueRoleNameIndexName = "ix_organization_roles_organization_id_name";
+        private const int AccessCellMaxLength = 20;
         public const string UniqueMemberIndexName = "ix_organization_members_user_id_organization_id";
 
         public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
@@ -17,6 +19,8 @@ namespace RestaurantManagement.Modules.Identity.Data
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
         public DbSet<PendingEmail> PendingEmails { get; set; }
+        public DbSet<OrganizationRole> OrganizationRoles { get; set; }
+        public DbSet<OrganizationRoleLevel> OrganizationRoleLevels { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,8 +31,6 @@ namespace RestaurantManagement.Modules.Identity.Data
             // model only on SQLite (unit tests), so the PostgreSQL model still matches the migrations until then.
             if (Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
             {
-                modelBuilder.Entity<OrganizationRole>();
-                modelBuilder.Entity<OrganizationRoleLevel>();
                 modelBuilder.Entity<MemberLocationLevel>();
                 modelBuilder.Entity<MemberLocationRole>();
             }
@@ -65,6 +67,28 @@ namespace RestaurantManagement.Modules.Identity.Data
                 entity.ToTable(t => t.HasCheckConstraint(
                     "ck_organization_members_organization_id_not_empty",
                     "organization_id <> '00000000-0000-0000-0000-000000000000'"));
+            });
+
+            // A role name is used once per organization; a role's default levels go with the role.
+            modelBuilder.Entity<OrganizationRole>(entity =>
+            {
+                entity.ToTable("organization_roles");
+                entity.Property(r => r.Name).IsRequired().HasMaxLength(OrganizationRole.NameMaxLength);
+                entity.HasIndex(r => new { r.OrganizationId, r.Name })
+                    .IsUnique()
+                    .HasDatabaseName(UniqueRoleNameIndexName);
+            });
+
+            modelBuilder.Entity<OrganizationRoleLevel>(entity =>
+            {
+                entity.ToTable("organization_role_levels");
+                entity.Property(l => l.Module).HasConversion<string>().HasMaxLength(AccessCellMaxLength);
+                entity.Property(l => l.Level).HasConversion<string>().HasMaxLength(AccessCellMaxLength);
+                entity.HasOne<OrganizationRole>()
+                    .WithMany()
+                    .HasForeignKey(l => l.RoleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(l => new { l.RoleId, l.Module }).IsUnique();
             });
 
             // Codes are owned by the user and useless without them, so they go with the user.

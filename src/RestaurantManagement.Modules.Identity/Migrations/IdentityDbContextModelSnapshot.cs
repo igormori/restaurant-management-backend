@@ -70,6 +70,102 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                         });
                 });
 
+            modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.OrganizationRole", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_user_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organization_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by_user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_organization_roles");
+
+                    b.HasIndex("OrganizationId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_organization_roles_organization_id_name");
+
+                    b.ToTable("organization_roles", (string)null);
+                });
+
+            modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.OrganizationRoleLevel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_user_id");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("level");
+
+                    b.Property<string>("Module")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("module");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organization_id");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("role_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by_user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_organization_role_levels");
+
+                    b.HasIndex("RoleId", "Module")
+                        .IsUnique()
+                        .HasDatabaseName("ix_organization_role_levels_role_id_module");
+
+                    b.ToTable("organization_role_levels", (string)null);
+                });
+
             modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.PasswordResetCode", b =>
                 {
                     b.Property<Guid>("Id")
@@ -365,6 +461,16 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_organization_members_users_user_id");
+                });
+
+            modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.OrganizationRoleLevel", b =>
+                {
+                    b.HasOne("RestaurantManagement.Modules.Identity.Entities.OrganizationRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_organization_role_levels_organization_roles_role_id");
                 });
 
             modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.PasswordResetCode", b =>

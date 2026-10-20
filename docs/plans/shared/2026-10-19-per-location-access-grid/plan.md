@@ -51,7 +51,7 @@ No public endpoint, no new library or integration, no backfill (pre-launch, root
 - [x] T1 — Access grid types, decision and contracts
 - [x] T2 — Lookup lists an organization's non-closed locations
 - [x] T3 — Memberships replace role rows; token carries no roles
-- [ ] T4 — Organization roles with default levels; Owner setup
+- [x] T4 — Organization roles with default levels; Owner setup
 - [ ] T5 — Member grids: storage, lookup, audited changes
 - [ ] T6 — Access guard and location choice on the grid
 - [ ] T7 — Grid policies; audit log needs Reports

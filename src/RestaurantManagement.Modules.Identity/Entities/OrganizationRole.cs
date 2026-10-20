@@ -8,6 +8,8 @@ namespace RestaurantManagement.Modules.Identity.Entities
     /// </summary>
     public class OrganizationRole : TenantEntity
     {
+        public const int NameMaxLength = 100;
+
         public string Name { get; set; } = null!;
     }
 }
