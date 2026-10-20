@@ -1,6 +1,6 @@
 # Plan: Access decisions use all of a user's roles
 
-**Spec:** docs/specs/shared/2026-10-19-access-decisions-use-all-user-roles.md   **Date:** 2026-10-19   **Status:** Draft
+**Spec:** docs/specs/shared/2026-10-19-access-decisions-use-all-user-roles.md   **Date:** 2026-10-19   **Status:** In progress
 **Risk:** High — changes a Shared contract (the role lookup) and every menu, location and organization authorization decision
 
 ## Summary
@@ -39,7 +39,7 @@ No public endpoint, no raw SQL (Structured Query Language), no migration, no tok
 - [ ] `backlog/tech-debt/2026-10-15-user-role-lookup-single-role.md` stays deleted, uncommitted (the user commits it)
 
 ## Checklist
-- [ ] T1 — Role assignment DTO and access decision helper
+- [x] T1 — Role assignment DTO and access decision helper
 - [ ] T2 — Role lookup returns every assignment in the organization
 - [ ] T3 — Menu and menu category checks use all assignments
 - [ ] T4 — Location and organization checks use all assignments

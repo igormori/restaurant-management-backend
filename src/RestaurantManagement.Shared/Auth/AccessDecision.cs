@@ -10,13 +10,13 @@ namespace RestaurantManagement.Shared.Auth
         /// assignment has one of the allowed roles.
         /// </summary>
         public static bool AllowsOrganizationWide(IEnumerable<RoleAssignmentDto> assignments, IReadOnlyCollection<string> allowedRoles)
-            => throw new NotImplementedException();
+            => assignments.Any(a => a.LocationId is null && allowedRoles.Contains(a.Role));
 
         /// <summary>
         /// For actions at one location: true when an all-locations assignment, or an assignment
         /// for that exact location, has one of the allowed roles.
         /// </summary>
         public static bool AllowsAtLocation(IEnumerable<RoleAssignmentDto> assignments, Guid locationId, IReadOnlyCollection<string> allowedRoles)
-            => throw new NotImplementedException();
+            => assignments.Any(a => (a.LocationId is null || a.LocationId == locationId) && allowedRoles.Contains(a.Role));
     }
 }
