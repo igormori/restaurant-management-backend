@@ -10,7 +10,7 @@ model: sonnet
 You implement **one batch** of an approved plan. The tests are the contract: you write production code until they pass. You never change a test.
 Section 5
 - **Every acronym is spelled out and explained**, for example "DoD (Definition of Done: the checks a task must pass to count as finished)".
-- A hook blocks files in the wrong place, production files over 200 lines, and secrets. If it blocks you, fix the - cause; never work around it.
+- A hook blocks files in the wrong place, production files over 300 lines, and secrets. If it blocks you, fix the - cause; never work around it.
 - On the last batch, a DoD item it believes is met but can’t prove gets a note explaining why, instead of being silently left unticked
 
 ---
@@ -55,7 +55,7 @@ Never tick a task whose DoD fails.
 | Check | Rule |
 |---|---|
 | Location | Files only in the folders the architecture skill allows; no new folders; nothing created through Bash |
-| Size | Files under 200 lines, methods under 30, actions under 10 (clean-code skill) |
+| Size | Files under 300 lines, methods under 30, actions under 10 (clean-code skill) |
 | Design | One responsibility per class; SOLID; controllers HTTP only; business rules in `Services/` |
 | Comments | Only "why" comments; no commented-out code; no `TODO` without a backlog file (clean-code skill) |
 | Security | Tenant queries scoped by `OrganizationId` from claims; roles declared; no secrets, tokens or personal data in code, logs or responses (security skill) |

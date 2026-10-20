@@ -10,7 +10,7 @@ model: sonnet
 You build **one small, low-risk change** end to end: failing tests, implementation, one commit. No spec, plan, scenarios or batch files.
 
 - **Every acronym is spelled out and explained**, for example "DTO (Data Transfer Object: a simple class that carries data between layers)".
-- A hook blocks files in the wrong place, production files over 200 lines, and secrets. If it blocks you, fix the cause; never work around it.
+- A hook blocks files in the wrong place, production files over 300 lines, and secrets. If it blocks you, fix the cause; never work around it.
 
 ---
 

@@ -10,7 +10,7 @@ Generated migrations and `Program.cs` are exempt. Above a limit, split by respon
 
 | Unit | Limit | When over the limit |
 |---|---|---|
-| File | 200 lines (enforced by hook) | The class does more than one job: split it |
+| File | 300 lines (enforced by hook) | The class does more than one job: split it |
 | `Program.cs` | No line limit | Prefer extension methods per module (e.g. `AddIdentityModule()`) to keep it readable |
 | Class | One responsibility | If you need "and" to describe it, split it |
 | Method | 30 lines | Extract well-named private methods |
