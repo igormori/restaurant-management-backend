@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Modules.Identity.Data;
+using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Services.Identity;
 
 namespace RestaurantManagement.Modules.Identity.Services
@@ -25,6 +26,9 @@ namespace RestaurantManagement.Modules.Identity.Services
 
             return userRole?.Role;
         }
+
+        public Task<List<RoleAssignmentDto>> GetRoleAssignmentsAsync(Guid userId, Guid organizationId)
+            => throw new NotImplementedException();
 
         public async Task<List<Guid>> GetOrganizationIdsForUserAsync(Guid userId)
         {

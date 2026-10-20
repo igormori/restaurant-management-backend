@@ -230,6 +230,9 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | T24 | Database built only from the migrations | No users and no role assignments: no default accounts | ✅ | `FreshDatabaseHasNoUsersTests.Migrate_CleanDatabase_HasNoUsersOrRoles` |
 | T25 | Refresh token fingerprints and access token signatures | Fingerprint is the SHA-256 of the token; access tokens are signed with HS256 | ✅ | `ApprovedHashAlgorithmsTests.IssueAsync_NewSignIn_StoredFingerprintIsSha256OfTheIssuedToken`, `ApprovedHashAlgorithmsTests.LoginAsync_ValidCredentials_AccessTokenIsSignedWithHs256` |
 | T26 | Access token signed with an algorithm other than HS256 (HS384, HS512) using the right key | 401: only HS256 is allowed | ✅ | `AccessTokenValidationEndpointTests.LogoutAll_TokenSignedWithAlgorithmOtherThanHs256_ReturnsUnauthorized` |
+| T27 | Role lookup for a user with several roles in an organization | Every role is returned with its location (none for all locations), whichever order the rows were stored in | ❌ | `UserRoleLookupRoleAssignmentsTests.GetRoleAssignmentsAsync_ManagerForAllLocationsAndWaiterAtOneLocation_ReturnsBothInEveryStorageOrder` |
+| T28 | Role lookup for a user with roles in two organizations | Only the asked organization's roles are returned, never another organization's | ❌ | `UserRoleLookupRoleAssignmentsTests.GetRoleAssignmentsAsync_RolesInTwoOrganizations_ReturnsOnlyTheAskedOrganizationsRoles` |
+| T29 | Role lookup for a user with no role in the organization | An empty list | ❌ | `UserRoleLookupRoleAssignmentsTests.GetRoleAssignmentsAsync_UserWithoutRoleInTheOrganization_ReturnsEmptyList` |
 
 ## 11. Schema, migration and wiring tests
 These protect the database and the app setup rather than a rule users meet. They are listed so

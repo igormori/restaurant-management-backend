@@ -1,3 +1,4 @@
+using RestaurantManagement.Shared.Auth;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -68,7 +69,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             ILogger<OrganizationService>? logger = null)
         {
             var userRoleLookup = Substitute.For<IUserRoleLookup>();
-            userRoleLookup.GetRoleAsync(AnaId, CantinaId).Returns(role);
+            userRoleLookup.GetRoleAssignmentsAsync(AnaId, CantinaId).Returns(role is null ? new List<RoleAssignmentDto>() : new List<RoleAssignmentDto> { new() { Role = role } });
             return new OrganizationService(database.CreateContext(tenant), userRoleLookup, Substitute.For<IUserRoleAssigner>(),
                 new TenantScope(), tenant, TestLocalizer.Create(), logger ?? Substitute.For<ILogger<OrganizationService>>(), auditLog);
         }

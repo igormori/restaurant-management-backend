@@ -1,3 +1,4 @@
+using RestaurantManagement.Shared.Auth;
 using NSubstitute;
 using RestaurantManagement.Modules.Menu.Models;
 using RestaurantManagement.Modules.Menu.Services;
@@ -51,7 +52,7 @@ public class MenuServiceRoleAccessTests
     private static IUserRoleLookup RoleIn(Guid organizationId, string role)
     {
         var userRoleLookup = Substitute.For<IUserRoleLookup>();
-        userRoleLookup.GetRoleAsync(JoaoId, organizationId).Returns(role);
+        userRoleLookup.GetRoleAssignmentsAsync(JoaoId, organizationId).Returns(role is null ? new List<RoleAssignmentDto>() : new List<RoleAssignmentDto> { new() { Role = role } });
         return userRoleLookup;
     }
 

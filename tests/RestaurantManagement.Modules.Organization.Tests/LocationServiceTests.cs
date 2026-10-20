@@ -1,3 +1,4 @@
+using RestaurantManagement.Shared.Auth;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
@@ -92,7 +93,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
         private static IUserRoleLookup CreateUserRoleLookup(Guid userId, Guid organizationId, string? role)
         {
             var userRoleLookup = Substitute.For<IUserRoleLookup>();
-            userRoleLookup.GetRoleAsync(userId, organizationId).Returns(role);
+            userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId).Returns(role is null ? new List<RoleAssignmentDto>() : new List<RoleAssignmentDto> { new() { Role = role } });
             return userRoleLookup;
         }
 

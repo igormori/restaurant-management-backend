@@ -46,7 +46,7 @@ public class MenuLocationLinkTests
     private static MenuService CreateOwnerSut(Data.MenuDbContext context, ITenantContext tenant)
     {
         var userRoleLookup = Substitute.For<IUserRoleLookup>();
-        userRoleLookup.GetRoleAsync(AnaId, CantinaId).Returns(Roles.Owner);
+        userRoleLookup.GetRoleAssignmentsAsync(AnaId, CantinaId).Returns(new List<RoleAssignmentDto> { new() { Role = Roles.Owner } });
         var organizationLookup = Substitute.For<IOrganizationLookup>();
         organizationLookup.GetLocationAsync(CentroLocationId).Returns(new LocationSummaryDto
         {
