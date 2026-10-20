@@ -18,7 +18,5 @@ internal static class TestHostSettings
         // The pending email worker would otherwise send queued emails on its own timer, making endpoint
         // tests unpredictable; tests run the processor themselves.
         Environment.SetEnvironmentVariable("PendingEmails__Enabled", "false");
-        // TEMPORARY (T2): the host still reads the old key until the worker is renamed; the implementer removes this line.
-        Environment.SetEnvironmentVariable("PasswordResetEmails__Enabled", "false");
     }
 }

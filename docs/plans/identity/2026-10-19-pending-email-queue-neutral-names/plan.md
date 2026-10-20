@@ -40,4 +40,4 @@ Kept (truly about password reset, spec Rule 2): `PasswordResetEmailProcessor`, `
 
 ## Checklist
 - [x] T1 — Rename the queue's stored data and shared limits
-- [ ] T2 — Rename the sending job and its settings
+- [x] T2 — Rename the sending job and its settings
