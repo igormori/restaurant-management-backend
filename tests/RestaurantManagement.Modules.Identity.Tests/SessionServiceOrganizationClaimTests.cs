@@ -173,7 +173,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         [Fact]
         [Trait("Rule", "L14")]
-        public async Task LoginAsync_UserWithTwoRolesInOneOrganization_TokenCarriesBothRoles()
+        public async Task LoginAsync_AllLocationsOwnerAndOneLocationAdmin_TokenCarriesOnlyTheAllLocationsRole()
         {
             // Arrange
             using var database = new IdentityTestDatabase();
@@ -185,8 +185,40 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var response = await LoginAsync(database);
 
             // Assert
-            var roles = RoleClaimsOf(response.Auth.Token).OrderBy(r => r).ToList();
-            roles.ShouldBe(new[] { AdminRole, OwnerRole }, ignoreOrder: false, customMessage: "a user of a single organization keeps all their roles in it");
+            RoleClaimsOf(response.Auth.Token).ShouldBe(new[] { OwnerRole }, ignoreOrder: false, customMessage: "a role held for one location only never reaches the token, so it cannot pass organization-wide permission checks");
+        }
+
+        [Fact]
+        [Trait("Rule", "L14")]
+        public async Task LoginAsync_OnlyAdminForOneLocation_TokenCarriesNoRoleClaims()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            await SeedUserAsync(database,
+                new UserRole { Role = AdminRole, OrganizationId = CantinaOrganizationId, LocationId = CentroLocationId });
+
+            // Act
+            var response = await LoginAsync(database);
+
+            // Assert
+            RoleClaimsOf(response.Auth.Token).ShouldBeEmpty("an Admin for one location only must not read organization-wide data such as the audit log");
+            OrganizationClaimOf(response.Auth.Token).ShouldBe(CantinaOrganizationId.ToString(), "the user still belongs to the organization");
+        }
+
+        [Fact]
+        [Trait("Rule", "L14")]
+        public async Task LoginAsync_AdminForAllLocations_TokenCarriesAdminRole()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            await SeedUserAsync(database,
+                new UserRole { Role = AdminRole, OrganizationId = CantinaOrganizationId });
+
+            // Act
+            var response = await LoginAsync(database);
+
+            // Assert
+            RoleClaimsOf(response.Auth.Token).ShouldBe(new[] { AdminRole }, ignoreOrder: false, customMessage: "an Admin for all locations keeps organization-wide access");
         }
 
         [Fact]

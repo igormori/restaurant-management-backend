@@ -41,8 +41,9 @@ namespace RestaurantManagement.Modules.Identity.Services
 
             if (organizationId.HasValue)
             {
+                // Role claims decide organization-wide actions, so a role held for one location never enters the token.
                 var roles = user.Roles
-                    .Where(r => r.OrganizationId == organizationId.Value)
+                    .Where(r => r.OrganizationId == organizationId.Value && r.LocationId is null)
                     .Select(r => r.Role)
                     .OrderBy(r => r);
 

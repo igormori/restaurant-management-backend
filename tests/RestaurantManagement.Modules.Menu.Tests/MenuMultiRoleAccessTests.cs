@@ -164,23 +164,115 @@ public class MenuMultiRoleAccessTests
         checkContext.Menus.Count(m => m.Id == DinnerMenuId).ShouldBe(1, "a refused delete keeps the menu");
     }
 
+    private static MenuService CreateMenuServiceWithLocations(Data.MenuDbContext context, IUserRoleLookup roles)
+    {
+        var organizations = CantinaExists();
+        foreach (var locationId in new[] { BatelId, CentroId })
+            organizations.GetLocationAsync(locationId).Returns(new LocationSummaryDto { Id = locationId, OrganizationId = CantinaId });
+        return new MenuService(context, organizations, roles, TestTenant.Of(CantinaId), TestLocalizer.Create());
+    }
+
+    private static async Task SeedDinnerMenuAtBatelAsync(MenuTestDatabase database)
+    {
+        await SeedDinnerMenuAsync(database);
+        using var context = database.CreateContext();
+        context.LocationMenus.Add(new Entities.LocationMenu
+        {
+            MenuId = DinnerMenuId,
+            LocationId = BatelId,
+            OrganizationId = CantinaId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        });
+        await context.SaveChangesAsync();
+    }
+
     // Scenario 16
     [Fact]
-    [Trait("Rule", "M3")]
-    public async Task GetMenusAsync_WaiterAssignedOnlyToOneLocation_ReturnsMenus()
+    [Trait("Rule", "M31")]
+    public async Task GetMenusAsync_WaiterAssignedOnlyToOneLocation_ThrowsForbidden()
     {
         // Arrange
         using var database = new MenuTestDatabase();
         await SeedDinnerMenuAsync(database);
-        var tenant = TestTenant.Of(CantinaId);
-        using var context = database.CreateContext(tenant);
+        using var context = database.CreateContext(TestTenant.Of(CantinaId));
         var sut = CreateMenuService(context, Holding(At(Roles.Waiter, BatelId)));
+
+        // Act
+        var act = () => sut.GetMenusAsync(JoaoId);
+
+        // Assert
+        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "the full list of menus needs a role for all locations");
+        exception.StatusCode.ShouldBe(403, "a Waiter for one location may not list every menu of the organization");
+    }
+
+    [Fact]
+    [Trait("Rule", "M3")]
+    public async Task GetMenusAsync_WaiterForAllLocations_ReturnsMenus()
+    {
+        // Arrange
+        using var database = new MenuTestDatabase();
+        await SeedDinnerMenuAsync(database);
+        using var context = database.CreateContext(TestTenant.Of(CantinaId));
+        var sut = CreateMenuService(context, Holding(AllLocations(Roles.Waiter)));
 
         // Act
         var menus = await sut.GetMenusAsync(JoaoId);
 
         // Assert
-        menus.Select(m => m.Id).ShouldBe(new[] { DinnerMenuId }, "any role of the organization, even for one location, may read its menus");
+        menus.Select(m => m.Id).ShouldBe(new[] { DinnerMenuId }, "a role for all locations may list every menu");
+    }
+
+    [Fact]
+    [Trait("Rule", "M3")]
+    public async Task GetMenusByLocationAsync_WaiterAtBatel_ReturnsBatelMenus()
+    {
+        // Arrange
+        using var database = new MenuTestDatabase();
+        await SeedDinnerMenuAtBatelAsync(database);
+        using var context = database.CreateContext(TestTenant.Of(CantinaId));
+        var sut = CreateMenuServiceWithLocations(context, Holding(At(Roles.Waiter, BatelId)));
+
+        // Act
+        var menus = await sut.GetMenusByLocationAsync(JoaoId, BatelId);
+
+        // Assert
+        menus.Select(m => m.Id).ShouldBe(new[] { DinnerMenuId }, "a role for a location reads that location's menus");
+    }
+
+    [Fact]
+    [Trait("Rule", "M3")]
+    public async Task GetMenusByLocationAsync_WaiterForAllLocations_ReturnsMenusOfAnyLocation()
+    {
+        // Arrange
+        using var database = new MenuTestDatabase();
+        await SeedDinnerMenuAtBatelAsync(database);
+        using var context = database.CreateContext(TestTenant.Of(CantinaId));
+        var sut = CreateMenuServiceWithLocations(context, Holding(AllLocations(Roles.Waiter)));
+
+        // Act
+        var menus = await sut.GetMenusByLocationAsync(JoaoId, BatelId);
+
+        // Assert
+        menus.Select(m => m.Id).ShouldBe(new[] { DinnerMenuId }, "a role for all locations reads every location's menus");
+    }
+
+    [Fact]
+    [Trait("Rule", "M31")]
+    public async Task GetMenusByLocationAsync_WaiterAtBatelAsksForCentro_ThrowsForbidden()
+    {
+        // Arrange
+        using var database = new MenuTestDatabase();
+        await SeedDinnerMenuAtBatelAsync(database);
+        using var context = database.CreateContext(TestTenant.Of(CantinaId));
+        var sut = CreateMenuServiceWithLocations(context, Holding(At(Roles.Waiter, BatelId)));
+
+        // Act
+        var act = () => sut.GetMenusByLocationAsync(JoaoId, CentroId);
+
+        // Assert
+        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "a role for one location does not open another location's menus");
+        exception.StatusCode.ShouldBe(403, "a Waiter at Batel may not read Centro's menus");
     }
 
     // Scenario 17
