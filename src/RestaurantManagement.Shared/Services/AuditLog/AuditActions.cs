@@ -15,7 +15,7 @@ namespace RestaurantManagement.Shared.Services.AuditLog
 
         public static readonly IReadOnlySet<string> All = new HashSet<string>
         {
-            MemberRoleChanged, SettingsChanged, LocationStatusChanged, PasswordReset, PasswordChanged
+            MemberRoleChanged, MemberAccessChanged, SettingsChanged, LocationStatusChanged, PasswordReset, PasswordChanged
         };
     }
 }

@@ -1,6 +1,6 @@
 # Plan: Per-location access grid
 
-**Spec:** docs/specs/shared/2026-10-19-per-location-access-grid.md   **Date:** 2026-10-20   **Status:** Draft
+**Spec:** docs/specs/shared/2026-10-19-per-location-access-grid.md   **Date:** 2026-10-20   **Status:** In progress
 **Risk:** High — replaces the role table and the token's role claims, adds and removes Shared contracts, and changes authorization in every module (Identity migrations; no data, pre-launch)
 
 ## Summary
@@ -48,7 +48,7 @@ No public endpoint, no new library or integration, no backfill (pre-launch, root
 - [ ] Spec Backlog Impact kept: the deletion of `backlog/improvements/2026-10-15-apply-permission-policies-to-endpoints.md` stays uncommitted for the user
 
 ## Checklist
-- [ ] T1 — Access grid types, decision and contracts
+- [x] T1 — Access grid types, decision and contracts
 - [ ] T2 — Lookup lists an organization's non-closed locations
 - [ ] T3 — Memberships replace role rows; token carries no roles
 - [ ] T4 — Organization roles with default levels; Owner setup
