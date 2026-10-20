@@ -28,7 +28,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var database = new IdentityTestDatabase();
             using var context = database.CreateContext();
             context.Users.Add(new User { Email = MariaEmail, PasswordHash = "hash", FirstName = "Maria", LastName = "Souza", IsVerified = true });
-            context.Set<PasswordResetRequest>().Add(new PasswordResetRequest
+            context.Set<PendingEmail>().Add(new PendingEmail
             {
                 Id = RequestId,
                 Email = MariaEmail,
@@ -53,10 +53,10 @@ namespace RestaurantManagement.Modules.Identity.Tests
             await sut.ProcessDueAsync(now, CancellationToken.None);
         }
 
-        private static async Task<List<PasswordResetRequest>> ReadQueueAsync(IdentityTestDatabase database)
+        private static async Task<List<PendingEmail>> ReadQueueAsync(IdentityTestDatabase database)
         {
             using var context = database.CreateContext();
-            return await context.Set<PasswordResetRequest>().ToListAsync();
+            return await context.Set<PendingEmail>().ToListAsync();
         }
 
         // Scenario 29

@@ -20,7 +20,7 @@ from login's FailedAttempts/LockedUntil.
 Email uniqueness is enforced in the database via a computed, lowercased shadow column
 and unique index (IdentityDbContext.UniqueEmailIndexName); RegistrationService catches
 the Postgres unique-violation as the real guard, the AnyAsync check is just a fast path.
-Resend only adds a verification row to password_reset_requests; VerificationEmailProcessor invalidates
+Resend only adds a verification row to pending_emails; VerificationEmailProcessor invalidates
 all previously unused codes, applies the 60 s wait (newest code's CreatedAt, used or not) and sends.
 IsUsed means "no longer usable" by design, covering both consumed and invalidated by a
 newer resend.
@@ -33,7 +33,7 @@ string parameters with no compiler protection against swapping them.
 UniqueEmailIndexTests run against a real Postgres via Testcontainers (IdentityPostgresFixture)
 because they prove constraint races and migration-on-existing-data; other tests stay on
 the SQLite in-memory database.
-Forgot password only queues the email in password_reset_requests; PasswordResetEmailProcessor decides
+Forgot password only queues the email in pending_emails; PasswordResetEmailProcessor decides
 eligibility, creates the code, sends and retries (1, 2, 4, 8 min; failed after the 5th).
 Delivery is at most once after a crash: a request still marked code-issued when claimed again is
 dropped without sending (a second code would break the first). Failed rows are purged after 7 days.

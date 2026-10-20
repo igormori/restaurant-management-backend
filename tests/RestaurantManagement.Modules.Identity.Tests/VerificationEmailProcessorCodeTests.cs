@@ -33,9 +33,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 CreatedAt = DateTime.UtcNow.AddMinutes(-5)
             });
-            context.Set<PasswordResetRequest>().Add(new PasswordResetRequest
+            context.Set<PendingEmail>().Add(new PendingEmail
             {
-                Purpose = PasswordResetRequestPurpose.Verification,
+                Purpose = PendingEmailPurpose.Verification,
                 Email = MariaEmail,
                 CreatedAt = DateTime.UtcNow.AddSeconds(-5),
                 NextAttemptAt = DateTime.UtcNow.AddSeconds(-1)

@@ -74,9 +74,9 @@ namespace RestaurantManagement.Modules.Identity.Services
         public async Task<MessageResponse> ResendVerificationCodeAsync(ResendVerificationRequest request)
         {
             var now = DateTime.UtcNow;
-            _db.PasswordResetRequests.Add(new PasswordResetRequest
+            _db.PendingEmails.Add(new PendingEmail
             {
-                Purpose = PasswordResetRequestPurpose.Verification,
+                Purpose = PendingEmailPurpose.Verification,
                 Email = request.Email,
                 CreatedAt = now,
                 NextAttemptAt = now

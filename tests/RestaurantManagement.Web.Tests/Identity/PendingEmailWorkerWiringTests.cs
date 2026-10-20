@@ -10,7 +10,7 @@ namespace RestaurantManagement.Web.Tests;
 /// The reset email worker runs by default and can be switched off. Every test host switches it off
 /// (TestHostSettings), so tests run the processor themselves and stay predictable.
 /// </summary>
-public class PasswordResetEmailWorkerWiringTests
+public class PendingEmailWorkerWiringTests
 {
     [Fact]
     [Trait("Rule", "D19")]
@@ -18,13 +18,13 @@ public class PasswordResetEmailWorkerWiringTests
     {
         // Arrange
         // UseSetting, unlike ConfigureAppConfiguration, is visible while Program.cs registers services.
-        using var factory = new AuthApiFactory().WithWebHostBuilder(builder => builder.UseSetting("PasswordResetEmails:Enabled", "true"));
+        using var factory = new AuthApiFactory().WithWebHostBuilder(builder => builder.UseSetting("PendingEmails:Enabled", "true"));
 
         // Act
         var hostedServices = factory.Services.GetServices<IHostedService>();
 
         // Assert
-        hostedServices.ShouldContain(service => service is PasswordResetEmailWorker, "queued reset emails are only sent while the worker runs");
+        hostedServices.ShouldContain(service => service is PendingEmailWorker, "queued reset emails are only sent while the worker runs");
     }
 
     [Fact]
@@ -38,6 +38,6 @@ public class PasswordResetEmailWorkerWiringTests
         var hostedServices = factory.Services.GetServices<IHostedService>();
 
         // Assert
-        hostedServices.ShouldNotContain(service => service is PasswordResetEmailWorker, "tests must not send queued emails on a timer");
+        hostedServices.ShouldNotContain(service => service is PendingEmailWorker, "tests must not send queued emails on a timer");
     }
 }

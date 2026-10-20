@@ -15,8 +15,8 @@ internal static class TestHostSettings
         // including a developer's local database.
         Environment.SetEnvironmentVariable("RefreshTokenCleanup__Enabled", "false");
 
-        // The reset email worker would otherwise send queued emails on its own timer, making endpoint
+        // The pending email worker would otherwise send queued emails on its own timer, making endpoint
         // tests unpredictable; tests run the processor themselves.
-        Environment.SetEnvironmentVariable("PasswordResetEmails__Enabled", "false");
+        Environment.SetEnvironmentVariable("PendingEmails__Enabled", "false");
     }
 }

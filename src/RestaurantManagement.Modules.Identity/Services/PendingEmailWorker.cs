@@ -5,20 +5,20 @@ using Microsoft.Extensions.Logging;
 namespace RestaurantManagement.Modules.Identity.Services
 {
     // Safe on several instances at once: the processor claims each row with a conditional update.
-    public class PasswordResetEmailWorker : BackgroundService
+    public class PendingEmailWorker : BackgroundService
     {
         public static readonly TimeSpan DefaultInterval = TimeSpan.FromSeconds(5);
 
         private readonly TimeSpan _interval;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ILogger<PasswordResetEmailWorker> _logger;
+        private readonly ILogger<PendingEmailWorker> _logger;
 
-        public PasswordResetEmailWorker(IServiceScopeFactory scopeFactory, ILogger<PasswordResetEmailWorker> logger)
+        public PendingEmailWorker(IServiceScopeFactory scopeFactory, ILogger<PendingEmailWorker> logger)
             : this(scopeFactory, logger, DefaultInterval)
         {
         }
 
-        public PasswordResetEmailWorker(IServiceScopeFactory scopeFactory, ILogger<PasswordResetEmailWorker> logger, TimeSpan interval)
+        public PendingEmailWorker(IServiceScopeFactory scopeFactory, ILogger<PendingEmailWorker> logger, TimeSpan interval)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;

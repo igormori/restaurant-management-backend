@@ -10,7 +10,7 @@ namespace RestaurantManagement.Web.Tests;
 /// A zero or negative interval would crash the worker's timer and, by default, stop the whole app,
 /// so the app refuses to start and names the setting instead.
 /// </summary>
-public class PasswordResetEmailIntervalTests
+public class PendingEmailIntervalTests
 {
     [Theory]
     [InlineData("0")]
@@ -21,8 +21,8 @@ public class PasswordResetEmailIntervalTests
         // Arrange
         using var factory = new AuthApiFactory().WithWebHostBuilder(builder =>
         {
-            builder.UseSetting("PasswordResetEmails:Enabled", "true");
-            builder.UseSetting("PasswordResetEmails:IntervalSeconds", seconds);
+            builder.UseSetting("PendingEmails:Enabled", "true");
+            builder.UseSetting("PendingEmails:IntervalSeconds", seconds);
         });
 
         // Act
@@ -30,7 +30,7 @@ public class PasswordResetEmailIntervalTests
 
         // Assert
         var error = start.ShouldThrow<Exception>("a bad interval must stop the app at startup, not later inside the worker");
-        Messages(error).ShouldContain(m => m.Contains("PasswordResetEmails:IntervalSeconds"), "the error names the setting to fix");
+        Messages(error).ShouldContain(m => m.Contains("PendingEmails:IntervalSeconds"), "the error names the setting to fix");
     }
 
     [Fact]
@@ -40,15 +40,15 @@ public class PasswordResetEmailIntervalTests
         // Arrange
         using var factory = new AuthApiFactory().WithWebHostBuilder(builder =>
         {
-            builder.UseSetting("PasswordResetEmails:Enabled", "true");
-            builder.UseSetting("PasswordResetEmails:IntervalSeconds", "1");
+            builder.UseSetting("PendingEmails:Enabled", "true");
+            builder.UseSetting("PendingEmails:IntervalSeconds", "1");
         });
 
         // Act
         var hostedServices = factory.Services.GetServices<IHostedService>();
 
         // Assert
-        hostedServices.ShouldContain(service => service is PasswordResetEmailWorker, "a valid interval keeps the worker running");
+        hostedServices.ShouldContain(service => service is PendingEmailWorker, "a valid interval keeps the worker running");
     }
 
     private static IEnumerable<string> Messages(Exception? error)

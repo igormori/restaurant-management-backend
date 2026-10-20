@@ -69,7 +69,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             response.Message.ShouldNotBeNullOrEmpty("every email gets the same acknowledgement");
             using var context = database.CreateContext();
-            var queued = (await context.Set<PasswordResetRequest>().ToListAsync()).ShouldHaveSingleItem("every email, known or not, adds exactly one queued request");
+            var queued = (await context.Set<PendingEmail>().ToListAsync()).ShouldHaveSingleItem("every email, known or not, adds exactly one queued request");
             queued.Email.ShouldBe(email, "the request keeps the email as typed; the account is checked later, outside the request");
             queued.Attempts.ShouldBe(0, "a new request has not been tried yet");
             queued.FailedAt.ShouldBeNull("a new request has not failed");
@@ -88,8 +88,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             using var context = database.CreateContext();
-            var queued = await context.Set<PasswordResetRequest>().SingleAsync();
-            queued.Purpose.ShouldBe(PasswordResetRequestPurpose.PasswordReset, "a forgot-password request must never be taken for a verification request");
+            var queued = await context.Set<PendingEmail>().SingleAsync();
+            queued.Purpose.ShouldBe(PendingEmailPurpose.PasswordReset, "a forgot-password request must never be taken for a verification request");
         }
 
         [Fact]

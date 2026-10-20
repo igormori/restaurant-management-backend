@@ -17,14 +17,14 @@ namespace RestaurantManagement.Web.Tests;
 /// The real worker loop over HTTP on PostgreSQL: Maria asks for a reset and, with no test calling
 /// the processor, the worker sends her the email and removes the queued request on its own timer.
 /// </summary>
-public class PasswordResetEmailWorkerEndpointTests : IClassFixture<PostgresDatabaseFixture>
+public class PendingEmailWorkerEndpointTests : IClassFixture<PostgresDatabaseFixture>
 {
     private const string MariaEmail = "maria@cantinadanonna.com.br";
     private static readonly TimeSpan WaitLimit = TimeSpan.FromSeconds(10);
 
     private readonly PostgresDatabaseFixture _postgres;
 
-    public PasswordResetEmailWorkerEndpointTests(PostgresDatabaseFixture postgres) => _postgres = postgres;
+    public PendingEmailWorkerEndpointTests(PostgresDatabaseFixture postgres) => _postgres = postgres;
 
     // Scenario 28
     [Fact]
@@ -37,8 +37,8 @@ public class PasswordResetEmailWorkerEndpointTests : IClassFixture<PostgresDatab
         // UseSetting, unlike in-memory configuration, is visible while Program.cs registers the worker.
         var factory = tenantFactory.WithWebHostBuilder(builder =>
         {
-            builder.UseSetting("PasswordResetEmails:Enabled", "true");
-            builder.UseSetting("PasswordResetEmails:IntervalSeconds", "1");
+            builder.UseSetting("PendingEmails:Enabled", "true");
+            builder.UseSetting("PendingEmails:IntervalSeconds", "1");
             builder.ConfigureTestServices(services =>
             {
                 services.RemoveAll<IEmailService>();
@@ -65,7 +65,7 @@ public class PasswordResetEmailWorkerEndpointTests : IClassFixture<PostgresDatab
         while (DateTime.UtcNow < deadline)
         {
             using var scope = factory.Services.CreateScope();
-            queued = await scope.ServiceProvider.GetRequiredService<IdentityDbContext>().Set<PasswordResetRequest>().CountAsync();
+            queued = await scope.ServiceProvider.GetRequiredService<IdentityDbContext>().Set<PendingEmail>().CountAsync();
             if (queued == 0)
                 break;
             await Task.Delay(200);

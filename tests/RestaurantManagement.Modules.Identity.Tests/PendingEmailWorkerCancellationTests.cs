@@ -12,15 +12,15 @@ namespace RestaurantManagement.Modules.Identity.Tests
     /// Only a real shutdown may end the worker. A cancellation that is not a shutdown (a provider or
     /// driver timeout) is a failed pass: logged, and the next tick tries again.
     /// </summary>
-    public class PasswordResetEmailWorkerCancellationTests
+    public class PendingEmailWorkerCancellationTests
     {
-        private static (PasswordResetEmailWorker Worker, CapturingLogger<PasswordResetEmailWorker> Logger) CreateWorker(Exception processorError)
+        private static (PendingEmailWorker Worker, CapturingLogger<PendingEmailWorker> Logger) CreateWorker(Exception processorError)
         {
             var processor = Substitute.For<IPasswordResetEmailProcessor>();
             processor.ProcessDueAsync(Arg.Any<DateTime>(), Arg.Any<CancellationToken>()).ThrowsAsync(processorError);
             var services = new ServiceCollection().AddSingleton(processor).BuildServiceProvider();
-            var logger = new CapturingLogger<PasswordResetEmailWorker>();
-            return (new PasswordResetEmailWorker(services.GetRequiredService<IServiceScopeFactory>(), logger), logger);
+            var logger = new CapturingLogger<PendingEmailWorker>();
+            return (new PendingEmailWorker(services.GetRequiredService<IServiceScopeFactory>(), logger), logger);
         }
 
         // Scenario 36

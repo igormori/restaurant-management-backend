@@ -34,27 +34,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 .AddInterceptors(interceptors)
                 .Options;
 
-            return new QueueAwareIdentityDbContext(options);
+            return new IdentityDbContext(options);
         }
 
         public void Dispose()
         {
             _connection.Dispose();
-        }
-    }
-
-    /// <summary>
-    /// The real context plus the queue's purpose column, so SQLite tests can store it before the module
-    /// maps it (until then the property is [NotMapped]; mapping it again afterwards is harmless).
-    /// </summary>
-    internal sealed class QueueAwareIdentityDbContext : IdentityDbContext
-    {
-        public QueueAwareIdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options) { }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Entities.PasswordResetRequest>().Property(r => r.Purpose);
         }
     }
 

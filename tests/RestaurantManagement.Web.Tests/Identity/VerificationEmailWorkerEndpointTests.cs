@@ -39,8 +39,8 @@ public class VerificationEmailWorkerEndpointTests : IClassFixture<PostgresDataba
         await using var tenantFactory = await TenantApiFactory.CreateAsync(_postgres);
         var factory = tenantFactory.WithWebHostBuilder(builder =>
         {
-            builder.UseSetting("PasswordResetEmails:Enabled", "true");
-            builder.UseSetting("PasswordResetEmails:IntervalSeconds", "1");
+            builder.UseSetting("PendingEmails:Enabled", "true");
+            builder.UseSetting("PendingEmails:IntervalSeconds", "1");
             builder.ConfigureTestServices(services =>
             {
                 services.RemoveAll<IVerificationService>();
@@ -53,7 +53,7 @@ public class VerificationEmailWorkerEndpointTests : IClassFixture<PostgresDataba
         {
             var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
             db.Users.Add(new User { Email = MariaEmail, PasswordHash = "hash", FirstName = "Maria", LastName = "Souza", IsVerified = false });
-            db.Set<PasswordResetRequest>().Add(new PasswordResetRequest { Purpose = PasswordResetRequestPurpose.Verification, Email = MariaEmail });
+            db.Set<PendingEmail>().Add(new PendingEmail { Purpose = PendingEmailPurpose.Verification, Email = MariaEmail });
             await db.SaveChangesAsync();
         }
 

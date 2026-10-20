@@ -48,9 +48,9 @@ namespace RestaurantManagement.Modules.Identity.Services
         public async Task<MessageResponse> RequestResetCodeAsync(ForgotPasswordRequest request)
         {
             var now = DateTime.UtcNow;
-            _db.PasswordResetRequests.Add(new PasswordResetRequest
+            _db.PendingEmails.Add(new PendingEmail
             {
-                Purpose = PasswordResetRequestPurpose.PasswordReset,
+                Purpose = PendingEmailPurpose.PasswordReset,
                 Email = request.Email,
                 CreatedAt = now,
                 NextAttemptAt = now

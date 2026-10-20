@@ -22,9 +22,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var database = new IdentityTestDatabase();
             using var context = database.CreateContext();
             context.Users.Add(new User { Email = MariaEmail, PasswordHash = "hash", FirstName = "Maria", LastName = "Souza", IsVerified = true });
-            context.Set<PasswordResetRequest>().Add(new PasswordResetRequest
+            context.Set<PendingEmail>().Add(new PendingEmail
             {
-                Purpose = PasswordResetRequestPurpose.Verification,
+                Purpose = PendingEmailPurpose.Verification,
                 Email = email,
                 CreatedAt = now.AddSeconds(-5),
                 NextAttemptAt = now.AddSeconds(-1),
@@ -62,7 +62,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             using var context = database.CreateContext();
-            var kept = (await context.Set<PasswordResetRequest>().ToListAsync()).ShouldHaveSingleItem("the reset pass must not remove a verification request");
+            var kept = (await context.Set<PendingEmail>().ToListAsync()).ShouldHaveSingleItem("the reset pass must not remove a verification request");
             kept.ClaimedUntil.ShouldBeNull("the reset pass must not claim a verification request");
             kept.Attempts.ShouldBe(0, "the reset pass must not try a verification request");
             await emailService.DidNotReceiveWithAnyArgs().SendPasswordResetEmailAsync(default!, default!, default!, default);
@@ -82,7 +82,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             using var context = database.CreateContext();
-            (await context.Set<PasswordResetRequest>().CountAsync()).ShouldBe(1, "the reset pass purges only its own failed requests");
+            (await context.Set<PendingEmail>().CountAsync()).ShouldBe(1, "the reset pass purges only its own failed requests");
         }
     }
 }

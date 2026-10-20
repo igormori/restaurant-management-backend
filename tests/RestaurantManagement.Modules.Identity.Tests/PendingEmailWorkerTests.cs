@@ -12,7 +12,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
     /// The worker runs one processor pass per tick. A failing pass is logged without any code or email
     /// address and never stops the worker; the next tick tries again.
     /// </summary>
-    public class PasswordResetEmailWorkerTests
+    public class PendingEmailWorkerTests
     {
         private const string MariaEmail = "maria@cantinadanonna.com.br";
         private const string EmailedCode = "482913";
@@ -26,8 +26,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             processor.ProcessDueAsync(Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
                 .ThrowsAsync(new InvalidOperationException($"SMTP refused {MariaEmail} with code {EmailedCode}"));
             var services = new ServiceCollection().AddSingleton(processor).BuildServiceProvider();
-            var logger = new CapturingLogger<PasswordResetEmailWorker>();
-            var sut = new PasswordResetEmailWorker(services.GetRequiredService<IServiceScopeFactory>(), logger);
+            var logger = new CapturingLogger<PendingEmailWorker>();
+            var sut = new PendingEmailWorker(services.GetRequiredService<IServiceScopeFactory>(), logger);
 
             // Act
             await sut.RunOnceAsync(CancellationToken.None);

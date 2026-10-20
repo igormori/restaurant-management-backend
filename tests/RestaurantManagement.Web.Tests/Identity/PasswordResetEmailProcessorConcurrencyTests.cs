@@ -55,7 +55,7 @@ public class PasswordResetEmailProcessorConcurrencyTests : IClassFixture<Postgre
             {
                 var email = $"cliente{i}@cantinadanonna.com.br";
                 db.Users.Add(new User { Email = email, PasswordHash = "hash", FirstName = "Cliente", LastName = $"{i}", IsVerified = true });
-                db.PasswordResetRequests.Add(new PasswordResetRequest { Email = email, CreatedAt = now.AddSeconds(-10), NextAttemptAt = now.AddSeconds(-1) });
+                db.PendingEmails.Add(new PendingEmail { Email = email, CreatedAt = now.AddSeconds(-10), NextAttemptAt = now.AddSeconds(-1) });
             }
             await db.SaveChangesAsync();
         }

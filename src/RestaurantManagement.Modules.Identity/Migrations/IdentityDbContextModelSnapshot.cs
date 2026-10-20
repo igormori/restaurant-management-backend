@@ -59,7 +59,7 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                     b.ToTable("password_reset_codes", (string)null);
                 });
 
-            modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.PasswordResetRequest", b =>
+            modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.PendingEmail", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -100,15 +100,15 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                         .HasColumnName("purpose");
 
                     b.HasKey("Id")
-                        .HasName("pk_password_reset_requests");
+                        .HasName("pk_pending_emails");
 
                     b.HasIndex("FailedAt")
-                        .HasDatabaseName("ix_password_reset_requests_failed_at");
+                        .HasDatabaseName("ix_pending_emails_failed_at");
 
                     b.HasIndex("NextAttemptAt")
-                        .HasDatabaseName("ix_password_reset_requests_next_attempt_at");
+                        .HasDatabaseName("ix_pending_emails_next_attempt_at");
 
-                    b.ToTable("password_reset_requests", (string)null);
+                    b.ToTable("pending_emails", (string)null);
                 });
 
             modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.RefreshToken", b =>

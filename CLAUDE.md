@@ -5,9 +5,11 @@ data belongs to an organization. Roles: Owner, Admin, Manager, Cashier, Waiter, 
 the USA. Each organization chooses its currency (BRL: Brazilian real, USD: US dollar, CAD:
 Canadian dollar) and each location its time zone; never assume a country default.
 
-**Not launched yet: the database holds no real data.** Tables, columns and migrations may be
-changed freely, with no backfill or data preservation. Remove this paragraph at launch, once
-`backlog/pre-production/` is empty.
+**Not launched yet: the database holds no real data and no environment is live.** Tables,
+columns and migrations may be changed freely, with no backfill or data preservation. Settings
+keys, endpoints and contracts may be renamed or removed with no backward compatibility (no
+fallback to old names, no warnings); reviewers do not flag this as a risk. Remove this paragraph
+at launch, once `backlog/pre-production/` is empty.
 
 ## Skills
 Detailed rules live in skills. Read the ones your role needs before starting:

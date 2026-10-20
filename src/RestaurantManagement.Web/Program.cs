@@ -253,17 +253,17 @@ builder.Services.AddScoped<IVerificationService, VerificationService>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<IPasswordResetEmailProcessor, PasswordResetEmailProcessor>();
 builder.Services.AddScoped<IVerificationEmailProcessor, VerificationEmailProcessor>();
-if (builder.Configuration.GetValue("PasswordResetEmails:Enabled", true))
+if (builder.Configuration.GetValue("PendingEmails:Enabled", true))
 {
-    var resetEmailIntervalSeconds = builder.Configuration.GetValue("PasswordResetEmails:IntervalSeconds", PasswordResetEmailWorker.DefaultInterval.TotalSeconds);
+    var pendingEmailIntervalSeconds = builder.Configuration.GetValue("PendingEmails:IntervalSeconds", PendingEmailWorker.DefaultInterval.TotalSeconds);
     // A zero or negative interval makes the worker's timer throw, which stops the whole app.
-    if (resetEmailIntervalSeconds <= 0)
-        throw new InvalidOperationException("PasswordResetEmails:IntervalSeconds must be greater than 0");
-    var resetEmailInterval = TimeSpan.FromSeconds(resetEmailIntervalSeconds);
-    builder.Services.AddHostedService(sp => new PasswordResetEmailWorker(
+    if (pendingEmailIntervalSeconds <= 0)
+        throw new InvalidOperationException("PendingEmails:IntervalSeconds must be greater than 0");
+    var pendingEmailInterval = TimeSpan.FromSeconds(pendingEmailIntervalSeconds);
+    builder.Services.AddHostedService(sp => new PendingEmailWorker(
         sp.GetRequiredService<IServiceScopeFactory>(),
-        sp.GetRequiredService<ILogger<PasswordResetEmailWorker>>(),
-        resetEmailInterval));
+        sp.GetRequiredService<ILogger<PendingEmailWorker>>(),
+        pendingEmailInterval));
 }
 builder.Services.AddScoped<IPasswordChangeService, PasswordChangeService>();
 builder.Services.AddScoped<IPasswordAuditRecorder, PasswordAuditRecorder>();
