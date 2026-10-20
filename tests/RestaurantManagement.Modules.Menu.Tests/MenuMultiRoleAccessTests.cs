@@ -247,4 +247,30 @@ public class MenuMultiRoleAccessTests
         var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "an Admin for one location may not manage the organization's categories");
         exception.StatusCode.ShouldBe(403, "a role for one location never counts for an action on the whole organization");
     }
+
+    // Scenario 39
+    [Fact]
+    [Trait("Rule", "M27")]
+    public async Task GetByIdAsync_AdminAssignedOnlyToOneLocation_ThrowsForbidden()
+    {
+        // Arrange
+        using var database = new MenuTestDatabase();
+        await SeedDinnerMenuAsync(database);
+        var categoryId = Guid.NewGuid();
+        using (var seed = database.CreateContext())
+        {
+            seed.MenuCategories.Add(new Entities.MenuCategory { Id = categoryId, OrganizationId = CantinaId, MenuId = DinnerMenuId, Name = "Massas", SortOrder = 1 });
+            await seed.SaveChangesAsync();
+        }
+        var tenant = TestTenant.Of(CantinaId);
+        using var context = database.CreateContext(tenant);
+        var sut = CreateCategoryService(context, Holding(At(Roles.Admin, BatelId)));
+
+        // Act
+        var act = () => sut.GetByIdAsync(JoaoId, categoryId);
+
+        // Assert
+        var exception = await act.ShouldThrowAsync<BusinessException>(customMessage: "an Admin for one location may not read the organization's categories");
+        exception.StatusCode.ShouldBe(403, "a role for one location never counts for an action on the whole organization");
+    }
 }

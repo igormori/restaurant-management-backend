@@ -45,6 +45,7 @@ T5 (remove the single-role lookup) has no scenario of its own: it is proved by t
 | 36 | T4 | Guard | Over HTTP, an Admin role held only in another organization plus Waiter here gets 403 editing the organization | `EditOrganization_AdminOfAnotherOrganizationPlusWaiterHere_ReturnsForbidden` | `tests/RestaurantManagement.Web.Tests/Organization/OrganizationMultiRoleEndpointTests.cs` |
 | 37 | T4 | Happy | A Waiter assigned to one location only can still list the locations | `GetLocationsAsync_WaiterAssignedOnlyToOneLocation_ReturnsLocations` | `tests/RestaurantManagement.Modules.Organization.Tests/OrganizationMultiRoleAccessTests.cs` |
 | 38 | T4 | Happy | Admin for all locations plus Waiter at one location closes a different location, in either order | `DeleteLocationAsync_AdminForAllLocationsPlusWaiterAtBatelClosesCentro_ClosesInEveryOrder` | `tests/RestaurantManagement.Modules.Organization.Tests/OrganizationMultiRoleAccessTests.cs` |
+| 39 | T3 | Security | Admin for one location only cannot read a menu category | `GetByIdAsync_AdminAssignedOnlyToOneLocation_ThrowsForbidden` | `tests/RestaurantManagement.Modules.Menu.Tests/MenuMultiRoleAccessTests.cs` |
 
 ## Spec Outcome coverage
 | Outcome | Scenarios |
