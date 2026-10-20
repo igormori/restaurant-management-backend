@@ -1,6 +1,6 @@
 # Plan: Invite a member and edit their access grid
 
-**Spec:** docs/specs/shared/2026-10-20-invite-member-and-edit-access-grid.md   **Date:** 2026-10-20   **Status:** Draft
+**Spec:** docs/specs/shared/2026-10-20-invite-member-and-edit-access-grid.md   **Date:** 2026-10-20   **Status:** In progress
 **Risk:** High — new public endpoint that creates accounts and memberships, new authorization (delegation) rules, a Shared contract change and new Identity tables (no data, pre-launch)
 
 ## Summary
@@ -45,7 +45,7 @@ Email uses the existing email service; no new library, no backfill (pre-launch, 
 - [ ] Spec Backlog Impact kept: the deletion of `backlog/features/2026-10-19-invite-member-and-edit-access-grid.md` stays uncommitted for the user
 
 ## Checklist
-- [ ] T1 — Location lookup returns the location name
+- [x] T1 — Location lookup returns the location name
 - [ ] T2 — Audit actions and messages for invitations and delegation
 - [ ] T3 — Delegation rules and shared grid builder
 - [ ] T4 — Edit a member's access at a location

@@ -52,7 +52,8 @@ namespace RestaurantManagement.Modules.Organization.Services
             return new LocationSummaryDto
             {
                 Id = location.Id,
-                OrganizationId = location.OrganizationId
+                OrganizationId = location.OrganizationId,
+                Name = location.Name
             };
         }
     }
