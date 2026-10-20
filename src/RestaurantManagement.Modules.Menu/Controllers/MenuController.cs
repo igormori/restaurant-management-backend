@@ -94,7 +94,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Owner,Admin,Manager,Cashier,Waiter,Kitchen")]
+        [Authorize]
         public async Task<ActionResult<List<MenuResponse>>> GetAll()
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -108,7 +108,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         }
 
         [HttpGet("location/{locationId}")]
-        [Authorize(Roles = "Owner,Admin,Manager,Cashier,Waiter,Kitchen")]
+        [Authorize]
         public async Task<ActionResult<List<MenuResponse>>> GetByLocation(Guid locationId)
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);

@@ -46,11 +46,20 @@ namespace RestaurantManagement.Modules.Menu.Services
                 throw Refused();
         }
 
-        public async Task CheckReadAsync(Guid userId, Guid organizationId)
+        // The full list of menus belongs to the whole organization, so it needs a role for all locations.
+        public async Task CheckReadAllAsync(Guid userId, Guid organizationId)
         {
             var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
 
-            if (assignments == null || !assignments.Any(a => ReadRoles.Contains(a.Role)))
+            if (assignments == null || !AccessDecision.AllowsOrganizationWide(assignments, ReadRoles))
+                throw Refused();
+        }
+
+        public async Task CheckReadAtLocationAsync(Guid userId, Guid organizationId, Guid locationId)
+        {
+            var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
+
+            if (assignments == null || !AccessDecision.AllowsAtLocation(assignments, locationId, ReadRoles))
                 throw Refused();
         }
 

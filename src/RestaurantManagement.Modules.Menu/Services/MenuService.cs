@@ -173,7 +173,7 @@ namespace RestaurantManagement.Modules.Menu.Services
         public async Task<List<MenuResponse>> GetMenusAsync(Guid userId)
         {
             var organizationId = GetTokenOrganizationId();
-            await _access.CheckReadAsync(userId, organizationId);
+            await _access.CheckReadAllAsync(userId, organizationId);
 
             var menus = await _menuDb.Menus
                 .Where(m => m.OrganizationId == organizationId)
@@ -197,7 +197,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (location == null)
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
-            await _access.CheckReadAsync(userId, location.OrganizationId);
+            await _access.CheckReadAtLocationAsync(userId, location.OrganizationId, locationId);
 
             var menus = await _menuDb.LocationMenus
                 .Where(lm => lm.LocationId == locationId)

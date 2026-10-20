@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Shared;
@@ -32,6 +33,28 @@ public class MenuMultiRoleEndpointTests : IClassFixture<PostgresDatabaseFixture>
         await factory.SeedOrganizationAsync(TrattoriaId, "Trattoria do Sol", Currency.BRL);
         await factory.SeedLocationAsync(CantinaId, BatelId, "Unidade Batel", "BATEL", "America/Sao_Paulo");
         return factory;
+    }
+
+    [Fact]
+    [Trait("Rule", "M3")]
+    [Trait("Rule", "M31")]
+    public async Task GetMenus_WaiterAssignedOnlyToBatel_ReadsBatelMenusButNotTheFullList()
+    {
+        // Arrange
+        await using var factory = await CreateFactoryAsync(
+            new UserRole { OrganizationId = CantinaId, LocationId = BatelId, Role = Roles.Waiter });
+        var client = factory.CreateClient();
+        // Same claims a real login gives this user: the organization and no role claim, because the Waiter role is for one location only.
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", TestAccessTokens.Create(factory.Services, JoaoId, CantinaId));
+
+        // Act
+        var batelMenus = await client.GetAsync($"/api/menus/location/{BatelId}");
+        var allMenus = await client.GetAsync("/api/menus");
+
+        // Assert
+        batelMenus.StatusCode.ShouldBe(HttpStatusCode.OK, "a Waiter for Batel reads Batel's menus");
+        allMenus.StatusCode.ShouldBe(HttpStatusCode.Forbidden, "a Waiter for one location may not list every menu of the organization");
     }
 
     private static readonly object NewMenu = new { name = "Almoço executivo", description = "Prato feito com arroz, feijão e bife" };
