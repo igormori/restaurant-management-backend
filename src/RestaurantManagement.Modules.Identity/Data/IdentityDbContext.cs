@@ -16,9 +16,7 @@ namespace RestaurantManagement.Modules.Identity.Data
         public DbSet<UserVerificationCode> UserVerificationCodes { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
-        public DbSet<PasswordResetRequest> PasswordResetRequests { get; set; }
-        // STUB (tester): not mapped yet; the implementer replaces the old DbSet with this one.
-        public DbSet<PendingEmail> PendingEmails => throw new NotImplementedException();
+        public DbSet<PendingEmail> PendingEmails { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -76,10 +74,10 @@ namespace RestaurantManagement.Modules.Identity.Data
                 entity.HasIndex(c => c.UserId);
             });
 
-            // A pending request has no user (the email may belong to nobody), so no foreign key.
-            modelBuilder.Entity<PasswordResetRequest>(entity =>
+            // A pending email has no user (the email may belong to nobody), so no foreign key.
+            modelBuilder.Entity<PendingEmail>(entity =>
             {
-                entity.ToTable("password_reset_requests");
+                entity.ToTable("pending_emails");
                 entity.HasKey(r => r.Id);
                 entity.Property(r => r.Purpose).IsRequired();
                 entity.HasIndex(r => r.NextAttemptAt);

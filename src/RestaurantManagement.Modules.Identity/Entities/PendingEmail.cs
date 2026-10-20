@@ -1,9 +1,7 @@
 namespace RestaurantManagement.Modules.Identity.Entities
 {
-    // One pending "forgot password" request. It has no user: the email is stored as typed and
+    // One email waiting to be sent, of any purpose. It has no user: the email is stored as typed and
     // only the processor decides whether the email belongs to an account that may get a code.
-    // STUB (tester): [NotMapped] keeps the model unchanged until the implementer maps this entity.
-    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
     public class PendingEmail
     {
         public Guid Id { get; set; }

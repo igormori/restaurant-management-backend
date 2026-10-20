@@ -13,10 +13,10 @@ namespace RestaurantManagement.Modules.Identity.Services
     // only queues, and this processor alone decides who gets a code, so the answer never reveals the account.
     public class VerificationEmailProcessor : IVerificationEmailProcessor
     {
-        private const int MaxAttempts = PasswordResetEmailProcessor.MaxAttempts;
-        private const int BatchSize = PasswordResetEmailProcessor.BatchSize;
+        private const int MaxAttempts = PendingEmailQueue.MaxAttempts;
+        private const int BatchSize = PendingEmailQueue.BatchSize;
         private const int ClaimMinutes = 5;
-        private const PasswordResetRequestPurpose Purpose = PasswordResetRequestPurpose.Verification;
+        private const PendingEmailPurpose Purpose = PendingEmailPurpose.Verification;
 
         private readonly IdentityDbContext _db;
         private readonly SecurityOptions _securityOptions;
@@ -42,7 +42,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         {
             await DeleteOldFailedAsync(utcNow, cancellationToken);
 
-            var due = await _db.PasswordResetRequests
+            var due = await _db.PendingEmails
                 .AsNoTracking()
                 .Where(r => r.Purpose == Purpose && r.FailedAt == null && r.NextAttemptAt <= utcNow
                     && (r.ClaimedUntil == null || r.ClaimedUntil <= utcNow))
@@ -67,27 +67,27 @@ namespace RestaurantManagement.Modules.Identity.Services
         // A failed row holds the raw email address, so it is not kept longer than needed to investigate.
         private Task DeleteOldFailedAsync(DateTime utcNow, CancellationToken ct)
         {
-            var cutoff = utcNow - PasswordResetEmailProcessor.FailedRetention;
-            return _db.PasswordResetRequests
+            var cutoff = utcNow - PendingEmailQueue.FailedRetention;
+            return _db.PendingEmails
                 .Where(r => r.Purpose == Purpose && r.FailedAt != null && r.FailedAt < cutoff)
                 .ExecuteDeleteAsync(ct);
         }
 
         // The conditional update lets only one pass win a row; the row is read again because another
         // instance may have changed it since the pass loaded it.
-        private async Task<PasswordResetRequest?> TryClaimAsync(Guid id, DateTime utcNow, CancellationToken ct)
+        private async Task<PendingEmail?> TryClaimAsync(Guid id, DateTime utcNow, CancellationToken ct)
         {
             var claimedUntil = DateTime.UtcNow.AddMinutes(ClaimMinutes);
-            var updated = await _db.PasswordResetRequests
+            var updated = await _db.PendingEmails
                 .Where(r => r.Id == id && r.Purpose == Purpose && (r.ClaimedUntil == null || r.ClaimedUntil <= utcNow))
                 .ExecuteUpdateAsync(s => s.SetProperty(r => r.ClaimedUntil, claimedUntil), ct);
             if (updated == 0)
                 return null;
 
-            return await _db.PasswordResetRequests.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id, ct);
+            return await _db.PendingEmails.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id, ct);
         }
 
-        private async Task HandleAsync(PasswordResetRequest request, DateTime utcNow, CancellationToken ct)
+        private async Task HandleAsync(PendingEmail request, DateTime utcNow, CancellationToken ct)
         {
             // The pass-start time only chooses the due rows; a slow pass must not give a late row an expired code.
             var handledAt = DateTime.UtcNow;
@@ -126,7 +126,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         }
 
         // A retry skips the wait: the code of its own failed attempt would otherwise block it.
-        private async Task<bool> IsWithinResendWaitAsync(PasswordResetRequest request, Guid userId, DateTime now, CancellationToken ct)
+        private async Task<bool> IsWithinResendWaitAsync(PendingEmail request, Guid userId, DateTime now, CancellationToken ct)
         {
             if (request.Attempts > 0)
                 return false;
@@ -156,18 +156,18 @@ namespace RestaurantManagement.Modules.Identity.Services
                 ExpiresAt = now.AddMinutes(_securityOptions.VerificationCodeExpiryMinutes)
             });
 
-            var marked = new PasswordResetRequest { Id = requestId, CodeIssuedAt = now };
-            _db.PasswordResetRequests.Attach(marked).Property(r => r.CodeIssuedAt).IsModified = true;
+            var marked = new PendingEmail { Id = requestId, CodeIssuedAt = now };
+            _db.PendingEmails.Attach(marked).Property(r => r.CodeIssuedAt).IsModified = true;
             await _db.SaveChangesAsync(ct);
         }
 
-        private async Task RegisterFailureAsync(PasswordResetRequest request, Guid userId, DateTime utcNow, Exception ex, CancellationToken ct)
+        private async Task RegisterFailureAsync(PendingEmail request, Guid userId, DateTime utcNow, Exception ex, CancellationToken ct)
         {
             var attempts = request.Attempts + 1;
             var failedAt = attempts >= MaxAttempts ? utcNow : (DateTime?)null;
             var nextAttemptAt = utcNow.AddMinutes(Math.Pow(2, attempts - 1));
 
-            await _db.PasswordResetRequests
+            await _db.PendingEmails
                 .Where(r => r.Id == request.Id)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(r => r.Attempts, attempts)
@@ -184,7 +184,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         }
 
         private Task DeleteAsync(Guid id, CancellationToken ct)
-            => _db.PasswordResetRequests.Where(r => r.Id == id).ExecuteDeleteAsync(ct);
+            => _db.PendingEmails.Where(r => r.Id == id).ExecuteDeleteAsync(ct);
 
         private static bool IsVerificationLocked(User user, DateTime now)
             => user.VerificationLockedUntil.HasValue && user.VerificationLockedUntil > now;

@@ -1,6 +1,6 @@
 # Plan: Pending-email queue gets neutral names
 
-**Spec:** docs/specs/identity/2026-10-19-pending-email-queue-neutral-names.md   **Date:** 2026-10-19   **Status:** Draft
+**Spec:** docs/specs/identity/2026-10-19-pending-email-queue-neutral-names.md   **Date:** 2026-10-19   **Status:** In progress
 **Risk:** High — renames a database table and its indexes (schema change, empty database) and renames the operators' startup settings
 
 ## Summary
@@ -39,5 +39,5 @@ Kept (truly about password reset, spec Rule 2): `PasswordResetEmailProcessor`, `
 - [ ] `python3 .claude/scripts/check-security-matrices.py` passes
 
 ## Checklist
-- [ ] T1 — Rename the queue's stored data and shared limits
+- [x] T1 — Rename the queue's stored data and shared limits
 - [ ] T2 — Rename the sending job and its settings

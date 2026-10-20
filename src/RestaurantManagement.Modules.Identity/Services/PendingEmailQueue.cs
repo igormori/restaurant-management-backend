@@ -1,6 +1,6 @@
 namespace RestaurantManagement.Modules.Identity.Services
 {
-    // STUB (tester): queue-wide limits shared by both email processors. The implementer moves them here.
+    // Queue-wide limits shared by both email processors.
     public static class PendingEmailQueue
     {
         public const int MaxAttempts = 5;
