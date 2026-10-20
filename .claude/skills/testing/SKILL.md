@@ -53,17 +53,17 @@ closest example file below.
 
 | Need | Use | Where |
 |---|---|---|
-| Module unit test database (SQLite in-memory) | <class/helper> | <path> |
-| Integration test app and database (WebApplicationFactory + Testcontainers PostgreSQL) | <fixture class>, collection `<name>` | <path> |
-| Signed-in client with organization, location and role | <helper method> | <path> |
-| Second organization for cross-tenant tests | <helper method> | <path> |
-| Seed an organization, location or user | <builder/helper> | <path> |
-| Fake current user / tenant in unit tests | <helper or NSubstitute setup> | <path> |
-| Clock / time zone in tests | <helper> | <path> |
+| Module unit test database (SQLite in-memory) | `MenuTestDatabase`, `OrganizationTestDatabase`, `IdentityTestDatabase` (`CreateContext()` seeds with no organization; `CreateContext(tenant)` reads as one) | `tests/RestaurantManagement.Modules.<Module>.Tests/<Module>TestDatabase.cs` |
+| Integration test app and database (WebApplicationFactory + Testcontainers PostgreSQL) | `TenantApiFactory.CreateAsync(postgres)` over `PostgresDatabaseFixture` as `IClassFixture<PostgresDatabaseFixture>` (one container per class, one empty migrated database per test; no collection) | `tests/RestaurantManagement.Web.Tests/TenantApiFactory.cs`, `PostgresDatabaseFixture.cs` |
+| Signed-in client with organization, location and access grid | `factory.ClientFor(userId, organizationId, locationHeader)`; the token holds no role, so give access with `SeedUserAsync` (`OwnerOf` / `MemberOf`) and `GrantAsync` / `SetLevelAsync` | `tests/RestaurantManagement.Web.Tests/TenantApiFactory.cs` |
+| Second organization for cross-tenant tests | Seed it with `SeedOrganizationAsync` and read its rows back with `InOrganizationAsync<TContext, T>`; see `CreateFactoryWithTwoOrganizationsAsync` | `tests/RestaurantManagement.Web.Tests/Menu/MenuTenantEndpointTests.cs` |
+| Seed an organization, location or user | `SeedOrganizationAsync`, `SeedLocationAsync`, `SeedUserAsync`, `AddMembershipAsync`, `SeedMenuAsync`, `SeedCategoryAsync`, `SeedAuditEntriesAsync` | `tests/RestaurantManagement.Web.Tests/TenantApiFactory.cs` |
+| Fake current user / tenant in unit tests | `TestTenant.Of(organizationId, locationId)` / `TestTenant.None`; `TestAccess.Guard(...)`, `OwnerGuard`, `Permissive()` for the access guard; `Substitute.For<ICurrentUser>()`; `TestMembers` and `MemberAccessTestSupport` in Identity | `tests/RestaurantManagement.Modules.{Menu,Organization}.Tests/TestTenant.cs`, `TestAccess.cs`; `tests/RestaurantManagement.Modules.Identity.Tests/TestMembers.cs`, `MemberAccessTestSupport.cs` |
+| Clock / time zone in tests | `FixedTimeProvider(now)` passed as the `TimeProvider`; locations take an IANA time zone in `SeedLocationAsync` (e.g. `"America/Sao_Paulo"`) | `tests/RestaurantManagement.Shared.Tests/AuditTestDbContext.cs`, `tests/RestaurantManagement.Modules.Menu.Tests/MenuAuditTests.cs` |
 
 ### Example files to copy
 | Test type | Example |
 |---|---|
-| Service unit test | <path> |
-| Endpoint integration test (incl. 403 and cross-tenant 404) | <path> |
-| PostgreSQL-only behaviour (constraint, migration) | <path> |
+| Service unit test | `tests/RestaurantManagement.Modules.Menu.Tests/MenuGridAccessTests.cs` |
+| Endpoint integration test (incl. 403 and cross-tenant 404) | `tests/RestaurantManagement.Web.Tests/Menu/MenuGridEndpointTests.cs` (403), `tests/RestaurantManagement.Web.Tests/Menu/MenuTenantEndpointTests.cs` (cross-tenant 404) |
+| PostgreSQL-only behaviour (constraint, migration) | `tests/RestaurantManagement.Web.Tests/Menu/MenuDeleteCascadeTests.cs` (delete rule), `tests/RestaurantManagement.Web.Tests/Identity/DropUserSelectedOrganizationMigrationTests.cs` (migration) |
