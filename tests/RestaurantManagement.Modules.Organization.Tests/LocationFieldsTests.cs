@@ -1,4 +1,3 @@
-using RestaurantManagement.Shared.Auth;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
@@ -126,12 +125,9 @@ namespace RestaurantManagement.Modules.Organization.Tests
             return locationId;
         }
 
-        private static LocationService CreateService(Data.OrganizationDbContext context, Guid userId, Guid organizationId, string role)
-        {
-            var userRoleLookup = Substitute.For<IUserRoleLookup>();
-            userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId).Returns(role is null ? new List<RoleAssignmentDto>() : new List<RoleAssignmentDto> { new() { Role = role } });
-            return new LocationService(context, userRoleLookup, TestTenant.Of(organizationId), TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
-        }
+        // Access is not what these tests check: the guard allows everything.
+        private static LocationService CreateService(Data.OrganizationDbContext context, Guid organizationId)
+            => new LocationService(context, TestAccess.Permissive(), TestTenant.Of(organizationId), TestLocalizer.Create(), Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
 
         // Scenario 11
         [Theory]
@@ -173,14 +169,14 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var organizationId = await SeedOrganizationAsync(database);
             var userId = Guid.NewGuid();
             using var context = database.CreateContext(TestTenant.Of(organizationId));
-            var sut = CreateService(context, userId, organizationId, Roles.Owner);
+            var sut = CreateService(context, organizationId);
 
             // Act
             await sut.CreateLocationAsync(userId, CreateRequest("America/Sao_Paulo", null, " pau1 "));
 
             // Assert: read the stored location back through the location list
             using var listContext = database.CreateContext(TestTenant.Of(organizationId));
-            var stored = (await CreateService(listContext, userId, organizationId, Roles.Owner).GetLocationsAsync(userId)).ShouldHaveSingleItem(customMessage: "the new location is stored once");
+            var stored = (await CreateService(listContext, organizationId).GetLocationsAsync(userId)).ShouldHaveSingleItem(customMessage: "the new location is stored once");
             stored.TimeZone.ShouldBe("America/Sao_Paulo", "the location keeps the time zone chosen for it");
             stored.Type.ShouldBe(LocationType.Store, "a location created without a type is a Store");
             stored.Code.ShouldBe("PAU1", "a location code is always stored in uppercase");
@@ -197,7 +193,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var locationId = await SeedLocationAsync(database, organizationId);
             var userId = Guid.NewGuid();
             using var context = database.CreateContext(TestTenant.Of(organizationId));
-            var sut = CreateService(context, userId, organizationId, Roles.Admin);
+            var sut = CreateService(context, organizationId);
 
             // Act
             var response = await sut.EditLocationAsync(userId, locationId, EditRequest("America/Toronto", "CentralKitchen", "yyz1"));
@@ -219,42 +215,15 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var locationId = await SeedLocationAsync(database, organizationId, LocationType.CentralKitchen);
             var userId = Guid.NewGuid();
             using var context = database.CreateContext(TestTenant.Of(organizationId));
-            var sut = CreateService(context, userId, organizationId, Roles.Owner);
+            var sut = CreateService(context, organizationId);
 
             // Act
             await sut.EditLocationAsync(userId, locationId, EditRequest("America/Sao_Paulo", null, "PAU"));
 
             // Assert: read the stored location back through the location list
             using var listContext = database.CreateContext(TestTenant.Of(organizationId));
-            var stored = (await CreateService(listContext, userId, organizationId, Roles.Owner).GetLocationsAsync(userId)).ShouldHaveSingleItem(customMessage: "the edited location is still stored once");
+            var stored = (await CreateService(listContext, organizationId).GetLocationsAsync(userId)).ShouldHaveSingleItem(customMessage: "the edited location is still stored once");
             stored.Type.ShouldBe(LocationType.CentralKitchen, "an edit that leaves the type out keeps the type the location already had");
-        }
-
-        // Scenario 19
-        [Theory]
-        [InlineData(Roles.Manager)]
-        [InlineData(Roles.Cashier)]
-        [InlineData(Roles.Waiter)]
-        [InlineData(Roles.Kitchen)]
-        [Trait("Rule", "OR10")]
-        public async Task EditLocationAsync_RoleOtherThanOwnerOrAdmin_ThrowsForbiddenAndChangesNothing(string role)
-        {
-            // Arrange
-            using var database = new OrganizationTestDatabase();
-            var organizationId = await SeedOrganizationAsync(database);
-            var locationId = await SeedLocationAsync(database, organizationId);
-            var userId = Guid.NewGuid();
-            using var context = database.CreateContext(TestTenant.Of(organizationId));
-            var sut = CreateService(context, userId, organizationId, role);
-
-            // Act
-            var act = () => sut.EditLocationAsync(userId, locationId, EditRequest("America/Toronto", "CentralKitchen", "YYZ1"));
-
-            // Assert
-            var exception = await act.ShouldThrowAsync<BusinessException>();
-            exception.StatusCode.ShouldBe(403, "only an Owner or Admin may edit a location");
-            using var verifyContext = database.CreateContext(TestTenant.Of(organizationId));
-            (await verifyContext.Locations.SingleAsync(l => l.Id == locationId)).Name.ShouldBe("Unidade Paulista", "a refused edit leaves the location unchanged");
         }
     }
 }

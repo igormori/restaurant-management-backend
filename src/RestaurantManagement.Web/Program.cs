@@ -280,8 +280,10 @@ builder.Services.AddScoped<RestaurantManagement.Modules.Menu.Services.IMenuCateg
 
 // Cross-Module Contracts (Shared interface, implemented by the owning module)
 builder.Services.AddScoped<IOrganizationLookup, RestaurantManagement.Modules.Organization.Services.OrganizationLookup>();
-builder.Services.AddScoped<IUserRoleLookup, RestaurantManagement.Modules.Identity.Services.UserRoleLookup>();
-builder.Services.AddScoped<IUserRoleAssigner, RestaurantManagement.Modules.Identity.Services.UserRoleAssigner>();
+builder.Services.AddScoped<IMemberAccessLookup, RestaurantManagement.Modules.Identity.Services.MemberAccessLookup>();
+builder.Services.AddScoped<IOrganizationAccessSetup, RestaurantManagement.Modules.Identity.Services.OrganizationAccessSetup>();
+builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.IMemberAccessService, RestaurantManagement.Modules.Identity.Services.MemberAccessService>();
+builder.Services.AddScoped<IAccessGuard, AccessGuard>();
 
 // ---------------------------------------------
 // CORS

@@ -69,7 +69,7 @@ public class LocationMessagesEndpointTests : IClassFixture<PostgresDatabaseFixtu
     {
         // Arrange
         using var factory = new AuthApiFactory();
-        var client = SignedInClient(factory, TestAccessTokens.Create(factory.Services, AnaId, CantinaId, Roles.Owner));
+        var client = SignedInClient(factory, TestAccessTokens.Create(factory.Services, AnaId, CantinaId));
         var request = Request(method, url, culture, LocationBodyWith(field, value));
 
         // Act
@@ -93,9 +93,9 @@ public class LocationMessagesEndpointTests : IClassFixture<PostgresDatabaseFixtu
         await using var factory = await TenantApiFactory.CreateAsync(_postgres);
         await factory.SeedOrganizationAsync(CantinaId, "Cantina da Nonna", Currency.BRL);
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana",
-            new UserRole { OrganizationId = CantinaId, Role = Roles.Owner });
+            TenantApiFactory.OwnerOf(CantinaId));
         await factory.SeedLocationAsync(CantinaId, BatelId, "Unidade Batel", "BATEL", "America/Sao_Paulo");
-        var token = TestAccessTokens.CreateWithSubject(factory.Services, "caixa-batel-01", CantinaId, Roles.Owner);
+        var token = TestAccessTokens.CreateWithSubject(factory.Services, "caixa-batel-01", CantinaId);
         var client = SignedInClient(factory, token);
         var request = Request(method, url, culture, ValidLocationJson);
 

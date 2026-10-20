@@ -68,10 +68,13 @@ namespace RestaurantManagement.Modules.Organization.Tests
             OrganizationTestDatabase database, ITenantContext tenant, string role, IAuditLog auditLog,
             ILogger<OrganizationService>? logger = null)
         {
-            var userRoleLookup = Substitute.For<IUserRoleLookup>();
-            userRoleLookup.GetRoleAssignmentsAsync(AnaId, CantinaId).Returns(role is null ? new List<RoleAssignmentDto>() : new List<RoleAssignmentDto> { new() { Role = role } });
-            return new OrganizationService(database.CreateContext(tenant), userRoleLookup, Substitute.For<IUserRoleAssigner>(),
-                new TenantScope(), tenant, TestLocalizer.Create(), logger ?? Substitute.For<ILogger<OrganizationService>>(), auditLog);
+            // "Owner" passes every check; "Waiter" only has Locations Read and Orders Manage at one location.
+            var batelId = Guid.Parse("44444444-dddd-4ddd-8ddd-000000000001");
+            var grid = role == "Owner"
+                ? TestAccess.OwnerGrid
+                : TestAccess.Grid((batelId, AccessModule.Locations, AccessLevel.Read), (batelId, AccessModule.Orders, AccessLevel.Manage));
+            return new OrganizationService(database.CreateContext(tenant), Substitute.For<IMemberAccessLookup>(), Substitute.For<IOrganizationAccessSetup>(),
+                TestAccess.Guard(AnaId, CantinaId, grid, batelId), new TenantScope(), tenant, TestLocalizer.Create(), logger ?? Substitute.For<ILogger<OrganizationService>>(), auditLog);
         }
 
         private static decimal ReadDecimal(string? json, string property)
@@ -82,8 +85,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
 
         // Scenario 18
         [Theory]
-        [InlineData(Roles.Waiter, true)]
-        [InlineData(Roles.Owner, false)]
+        [InlineData("Waiter", true)]
+        [InlineData("Owner", false)]
         [Trait("Rule", "OR25")]
         public async Task EditOrganizationAsync_EditRejected_RecordsNothing(string role, bool tokenHasOrganization)
         {
@@ -115,7 +118,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
                 .ThrowsAsync(new InvalidOperationException("Audit log unavailable"));
             var logger = Substitute.For<ILogger<OrganizationService>>();
             var tenant = TestTenant.Of(CantinaId);
-            var sut = CreateSut(database, tenant, Roles.Owner, auditLog, logger);
+            var sut = CreateSut(database, tenant, "Owner", auditLog, logger);
 
             // Act
             var response = await sut.EditOrganizationAsync(AnaId, EditRequest(serviceChargeRate: 12m));
@@ -145,7 +148,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             using var database = new OrganizationTestDatabase();
             await SeedCantinaAsync(database);
             var auditLog = Substitute.For<IAuditLog>();
-            var sut = CreateSut(database, TestTenant.Of(CantinaId), Roles.Owner, auditLog);
+            var sut = CreateSut(database, TestTenant.Of(CantinaId), "Owner", auditLog);
 
             // Act
             await sut.EditOrganizationAsync(AnaId,
@@ -177,7 +180,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             using var database = new OrganizationTestDatabase();
             await SeedCantinaAsync(database);
             var auditLog = Substitute.For<IAuditLog>();
-            var sut = CreateSut(database, TestTenant.Of(CantinaId), Roles.Owner, auditLog);
+            var sut = CreateSut(database, TestTenant.Of(CantinaId), "Owner", auditLog);
 
             // Act
             await sut.EditOrganizationAsync(AnaId, EditRequest(serviceChargeRate: 10m, name: name));

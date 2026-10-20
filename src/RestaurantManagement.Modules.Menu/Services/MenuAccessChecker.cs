@@ -1,68 +1,44 @@
-using Microsoft.Extensions.Localization;
-using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Services.Identity;
-using RestaurantManagement.Shared.Utils.Exceptions;
 
 namespace RestaurantManagement.Modules.Menu.Services
 {
+    /// <summary>
+    /// Every access question of the Menu module, asked of the member's access grid through the
+    /// guard. An action tied to one location needs the level there; an action across locations needs
+    /// it at every location involved, or at every non-closed location when none is involved.
+    /// </summary>
     internal class MenuAccessChecker
     {
-        private static readonly string[] WriteRoles = { Roles.Owner, Roles.Admin };
+        private readonly IAccessGuard _guard;
 
-        private static readonly string[] ReadRoles =
+        public MenuAccessChecker(IAccessGuard guard)
         {
-            Roles.Owner, Roles.Admin, Roles.Manager, Roles.Cashier, Roles.Waiter, Roles.Kitchen
-        };
-
-        private readonly IUserRoleLookup _userRoleLookup;
-        private readonly IStringLocalizer<SharedResource> _localizer;
-
-        public MenuAccessChecker(IUserRoleLookup userRoleLookup, IStringLocalizer<SharedResource> localizer)
-        {
-            _userRoleLookup = userRoleLookup;
-            _localizer = localizer;
+            _guard = guard;
         }
 
-        public async Task RequireOrganizationAdminAsync(Guid userId, Guid organizationId)
-        {
-            var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
+        public Task RequireReadAtLocationAsync(Guid locationId)
+            => _guard.RequireAtLocationAsync(AccessModule.Menus, AccessLevel.Read, locationId);
 
-            if (assignments == null || !AccessDecision.AllowsOrganizationWide(assignments, WriteRoles))
-                throw Refused();
-        }
+        public Task RequireManageAtLocationAsync(Guid locationId)
+            => _guard.RequireAtLocationAsync(AccessModule.Menus, AccessLevel.Manage, locationId);
 
-        public async Task CheckAdminAtLocationAsync(Guid userId, Guid organizationId, Guid? locationId)
-        {
-            var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
-            if (assignments == null)
-                throw Refused();
+        public Task RequireReadEverywhereAsync()
+            => _guard.RequireAtEveryLocationAsync(AccessModule.Menus, AccessLevel.Read);
 
-            // A category with no location belongs to the whole organization.
-            var allowed = locationId is { } id
-                ? AccessDecision.AllowsAtLocation(assignments, id, WriteRoles)
-                : AccessDecision.AllowsOrganizationWide(assignments, WriteRoles);
-            if (!allowed)
-                throw Refused();
-        }
+        public Task RequireManageEverywhereAsync()
+            => _guard.RequireAtEveryLocationAsync(AccessModule.Menus, AccessLevel.Manage);
 
-        // The full list of menus belongs to the whole organization, so it needs a role for all locations.
-        public async Task CheckReadAllAsync(Guid userId, Guid organizationId)
-        {
-            var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
+        /// <summary>A category of one location needs the level there; one without a location needs it everywhere.</summary>
+        public Task RequireReadCategoryAsync(Guid? locationId)
+            => locationId.HasValue ? RequireReadAtLocationAsync(locationId.Value) : RequireReadEverywhereAsync();
 
-            if (assignments == null || !AccessDecision.AllowsOrganizationWide(assignments, ReadRoles))
-                throw Refused();
-        }
+        public Task RequireManageCategoryAsync(Guid? locationId)
+            => locationId.HasValue ? RequireManageAtLocationAsync(locationId.Value) : RequireManageEverywhereAsync();
 
-        public async Task CheckReadAtLocationAsync(Guid userId, Guid organizationId, Guid locationId)
-        {
-            var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
-
-            if (assignments == null || !AccessDecision.AllowsAtLocation(assignments, locationId, ReadRoles))
-                throw Refused();
-        }
-
-        private BusinessException Refused() => new(_localizer["UnauthorizedMessage"].Value, 403);
+        /// <summary>A menu needs Manage at every location it is linked to; linked to none, at every non-closed location.</summary>
+        public Task RequireManageMenuAsync(IReadOnlyCollection<Guid> linkedLocationIds)
+            => linkedLocationIds.Count == 0
+                ? RequireManageEverywhereAsync()
+                : _guard.RequireAtLocationsAsync(AccessModule.Menus, AccessLevel.Manage, linkedLocationIds);
     }
 }

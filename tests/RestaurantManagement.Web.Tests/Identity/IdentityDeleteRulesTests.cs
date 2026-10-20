@@ -21,9 +21,13 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
     private const string UserRowsSql = "SELECT coalesce(json_agg(row_to_json(t) ORDER BY t.id)::text, '[]') FROM users t";
     private const string RoleRowsSql = "SELECT coalesce(json_agg(row_to_json(t) ORDER BY t.id)::text, '[]') FROM user_roles t";
     private const string CodeRowsSql = "SELECT coalesce(json_agg(row_to_json(t) ORDER BY t.id)::text, '[]') FROM user_verification_codes t";
+    // Only the foreign keys between users and their account data; later access tables (roles, levels, labels) are not part of this rule.
     private const string DeleteRulesSql = """
         SELECT coalesce(string_agg(constraint_name || ':' || delete_rule, ',' ORDER BY constraint_name), '')
         FROM information_schema.referential_constraints
+        WHERE constraint_name IN (
+            'fk_password_reset_codes_users_user_id', 'fk_refresh_tokens_users_user_id',
+            'fk_organization_members_users_user_id', 'fk_user_verification_codes_users_user_id')
         """;
 
     private static readonly Guid CantinaId = Guid.Parse("c1c1c1c1-0000-4000-8000-000000000001");
@@ -86,6 +90,12 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
             VALUES ({id}, {userId}, {CantinaId}, null, {role}, {CreationTime}, {CreationTime}, {MariaId}, null)
             """);
 
+    private static async Task InsertMembershipAsync(DbContext context, Guid id, Guid userId)
+        => await context.Database.ExecuteSqlAsync($"""
+            INSERT INTO organization_members (id, user_id, organization_id, is_owner, created_at, updated_at, created_by_user_id, updated_by_user_id)
+            VALUES ({id}, {userId}, {CantinaId}, true, {CreationTime}, {CreationTime}, {MariaId}, null)
+            """);
+
     /// <summary>
     /// Inserts a code through EF Core without a code value, so it works whatever the code
     /// column is called (code before the hashing change, code_hash after it).
@@ -113,45 +123,45 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
     // Scenario 7
     [Fact]
     [Trait("Rule", "T12")]
-    public async Task DeleteUser_HasRole_IsRefusedAndRoleKept()
+    public async Task DeleteUser_HasMembership_IsRefusedAndMembershipKept()
     {
         // Arrange
         await using var context = await CreateFullyMigratedContextAsync();
         await InsertUserAsync(context, MariaId, "maria.souza@cantina.com.br", "Maria", isActive: true);
-        await InsertRoleAsync(context, MariaOwnerRoleId, MariaId, "Owner");
+        await InsertMembershipAsync(context, MariaOwnerRoleId, MariaId);
 
         // Act
         var exception = await Should.ThrowAsync<PostgresException>(
             () => context.Database.ExecuteSqlAsync($"DELETE FROM users WHERE id = {MariaId}"));
 
         // Assert
-        exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation, "a user who still holds a role must not be deletable");
-        (await context.UserRoles.SingleAsync()).Id.ShouldBe(MariaOwnerRoleId, "the refused delete must leave the role in place");
+        exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation, "a user who is still a member of an organization must not be deletable");
+        (await context.Set<OrganizationMember>().SingleAsync()).Id.ShouldBe(MariaOwnerRoleId, "the refused delete must leave the membership in place");
     }
 
     // Scenario 8
     [Fact]
     [Trait("Rule", "T12")]
-    public async Task DeleteUser_DeactivatedUserHasRole_IsRefusedAndRoleKept()
+    public async Task DeleteUser_DeactivatedUserHasMembership_IsRefusedAndMembershipKept()
     {
         // Arrange
         await using var context = await CreateFullyMigratedContextAsync();
         await InsertUserAsync(context, JoaoId, "joao.lima@cantina.com.br", "João", isActive: false);
-        await InsertRoleAsync(context, JoaoStaffRoleId, JoaoId, "Staff");
+        await InsertMembershipAsync(context, JoaoStaffRoleId, JoaoId);
 
         // Act
         var exception = await Should.ThrowAsync<PostgresException>(
             () => context.Database.ExecuteSqlAsync($"DELETE FROM users WHERE id = {JoaoId}"));
 
         // Assert
-        exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation, "a deactivated user who still holds a role must not be deletable either");
-        (await context.UserRoles.SingleAsync()).Id.ShouldBe(JoaoStaffRoleId, "the refused delete must leave the role in place");
+        exception.SqlState.ShouldBe(PostgresErrorCodes.ForeignKeyViolation, "a deactivated user who is still a member of an organization must not be deletable either");
+        (await context.Set<OrganizationMember>().SingleAsync()).Id.ShouldBe(JoaoStaffRoleId, "the refused delete must leave the membership in place");
     }
 
     // Scenario 9
     [Fact]
     [Trait("Rule", "T12")]
-    public async Task DeleteUser_HasVerificationCodesAndNoRoles_UserAndCodesDeleted()
+    public async Task DeleteUser_HasVerificationCodesAndNoMemberships_UserAndCodesDeleted()
     {
         // Arrange
         await using var context = await CreateFullyMigratedContextAsync();
@@ -163,7 +173,7 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
         var deleted = await context.Database.ExecuteSqlAsync($"DELETE FROM users WHERE id = {MariaId}");
 
         // Assert
-        deleted.ShouldBe(1, "a user with no role can be deleted");
+        deleted.ShouldBe(1, "a user who is a member of no organization can be deleted");
         (await context.UserVerificationCodes.CountAsync()).ShouldBe(0, "the deleted user's verification codes go with the user");
     }
 
@@ -192,7 +202,7 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
     // password reset Scenario 6 adds the reset code cascade
     [Fact]
     [Trait("Rule", "D8")]
-    public async Task Migrate_IdentityForeignKeys_RolesRestrictCodesResetCodesAndRefreshTokensCascade()
+    public async Task Migrate_IdentityForeignKeys_MembershipsRestrictCodesResetCodesAndRefreshTokensCascade()
     {
         // Arrange
         await using var context = await CreateFullyMigratedContextAsync();
@@ -202,10 +212,10 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
 
         // Assert
         deleteRules.ShouldBe(
-            "fk_password_reset_codes_users_user_id:CASCADE,"
+            "fk_organization_members_users_user_id:RESTRICT,"
+            + "fk_password_reset_codes_users_user_id:CASCADE,"
             + "fk_refresh_tokens_users_user_id:CASCADE,"
-            + "fk_user_roles_users_user_id:RESTRICT,"
-            + "fk_user_verification_codes_users_user_id:CASCADE", "roles must block deleting a user, while codes, reset codes and refresh tokens are deleted with the user");
+            + "fk_user_verification_codes_users_user_id:CASCADE", "a membership must block deleting a user, while codes, reset codes and refresh tokens are deleted with the user");
     }
 
     // Scenario 12

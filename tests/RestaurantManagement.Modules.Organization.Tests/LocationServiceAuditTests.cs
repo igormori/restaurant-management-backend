@@ -1,4 +1,3 @@
-using RestaurantManagement.Shared.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -6,10 +5,9 @@ using NSubstitute.ExceptionExtensions;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Modules.Organization.Services;
-using RestaurantManagement.Shared;
+using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.AuditLog;
-using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Shouldly;
 using Xunit;
@@ -91,18 +89,21 @@ namespace RestaurantManagement.Modules.Organization.Tests
         private static LocationService CreateSut(
             OrganizationTestDatabase database, string role, IAuditLog auditLog, ILogger<LocationService>? logger = null)
         {
-            var userRoleLookup = Substitute.For<IUserRoleLookup>();
-            userRoleLookup.GetRoleAssignmentsAsync(AnaId, CantinaId).Returns(role is null ? new List<RoleAssignmentDto>() : new List<RoleAssignmentDto> { new() { Role = role } });
+            // "Owner" passes every check; "Waiter" only has Locations Read at Batel, so any change is refused.
+            var grid = role == "Owner"
+                ? TestAccess.OwnerGrid
+                : TestAccess.Grid((CantinaBatelId, AccessModule.Locations, AccessLevel.Read), (CantinaBatelId, AccessModule.Orders, AccessLevel.Manage));
+            var guard = TestAccess.Guard(AnaId, CantinaId, grid, CantinaBatelId);
             var tenant = TestTenant.Of(CantinaId);
-            return new LocationService(database.CreateContext(tenant), userRoleLookup, tenant, TestLocalizer.Create(),
+            return new LocationService(database.CreateContext(tenant), guard, tenant, TestLocalizer.Create(),
                 auditLog, logger ?? Substitute.For<ILogger<LocationService>>());
         }
 
         // Scenario 23
         [Theory]
-        [InlineData("edit to TemporarilyClosed", Roles.Waiter, "Cantina", 403)]
-        [InlineData("delete", Roles.Waiter, "Cantina", 403)]
-        [InlineData("edit to TemporarilyClosed", Roles.Owner, "Trattoria", 404)]
+        [InlineData("edit to TemporarilyClosed", "Waiter", "Cantina", 403)]
+        [InlineData("delete", "Waiter", "Cantina", 403)]
+        [InlineData("edit to TemporarilyClosed", "Owner", "Trattoria", 404)]
         [Trait("Rule", "OR29")]
         public async Task ChangeLocationStatus_RequestRejected_RecordsNothing(
             string operation, string role, string locationOrganization, int expectedStatusCode)
@@ -133,7 +134,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             auditLog.RecordAsync(Arg.Any<AuditEntryDto>(), Arg.Any<CancellationToken>())
                 .ThrowsAsync(new InvalidOperationException("Audit log unavailable"));
             var logger = Substitute.For<ILogger<LocationService>>();
-            var sut = CreateSut(database, Roles.Owner, auditLog, logger);
+            var sut = CreateSut(database, "Owner", auditLog, logger);
 
             // Act
             var delete = () => sut.DeleteLocationAsync(AnaId, CantinaBatelId);
@@ -161,7 +162,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             using var database = new OrganizationTestDatabase();
             await SeedAsync(database, LocationStatus.Active);
             var auditLog = Substitute.For<IAuditLog>();
-            var sut = CreateSut(database, Roles.Owner, auditLog);
+            var sut = CreateSut(database, "Owner", auditLog);
 
             // Act
             await Operations[operation](sut, CantinaBatelId);
@@ -189,7 +190,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             using var database = new OrganizationTestDatabase();
             await SeedAsync(database, currentStatus);
             var auditLog = Substitute.For<IAuditLog>();
-            var sut = CreateSut(database, Roles.Owner, auditLog);
+            var sut = CreateSut(database, "Owner", auditLog);
 
             // Act
             await Operations[operation](sut, CantinaBatelId);

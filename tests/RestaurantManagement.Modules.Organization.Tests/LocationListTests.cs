@@ -1,12 +1,10 @@
-using RestaurantManagement.Shared.Auth;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Services;
-using RestaurantManagement.Shared;
+using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.AuditLog;
-using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Shouldly;
 using Xunit;
@@ -15,7 +13,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
 {
     public class LocationListTests
     {
-        private static async Task<Guid> SeedOrganizationWithLocationAsync(OrganizationTestDatabase database)
+        private static async Task<Guid> SeedOrganizationWithLocationAsync(OrganizationTestDatabase database, Guid? locationId = null)
         {
             var organizationId = Guid.NewGuid();
             using var context = database.CreateContext();
@@ -29,7 +27,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             });
             context.Locations.Add(new Location
             {
-                Id = Guid.NewGuid(),
+                Id = locationId ?? Guid.NewGuid(),
                 OrganizationId = organizationId,
                 Name = "Unidade Batel",
                 Address = "Rua Bento Viana, 100",
@@ -48,56 +46,57 @@ namespace RestaurantManagement.Modules.Organization.Tests
             return organizationId;
         }
 
-        private static LocationService CreateSut(OrganizationTestDatabase database, Guid organizationId, Guid userId, string? role)
+        private static LocationService CreateSut(OrganizationTestDatabase database, Guid organizationId, IAccessGuard guard)
         {
-            var roleLookup = Substitute.For<IUserRoleLookup>();
-            roleLookup.GetRoleAssignmentsAsync(userId, organizationId).Returns(role is null ? new List<RoleAssignmentDto>() : new List<RoleAssignmentDto> { new() { Role = role } });
             var tenant = TestTenant.Of(organizationId);
-            return new LocationService(database.CreateContext(tenant), roleLookup, tenant, TestLocalizer.Create(),
+            return new LocationService(database.CreateContext(tenant), guard, tenant, TestLocalizer.Create(),
                 Substitute.For<IAuditLog>(), Substitute.For<ILogger<LocationService>>());
         }
 
         [Theory]
-        [InlineData(Roles.Owner)]
-        [InlineData(Roles.Admin)]
-        [InlineData(Roles.Manager)]
-        [InlineData(Roles.Cashier)]
-        [InlineData(Roles.Waiter)]
-        [InlineData(Roles.Kitchen)]
+        [InlineData("Owner")]
+        [InlineData("WaiterWithLocationsRead")]
+        [InlineData("WaiterWithOnlyMenusRead")]
         [Trait("Rule", "OR11")]
-        public async Task GetLocationsAsync_UserHasAnyRoleInOrganization_ReturnsItsLocations(string role)
+        public async Task GetLocationsAsync_OwnerOrMemberWithAnyAccess_ReturnsItsLocations(string member)
         {
             // Arrange
             using var database = new OrganizationTestDatabase();
-            var organizationId = await SeedOrganizationWithLocationAsync(database);
+            var batelId = Guid.NewGuid();
+            var organizationId = await SeedOrganizationWithLocationAsync(database, batelId);
             var userId = Guid.NewGuid();
-            var sut = CreateSut(database, organizationId, userId, role);
+            var grid = member switch
+            {
+                "Owner" => TestAccess.OwnerGrid,
+                "WaiterWithLocationsRead" => TestAccess.Grid((batelId, AccessModule.Locations, AccessLevel.Read), (batelId, AccessModule.Orders, AccessLevel.Manage)),
+                _ => TestAccess.Grid((batelId, AccessModule.Menus, AccessLevel.Read))
+            };
+            var sut = CreateSut(database, organizationId, TestAccess.Guard(userId, organizationId, grid, batelId));
 
             // Act
             var locations = await sut.GetLocationsAsync(userId);
 
             // Assert
-            locations.Count.ShouldBe(1, "every role of the organization may list its locations");
+            locations.Count.ShouldBe(1, "the Owner and any member with access to something may list the locations");
             locations[0].Name.ShouldBe("Unidade Batel", "the list holds the token organization's location");
         }
 
         [Fact]
         [Trait("Rule", "OR11")]
-        public async Task GetLocationsAsync_UserHasNoRoleInOrganization_ThrowsForbiddenNotAMember()
+        public async Task GetLocationsAsync_NewAdminWithNoAccess_ThrowsForbidden()
         {
             // Arrange
             using var database = new OrganizationTestDatabase();
             var organizationId = await SeedOrganizationWithLocationAsync(database);
             var userId = Guid.NewGuid();
-            var sut = CreateSut(database, organizationId, userId, role: null);
+            var sut = CreateSut(database, organizationId, TestAccess.Guard(userId, organizationId, TestAccess.NoAccessGrid));
 
             // Act
             var act = () => sut.GetLocationsAsync(userId);
 
             // Assert
             var exception = await act.ShouldThrowAsync<BusinessException>();
-            exception.StatusCode.ShouldBe(403, "a user with no role in the organization may not list its locations");
-            exception.Message.ShouldBe("UserNotMemberOfOrganization", customMessage: "the refusal says the user is not a member");
+            exception.StatusCode.ShouldBe(403, "a member who has been given no access yet may not list the locations");
         }
     }
 }

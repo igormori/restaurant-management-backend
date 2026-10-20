@@ -30,8 +30,8 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
         await factory.SeedOrganizationAsync(CantinaId, "Cantina da Nonna", Currency.BRL);
         await factory.SeedOrganizationAsync(TrattoriaId, "Trattoria do Sol", Currency.BRL);
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana",
-            new UserRole { OrganizationId = CantinaId, Role = Roles.Owner },
-            new UserRole { OrganizationId = TrattoriaId, Role = Roles.Owner });
+            TenantApiFactory.OwnerOf(CantinaId),
+            TenantApiFactory.OwnerOf(TrattoriaId));
         return factory;
     }
 
@@ -73,7 +73,7 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange: Cantina has Mercado Municipal (MM, active) and Batel (BT, closed)
         await using var factory = await CreateFactoryAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
         await CreateLocationAsync(client, "Unidade Mercado Municipal", "MM");
         var batelId = await CreateLocationAsync(client, "Unidade Batel", "BT");
         (await client.DeleteAsync($"/api/locations/{batelId}")).StatusCode.ShouldBe(HttpStatusCode.NoContent);
@@ -93,8 +93,8 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange: Trattoria already has MM
         await using var factory = await CreateFactoryAsync();
-        await CreateLocationAsync(factory.ClientFor(AnaId, TrattoriaId, Roles.Owner), "Unidade Mercado", "MM");
-        var cantinaClient = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        await CreateLocationAsync(factory.ClientFor(AnaId, TrattoriaId), "Unidade Mercado", "MM");
+        var cantinaClient = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await cantinaClient.PostAsJsonAsync("/api/locations", LocationBody("Unidade Mercado Municipal", "MM"));
@@ -112,7 +112,7 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange
         await using var factory = await CreateFactoryAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
         await CreateLocationAsync(client, "Unidade Mercado Municipal", "MM");
         var batelId = await CreateLocationAsync(client, "Unidade Batel", "BT");
 
@@ -131,7 +131,7 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange
         await using var factory = await CreateFactoryAsync();
-        var clients = Enumerable.Range(1, 5).Select(_ => factory.ClientFor(AnaId, CantinaId, Roles.Owner)).ToList();
+        var clients = Enumerable.Range(1, 5).Select(_ => factory.ClientFor(AnaId, CantinaId)).ToList();
 
         // Act
         var responses = await Task.WhenAll(clients.Select((client, i) =>
@@ -151,7 +151,7 @@ public class LocationCodeEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange: Batel is closed
         await using var factory = await CreateFactoryAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
         var batelId = await CreateLocationAsync(client, "Unidade Batel", "BT");
         (await client.DeleteAsync($"/api/locations/{batelId}")).StatusCode.ShouldBe(HttpStatusCode.NoContent);
         var bodyWithoutStatus = new

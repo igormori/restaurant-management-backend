@@ -49,7 +49,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             _securityOptions = securityOptions.Value;
             _localizer = localizer;
             _hub = hub;
-            _organizations = new OrganizationMembership(organizationLookup);
+            _organizations = new OrganizationMembership(db, organizationLookup);
             _refreshTokens = refreshTokenService;
             _accessTokens = new AccessTokenFactory(jwtOptions.Value);
             _passwordHasher = passwordHasher;
@@ -71,7 +71,6 @@ namespace RestaurantManagement.Modules.Identity.Services
         {
             var email = request.Email.Trim().ToLowerInvariant();
             var user = await _db.Users
-                .Include(u => u.Roles)
                 .FirstOrDefaultAsync(u => u.Email == email);
 
             // 🔑 Always verify a password, even when no user row exists, so an unregistered
@@ -104,9 +103,10 @@ namespace RestaurantManagement.Modules.Identity.Services
 
             // Issued only after every check passed, so a refused login leaves no token behind.
             var issued = await _refreshTokens.IssueAsync(user.Id, null, client.DeviceDescription, client.IpAddress);
-            var organizations = await _organizations.GetActiveChoicesAsync(user);
+            var memberOrganizationIds = await _organizations.GetOrganizationIdsAsync(user.Id);
+            var organizations = await _organizations.GetActiveChoicesAsync(memberOrganizationIds);
 
-            var auth = SessionResults.BuildAuth(user, _accessTokens.Create(user, null));
+            var auth = SessionResults.BuildAuth(user, _accessTokens.Create(user, memberOrganizationIds, null));
             auth.PhoneNumber = null;
             auth.Organizations = organizations;
 
@@ -123,12 +123,11 @@ namespace RestaurantManagement.Modules.Identity.Services
                 throw InvalidSession();
 
             var user = await _db.Users
-                .Include(u => u.Roles)
                 .FirstOrDefaultAsync(u => u.Id == rotated.UserId);
 
             // Same gates as login, so a refresh token can't outlive deactivation, unverified or locked state.
             var isLocked = user != null && user.LockedUntil.HasValue && user.LockedUntil > DateTime.UtcNow;
-            var membershipLost = user != null && rotated.OrganizationId.HasValue && !OrganizationMembership.IsMemberOf(user, rotated.OrganizationId.Value);
+            var membershipLost = user != null && rotated.OrganizationId.HasValue && !await _organizations.IsMemberOfAsync(user!.Id, rotated.OrganizationId.Value);
             if (user == null || !user.IsActive || !user.IsVerified || isLocked || membershipLost)
             {
                 // The replacement was already issued; revoke it so no active token is left behind.
@@ -136,7 +135,8 @@ namespace RestaurantManagement.Modules.Identity.Services
                 throw InvalidSession();
             }
 
-            return SessionResults.Build(SessionResults.BuildAuth(user, _accessTokens.Create(user, rotated.OrganizationId)), rotated);
+            var memberOrganizationIds = await _organizations.GetOrganizationIdsAsync(user.Id);
+            return SessionResults.Build(SessionResults.BuildAuth(user, _accessTokens.Create(user, memberOrganizationIds, rotated.OrganizationId)), rotated);
         }
 
         public async Task<SessionResult> SelectOrganizationAsync(
@@ -146,7 +146,6 @@ namespace RestaurantManagement.Modules.Identity.Services
                 throw new BusinessException(_localizer[OrganizationRequiredKey].Value, BadRequestStatusCode);
 
             var user = await _db.Users
-                .Include(u => u.Roles)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             var isLocked = user != null && user.LockedUntil.HasValue && user.LockedUntil > DateTime.UtcNow;
@@ -166,7 +165,8 @@ namespace RestaurantManagement.Modules.Identity.Services
                 : await _refreshTokens.RotateAsync(refreshToken, request.OrganizationId, userId);
             issued ??= await _refreshTokens.IssueAsync(userId, request.OrganizationId, client.DeviceDescription, client.IpAddress);
 
-            return SessionResults.Build(SessionResults.BuildAuth(user, _accessTokens.Create(user, request.OrganizationId)), issued);
+            var memberOrganizationIds = await _organizations.GetOrganizationIdsAsync(user.Id);
+            return SessionResults.Build(SessionResults.BuildAuth(user, _accessTokens.Create(user, memberOrganizationIds, request.OrganizationId)), issued);
         }
 
         private BusinessException InvalidSession()

@@ -8,6 +8,7 @@ using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Shouldly;
@@ -57,11 +58,16 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 IsVerified = isVerified,
                 LockedUntil = lockedUntil
             };
-            if (role != null)
-                user.Roles.Add(new UserRole { Role = role, OrganizationId = organizationId ?? CantinaId });
-
             seedContext.Users.Add(user);
             await seedContext.SaveChangesAsync();
+            if (role != null)
+            {
+                seedContext.Set<OrganizationMember>().Add(role == OwnerRole
+                    ? TestMembers.Owner(user.Id, organizationId ?? CantinaId)
+                    : TestMembers.Member(user.Id, organizationId ?? CantinaId));
+                await seedContext.SaveChangesAsync();
+            }
+
             return user.Id;
         }
 
@@ -409,7 +415,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         [Fact]
         [Trait("Rule", "F6")]
-        public async Task RefreshTokenAsync_UserWithRole_JwtContainsRoleClaim()
+        public async Task RefreshTokenAsync_MemberOfOneOrganization_TokenCarriesTheOrganizationAndNoRoleClaim()
         {
             // Arrange
             using var database = new IdentityTestDatabase();
@@ -421,8 +427,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var jwt = new JwtSecurityTokenHandler().ReadJwtToken(result.Auth.Token);
-            jwt.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value)
-                .Should().ContainSingle().Which.Should().Be(OwnerRole, "the refreshed access token carries the user's role");
+            jwt.Claims.Where(c => c.Type == ClaimTypes.Role).ShouldBeEmpty("the refreshed access token carries only the user and the organization, never a role: access is read from the stored grid on every request");
+            jwt.Claims.Single(c => c.Type == AppClaimTypes.OrganizationId).Value.Should().Be(CantinaId.ToString(), "the one organization of the user is still selected automatically");
         }
 
         [Fact]

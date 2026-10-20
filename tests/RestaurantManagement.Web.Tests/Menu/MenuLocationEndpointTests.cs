@@ -33,9 +33,9 @@ public class MenuLocationEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         var factory = await TenantApiFactory.CreateAsync(_postgres);
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana",
-            new UserRole { OrganizationId = CantinaId, Role = Roles.Owner });
+            TenantApiFactory.OwnerOf(CantinaId));
         await factory.SeedUserAsync(JoaoId, "joao@trattoriadosol.com.br", "João",
-            new UserRole { OrganizationId = TrattoriaId, Role = Roles.Waiter });
+            TenantApiFactory.MemberOf(TrattoriaId));
         await factory.SeedOrganizationAsync(CantinaId, "Cantina da Nonna", Currency.BRL);
         await factory.SeedOrganizationAsync(TrattoriaId, "Trattoria do Sol", Currency.BRL);
         await factory.SeedLocationAsync(CantinaId, CantinaCentroId, "Unidade Centro", "CENTRO", "America/Sao_Paulo");
@@ -66,7 +66,7 @@ public class MenuLocationEndpointTests : IClassFixture<PostgresDatabaseFixture>
             await db.SaveChangesAsync();
             return true;
         });
-        var client = factory.ClientFor(JoaoId, TrattoriaId, Roles.Waiter);
+        var client = factory.ClientFor(JoaoId, TrattoriaId);
 
         // Act
         var response = await client.GetAsync($"/api/menus/location/{CantinaCentroId}");
@@ -85,7 +85,7 @@ public class MenuLocationEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange
         await using var factory = await CreateFactoryAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.PostAsync($"/api/menus/{CantinaDinnerMenuId}/locations/{TrattoriaCentroId}", null);
@@ -104,7 +104,7 @@ public class MenuLocationEndpointTests : IClassFixture<PostgresDatabaseFixture>
     {
         // Arrange
         await using var factory = await CreateFactoryAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.PostAsJsonAsync("/api/menus/create", new

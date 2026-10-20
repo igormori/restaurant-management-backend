@@ -20,11 +20,10 @@ namespace RestaurantManagement.Modules.Organization.Services
 {
     public class OrganizationService : IOrganizationService
     {
-        private static readonly string[] OwnerOrAdminRoles = [Roles.Owner, Roles.Admin];
-
         private readonly OrganizationDbContext _orgDb;
-        private readonly IUserRoleLookup _userRoleLookup;
-        private readonly IUserRoleAssigner _userRoleAssigner;
+        private readonly IMemberAccessLookup _memberAccess;
+        private readonly IOrganizationAccessSetup _accessSetup;
+        private readonly IAccessGuard _accessGuard;
         private readonly ITenantScope _tenantScope;
         private readonly ITenantContext _tenantContext;
         private readonly IStringLocalizer<SharedResource> _localizer;
@@ -33,8 +32,9 @@ namespace RestaurantManagement.Modules.Organization.Services
 
         public OrganizationService(
             OrganizationDbContext orgDb,
-            IUserRoleLookup userRoleLookup,
-            IUserRoleAssigner userRoleAssigner,
+            IMemberAccessLookup memberAccess,
+            IOrganizationAccessSetup accessSetup,
+            IAccessGuard accessGuard,
             ITenantScope tenantScope,
             ITenantContext tenantContext,
             IStringLocalizer<SharedResource> localizer,
@@ -42,8 +42,9 @@ namespace RestaurantManagement.Modules.Organization.Services
             IAuditLog auditLog)
         {
             _orgDb = orgDb;
-            _userRoleLookup = userRoleLookup;
-            _userRoleAssigner = userRoleAssigner;
+            _memberAccess = memberAccess;
+            _accessSetup = accessSetup;
+            _accessGuard = accessGuard;
             _tenantScope = tenantScope;
             _tenantContext = tenantContext;
             _localizer = localizer;
@@ -53,12 +54,12 @@ namespace RestaurantManagement.Modules.Organization.Services
 
         public async Task<OrganizationResponse> CreateOrganizationAsync(Guid ownerUserId, CreateOrganizationRequest request)
         {
-            var userExists = await _userRoleLookup.UserExistsAsync(ownerUserId);
+            var userExists = await _memberAccess.UserExistsAsync(ownerUserId);
             if (!userExists)
                 throw new BusinessException(_localizer["UserNotFound"].Value, 401);
 
             // Get user's organization IDs from Identity module
-            var userOrgIds = await _userRoleLookup.GetOrganizationIdsForUserAsync(ownerUserId);
+            var userOrgIds = await _memberAccess.GetOrganizationIdsForUserAsync(ownerUserId);
 
             // Get organizations with settings from Organization module
             var userOrgs = await _orgDb.Organizations
@@ -134,11 +135,11 @@ namespace RestaurantManagement.Modules.Organization.Services
             // here rolls back the organization instead of leaving it orphaned.
             try
             {
-                await _userRoleAssigner.AssignRoleAsync(ownerUserId, org.Id, Roles.Owner);
+                await _accessSetup.AddOwnerWithDefaultRolesAsync(ownerUserId, org.Id);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to assign Owner role to user {UserId} for organization {OrganizationId}; rolling back organization creation.", ownerUserId, org.Id);
+                _logger.LogError(ex, "Failed to set up the Owner access of user {UserId} for organization {OrganizationId}; rolling back organization creation.", ownerUserId, org.Id);
                 await RollbackAsync(tx, ex);
                 throw;
             }
@@ -154,8 +155,8 @@ namespace RestaurantManagement.Modules.Organization.Services
                 // organization itself never committed: this UserRole now points at a
                 // non-existent organization. Compensate by revoking it as a best-effort
                 // cleanup, without masking the original commit failure.
-                _logger.LogError(ex, "Failed to commit organization {OrganizationId} after owner role was assigned to user {UserId}; a dangling UserRole for a non-existent organization may exist.", org.Id, ownerUserId);
-                await RevokeRoleBestEffortAsync(ownerUserId, org.Id, ex);
+                _logger.LogError(ex, "Failed to commit organization {OrganizationId} after the Owner access was set up for user {UserId}; a dangling membership for a non-existent organization may exist.", org.Id, ownerUserId);
+                await RemoveAccessBestEffortAsync(ownerUserId, org.Id, ex);
                 throw;
             }
 
@@ -163,15 +164,15 @@ namespace RestaurantManagement.Modules.Organization.Services
             return ToResponse(org, settings);
         }
 
-        private async Task RevokeRoleBestEffortAsync(Guid ownerUserId, Guid organizationId, Exception causeException)
+        private async Task RemoveAccessBestEffortAsync(Guid ownerUserId, Guid organizationId, Exception causeException)
         {
             try
             {
-                await _userRoleAssigner.RevokeRoleAsync(ownerUserId, organizationId, Roles.Owner);
+                await _accessSetup.RemoveOwnerAndRolesAsync(ownerUserId, organizationId);
             }
             catch (Exception revokeEx)
             {
-                _logger.LogError(revokeEx, "Failed to revoke Owner role from user {UserId} for organization {OrganizationId} after commit failure: {CauseMessage}", ownerUserId, organizationId, causeException.Message);
+                _logger.LogError(revokeEx, "Failed to revoke the Owner access of user {UserId} for organization {OrganizationId} after commit failure: {CauseMessage}", ownerUserId, organizationId, causeException.Message);
             }
         }
 
@@ -202,10 +203,8 @@ namespace RestaurantManagement.Modules.Organization.Services
             if (organizationSettings == null)
                 throw new BusinessException(_localizer["OrganizationSettingsNotFound"].Value, 404);
 
-            // 3. Only Owner or Admin of this organization may edit it
-            var assignments = await _userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId);
-            if (assignments == null || !AccessDecision.AllowsOrganizationWide(assignments, OwnerOrAdminRoles))
-                throw new BusinessException(_localizer["UserNotAdminOrOwner"].Value, 403);
+            // 3. Only the Owner may edit the organization and its settings
+            await _accessGuard.RequireOwnerAsync();
 
             var before = (organizationSettings.ServiceChargeRate, organizationSettings.DiscountApprovalLimit, organizationSettings.BusinessDayCutoff);
 
@@ -261,12 +260,12 @@ namespace RestaurantManagement.Modules.Organization.Services
 
         public async Task<List<OrganizationResponse>> GetOrganizationsAsync(Guid userId)
         {
-            var userExists = await _userRoleLookup.UserExistsAsync(userId);
+            var userExists = await _memberAccess.UserExistsAsync(userId);
             if (!userExists)
                 throw new BusinessException(_localizer["UserNotFound"].Value, 401);
 
             // Get organization IDs from Identity module
-            var orgIds = await _userRoleLookup.GetOrganizationIdsForUserAsync(userId);
+            var orgIds = await _memberAccess.GetOrganizationIdsForUserAsync(userId);
 
             // Get organizations with settings from Organization module
             var organizations = await _orgDb.Organizations

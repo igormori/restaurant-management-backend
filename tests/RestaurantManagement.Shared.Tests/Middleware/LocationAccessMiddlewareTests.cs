@@ -28,7 +28,7 @@ public class LocationAccessMiddlewareTests
     private static readonly Guid MercadoMunicipalLocationId = Guid.Parse(MercadoMunicipalLocation);
 
     private readonly IOrganizationLookup _organizationLookup = Substitute.For<IOrganizationLookup>();
-    private readonly IUserRoleLookup _userRoleLookup = Substitute.For<IUserRoleLookup>();
+    private readonly IMemberAccessLookup _memberAccess = Substitute.For<IMemberAccessLookup>();
     private readonly SelectedLocation _selectedLocation = new();
     private bool _nextCalled;
 
@@ -36,8 +36,12 @@ public class LocationAccessMiddlewareTests
     {
         _organizationLookup.GetLocationAsync(BatelLocationId)
             .Returns(new LocationSummaryDto { Id = BatelLocationId, OrganizationId = CantinaId });
-        _userRoleLookup.HasLocationAccessAsync(AnaId, CantinaId, BatelLocationId).Returns(true);
-        // Mercado Municipal belongs to Cantina, but Ana has no role for it (the lookup answers false).
+        // Ana's grid holds Menus Read at Batel and nothing at Mercado Municipal.
+        _memberAccess.GetAccessGridAsync(AnaId, CantinaId).Returns(new AccessGridDto
+        {
+            Cells = new[] { new AccessCellDto { LocationId = BatelLocationId, Module = AccessModule.Menus, Level = AccessLevel.Read } }
+        });
+        // Mercado Municipal belongs to Cantina, but Ana has no cell there.
         _organizationLookup.GetLocationAsync(MercadoMunicipalLocationId)
             .Returns(new LocationSummaryDto { Id = MercadoMunicipalLocationId, OrganizationId = CantinaId });
     }
@@ -76,10 +80,9 @@ public class LocationAccessMiddlewareTests
             _nextCalled = true;
             return Task.CompletedTask;
         });
-        return sut.InvokeAsync(context, currentUser, _organizationLookup, _userRoleLookup, _selectedLocation, EchoLocalizer());
+        return sut.InvokeAsync(context, currentUser, _organizationLookup, _memberAccess, _selectedLocation, EchoLocalizer());
     }
 
-    // Scenario 32
     [Theory]
     [InlineData("batel")]
     [InlineData("12345")]
@@ -98,7 +101,6 @@ public class LocationAccessMiddlewareTests
         _selectedLocation.LocationId.ShouldBeNull("a refused request selects no location");
     }
 
-    // Scenario 33
     [Fact]
     [Trait("Rule", "SH10")]
     public async Task InvokeAsync_NoOrganizationInToken_ThrowsForbiddenAndStops()
@@ -115,12 +117,11 @@ public class LocationAccessMiddlewareTests
         _selectedLocation.LocationId.ShouldBeNull("a refused request selects no location");
     }
 
-    // Scenario 34
     [Theory]
     [InlineData(UnknownLocation)]
     [InlineData(MercadoMunicipalLocation)]
     [Trait("Rule", "SH10")]
-    public async Task InvokeAsync_LocationUserMayNotWorkIn_ThrowsForbiddenAndStops(string location)
+    public async Task InvokeAsync_LocationWhereUserHasNoLevelOrNoSuchLocation_ThrowsForbiddenAndStops(string location)
     {
         // Arrange
         var context = SignedInRequest(location);
@@ -134,7 +135,6 @@ public class LocationAccessMiddlewareTests
         _selectedLocation.LocationId.ShouldBeNull("a refused request selects no location");
     }
 
-    // Scenario 35
     [Fact]
     [Trait("Rule", "SH11")]
     public async Task InvokeAsync_NoHeader_ContinuesWithoutLocationLimit()
@@ -150,7 +150,6 @@ public class LocationAccessMiddlewareTests
         _selectedLocation.LocationId.ShouldBeNull("no header means no location limit");
     }
 
-    // Scenario 36
     [Fact]
     [Trait("Rule", "SH11")]
     public async Task InvokeAsync_AnonymousRequestWithHeader_IgnoresHeaderAndContinues()
@@ -168,10 +167,9 @@ public class LocationAccessMiddlewareTests
         await _organizationLookup.DidNotReceiveWithAnyArgs().GetLocationAsync(default);
     }
 
-    // Scenario 37
     [Fact]
     [Trait("Rule", "SH11")]
-    public async Task InvokeAsync_UserAssignedToTheLocation_StoresLocationAndContinues()
+    public async Task InvokeAsync_UserWithALevelAtTheLocation_StoresLocationAndContinues()
     {
         // Arrange
         var context = SignedInRequest(BatelLocationId.ToString());
@@ -180,7 +178,23 @@ public class LocationAccessMiddlewareTests
         await InvokeAsync(context, CurrentUser(AnaId, CantinaId));
 
         // Assert
-        _nextCalled.ShouldBeTrue("a user assigned to the location goes on to the endpoint");
+        _nextCalled.ShouldBeTrue("a user with a level at the location goes on to the endpoint");
         _selectedLocation.LocationId.ShouldBe(BatelLocationId, "the location chosen in the header is the one the request works in");
+    }
+
+    [Fact]
+    [Trait("Rule", "SH11")]
+    public async Task InvokeAsync_OwnerWithNoStoredCells_StoresAnyLocationOfTheOrganizationAndContinues()
+    {
+        // Arrange
+        _memberAccess.GetAccessGridAsync(AnaId, CantinaId).Returns(new AccessGridDto { IsOwner = true });
+        var context = SignedInRequest(MercadoMunicipalLocation);
+
+        // Act
+        await InvokeAsync(context, CurrentUser(AnaId, CantinaId));
+
+        // Assert
+        _nextCalled.ShouldBeTrue("the Owner may work at any location of the organization");
+        _selectedLocation.LocationId.ShouldBe(MercadoMunicipalLocationId, "the location chosen in the header is the one the request works in");
     }
 }

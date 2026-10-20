@@ -76,9 +76,9 @@ public class PasswordResetEndpointTests : IClassFixture<PostgresDatabaseFixture>
             LastName = "Souza",
             IsVerified = true
         };
-        maria.Roles.Add(new UserRole { OrganizationId = CantinaId, Role = Roles.Owner });
         db.Users.Add(maria);
         await db.SaveChangesAsync();
+        await tenantFactory.AddMembershipAsync(MariaId, TenantApiFactory.OwnerOf(CantinaId));
         return factory;
     }
 
@@ -196,7 +196,7 @@ public class PasswordResetEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var reset = await client.PostAsJsonAsync(ResetUrl, new { email = MariaEmail, code, newPassword = NewPassword });
         var ownerClient = factory.CreateClient();
         ownerClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-            "Bearer", TestAccessTokens.Create(factory.Services, MariaId, CantinaId, Roles.Owner));
+            "Bearer", TestAccessTokens.Create(factory.Services, MariaId, CantinaId));
 
         // Act
         var auditResponse = await ownerClient.GetAsync(AuditLogUrl);

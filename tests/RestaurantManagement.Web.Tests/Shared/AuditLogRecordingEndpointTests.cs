@@ -43,8 +43,8 @@ public class AuditLogRecordingEndpointTests : IClassFixture<PostgresDatabaseFixt
     {
         var factory = await TenantApiFactory.CreateAsync(_postgres);
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana",
-            new UserRole { OrganizationId = CantinaId, Role = Roles.Owner },
-            new UserRole { OrganizationId = TrattoriaId, Role = Roles.Owner });
+            TenantApiFactory.OwnerOf(CantinaId),
+            TenantApiFactory.OwnerOf(TrattoriaId));
         await factory.SeedOrganizationAsync(CantinaId, "Cantina da Nonna", Currency.BRL);
         await factory.SeedOrganizationAsync(TrattoriaId, "Trattoria do Sol", Currency.BRL);
         await factory.SeedLocationAsync(CantinaId, CantinaBatelId, "Unidade Batel", "BATEL", "America/Sao_Paulo");
@@ -65,8 +65,8 @@ public class AuditLogRecordingEndpointTests : IClassFixture<PostgresDatabaseFixt
     {
         // Arrange
         await using var factory = await CreateFactoryAsync();
-        var cantinaClient = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
-        var trattoriaClient = factory.ClientFor(AnaId, TrattoriaId, Roles.Owner);
+        var cantinaClient = factory.ClientFor(AnaId, CantinaId);
+        var trattoriaClient = factory.ClientFor(AnaId, TrattoriaId);
 
         // Act
         var edit = await cantinaClient.PutAsJsonAsync("/api/organizations/edit", OrganizationBody);
@@ -86,7 +86,7 @@ public class AuditLogRecordingEndpointTests : IClassFixture<PostgresDatabaseFixt
     {
         // Arrange
         await using var factory = await CreateFactoryAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var delete = await client.DeleteAsync($"/api/locations/{CantinaBatelId}");

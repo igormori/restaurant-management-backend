@@ -3,7 +3,6 @@ using FluentAssertions;
 using NSubstitute;
 using RestaurantManagement.Modules.Menu.Services;
 using RestaurantManagement.Shared.Data;
-using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Xunit;
@@ -32,46 +31,39 @@ namespace RestaurantManagement.Modules.Menu.Tests
             return (menuId, organizationId);
         }
 
-        private static IUserRoleLookup CreateUserRoleLookup(Guid userId, Guid organizationId, string? role)
-        {
-            var userRoleLookup = Substitute.For<IUserRoleLookup>();
-            userRoleLookup.GetRoleAssignmentsAsync(userId, organizationId).Returns(role is null ? new List<RoleAssignmentDto>() : new List<RoleAssignmentDto> { new() { Role = role } });
-            return userRoleLookup;
-        }
-
         private static MenuService CreateSut(
             Data.MenuDbContext context,
-            IUserRoleLookup userRoleLookup,
+            IAccessGuard accessGuard,
             ITenantContext tenantContext,
             IOrganizationLookup? organizationLookup = null)
         {
             return new MenuService(
                 context,
                 organizationLookup ?? Substitute.For<IOrganizationLookup>(),
-                userRoleLookup,
+                accessGuard,
                 tenantContext,
                 TestLocalizer.Create());
         }
 
         [Fact]
         [Trait("Rule", "M4")]
-        public async Task GetMenusAsync_WhenUserHasNoRoleForOrganization_ThrowsForbidden()
+        public async Task GetMenusAsync_MemberWithNoAccessYet_ThrowsForbidden()
         {
             // Arrange
             using var database = new MenuTestDatabase();
             var (_, organizationId) = await SeedMenuAsync(database);
             var userId = Guid.NewGuid();
-            var userRoleLookup = CreateUserRoleLookup(userId, organizationId, role: null);
+            var accessGuard = TestAccess.Guard(userId, organizationId, TestAccess.NoAccessGrid, Guid.NewGuid());
 
             var tenant = TestTenant.Of(organizationId);
             using var context = database.CreateContext(tenant);
-            var sut = CreateSut(context, userRoleLookup, tenant);
+            var sut = CreateSut(context, accessGuard, tenant);
 
             // Act
             var act = () => sut.GetMenusAsync(userId);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a user with no role in the organization may not read its menus");
+            await act.Should().ThrowAsync<BusinessException>().Where(e => e.StatusCode == 403, "a member who has been given no access yet may not read the organization's menus");
         }
     }
 }

@@ -40,10 +40,10 @@ public class LogoutEndpointTests : IDisposable
         return request;
     }
 
-    private HttpRequestMessage LogoutAllRequest(string role)
+    private HttpRequestMessage LogoutAllRequest()
     {
         var request = new HttpRequestMessage(HttpMethod.Post, LogoutAllUrl);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", TestAccessTokens.Create(_factory.Services, MariaId, role));
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", TestAccessTokens.Create(_factory.Services, MariaId));
         request.Headers.Add("Cookie", $"{CookieName}={TabletCookieToken}");
         return request;
     }
@@ -122,21 +122,18 @@ public class LogoutEndpointTests : IDisposable
     }
 
     // Scenario 64
-    [Theory]
-    [InlineData("Owner")]
-    [InlineData("Admin")]
-    [InlineData("Staff")]
+    [Fact]
     [Trait("Rule", "O5")]
-    public async Task LogoutAll_SignedInWithAnyRole_ReturnsNoContent(string role)
+    public async Task LogoutAll_SignedIn_ReturnsNoContent()
     {
         // Arrange
         var client = CreateClient();
 
         // Act
-        var response = await client.SendAsync(LogoutAllRequest(role));
+        var response = await client.SendAsync(LogoutAllRequest());
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.NoContent, "any signed-in role may log out of all its devices");
+        response.StatusCode.ShouldBe(HttpStatusCode.NoContent, "any signed-in user may log out of all its devices, whatever access the user holds");
     }
 
     // Scenario 65
@@ -148,7 +145,7 @@ public class LogoutEndpointTests : IDisposable
         var client = CreateClient();
 
         // Act
-        await client.SendAsync(LogoutAllRequest("Staff"));
+        await client.SendAsync(LogoutAllRequest());
 
         // Assert
         await _factory.SessionService.Received(1).LogoutAllAsync(MariaId);
@@ -164,7 +161,7 @@ public class LogoutEndpointTests : IDisposable
         var client = CreateClient();
 
         // Act
-        var response = await client.SendAsync(LogoutAllRequest("Owner"));
+        var response = await client.SendAsync(LogoutAllRequest());
 
         // Assert
         ShouldClearRefreshCookie(response);

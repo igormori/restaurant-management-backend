@@ -1,25 +1,33 @@
+using Microsoft.EntityFrameworkCore;
+using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Shared.Services.Organization;
 
 namespace RestaurantManagement.Modules.Identity.Services
 {
-    // Membership and active-organization checks for a user whose Roles are loaded.
+    // Membership and active-organization checks, read from the user's organization memberships.
     internal class OrganizationMembership
     {
+        private readonly IdentityDbContext _db;
         private readonly IOrganizationLookup _organizationLookup;
 
-        public OrganizationMembership(IOrganizationLookup organizationLookup)
+        public OrganizationMembership(IdentityDbContext db, IOrganizationLookup organizationLookup)
         {
+            _db = db;
             _organizationLookup = organizationLookup;
         }
 
-        public async Task<List<OrganizationChoice>> GetActiveChoicesAsync(User user)
+        public async Task<List<Guid>> GetOrganizationIdsAsync(Guid userId)
         {
-            var organizationIds = user.Roles
-                .Select(r => r.OrganizationId)
-                .Distinct()
-                .ToList();
+            return await _db.OrganizationMembers
+                .Where(m => m.UserId == userId)
+                .Select(m => m.OrganizationId)
+                .ToListAsync();
+        }
+
+        public async Task<List<OrganizationChoice>> GetActiveChoicesAsync(IReadOnlyCollection<Guid> organizationIds)
+        {
             if (organizationIds.Count == 0)
                 return new List<OrganizationChoice>();
 
@@ -33,7 +41,7 @@ namespace RestaurantManagement.Modules.Identity.Services
 
         public async Task<bool> CanSelectAsync(User user, Guid organizationId)
         {
-            if (!IsMemberOf(user, organizationId))
+            if (!await IsMemberOfAsync(user.Id, organizationId))
                 return false;
 
             var organizations = await _organizationLookup.GetOrganizationsAsync(new[] { organizationId });
@@ -42,9 +50,9 @@ namespace RestaurantManagement.Modules.Identity.Services
             return organization is { IsActive: true };
         }
 
-        public static bool IsMemberOf(User user, Guid organizationId)
+        public async Task<bool> IsMemberOfAsync(Guid userId, Guid organizationId)
         {
-            return user.Roles.Any(r => r.OrganizationId == organizationId);
+            return await _db.OrganizationMembers.AnyAsync(m => m.UserId == userId && m.OrganizationId == organizationId);
         }
     }
 }

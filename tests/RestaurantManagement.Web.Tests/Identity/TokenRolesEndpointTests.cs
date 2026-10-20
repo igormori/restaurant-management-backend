@@ -15,8 +15,9 @@ using Xunit;
 namespace RestaurantManagement.Web.Tests;
 
 /// <summary>
-/// POST api/auth/login then an Owner or Admin action, end to end on a real PostgreSQL database:
-/// the token of a user with roles in two organizations, who has not chosen one, is refused.
+/// POST api/auth/login then a menu action, end to end on a real PostgreSQL database: the token of a
+/// user who is a member of two organizations and has not chosen one carries no organization and no
+/// role, so the action is refused.
 /// </summary>
 public class TokenRolesEndpointTests : IClassFixture<PostgresDatabaseFixture>
 {
@@ -32,9 +33,10 @@ public class TokenRolesEndpointTests : IClassFixture<PostgresDatabaseFixture>
 
     [Fact]
     [Trait("Rule", "L21")]
-    public async Task CreateMenu_TokenOfOwnerInOneAndWaiterInAnotherOrganizationBeforeChoosing_Returns403()
+    public async Task CreateMenu_TokenOfMemberOfTwoOrganizationsBeforeChoosing_Returns403()
     {
         // Arrange
+        var userId = Guid.Parse("11111111-aaaa-4aaa-8aaa-00000000000a");
         await using var tenant = await TenantApiFactory.CreateAsync(_postgres);
         var app = tenant.WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>
         {
@@ -46,17 +48,18 @@ public class TokenRolesEndpointTests : IClassFixture<PostgresDatabaseFixture>
             var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
             var user = new User
             {
+                Id = userId,
                 Email = Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
                 FirstName = "Maria",
                 LastName = "Souza",
                 IsVerified = true
             };
-            user.Roles.Add(new UserRole { Role = "Owner", OrganizationId = CantinaId });
-            user.Roles.Add(new UserRole { Role = "Waiter", OrganizationId = TrattoriaId });
             db.Users.Add(user);
             await db.SaveChangesAsync();
         }
+        await tenant.AddMembershipAsync(userId, TenantApiFactory.OwnerOf(CantinaId));
+        await tenant.AddMembershipAsync(userId, TenantApiFactory.MemberOf(TrattoriaId));
         var client = app.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false });
         var login = await client.PostAsJsonAsync("/api/auth/login", new { email = Email, password = Password });
         login.StatusCode.ShouldBe(HttpStatusCode.OK, "valid credentials log the person in");
@@ -71,6 +74,6 @@ public class TokenRolesEndpointTests : IClassFixture<PostgresDatabaseFixture>
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden, "a token with no organization carries no role, so an action that requires Owner or Admin is refused");
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden, "a token with no organization carries no access, so a menu action is refused until an organization is chosen");
     }
 }

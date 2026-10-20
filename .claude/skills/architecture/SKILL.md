@@ -18,9 +18,10 @@
 
 ## 3. Multi-tenancy and roles
 - Data belongs to an organization; always scope queries by `OrganizationId`
-- Roles: Owner, Admin, Manager, Cashier, Waiter, Kitchen (fixed, in code). Access is decided by
-  **permissions** through the authorization policies, never by checking a role name in code. A user
-  can hold several role assignments, per location or for all locations of an organization
+- Access is a per-location grid: for each member, location x module -> None, Read or Manage. The
+  Shared access guard reads it on every request through `IMemberAccessLookup`; the token carries
+  no roles. Roles are presets stored per organization that only fill a grid. The Owner is a flag
+  on the membership and is unrestricted. Never check a role name in code
 
 ## 4. Module folders
 Every module uses the same folders:

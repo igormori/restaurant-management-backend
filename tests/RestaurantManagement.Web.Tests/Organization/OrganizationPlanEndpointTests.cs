@@ -24,7 +24,7 @@ public class OrganizationPlanEndpointTests : IClassFixture<PostgresDatabaseFixtu
         // Arrange
         await using var factory = await TenantApiFactory.CreateAsync(_postgres);
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana");
-        var client = factory.ClientFor(AnaId, organizationId: null, Roles.Owner);
+        var client = factory.ClientFor(AnaId, organizationId: null);
         var body = """
             {
               "name": "Pizzaria Vila Madalena",

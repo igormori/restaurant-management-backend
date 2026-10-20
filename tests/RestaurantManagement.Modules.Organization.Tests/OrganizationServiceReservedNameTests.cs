@@ -22,15 +22,15 @@ namespace RestaurantManagement.Modules.Organization.Tests
             // Arrange
             using var database = new OrganizationTestDatabase();
             var userId = Guid.NewGuid();
-            var userRoleLookup = Substitute.For<IUserRoleLookup>();
-            userRoleLookup.UserExistsAsync(userId).Returns(true);
-            userRoleLookup.GetOrganizationIdsForUserAsync(userId).Returns(new List<Guid>());
-            var userRoleAssigner = Substitute.For<IUserRoleAssigner>();
-            userRoleAssigner.AssignRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+            var memberLookup = Substitute.For<IMemberAccessLookup>();
+            memberLookup.UserExistsAsync(userId).Returns(true);
+            memberLookup.GetOrganizationIdsForUserAsync(userId).Returns(new List<Guid>());
+            var accessSetup = Substitute.For<IOrganizationAccessSetup>();
+            accessSetup.AddOwnerWithDefaultRolesAsync(Arg.Any<Guid>(), Arg.Any<Guid>())
                 .Returns(Task.CompletedTask);
             var logger = Substitute.For<ILogger<OrganizationService>>();
             using var context = database.CreateContext();
-            var sut = new OrganizationService(context, userRoleLookup, userRoleAssigner, new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
+            var sut = new OrganizationService(context, memberLookup, accessSetup, TestAccess.Permissive(), new TenantScope(), TestTenant.None, TestLocalizer.Create(), logger, Substitute.For<IAuditLog>());
             var request = new CreateOrganizationRequest { Name = name, Currency = "BRL" };
 
             // Act

@@ -6,17 +6,25 @@ namespace RestaurantManagement.Modules.Identity.Data
     public class IdentityDbContext : DbContext
     {
         public const string UniqueEmailIndexName = "ix_users_email_normalized";
-        public const string UniqueUserRoleIndexName = "ix_user_roles_user_id_organization_id_location_id_role";
+        public const string UniqueRoleNameIndexName = "ix_organization_roles_organization_id_name";
+        public const string UniqueMemberLevelIndexName = "ix_member_location_levels_cell";
+        public const string UniqueMemberRoleIndexName = "ix_member_location_roles_label";
+        private const int AccessCellMaxLength = 20;
+        public const string UniqueMemberIndexName = "ix_organization_members_user_id_organization_id";
 
         public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
             : base(options) { }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<OrganizationMember> OrganizationMembers { get; set; }
         public DbSet<UserVerificationCode> UserVerificationCodes { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
         public DbSet<PendingEmail> PendingEmails { get; set; }
+        public DbSet<OrganizationRole> OrganizationRoles { get; set; }
+        public DbSet<OrganizationRoleLevel> OrganizationRoleLevels { get; set; }
+        public DbSet<MemberLocationLevel> MemberLocationLevels { get; set; }
+        public DbSet<MemberLocationRole> MemberLocationRoles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,26 +43,81 @@ namespace RestaurantManagement.Modules.Identity.Data
                     .HasDatabaseName(UniqueEmailIndexName);
             });
 
-            modelBuilder.Entity<UserRole>(entity =>
+            // A membership blocks deleting its user. Identity has no query filter: login reads every
+            // membership of a user.
+            modelBuilder.Entity<OrganizationMember>(entity =>
             {
-                entity.HasOne(r => r.User)
-                    .WithMany(u => u.Roles)
-                    .HasForeignKey(r => r.UserId)
+                entity.HasOne<User>()
+                    .WithMany()
+                    .HasForeignKey(m => m.UserId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Nulls-not-distinct so two "all locations" (null) rows count as duplicates.
-                entity.HasIndex(r => new { r.UserId, r.OrganizationId, r.LocationId, r.Role })
+                entity.HasIndex(m => new { m.UserId, m.OrganizationId })
                     .IsUnique()
-                    .AreNullsDistinct(false)
-                    .HasDatabaseName(UniqueUserRoleIndexName);
+                    .HasDatabaseName(UniqueMemberIndexName);
 
                 // The check below is raw SQL, so the column name is fixed to match it in every provider.
-                entity.Property(r => r.OrganizationId).HasColumnName("organization_id");
+                entity.Property(m => m.OrganizationId).HasColumnName("organization_id");
 
-                // An unset Guid is all zeros, so reject it: a role must belong to a real organization.
+                // An unset Guid is all zeros, so reject it: a membership must belong to a real organization.
                 entity.ToTable(t => t.HasCheckConstraint(
-                    "ck_user_roles_organization_id_not_empty",
+                    "ck_organization_members_organization_id_not_empty",
                     "organization_id <> '00000000-0000-0000-0000-000000000000'"));
+            });
+
+            // A role name is used once per organization; a role's default levels go with the role.
+            modelBuilder.Entity<OrganizationRole>(entity =>
+            {
+                entity.ToTable("organization_roles");
+                entity.Property(r => r.Name).IsRequired().HasMaxLength(OrganizationRole.NameMaxLength);
+                entity.HasIndex(r => new { r.OrganizationId, r.Name })
+                    .IsUnique()
+                    .HasDatabaseName(UniqueRoleNameIndexName);
+            });
+
+            modelBuilder.Entity<OrganizationRoleLevel>(entity =>
+            {
+                entity.ToTable("organization_role_levels");
+                entity.Property(l => l.Module).HasConversion<string>().HasMaxLength(AccessCellMaxLength);
+                entity.Property(l => l.Level).HasConversion<string>().HasMaxLength(AccessCellMaxLength);
+                entity.HasOne<OrganizationRole>()
+                    .WithMany()
+                    .HasForeignKey(l => l.RoleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(l => new { l.RoleId, l.Module }).IsUnique();
+            });
+
+            // One row per cell of a member's grid: a member has one level per module and location.
+            // The location is an ID only; it belongs to the Organization module.
+            modelBuilder.Entity<MemberLocationLevel>(entity =>
+            {
+                entity.ToTable("member_location_levels");
+                entity.Property(l => l.Module).HasConversion<string>().HasMaxLength(AccessCellMaxLength);
+                entity.Property(l => l.Level).HasConversion<string>().HasMaxLength(AccessCellMaxLength);
+                entity.HasOne<User>()
+                    .WithMany()
+                    .HasForeignKey(l => l.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(l => new { l.OrganizationId, l.UserId, l.LocationId, l.Module })
+                    .IsUnique()
+                    .HasDatabaseName(UniqueMemberLevelIndexName);
+            });
+
+            // A label points to its role by ID, so renaming a role shows everywhere; a role in use is not deleted.
+            modelBuilder.Entity<MemberLocationRole>(entity =>
+            {
+                entity.ToTable("member_location_roles");
+                entity.HasOne<User>()
+                    .WithMany()
+                    .HasForeignKey(l => l.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne<OrganizationRole>()
+                    .WithMany()
+                    .HasForeignKey(l => l.RoleId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(l => new { l.OrganizationId, l.UserId, l.LocationId, l.RoleId })
+                    .IsUnique()
+                    .HasDatabaseName(UniqueMemberRoleIndexName);
             });
 
             // Codes are owned by the user and useless without them, so they go with the user.

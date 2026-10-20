@@ -1,10 +1,7 @@
-using RestaurantManagement.Shared.Auth;
 using NSubstitute;
 using RestaurantManagement.Modules.Menu.Entities;
 using RestaurantManagement.Modules.Menu.Services;
-using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Data;
-using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Services.Organization;
 using Shouldly;
 
@@ -43,9 +40,7 @@ public class MenuCategoryOrderTests
 
     private static MenuCategoryService CreateOwnerSut(Data.MenuDbContext context, ITenantContext tenant)
     {
-        var userRoleLookup = Substitute.For<IUserRoleLookup>();
-        userRoleLookup.GetRoleAssignmentsAsync(AnaId, CantinaId).Returns(new List<RoleAssignmentDto> { new() { Role = Roles.Owner } });
-        return new MenuCategoryService(context, Substitute.For<IOrganizationLookup>(), userRoleLookup, tenant, TestLocalizer.Create());
+        return new MenuCategoryService(context, Substitute.For<IOrganizationLookup>(), TestAccess.Permissive(), tenant, TestLocalizer.Create());
     }
 
     [Fact]

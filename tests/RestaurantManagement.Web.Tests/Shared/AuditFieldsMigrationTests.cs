@@ -267,6 +267,18 @@ public class AuditFieldsMigrationTests : IClassFixture<PostgresDatabaseFixture>
         location.UpdatedByUserId.ShouldBeNull();
     }
 
+    // The table is read with SQL because the access model no longer maps user_roles; the migration step under test still creates it.
+    private sealed class UserRoleRow
+    {
+        public Guid UserId { get; set; }
+        public Guid OrganizationId { get; set; }
+        public Guid? LocationId { get; set; }
+        public string Role { get; set; } = null!;
+        public DateTime CreatedAt { get; set; }
+        public Guid? CreatedByUserId { get; set; }
+        public Guid? UpdatedByUserId { get; set; }
+    }
+
     // Scenario 8
     [Fact]
     [Trait("Rule", "SHD8")]
@@ -290,7 +302,10 @@ public class AuditFieldsMigrationTests : IClassFixture<PostgresDatabaseFixture>
         await MigrateToAsync(context, auditMigration);
 
         // Assert
-        var role = await context.UserRoles.SingleAsync();
+        var role = (await context.Database.SqlQuery<UserRoleRow>($"""
+            SELECT user_id, organization_id, location_id, role, created_at, created_by_user_id, updated_by_user_id
+            FROM user_roles
+            """).ToListAsync()).Single();
         role.UserId.ShouldBe(MariaId);
         role.OrganizationId.ShouldBe(OrgA);
         role.LocationId.ShouldBeNull();

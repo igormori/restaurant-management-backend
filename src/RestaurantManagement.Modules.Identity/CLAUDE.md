@@ -7,7 +7,7 @@ Every change here updates docs/security/identity-matrix.md in the same commit (r
 root CLAUDE.md, "Security matrices"). Endpoint and database tests go in
 tests/RestaurantManagement.Web.Tests/Identity/.
 
-Verification is account-level, never organization-scoped: a user has no UserRole (and no
+Verification is account-level, never organization-scoped: a user has no organization membership (and no
 OrganizationId) until after verification, when they create/join an organization.
 Login collapses unknown email, wrong password, locked account, and unverified account into
 one generic 401; verify collapses unknown email, wrong code and a verification-locked account

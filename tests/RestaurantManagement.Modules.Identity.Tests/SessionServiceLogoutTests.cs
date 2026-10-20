@@ -35,10 +35,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var database = new IdentityTestDatabase();
             using var context = database.CreateContext();
             var maria = new User { Id = MariaId, Email = "maria@cantinadanonna.com.br", PasswordHash = "hash", FirstName = "Maria", LastName = "Souza", IsVerified = true };
-            maria.Roles.Add(new UserRole { Role = "Owner", OrganizationId = CantinaId });
             var joao = new User { Id = JoaoId, Email = "joao@trattoriadosol.com.br", PasswordHash = "hash", FirstName = "João", LastName = "Lima", IsVerified = true };
-            joao.Roles.Add(new UserRole { Role = "Staff", OrganizationId = TrattoriaId });
             context.Users.AddRange(maria, joao);
+            context.Set<OrganizationMember>().AddRange(TestMembers.Owner(MariaId, CantinaId), TestMembers.Member(JoaoId, TrattoriaId));
             await context.SaveChangesAsync();
             return database;
         }

@@ -33,8 +33,8 @@ public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFix
         await factory.SeedOrganizationAsync(MapleId, "Maple Leaf Bistro", Currency.CAD);
         await factory.SeedOrganizationAsync(LibertyId, "Liberty Diner", Currency.USD);
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana",
-            new UserRole { OrganizationId = CantinaId, Role = Roles.Owner },
-            new UserRole { OrganizationId = MapleId, Role = Roles.Owner });
+            TenantApiFactory.OwnerOf(CantinaId),
+            TenantApiFactory.OwnerOf(MapleId));
         return factory;
     }
 
@@ -70,7 +70,7 @@ public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFix
         // Arrange
         await using var factory = await TenantApiFactory.CreateAsync(_postgres);
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana");
-        var client = factory.ClientFor(AnaId, organizationId: null, Roles.Owner);
+        var client = factory.ClientFor(AnaId, organizationId: null);
 
         // Act
         var response = await client.PostAsync("/api/organizations/create", Json("""{ "name": "Pizzaria Vila Madalena" }"""));
@@ -91,7 +91,7 @@ public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFix
         // Arrange
         await using var factory = await TenantApiFactory.CreateAsync(_postgres);
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana");
-        var client = factory.ClientFor(AnaId, organizationId: null, Roles.Owner);
+        var client = factory.ClientFor(AnaId, organizationId: null);
 
         // Act
         var response = await client.PostAsync("/api/organizations/create", Json("""{ "name": "Pizzaria Vila Madalena", "currency": 1 }"""));
@@ -112,7 +112,7 @@ public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFix
         // Arrange
         await using var factory = await TenantApiFactory.CreateAsync(_postgres);
         await factory.SeedUserAsync(AnaId, "ana@cantinadanonna.com.br", "Ana");
-        var client = factory.ClientFor(AnaId, organizationId: null, Roles.Owner);
+        var client = factory.ClientFor(AnaId, organizationId: null);
 
         // Act
         var response = await client.PostAsJsonAsync("/api/organizations/create", new { name = "Poutine Palace", currency = "CAD" });
@@ -130,7 +130,7 @@ public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFix
     {
         // Arrange
         await using var factory = await CreateFactoryAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.PutAsJsonAsync("/api/organizations/edit", EditBody(currency: "USD"));
@@ -147,7 +147,7 @@ public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFix
     {
         // Arrange
         await using var factory = await CreateFactoryAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var organizations = await ListOrganizationsAsync(client);
@@ -167,7 +167,7 @@ public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFix
     {
         // Arrange
         await using var factory = await CreateFactoryAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.PutAsJsonAsync("/api/organizations/edit", EditBody());
@@ -187,7 +187,7 @@ public class OrganizationFieldsEndpointTests : IClassFixture<PostgresDatabaseFix
     {
         // Arrange
         await using var factory = await CreateFactoryAsync();
-        var client = factory.ClientFor(AnaId, CantinaId, Roles.Owner);
+        var client = factory.ClientFor(AnaId, CantinaId);
 
         // Act
         var response = await client.PutAsJsonAsync("/api/organizations/edit", EditBody(organizationId: MapleId));

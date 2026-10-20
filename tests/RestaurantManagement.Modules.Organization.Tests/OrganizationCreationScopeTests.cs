@@ -4,7 +4,6 @@ using NSubstitute;
 using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Modules.Organization.Services;
-using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.AuditLog;
@@ -35,8 +34,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
         private sealed class Harness
         {
             public TenantScope TenantScope { get; } = new();
-            public IUserRoleAssigner RoleAssigner { get; } = Substitute.For<IUserRoleAssigner>();
-            public IUserRoleLookup RoleLookup { get; } = Substitute.For<IUserRoleLookup>();
+            public IOrganizationAccessSetup AccessSetup { get; } = Substitute.For<IOrganizationAccessSetup>();
+            public IMemberAccessLookup MemberLookup { get; } = Substitute.For<IMemberAccessLookup>();
             public AuditSaveChangesInterceptor Interceptor { get; }
             public ITenantContext Tenant { get; }
 
@@ -46,8 +45,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
                 currentUser.UserId.Returns(MariaId);
                 currentUser.OrganizationId.Returns(currentUserOrganizationId);
 
-                RoleLookup.UserExistsAsync(MariaId).Returns(true);
-                RoleLookup.GetOrganizationIdsForUserAsync(MariaId).Returns(new List<Guid>());
+                MemberLookup.UserExistsAsync(MariaId).Returns(true);
+                MemberLookup.GetOrganizationIdsForUserAsync(MariaId).Returns(new List<Guid>());
 
                 Interceptor = new AuditSaveChangesInterceptor(
                     currentUser, TenantScope, new FixedTimeProvider(CreationTime), TestLocalizer.Create());
@@ -55,7 +54,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             }
 
             public OrganizationService CreateService(OrganizationDbContext context) => new(
-                context, RoleLookup, RoleAssigner, TenantScope, Tenant, TestLocalizer.Create(),
+                context, MemberLookup, AccessSetup, TestAccess.Permissive(), TenantScope, Tenant, TestLocalizer.Create(),
                 Substitute.For<ILogger<OrganizationService>>(), Substitute.For<IAuditLog>());
         }
 
@@ -133,8 +132,8 @@ namespace RestaurantManagement.Modules.Organization.Tests
             using var database = new OrganizationTestDatabase();
             var harness = new Harness(currentUserOrganizationId: null);
             Guid? scopeDuringAssignment = null;
-            harness.RoleAssigner
-                .AssignRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+            harness.AccessSetup
+                .AddOwnerWithDefaultRolesAsync(Arg.Any<Guid>(), Arg.Any<Guid>())
                 .Returns(_ =>
                 {
                     scopeDuringAssignment = harness.TenantScope.OrganizationId;
@@ -147,7 +146,7 @@ namespace RestaurantManagement.Modules.Organization.Tests
             var response = await sut.CreateOrganizationAsync(MariaId, CantinaDaNonna);
 
             // Assert
-            await harness.RoleAssigner.Received(1).AssignRoleAsync(MariaId, response.Id, Roles.Owner);
+            await harness.AccessSetup.Received(1).AddOwnerWithDefaultRolesAsync(MariaId, response.Id);
             scopeDuringAssignment.ShouldBe(response.Id, "the Owner role is assigned inside the new organization, not the creator's current one");
         }
 
@@ -172,13 +171,13 @@ namespace RestaurantManagement.Modules.Organization.Tests
         // Scenario 6
         [Fact]
         [Trait("Rule", "OR6")]
-        public async Task CreateOrganizationAsync_RoleAssignmentFails_ScopeIsClosedAndNothingPersisted()
+        public async Task CreateOrganizationAsync_AccessSetupFails_ScopeIsClosedAndNothingPersisted()
         {
             // Arrange
             using var database = new OrganizationTestDatabase();
             var harness = new Harness(currentUserOrganizationId: null);
-            harness.RoleAssigner
-                .AssignRoleAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>())
+            harness.AccessSetup
+                .AddOwnerWithDefaultRolesAsync(Arg.Any<Guid>(), Arg.Any<Guid>())
                 .Returns(Task.FromException(new InvalidOperationException("Role assignment unavailable")));
             using var context = database.CreateContext(harness.Tenant, harness.Interceptor);
             var sut = harness.CreateService(context);

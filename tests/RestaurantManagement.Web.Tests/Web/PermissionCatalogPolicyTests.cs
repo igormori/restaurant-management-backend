@@ -6,7 +6,7 @@ using Shouldly;
 namespace RestaurantManagement.Web.Tests;
 
 /// <summary>
-/// Every permission in the catalog can be required by an endpoint, because each has a policy.
+/// Every module and level of the access grid can be required by an endpoint, because each has a policy.
 /// </summary>
 public class PermissionCatalogPolicyTests : IDisposable
 {
@@ -19,16 +19,20 @@ public class PermissionCatalogPolicyTests : IDisposable
 
     [Fact]
     [Trait("Rule", "W10")]
-    public async Task PolicyProvider_EveryPermissionInTheCatalog_HasAPolicyNamedAfterIt()
+    public async Task PolicyProvider_EveryModuleAndReadAndManage_HasAPolicyNamedModuleDotLevel()
     {
         // Arrange
         var provider = _factory.Services.GetRequiredService<IAuthorizationPolicyProvider>();
+        var names = Enum.GetValues<AccessModule>()
+            .SelectMany(module => new[] { AccessLevel.Read, AccessLevel.Manage }
+                .Select(level => $"{module.ToString().ToLowerInvariant()}.{level.ToString().ToLowerInvariant()}"))
+            .ToList();
 
         // Act
-        var policies = await Task.WhenAll(Permissions.All.Select(permission => provider.GetPolicyAsync(permission)));
+        var policies = await Task.WhenAll(names.Select(name => provider.GetPolicyAsync(name)));
 
         // Assert
-        Permissions.All.ShouldNotBeEmpty();
-        policies.ShouldAllBe(policy => policy != null, "every permission in the catalog needs a policy, or an endpoint requiring it would fail");
+        names.Count.ShouldBe(14, "seven modules with two levels each");
+        policies.ShouldAllBe(policy => policy != null, "every module and level needs a policy, or an endpoint requiring it would fail");
     }
 }
