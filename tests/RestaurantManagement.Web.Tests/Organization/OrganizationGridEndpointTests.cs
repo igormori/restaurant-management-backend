@@ -124,7 +124,7 @@ public class OrganizationGridEndpointTests : IClassFixture<PostgresDatabaseFixtu
         ownerHere.StatusCode.ShouldBe(HttpStatusCode.OK, "the Owner of Cantina da Nonna may edit it");
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden, "being the Owner of Trattoria do Sol gives nothing in Cantina da Nonna");
         var name = await factory.InOrganizationAsync<RestaurantManagement.Modules.Organization.Data.OrganizationDbContext, string>(CantinaId,
-            async db => (await db.Organizations.SingleAsync()).Name);
+            async db => (await db.Organizations.SingleAsync(o => o.Id == CantinaId)).Name);
         name.ShouldBe("Cantina da Nonna", "a refused edit leaves the organization unchanged");
     }
 

@@ -139,7 +139,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to assign Owner role to user {UserId} for organization {OrganizationId}; rolling back organization creation.", ownerUserId, org.Id);
+                _logger.LogError(ex, "Failed to set up the Owner access of user {UserId} for organization {OrganizationId}; rolling back organization creation.", ownerUserId, org.Id);
                 await RollbackAsync(tx, ex);
                 throw;
             }
@@ -155,7 +155,7 @@ namespace RestaurantManagement.Modules.Organization.Services
                 // organization itself never committed: this UserRole now points at a
                 // non-existent organization. Compensate by revoking it as a best-effort
                 // cleanup, without masking the original commit failure.
-                _logger.LogError(ex, "Failed to commit organization {OrganizationId} after owner role was assigned to user {UserId}; a dangling UserRole for a non-existent organization may exist.", org.Id, ownerUserId);
+                _logger.LogError(ex, "Failed to commit organization {OrganizationId} after the Owner access was set up for user {UserId}; a dangling membership for a non-existent organization may exist.", org.Id, ownerUserId);
                 await RemoveAccessBestEffortAsync(ownerUserId, org.Id, ex);
                 throw;
             }
@@ -164,12 +164,13 @@ namespace RestaurantManagement.Modules.Organization.Services
             return ToResponse(org, settings);
         }
 
-        // Stubs for T8: creation calls Identity's access setup; editing needs the Owner through the guard.
-        private Task AddOwnerWithDefaultRolesAsync(Guid ownerUserId, Guid organizationId) => throw new NotImplementedException();
+        private Task AddOwnerWithDefaultRolesAsync(Guid ownerUserId, Guid organizationId)
+            => _accessSetup.AddOwnerWithDefaultRolesAsync(ownerUserId, organizationId);
 
-        private Task RemoveOwnerAndRolesAsync(Guid ownerUserId, Guid organizationId) => throw new NotImplementedException();
+        private Task RemoveOwnerAndRolesAsync(Guid ownerUserId, Guid organizationId)
+            => _accessSetup.RemoveOwnerAndRolesAsync(ownerUserId, organizationId);
 
-        private Task RequireOwnerAsync() => throw new NotImplementedException();
+        private Task RequireOwnerAsync() => _accessGuard.RequireOwnerAsync();
 
         private async Task RemoveAccessBestEffortAsync(Guid ownerUserId, Guid organizationId, Exception causeException)
         {
@@ -179,7 +180,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             }
             catch (Exception revokeEx)
             {
-                _logger.LogError(revokeEx, "Failed to revoke Owner role from user {UserId} for organization {OrganizationId} after commit failure: {CauseMessage}", ownerUserId, organizationId, causeException.Message);
+                _logger.LogError(revokeEx, "Failed to revoke the Owner access of user {UserId} for organization {OrganizationId} after commit failure: {CauseMessage}", ownerUserId, organizationId, causeException.Message);
             }
         }
 

@@ -55,6 +55,6 @@ No public endpoint, no new library or integration, no backfill (pre-launch, root
 - [x] T5 — Member grids: storage, lookup, audited changes
 - [x] T6 — Access guard and location choice on the grid
 - [x] T7 — Grid policies; audit log needs Reports
-- [ ] T8 — Locations, settings and organization creation use the grid
+- [x] T8 — Locations, settings and organization creation use the grid
 - [ ] T9 — Menus and categories use the grid
 - [ ] T10 — Remove the retired role types

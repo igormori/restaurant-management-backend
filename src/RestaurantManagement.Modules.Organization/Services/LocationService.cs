@@ -162,13 +162,15 @@ namespace RestaurantManagement.Modules.Organization.Services
             return locations.Select(MapToResponse).ToList();
         }
 
-        // Stubs for T8: the rules live on the access grid, through the guard.
-        private Task RequireOwnerAsync() => throw new NotImplementedException();
+        private Task RequireOwnerAsync() => _accessGuard.RequireOwnerAsync();
 
         private Task RequireAnyAccessAsync() => _accessGuard.RequireAnyAccessAsync();
 
         // Locations Manage at the location; an edit that sets the status Closed needs the Owner.
-        private Task RequireManageLocationAsync(Location location, LocationStatus? requestedStatus) => throw new NotImplementedException();
+        private Task RequireManageLocationAsync(Location location, LocationStatus? requestedStatus)
+            => requestedStatus == LocationStatus.Closed
+                ? _accessGuard.RequireOwnerAsync()
+                : _accessGuard.RequireAtLocationAsync(AccessModule.Locations, AccessLevel.Manage, location.Id);
 
         private static LocationType? ParseType(string? type)
             => type is null ? null : Enum.Parse<LocationType>(type);
