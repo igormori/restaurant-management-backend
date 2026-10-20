@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Modules.Identity.Services;
@@ -14,8 +15,12 @@ namespace RestaurantManagement.Modules.Identity.Controllers
 
         // POST api/invitations
         [HttpPost]
-        public Task<ActionResult<InvitationResponse>> Create([FromBody] CreateInvitationRequest request)
-            => throw new NotImplementedException();
+        [Authorize]
+        public async Task<ActionResult<InvitationResponse>> Create([FromBody] CreateInvitationRequest request)
+        {
+            var language = Request.Headers.AcceptLanguage.ToString().TrimStart().StartsWith("pt", StringComparison.OrdinalIgnoreCase) ? "pt" : "en";
+            return Ok(await _invitationService.CreateAsync(request, language));
+        }
 
         // DELETE api/invitations/{invitationId}
         [HttpDelete("{invitationId:guid}")]
