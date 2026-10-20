@@ -147,6 +147,27 @@
   <data name="RoleNotFound" xml:space="preserve">
     <value>Role not found.</value>
   </data>
+  <data name="AlreadyMemberOfOrganization" xml:space="preserve">
+    <value>This person is already a member of the organization.</value>
+  </data>
+  <data name="InvitationLinkInvalid" xml:space="preserve">
+    <value>This invitation link is invalid, expired or already used.</value>
+  </data>
+  <data name="InvitationNotFound" xml:space="preserve">
+    <value>Invitation not found.</value>
+  </data>
+  <data name="CannotChangeOwnAccess" xml:space="preserve">
+    <value>You cannot change your own access.</value>
+  </data>
+  <data name="CannotGrantAboveOwnLevel" xml:space="preserve">
+    <value>You cannot grant a level above your own.</value>
+  </data>
+  <data name="InvitationForAnotherAccount" xml:space="preserve">
+    <value>This invitation was sent to another account.</value>
+  </data>
+  <data name="InvitationAccountExistsSignIn" xml:space="preserve">
+    <value>An account with this email already exists. Sign in to accept the invitation.</value>
+  </data>
   <data name="PhoneAttribute_ValidationError" xml:space="preserve">
     <value>The {0} field is not a valid phone number.</value>
   </data>
