@@ -92,10 +92,11 @@ namespace RestaurantManagement.Modules.Identity.Services
             if (replaced is not null)
                 replaced.ReplacedAt = invitation.CreatedAt;
             _db.OrganizationInvitations.Add(invitation);
-            AddGrids(invitation, grids);
+            InvitationGrids.AddRows(_db, invitation, grids);
             await _db.SaveChangesAsync();
 
-            await RecordInvitedAsync(invitation, before, DescribeGrids(email, grids));
+            await RecordInvitedAsync(invitation, before, InvitationGrids.Describe(email, grids));
+            await SendEmailAsync(invitation, token, grids);
             return new InvitationResponse { Id = invitation.Id, Email = email, ExpiresAt = invitation.ExpiresAt };
         }
 
@@ -110,35 +111,20 @@ namespace RestaurantManagement.Modules.Identity.Services
                 throw new BusinessException(_localizer["AlreadyMemberOfOrganization"].Value, 400);
         }
 
-        private async Task<List<(Guid LocationId, BuiltGrid Grid)>> BuildGridsAsync(CreateInvitationRequest request, Guid organizationId)
+        private async Task<List<LocationGridPlan>> BuildGridsAsync(CreateInvitationRequest request, Guid organizationId)
         {
-            var grids = new List<(Guid, BuiltGrid)>();
+            var grids = new List<LocationGridPlan>();
             foreach (var location in request.Locations)
             {
                 var summary = await _organizationLookup.GetLocationAsync(location.LocationId);
                 if (summary is null || summary.OrganizationId != organizationId)
                     throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
-                var grid = await _gridBuilder.BuildAsync(organizationId, location.RoleNames, ParseLevels(location.Levels));
-                grids.Add((location.LocationId, grid));
+                var grid = await _gridBuilder.BuildAsync(organizationId, location.RoleNames, InvitationGrids.ParseLevels(location.Levels, _localizer));
+                grids.Add(new LocationGridPlan(location.LocationId, summary.Name, grid));
             }
 
             return grids;
-        }
-
-        private Dictionary<AccessModule, AccessLevel> ParseLevels(Dictionary<string, string> levels)
-        {
-            var parsed = new Dictionary<AccessModule, AccessLevel>();
-            foreach (var (moduleName, levelName) in levels)
-            {
-                if (!Enum.TryParse<AccessModule>(moduleName, true, out var module) || !Enum.IsDefined(module)
-                    || !Enum.TryParse<AccessLevel>(levelName, true, out var level) || !Enum.IsDefined(level))
-                    throw new BusinessException(_localizer["ValidationFailed"].Value, 400);
-
-                parsed[module] = level;
-            }
-
-            return parsed;
         }
 
         private OrganizationInvitation NewInvitation(Guid organizationId, string email, string language, string token)
@@ -157,48 +143,6 @@ namespace RestaurantManagement.Modules.Identity.Services
                 UpdatedAt = now
             };
         }
-
-        private void AddGrids(OrganizationInvitation invitation, List<(Guid LocationId, BuiltGrid Grid)> grids)
-        {
-            foreach (var (locationId, grid) in grids)
-            {
-                foreach (var role in grid.Roles)
-                    _db.OrganizationInvitationRoles.Add(new OrganizationInvitationRole
-                    {
-                        Id = Guid.NewGuid(),
-                        OrganizationId = invitation.OrganizationId,
-                        InvitationId = invitation.Id,
-                        LocationId = locationId,
-                        RoleId = role.Id,
-                        CreatedAt = invitation.CreatedAt,
-                        UpdatedAt = invitation.CreatedAt
-                    });
-                foreach (var (module, level) in grid.Levels)
-                    _db.OrganizationInvitationLevels.Add(new OrganizationInvitationLevel
-                    {
-                        Id = Guid.NewGuid(),
-                        OrganizationId = invitation.OrganizationId,
-                        InvitationId = invitation.Id,
-                        LocationId = locationId,
-                        Module = module,
-                        Level = level,
-                        CreatedAt = invitation.CreatedAt,
-                        UpdatedAt = invitation.CreatedAt
-                    });
-            }
-        }
-
-        private static string DescribeGrids(string email, List<(Guid LocationId, BuiltGrid Grid)> grids)
-            => JsonSerializer.Serialize(new
-            {
-                Email = email,
-                Locations = grids.Select(g => new
-                {
-                    g.LocationId,
-                    Roles = g.Grid.Roles.Select(r => r.Name).OrderBy(n => n).ToList(),
-                    Levels = g.Grid.Levels.OrderBy(l => l.Key).ToDictionary(l => l.Key.ToString(), l => l.Value.ToString())
-                })
-            });
 
         private async Task<string> DescribeAsync(OrganizationInvitation invitation)
         {
@@ -220,6 +164,30 @@ namespace RestaurantManagement.Modules.Identity.Services
                         .ToDictionary(l => l.Module.ToString(), l => l.Level.ToString())
                 })
             });
+        }
+
+        // The invitation is already saved; a failed send is logged by invitation ID only (never the address or token).
+        private async Task SendEmailAsync(OrganizationInvitation invitation, string token, List<LocationGridPlan> grids)
+        {
+            try
+            {
+                var inviter = await _db.Users.Where(u => u.Id == invitation.InvitedByUserId)
+                    .Select(u => u.FirstName + " " + u.LastName).FirstOrDefaultAsync() ?? string.Empty;
+                var organization = (await _organizationLookup.GetOrganizationsAsync(new[] { invitation.OrganizationId })).FirstOrDefault();
+                var organizationName = organization?.Name ?? string.Empty;
+                var productName = _emailOptions.Value.FromName;
+                var roles = grids.SelectMany(g => g.Grid.Roles.OrderBy(r => r.Name).Select(r => (r.Name, g.LocationName)));
+
+                var html = InvitationEmailTemplate.Build(
+                    invitation.Language, inviter.Trim(), organizationName, productName, roles,
+                    _invitationOptions.Value.AcceptPageUrl, token, invitation.ExpiresAt);
+                var subject = InvitationEmailTemplate.Subject(invitation.Language, organizationName, productName);
+                await _emailService.SendEmailAsync(invitation.Email, subject, html);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send the email of invitation {InvitationId}.", invitation.Id);
+            }
         }
 
         // The invitation is already saved; a failed audit write must not undo it or fail the request.

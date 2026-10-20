@@ -15,6 +15,11 @@ namespace RestaurantManagement.Modules.Identity.Services
     public class InvitationOptionsValidator : IValidateOptions<InvitationOptions>
     {
         public ValidateOptionsResult Validate(string? name, InvitationOptions options)
-            => throw new NotImplementedException();
+        {
+            if (!Uri.TryCreate(options.AcceptPageUrl?.Trim(), UriKind.Absolute, out _))
+                return ValidateOptionsResult.Fail("Invitation:AcceptPageUrl must be an absolute address.");
+
+            return ValidateOptionsResult.Success;
+        }
     }
 }

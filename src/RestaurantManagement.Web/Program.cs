@@ -157,6 +157,10 @@ builder.Services.AddOptions<VerificationCodeOptions>()
     .Bind(builder.Configuration.GetSection("VerificationCode"))
     .ValidateOnStart();
 builder.Services.AddSingleton<IValidateOptions<VerificationCodeOptions>, VerificationCodeOptionsValidator>();
+builder.Services.AddOptions<RestaurantManagement.Modules.Identity.Services.InvitationOptions>()
+    .Bind(builder.Configuration.GetSection(RestaurantManagement.Modules.Identity.Services.InvitationOptions.SectionName))
+    .ValidateOnStart();
+builder.Services.AddSingleton<IValidateOptions<RestaurantManagement.Modules.Identity.Services.InvitationOptions>, RestaurantManagement.Modules.Identity.Services.InvitationOptionsValidator>();
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<CorsOptions>(builder.Configuration.GetSection("Cors"));
 builder.Services.AddAuthRateLimiting(builder.Configuration);

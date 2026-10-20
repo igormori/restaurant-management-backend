@@ -50,6 +50,6 @@ Email uses the existing email service; no new library, no backfill (pre-launch, 
 - [x] T3 — Delegation rules and shared grid builder
 - [x] T4 — Edit a member's access at a location
 - [x] T5 — Create an invitation
-- [ ] T6 — Invitation email
+- [x] T6 — Invitation email
 - [ ] T7 — Accept an invitation
 - [ ] T8 — Cancel a pending invitation
