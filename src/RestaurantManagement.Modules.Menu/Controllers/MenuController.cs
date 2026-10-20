@@ -24,7 +24,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         }
 
         [HttpPost("create")]
-        [Authorize(Roles = "Owner,Admin")]
+        [Authorize]
         public async Task<ActionResult<MenuResponse>> Create([FromBody] CreateMenuRequest request)
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -38,7 +38,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         }
 
         [HttpPut("{menuId}")]
-        [Authorize(Roles = "Owner,Admin")]
+        [Authorize]
         public async Task<ActionResult<MenuResponse>> Edit(Guid menuId, [FromBody] EditMenuRequest request)
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -52,7 +52,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         }
 
         [HttpDelete("{menuId}")]
-        [Authorize(Roles = "Owner,Admin")]
+        [Authorize]
         public async Task<IActionResult> Delete(Guid menuId)
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -66,7 +66,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         }
 
         [HttpPost("{menuId}/locations/{locationId}")]
-        [Authorize(Roles = "Owner,Admin")]
+        [Authorize]
         public async Task<IActionResult> AttachLocation(Guid menuId, Guid locationId)
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -80,7 +80,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         }
 
         [HttpDelete("{menuId}/locations/{locationId}")]
-        [Authorize(Roles = "Owner,Admin")]
+        [Authorize]
         public async Task<IActionResult> DetachLocation(Guid menuId, Guid locationId)
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);

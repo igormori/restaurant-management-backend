@@ -32,7 +32,7 @@ namespace RestaurantManagement.Modules.Menu.Services
         {
             _menuDb = menuDb;
             _organizationLookup = organizationLookup;
-            _access = new MenuAccessChecker(accessGuard, localizer);
+            _access = new MenuAccessChecker(accessGuard);
             _tenantContext = tenantContext;
             _localizer = localizer;
         }
@@ -41,13 +41,19 @@ namespace RestaurantManagement.Modules.Menu.Services
         {
             var organizationId = GetTokenOrganizationId();
 
-            // 1. Verify user permissions
-            await _access.RequireOrganizationAdminAsync(userId, organizationId);
-
-            // 2. Organization check (redundant but safe)
+            // 1. Organization check (redundant but safe)
             var organizationExists = await _organizationLookup.OrganizationExistsAsync(organizationId);
             if (!organizationExists)
                 throw new BusinessException(_localizer["OrganizationNotFound"].Value, 404);
+
+            // 2. Verify access: Manage at each named location, or at every non-closed location when none is named
+            var namedLocations = request.LocationIds?.Any() == true
+                ? await _organizationLookup.GetLocationIdsInOrganizationAsync(organizationId, request.LocationIds)
+                : new List<Guid>();
+            if (request.LocationIds?.Any() == true)
+                await _access.RequireManageMenuAsync(namedLocations);
+            else
+                await _access.RequireManageEverywhereAsync();
 
             // 3. Create Menu
             var menu = new Entities.Menu
@@ -67,12 +73,9 @@ namespace RestaurantManagement.Modules.Menu.Services
             await _menuDb.SaveChangesAsync();
 
             // 4. If locations are provided, attach the menu
-            if (request.LocationIds != null && request.LocationIds.Any())
+            if (namedLocations.Count > 0)
             {
-                // Verify locations belong to organization
-                var validLocations = await _organizationLookup.GetLocationIdsInOrganizationAsync(organizationId, request.LocationIds);
-
-                foreach (var locationId in validLocations)
+                foreach (var locationId in namedLocations)
                 {
                     var locationMenu = new LocationMenu
                     {
@@ -98,7 +101,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (menu == null)
                 throw new BusinessException(_localizer["MenuNotFound"].Value, 404);
 
-            await _access.RequireOrganizationAdminAsync(userId, menu.OrganizationId);
+            await RequireManageMenuAsync(menuId);
 
             menu.Name = request.Name;
             menu.Description = request.Description;
@@ -116,7 +119,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (menu == null)
                 throw new BusinessException(_localizer["MenuNotFound"].Value, 404);
 
-            await _access.RequireOrganizationAdminAsync(userId, menu.OrganizationId);
+            await RequireManageMenuAsync(menuId);
 
             _menuDb.Menus.Remove(menu);
             await _menuDb.SaveChangesAsync();
@@ -128,11 +131,11 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (menu == null)
                 throw new BusinessException(_localizer["MenuNotFound"].Value, 404);
 
-            await _access.RequireOrganizationAdminAsync(userId, menu.OrganizationId);
-
             var location = await _organizationLookup.GetLocationAsync(locationId);
             if (location == null || location.OrganizationId != menu.OrganizationId)
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
+
+            await _access.RequireManageAtLocationAsync(locationId);
 
             var exists = await _menuDb.LocationMenus
                 .AnyAsync(lm => lm.MenuId == menuId && lm.LocationId == locationId);
@@ -158,7 +161,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (menu == null)
                 throw new BusinessException(_localizer["MenuNotFound"].Value, 404);
 
-            await _access.RequireOrganizationAdminAsync(userId, menu.OrganizationId);
+            await _access.RequireManageAtLocationAsync(locationId);
 
             var link = await _menuDb.LocationMenus
                 .FirstOrDefaultAsync(lm => lm.MenuId == menuId && lm.LocationId == locationId);
@@ -173,7 +176,7 @@ namespace RestaurantManagement.Modules.Menu.Services
         public async Task<List<MenuResponse>> GetMenusAsync(Guid userId)
         {
             var organizationId = GetTokenOrganizationId();
-            await _access.CheckReadAllAsync(userId, organizationId);
+            await _access.RequireReadEverywhereAsync();
 
             var menus = await _menuDb.Menus
                 .Where(m => m.OrganizationId == organizationId)
@@ -197,7 +200,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (location == null)
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
 
-            await _access.CheckReadAtLocationAsync(userId, location.OrganizationId, locationId);
+            await _access.RequireReadAtLocationAsync(locationId);
 
             var menus = await _menuDb.LocationMenus
                 .Where(lm => lm.LocationId == locationId)
@@ -215,6 +218,15 @@ namespace RestaurantManagement.Modules.Menu.Services
                 IsActive = m.IsActive,
                 LocationIds = m.LocationMenus.Select(lm => lm.LocationId).ToList()
             }).ToList();
+        }
+
+        private async Task RequireManageMenuAsync(Guid menuId)
+        {
+            var linkedLocationIds = await _menuDb.LocationMenus
+                .Where(lm => lm.MenuId == menuId)
+                .Select(lm => lm.LocationId)
+                .ToListAsync();
+            await _access.RequireManageMenuAsync(linkedLocationIds);
         }
 
         private Guid GetTokenOrganizationId()

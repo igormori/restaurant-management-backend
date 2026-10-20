@@ -28,7 +28,7 @@ namespace RestaurantManagement.Modules.Menu.Services
         {
             _context = context;
             _organizationLookup = organizationLookup;
-            _access = new MenuAccessChecker(accessGuard, localizer);
+            _access = new MenuAccessChecker(accessGuard);
             _tenantContext = tenantContext;
             _localizer = localizer;
         }
@@ -36,7 +36,6 @@ namespace RestaurantManagement.Modules.Menu.Services
         public async Task<MenuCategoryResponse> CreateAsync(Guid userId, CreateMenuCategoryRequest request)
         {
             var organizationId = GetTokenOrganizationId();
-            await _access.RequireOrganizationAdminAsync(userId, organizationId);
 
             // The tenant query filter hides other organizations' menus, so a foreign MenuId looks missing.
             var menuExists = await _context.Menus.AnyAsync(m => m.Id == request.MenuId);
@@ -49,6 +48,8 @@ namespace RestaurantManagement.Modules.Menu.Services
                 if (location == null || location.OrganizationId != organizationId)
                     throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
             }
+
+            await _access.RequireManageCategoryAsync(request.LocationId);
 
             var category = new MenuCategory
             {
@@ -76,7 +77,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (category == null)
                 return null;
 
-            await _access.CheckAdminAtLocationAsync(userId, category.OrganizationId, category.LocationId);
+            await _access.RequireReadCategoryAsync(category.LocationId);
 
             return MapToResponse(category);
         }
@@ -87,7 +88,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (menu == null)
                 return Enumerable.Empty<MenuCategoryResponse>();
 
-            await _access.RequireOrganizationAdminAsync(userId, menu.OrganizationId);
+            await _access.RequireReadEverywhereAsync();
 
             var categories = await _context.MenuCategories
                 .Where(c => c.MenuId == menuId)
@@ -101,7 +102,7 @@ namespace RestaurantManagement.Modules.Menu.Services
         public async Task<IEnumerable<MenuCategoryResponse>> GetAllAsync(Guid userId)
         {
             var organizationId = GetTokenOrganizationId();
-            await _access.RequireOrganizationAdminAsync(userId, organizationId);
+            await _access.RequireReadEverywhereAsync();
 
             var categories = await _context.MenuCategories
                 .Where(c => c.OrganizationId == organizationId)
@@ -118,7 +119,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (location == null)
                 return Enumerable.Empty<MenuCategoryResponse>();
 
-            await _access.CheckAdminAtLocationAsync(userId, location.OrganizationId, locationId);
+            await _access.RequireReadAtLocationAsync(locationId);
 
             var categories = await _context.MenuCategories
                 .Where(c => c.LocationId == locationId)
@@ -135,7 +136,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (category == null)
                 return null;
 
-            await _access.RequireOrganizationAdminAsync(userId, category.OrganizationId);
+            await _access.RequireManageCategoryAsync(category.LocationId);
 
             category.Name = request.Name;
             category.Description = request.Description;
@@ -152,7 +153,7 @@ namespace RestaurantManagement.Modules.Menu.Services
             if (category == null)
                 return false;
 
-            await _access.RequireOrganizationAdminAsync(userId, category.OrganizationId);
+            await _access.RequireManageCategoryAsync(category.LocationId);
 
             _context.MenuCategories.Remove(category);
             await _context.SaveChangesAsync();
