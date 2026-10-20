@@ -15,15 +15,18 @@ namespace RestaurantManagement.Modules.Identity.Controllers
         private readonly IRegistrationService _registrationService;
         private readonly ISessionService _sessionService;
         private readonly IVerificationService _verificationService;
+        private readonly IInvitationService _invitationService;
 
         public AuthController(
             IRegistrationService registrationService,
             ISessionService sessionService,
-            IVerificationService verificationService)
+            IVerificationService verificationService,
+            IInvitationService invitationService)
         {
             _registrationService = registrationService;
             _sessionService = sessionService;
             _verificationService = verificationService;
+            _invitationService = invitationService;
         }
 
         // POST api/auth/register
@@ -56,6 +59,12 @@ namespace RestaurantManagement.Modules.Identity.Controllers
             var result = await _sessionService.RefreshTokenAsync(RefreshTokenCookie.Read(Request));
             return RespondWithCookie(result);
         }
+
+        // POST api/auth/accept-invitation (no rate limit attribute yet: the implementer adds Verify)
+        [HttpPost("accept-invitation")]
+        [AllowAnonymous]
+        public Task<IActionResult> AcceptInvitation([FromBody] AcceptInvitationWithAccountRequest request)
+            => throw new NotImplementedException();
 
         // POST api/auth/select-organization
         [HttpPost("select-organization")]

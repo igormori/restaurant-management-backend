@@ -15,7 +15,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
             return new AuthController(
                 Substitute.For<IRegistrationService>(),
                 Substitute.For<ISessionService>(),
-                verificationService);
+                verificationService,
+                Substitute.For<IInvitationService>());
         }
 
         [Fact]

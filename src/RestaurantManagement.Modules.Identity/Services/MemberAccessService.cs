@@ -22,6 +22,8 @@ namespace RestaurantManagement.Modules.Identity.Services
         private readonly IAuditLog _auditLog;
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly ILogger<MemberAccessService> _logger;
+        private readonly IMemberDelegationRules _rules;
+        private readonly IMemberGridBuilder _gridBuilder;
 
         public MemberAccessService(
             IdentityDbContext db,
@@ -29,7 +31,9 @@ namespace RestaurantManagement.Modules.Identity.Services
             ITenantContext tenantContext,
             IAuditLog auditLog,
             IStringLocalizer<SharedResource> localizer,
-            ILogger<MemberAccessService> logger)
+            ILogger<MemberAccessService> logger,
+            IMemberDelegationRules rules,
+            IMemberGridBuilder gridBuilder)
         {
             _db = db;
             _organizationLookup = organizationLookup;
@@ -37,6 +41,8 @@ namespace RestaurantManagement.Modules.Identity.Services
             _auditLog = auditLog;
             _localizer = localizer;
             _logger = logger;
+            _rules = rules;
+            _gridBuilder = gridBuilder;
         }
 
         public async Task SetAccessAsync(
