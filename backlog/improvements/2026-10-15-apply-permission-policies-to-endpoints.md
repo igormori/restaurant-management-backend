@@ -8,3 +8,8 @@ The roles-and-permissions plan adds one access policy per permission but does no
 
 ## Why it matters
 Manager has menu.manage on paper but still cannot manage menus, because the old role checks refuse anyone who is not Owner or Admin. Until endpoints use permissions, the role-to-permission map only affects new endpoints.
+
+## Note (2026-10-19)
+Token role claims now carry only roles held for all locations (identity-matrix L14). Permission
+policies read those claims, so they fit organization-wide actions only. Location-level actions
+must check access in the service (`IUserRoleLookup`), not through token role policies.
