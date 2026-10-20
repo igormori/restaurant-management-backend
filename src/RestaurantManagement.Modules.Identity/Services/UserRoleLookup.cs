@@ -27,8 +27,13 @@ namespace RestaurantManagement.Modules.Identity.Services
             return userRole?.Role;
         }
 
-        public Task<List<RoleAssignmentDto>> GetRoleAssignmentsAsync(Guid userId, Guid organizationId)
-            => throw new NotImplementedException();
+        public async Task<List<RoleAssignmentDto>> GetRoleAssignmentsAsync(Guid userId, Guid organizationId)
+        {
+            return await _db.UserRoles
+                .Where(r => r.UserId == userId && r.OrganizationId == organizationId)
+                .Select(r => new RoleAssignmentDto { Role = r.Role, LocationId = r.LocationId })
+                .ToListAsync();
+        }
 
         public async Task<List<Guid>> GetOrganizationIdsForUserAsync(Guid userId)
         {
