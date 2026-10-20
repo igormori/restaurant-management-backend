@@ -7,6 +7,8 @@ namespace RestaurantManagement.Modules.Identity.Data
     {
         public const string UniqueEmailIndexName = "ix_users_email_normalized";
         public const string UniqueRoleNameIndexName = "ix_organization_roles_organization_id_name";
+        public const string UniqueMemberLevelIndexName = "ix_member_location_levels_cell";
+        public const string UniqueMemberRoleIndexName = "ix_member_location_roles_label";
         private const int AccessCellMaxLength = 20;
         public const string UniqueMemberIndexName = "ix_organization_members_user_id_organization_id";
 
@@ -21,19 +23,13 @@ namespace RestaurantManagement.Modules.Identity.Data
         public DbSet<PendingEmail> PendingEmails { get; set; }
         public DbSet<OrganizationRole> OrganizationRoles { get; set; }
         public DbSet<OrganizationRoleLevel> OrganizationRoleLevels { get; set; }
+        public DbSet<MemberLocationLevel> MemberLocationLevels { get; set; }
+        public DbSet<MemberLocationRole> MemberLocationRoles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Apply any entity configurations from this assembly
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(IdentityDbContext).Assembly);
-
-            // Test stub for T3-T5, remove with the real mapping and migrations: the new access entities are in the
-            // model only on SQLite (unit tests), so the PostgreSQL model still matches the migrations until then.
-            if (Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
-            {
-                modelBuilder.Entity<MemberLocationLevel>();
-                modelBuilder.Entity<MemberLocationRole>();
-            }
 
             // Case-insensitive uniqueness on email, enforced at the database level via a
             // stored computed shadow column so the constraint holds regardless of write path.
@@ -89,6 +85,39 @@ namespace RestaurantManagement.Modules.Identity.Data
                     .HasForeignKey(l => l.RoleId)
                     .OnDelete(DeleteBehavior.Cascade);
                 entity.HasIndex(l => new { l.RoleId, l.Module }).IsUnique();
+            });
+
+            // One row per cell of a member's grid: a member has one level per module and location.
+            // The location is an ID only; it belongs to the Organization module.
+            modelBuilder.Entity<MemberLocationLevel>(entity =>
+            {
+                entity.ToTable("member_location_levels");
+                entity.Property(l => l.Module).HasConversion<string>().HasMaxLength(AccessCellMaxLength);
+                entity.Property(l => l.Level).HasConversion<string>().HasMaxLength(AccessCellMaxLength);
+                entity.HasOne<User>()
+                    .WithMany()
+                    .HasForeignKey(l => l.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(l => new { l.OrganizationId, l.UserId, l.LocationId, l.Module })
+                    .IsUnique()
+                    .HasDatabaseName(UniqueMemberLevelIndexName);
+            });
+
+            // A label points to its role by ID, so renaming a role shows everywhere; a role in use is not deleted.
+            modelBuilder.Entity<MemberLocationRole>(entity =>
+            {
+                entity.ToTable("member_location_roles");
+                entity.HasOne<User>()
+                    .WithMany()
+                    .HasForeignKey(l => l.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne<OrganizationRole>()
+                    .WithMany()
+                    .HasForeignKey(l => l.RoleId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(l => new { l.OrganizationId, l.UserId, l.LocationId, l.RoleId })
+                    .IsUnique()
+                    .HasDatabaseName(UniqueMemberRoleIndexName);
             });
 
             // Codes are owned by the user and useless without them, so they go with the user.

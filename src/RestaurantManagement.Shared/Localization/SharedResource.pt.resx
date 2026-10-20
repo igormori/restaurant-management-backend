@@ -144,6 +144,9 @@
   <data name="MenuCategoryNotFound" xml:space="preserve">
     <value>Categoria do menu não encontrada.</value>
   </data>
+  <data name="RoleNotFound" xml:space="preserve">
+    <value>Perfil não encontrado.</value>
+  </data>
   <data name="PhoneAttribute_ValidationError" xml:space="preserve">
     <value>O campo {0} não é um número de telefone válido.</value>
   </data>
