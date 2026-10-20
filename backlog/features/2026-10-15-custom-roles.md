@@ -1,21 +1,27 @@
 # Custom roles per organization
 
-**Found during:** docs/plans/identity/2026-10-15-tighten-user-roles-and-permissions/plan.md
+**Status:** proposed
+**Severity:** medium
+**Origin:** docs/specs/shared/2026-10-19-per-location-access-grid.md · Out of Scope (later slice)
 **Date:** 2026-10-15
 
 ## Problem
-Roles and their permissions are fixed by the product (Owner, Admin, Manager, Cashier, Waiter,
-Kitchen). An Owner cannot create a role with a custom set of permissions, for example a waiter
-who can also manage the menu, without giving that person a second full role.
+Roles are stored per organization with default levels (per-location access grid spec), but nobody can create, edit or rename them. The Owner or Admins should be able to create custom roles (e.g. "Marketing") and edit or rename the existing ones.
 
-## Fix
-- Let an Owner (or Admin) create, edit and delete roles for their own organization and choose
-  which permissions each role grants.
-- The permission list stays fixed by the product; only the role-to-permission mapping becomes
-  configurable per organization.
-- Built-in roles keep working; decide whether they can be edited.
+## Decisions (2026-10-19)
+- Roles live in the database per organization; each new organization gets Admin, Manager, Cashier, Waiter, Kitchen. The Owner is not an editable role.
+- A role is a preset of default levels (location x module). Editing a role's levels never changes existing members' grids; renaming updates every member's label (stored role names per member and location).
+- Assumption (not decided): an Admin with Members = Manage may create roles, capped at their own levels, like the delegation rule for grids.
 
-## Notes
-- Moves the role-to-permission map from code into the database, so it is a high-risk change
-  (new tables, auth change).
-- Depends on 2026-10-15-tighten-user-roles-and-permissions being shipped.
+## Evidence
+- `docs/specs/shared/2026-10-19-per-location-access-grid.md` — Out of Scope and Future State (Roles)
+- Original finding: docs/plans/identity/2026-10-15-tighten-user-roles-and-permissions/plan.md
+
+## Acceptance criteria
+- [ ] The Owner can create, edit and rename roles of their organization
+- [ ] An Admin can do the same within the delegation limits decided in its spec
+- [ ] Editing a role's levels leaves existing members' grids unchanged; renaming updates their labels
+- [ ] Another organization's roles are never visible or editable
+
+## Related
+backlog/features/2026-10-19-invite-member-and-edit-access-grid.md
