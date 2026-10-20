@@ -135,7 +135,7 @@ namespace RestaurantManagement.Modules.Organization.Services
             // here rolls back the organization instead of leaving it orphaned.
             try
             {
-                await AddOwnerWithDefaultRolesAsync(ownerUserId, org.Id);
+                await _accessSetup.AddOwnerWithDefaultRolesAsync(ownerUserId, org.Id);
             }
             catch (Exception ex)
             {
@@ -164,19 +164,11 @@ namespace RestaurantManagement.Modules.Organization.Services
             return ToResponse(org, settings);
         }
 
-        private Task AddOwnerWithDefaultRolesAsync(Guid ownerUserId, Guid organizationId)
-            => _accessSetup.AddOwnerWithDefaultRolesAsync(ownerUserId, organizationId);
-
-        private Task RemoveOwnerAndRolesAsync(Guid ownerUserId, Guid organizationId)
-            => _accessSetup.RemoveOwnerAndRolesAsync(ownerUserId, organizationId);
-
-        private Task RequireOwnerAsync() => _accessGuard.RequireOwnerAsync();
-
         private async Task RemoveAccessBestEffortAsync(Guid ownerUserId, Guid organizationId, Exception causeException)
         {
             try
             {
-                await RemoveOwnerAndRolesAsync(ownerUserId, organizationId);
+                await _accessSetup.RemoveOwnerAndRolesAsync(ownerUserId, organizationId);
             }
             catch (Exception revokeEx)
             {
@@ -212,7 +204,7 @@ namespace RestaurantManagement.Modules.Organization.Services
                 throw new BusinessException(_localizer["OrganizationSettingsNotFound"].Value, 404);
 
             // 3. Only the Owner may edit the organization and its settings
-            await RequireOwnerAsync();
+            await _accessGuard.RequireOwnerAsync();
 
             var before = (organizationSettings.ServiceChargeRate, organizationSettings.DiscountApprovalLimit, organizationSettings.BusinessDayCutoff);
 
