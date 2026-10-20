@@ -1,6 +1,6 @@
 # Plan: Per-location access grid
 
-**Spec:** docs/specs/shared/2026-10-19-per-location-access-grid.md   **Date:** 2026-10-20   **Status:** In progress
+**Spec:** docs/specs/shared/2026-10-19-per-location-access-grid.md   **Date:** 2026-10-20   **Status:** Done
 **Risk:** High — replaces the role table and the token's role claims, adds and removes Shared contracts, and changes authorization in every module (Identity migrations; no data, pre-launch)
 
 ## Summary
@@ -41,11 +41,11 @@ Terms: DoD (Definition of Done: the checks a task must pass to count as finished
 No public endpoint, no new library or integration, no backfill (pre-launch, root `CLAUDE.md`).
 
 ## Overall Definition of Done
-- [ ] All tasks done, tests passing
-- [ ] All spec Outcomes met
-- [ ] Full test suite green after the last batch
-- [ ] No out-of-scope changes; findings in the backlog
-- [ ] Spec Backlog Impact kept: the deletion of `backlog/improvements/2026-10-15-apply-permission-policies-to-endpoints.md` stays uncommitted for the user
+- [x] All tasks done, tests passing
+- [x] All spec Outcomes met
+- [x] Full test suite green after the last batch
+- [x] No out-of-scope changes; findings in the backlog
+- [x] Spec Backlog Impact kept: the deletion of `backlog/improvements/2026-10-15-apply-permission-policies-to-endpoints.md` stays uncommitted for the user
 
 ## Checklist
 - [x] T1 — Access grid types, decision and contracts
