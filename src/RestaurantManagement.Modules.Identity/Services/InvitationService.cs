@@ -79,6 +79,9 @@ namespace RestaurantManagement.Modules.Identity.Services
             if (email.Length == 0 || request.Locations.Count == 0)
                 throw new BusinessException(_localizer["ValidationFailed"].Value, 400);
 
+            if (request.Locations.Select(l => l.LocationId).Distinct().Count() != request.Locations.Count)
+                throw new BusinessException(_localizer["ValidationFailed"].Value, 400);
+
             await RequireNotMemberAsync(email, organizationId);
             var grids = await BuildGridsAsync(request, organizationId);
             await _rules.RequireAsync(null, grids.Select(g => new LocationGrant(g.LocationId, g.Grid.Levels)).ToList());

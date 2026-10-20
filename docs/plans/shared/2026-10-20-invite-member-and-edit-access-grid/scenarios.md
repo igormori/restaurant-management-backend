@@ -1,7 +1,7 @@
 # Scenarios: Invite a member and edit their access grid
 
 **Plan:** docs/plans/shared/2026-10-20-invite-member-and-edit-access-grid/plan.md
-**Coverage:** 43 scenarios — 12 happy · 5 edge · 7 failure · 18 security · 1 guard
+**Coverage:** 47 scenarios — 12 happy · 5 edge · 7 failure · 22 security · 1 guard
 
 Plan size is L (budget 40); scenarios 41–43 were added after the test-reviewer found the plan's DoD asked for them (3 over budget, flagged for Gate 2). Variants of one rule are parameterized tests, so a scenario can run several cases. Security matrix rows for every scenario are written in `docs/security/identity-matrix.md` (T43–T79), `shared-matrix.md` (SH43, SH44) and `organization-matrix.md` (OR44), all ❌ until the tests pass.
 
@@ -50,6 +50,10 @@ Plan size is L (budget 40); scenarios 41–43 were added after the test-reviewer
 | 41 | T4, T5, T7, T8 | Guard | The four signed-in invitation and access routes refuse a request with no token (4 cases) | `SignedInInvitationEndpoints_NoAccessToken_ReturnUnauthorized` | `tests/RestaurantManagement.Web.Tests/Identity/InvitationAuthEndpointTests.cs` |
 | 42 | T7 | Security | Too many requests to the public accept endpoint get 429 | `AcceptWithNewAccount_MoreRequestsThanTheVerifyLimit_ReturnsTooManyRequests` | `tests/RestaurantManagement.Web.Tests/Identity/InvitationAuthEndpointTests.cs` |
 | 43 | T7 | Failure | A weak password when accepting with a new account is a 400 (2 cases) | `AcceptWithNewAccount_WeakPassword_ReturnsBadRequest` | `tests/RestaurantManagement.Web.Tests/Identity/InvitationAuthEndpointTests.cs` |
+| 44 | T5 | Security | An invitation with a missing, malformed or too long email is a 400 and nothing is stored (4 cases plus 1) | `CreateInvitation_MissingOrMalformedEmail_ReturnsBadRequestAndStoresNothing`, `CreateInvitation_EmailLongerThan320Characters_ReturnsBadRequestAndStoresNothing` | `tests/RestaurantManagement.Web.Tests/Identity/InvitationEmailValidationEndpointTests.cs` |
+| 45 | T4, T5 | Security | An invitation or access edit body with an oversized locations, role names or levels list is a 400 and nothing changes (5 cases) | `CreateInvitation_OversizedCollection_ReturnsBadRequestAndStoresNothing`, `SetAccess_OversizedCollection_ReturnsBadRequestAndChangesNothing` | `tests/RestaurantManagement.Web.Tests/Identity/InvitationSizeLimitEndpointTests.cs` |
+| 46 | T7 | Security | A token longer than 200 characters is a 400 on both accept routes (2 cases) | `Accept_TokenLongerThanTheLimit_ReturnsBadRequest` | `tests/RestaurantManagement.Web.Tests/Identity/InvitationSizeLimitEndpointTests.cs` |
+| 47 | T5 | Security | An invitation listing the same location twice is a 400 and nothing is stored | `CreateInvitation_SameLocationTwice_ReturnsBadRequestAndStoresNothing` | `tests/RestaurantManagement.Web.Tests/Identity/InvitationSizeLimitEndpointTests.cs` |
 
 ## Spec Outcome coverage
 | Outcome | Scenarios |
