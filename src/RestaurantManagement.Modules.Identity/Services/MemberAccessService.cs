@@ -45,7 +45,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             _gridBuilder = gridBuilder;
         }
 
-        public async Task SetAccessAsync(
+        public async Task<MemberLocationAccessResponse> SetAccessAsync(
             Guid userId,
             Guid locationId,
             IReadOnlyCollection<string> roleNames,
@@ -56,14 +56,18 @@ namespace RestaurantManagement.Modules.Identity.Services
             await RequireLocationAsync(locationId, organizationId);
             var roles = await RequireRolesAsync(roleNames, organizationId);
 
-            var before = await LoadStateAsync(userId, locationId, organizationId);
             var finalLevels = await MergeLevelsAsync(roles, changedLevels, organizationId);
+            await _rules.RequireAsync(userId, new[] { new LocationGrant(locationId, finalLevels) });
+
+            var before = await LoadStateAsync(userId, locationId, organizationId);
             await StoreLevelsAsync(userId, locationId, organizationId, finalLevels);
             await StoreLabelsAsync(userId, locationId, organizationId, roles);
             await _db.SaveChangesAsync();
 
             var after = await LoadStateAsync(userId, locationId, organizationId);
             await RecordChangeAsync(userId, locationId, before, after);
+            return (await GetAccessAsync(userId)).FirstOrDefault(a => a.LocationId == locationId)
+                ?? new MemberLocationAccessResponse { LocationId = locationId };
         }
 
         public async Task<List<MemberLocationAccessResponse>> GetAccessAsync(Guid userId)

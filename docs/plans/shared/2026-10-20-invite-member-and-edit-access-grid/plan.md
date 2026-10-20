@@ -48,7 +48,7 @@ Email uses the existing email service; no new library, no backfill (pre-launch, 
 - [x] T1 — Location lookup returns the location name
 - [x] T2 — Audit actions and messages for invitations and delegation
 - [x] T3 — Delegation rules and shared grid builder
-- [ ] T4 — Edit a member's access at a location
+- [x] T4 — Edit a member's access at a location
 - [ ] T5 — Create an invitation
 - [ ] T6 — Invitation email
 - [ ] T7 — Accept an invitation
