@@ -44,5 +44,5 @@ No public endpoint, no raw SQL (Structured Query Language), no migration, no tok
 - [x] T1 — Role assignment DTO and access decision helper
 - [x] T2 — Role lookup returns every assignment in the organization
 - [x] T3 — Menu and menu category checks use all assignments
-- [ ] T4 — Location and organization checks use all assignments
+- [x] T4 — Location and organization checks use all assignments
 - [ ] T5 — Remove the single-role lookup
