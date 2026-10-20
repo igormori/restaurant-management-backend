@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Modules.Organization.Data;
+using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Shared.Services.Organization;
 
 namespace RestaurantManagement.Modules.Organization.Services
@@ -26,8 +27,13 @@ namespace RestaurantManagement.Modules.Organization.Services
                 .ToListAsync();
         }
 
-        public Task<List<Guid>> GetNonClosedLocationIdsAsync(Guid organizationId)
-            => throw new NotImplementedException();
+        public async Task<List<Guid>> GetNonClosedLocationIdsAsync(Guid organizationId)
+        {
+            return await _orgDb.Locations
+                .Where(l => l.OrganizationId == organizationId && l.Status != LocationStatus.Closed)
+                .Select(l => l.Id)
+                .ToListAsync();
+        }
 
         public async Task<List<OrganizationSummaryDto>> GetOrganizationsAsync(IReadOnlyCollection<Guid> organizationIds)
         {
