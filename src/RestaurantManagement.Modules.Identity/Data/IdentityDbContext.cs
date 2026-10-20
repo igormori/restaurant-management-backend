@@ -6,13 +6,13 @@ namespace RestaurantManagement.Modules.Identity.Data
     public class IdentityDbContext : DbContext
     {
         public const string UniqueEmailIndexName = "ix_users_email_normalized";
-        public const string UniqueUserRoleIndexName = "ix_user_roles_user_id_organization_id_location_id_role";
+        public const string UniqueMemberIndexName = "ix_organization_members_user_id_organization_id";
 
         public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
             : base(options) { }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<OrganizationMember> OrganizationMembers { get; set; }
         public DbSet<UserVerificationCode> UserVerificationCodes { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
@@ -27,7 +27,6 @@ namespace RestaurantManagement.Modules.Identity.Data
             // model only on SQLite (unit tests), so the PostgreSQL model still matches the migrations until then.
             if (Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
             {
-                modelBuilder.Entity<OrganizationMember>();
                 modelBuilder.Entity<OrganizationRole>();
                 modelBuilder.Entity<OrganizationRoleLevel>();
                 modelBuilder.Entity<MemberLocationLevel>();
@@ -46,25 +45,25 @@ namespace RestaurantManagement.Modules.Identity.Data
                     .HasDatabaseName(UniqueEmailIndexName);
             });
 
-            modelBuilder.Entity<UserRole>(entity =>
+            // A membership blocks deleting its user. Identity has no query filter: login reads every
+            // membership of a user.
+            modelBuilder.Entity<OrganizationMember>(entity =>
             {
-                entity.HasOne(r => r.User)
-                    .WithMany(u => u.Roles)
-                    .HasForeignKey(r => r.UserId)
+                entity.HasOne<User>()
+                    .WithMany()
+                    .HasForeignKey(m => m.UserId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Nulls-not-distinct so two "all locations" (null) rows count as duplicates.
-                entity.HasIndex(r => new { r.UserId, r.OrganizationId, r.LocationId, r.Role })
+                entity.HasIndex(m => new { m.UserId, m.OrganizationId })
                     .IsUnique()
-                    .AreNullsDistinct(false)
-                    .HasDatabaseName(UniqueUserRoleIndexName);
+                    .HasDatabaseName(UniqueMemberIndexName);
 
                 // The check below is raw SQL, so the column name is fixed to match it in every provider.
-                entity.Property(r => r.OrganizationId).HasColumnName("organization_id");
+                entity.Property(m => m.OrganizationId).HasColumnName("organization_id");
 
-                // An unset Guid is all zeros, so reject it: a role must belong to a real organization.
+                // An unset Guid is all zeros, so reject it: a membership must belong to a real organization.
                 entity.ToTable(t => t.HasCheckConstraint(
-                    "ck_user_roles_organization_id_not_empty",
+                    "ck_organization_members_organization_id_not_empty",
                     "organization_id <> '00000000-0000-0000-0000-000000000000'"));
             });
 

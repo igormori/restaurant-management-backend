@@ -22,6 +22,54 @@ namespace RestaurantManagement.Modules.Identity.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.OrganizationMember", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_user_id");
+
+                    b.Property<bool>("IsOwner")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_owner");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organization_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by_user_id");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_organization_members");
+
+                    b.HasIndex("UserId", "OrganizationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_organization_members_user_id_organization_id");
+
+                    b.ToTable("organization_members", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_organization_members_organization_id_not_empty", "organization_id <> '00000000-0000-0000-0000-000000000000'");
+                        });
+                });
+
             modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.PasswordResetCode", b =>
                 {
                     b.Property<Guid>("Id")
@@ -272,61 +320,6 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                     b.ToTable("users", (string)null);
                 });
 
-            modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.UserRole", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid?>("CreatedByUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by_user_id");
-
-                    b.Property<Guid?>("LocationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("location_id");
-
-                    b.Property<Guid>("OrganizationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("organization_id");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("role");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid?>("UpdatedByUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("updated_by_user_id");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_user_roles");
-
-                    b.HasIndex("UserId", "OrganizationId", "LocationId", "Role")
-                        .IsUnique()
-                        .HasDatabaseName("ix_user_roles_user_id_organization_id_location_id_role");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("UserId", "OrganizationId", "LocationId", "Role"), false);
-
-                    b.ToTable("user_roles", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_user_roles_organization_id_not_empty", "organization_id <> '00000000-0000-0000-0000-000000000000'");
-                        });
-                });
-
             modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.UserVerificationCode", b =>
                 {
                     b.Property<Guid>("Id")
@@ -364,6 +357,16 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                     b.ToTable("user_verification_codes", (string)null);
                 });
 
+            modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.OrganizationMember", b =>
+                {
+                    b.HasOne("RestaurantManagement.Modules.Identity.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_organization_members_users_user_id");
+                });
+
             modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.PasswordResetCode", b =>
                 {
                     b.HasOne("RestaurantManagement.Modules.Identity.Entities.User", "User")
@@ -388,18 +391,6 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.UserRole", b =>
-                {
-                    b.HasOne("RestaurantManagement.Modules.Identity.Entities.User", "User")
-                        .WithMany("Roles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_user_roles_users_user_id");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.UserVerificationCode", b =>
                 {
                     b.HasOne("RestaurantManagement.Modules.Identity.Entities.User", "User")
@@ -410,11 +401,6 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                         .HasConstraintName("fk_user_verification_codes_users_user_id");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("RestaurantManagement.Modules.Identity.Entities.User", b =>
-                {
-                    b.Navigation("Roles");
                 });
 #pragma warning restore 612, 618
         }

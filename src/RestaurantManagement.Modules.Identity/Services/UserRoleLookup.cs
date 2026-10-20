@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Modules.Identity.Data;
+using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Services.Identity;
 
 namespace RestaurantManagement.Modules.Identity.Services
 {
+    // Owner-only stand-in until the grid replaces the role contracts: an Owner reads as Owner for all
+    // locations, anyone else has no role and no location access.
     public class UserRoleLookup : IUserRoleLookup
     {
         private readonly IdentityDbContext _db;
@@ -21,26 +24,30 @@ namespace RestaurantManagement.Modules.Identity.Services
 
         public async Task<List<RoleAssignmentDto>> GetRoleAssignmentsAsync(Guid userId, Guid organizationId)
         {
-            return await _db.UserRoles
-                .Where(r => r.UserId == userId && r.OrganizationId == organizationId)
-                .Select(r => new RoleAssignmentDto { Role = r.Role, LocationId = r.LocationId })
-                .ToListAsync();
+            var isOwner = await IsOwnerAsync(userId, organizationId);
+
+            return isOwner
+                ? new List<RoleAssignmentDto> { new() { Role = Roles.Owner, LocationId = null } }
+                : new List<RoleAssignmentDto>();
         }
 
         public async Task<List<Guid>> GetOrganizationIdsForUserAsync(Guid userId)
         {
-            return await _db.UserRoles
-                .Where(r => r.UserId == userId)
-                .Select(r => r.OrganizationId)
+            return await _db.OrganizationMembers
+                .Where(m => m.UserId == userId)
+                .Select(m => m.OrganizationId)
                 .ToListAsync();
         }
 
         public async Task<bool> HasLocationAccessAsync(Guid userId, Guid organizationId, Guid locationId)
         {
-            return await _db.UserRoles.AnyAsync(r =>
-                r.UserId == userId
-                && r.OrganizationId == organizationId
-                && (r.LocationId == null || r.LocationId == locationId));
+            return await IsOwnerAsync(userId, organizationId);
+        }
+
+        private async Task<bool> IsOwnerAsync(Guid userId, Guid organizationId)
+        {
+            return await _db.OrganizationMembers.AnyAsync(m =>
+                m.UserId == userId && m.OrganizationId == organizationId && m.IsOwner);
         }
     }
 }

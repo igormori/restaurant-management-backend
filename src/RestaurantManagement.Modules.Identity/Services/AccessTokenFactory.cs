@@ -8,7 +8,7 @@ using RestaurantManagement.Shared.Options;
 
 namespace RestaurantManagement.Modules.Identity.Services
 {
-    // Builds the signed access token; user.Roles must be loaded.
+    // Builds the signed access token: the user and the organization, never a role claim.
     internal class AccessTokenFactory
     {
         private readonly JwtOptions _jwtOptions;
@@ -18,7 +18,7 @@ namespace RestaurantManagement.Modules.Identity.Services
             _jwtOptions = jwtOptions;
         }
 
-        public string Create(User user, Guid? selectedOrganizationId)
+        public string Create(User user, IReadOnlyList<Guid> memberOrganizationIds, Guid? selectedOrganizationId)
         {
             var claims = new List<Claim>
             {
@@ -29,29 +29,13 @@ namespace RestaurantManagement.Modules.Identity.Services
                 new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
             };
 
-            var organizationIds = user.Roles
-                .Select(r => r.OrganizationId)
-                .Distinct()
-                .ToList();
-
             // Users in several organizations must pick one, so only a single org is claimed automatically.
-            // Roles follow the same organization so the token never carries roles of another one.
+            var organizationIds = memberOrganizationIds.Distinct().ToList();
             var organizationId = selectedOrganizationId
                 ?? (organizationIds.Count == 1 ? organizationIds[0] : (Guid?)null);
 
             if (organizationId.HasValue)
             {
-                // Role claims decide organization-wide actions, so a role held for one location never enters the token.
-                var roles = user.Roles
-                    .Where(r => r.OrganizationId == organizationId.Value && r.LocationId is null)
-                    .Select(r => r.Role)
-                    .OrderBy(r => r);
-
-                foreach (var role in roles)
-                {
-                    claims.Add(new Claim(ClaimTypes.Role, role));
-                }
-
                 claims.Add(new Claim(AppClaimTypes.OrganizationId, organizationId.Value.ToString()));
             }
 

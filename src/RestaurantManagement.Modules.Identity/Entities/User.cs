@@ -22,8 +22,5 @@ namespace RestaurantManagement.Modules.Identity.Entities
         public DateTime? LastLoginAt { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation property
-        public ICollection<UserRole> Roles { get; set; } = new List<UserRole>();
     }
 }
