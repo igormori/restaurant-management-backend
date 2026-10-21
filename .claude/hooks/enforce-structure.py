@@ -16,7 +16,7 @@ import sys
 
 # ---------------- CONFIG ----------------
 MAX_LINES = 300  # production .cs files (generated migrations and Program.cs excluded)
-FLAT_SERVICES_LIMIT = 10  # files a module's Services/ may hold before it must be grouped by feature
+FLAT_FOLDER_LIMIT = 10  # files a folder in src/ may hold before it must be grouped by feature
 
 MODULE_FOLDERS = "Controllers|Services|Data|Entities|Models"
 PASCAL = r"[A-Z][A-Za-z0-9]*"
@@ -32,7 +32,7 @@ ALLOWED_NEW_FILES = [
     r"^docs/security/[a-z0-9-]+-matrix\.md$",
     r"^docs/security/[a-z0-9-]+-gap-report\.md$",
     rf"^src/RestaurantManagement\.Modules\.{PASCAL}/({MODULE_FOLDERS})/{PASCAL}\.cs$",
-    rf"^src/RestaurantManagement\.Modules\.{PASCAL}/Services/{PASCAL}/{PASCAL}\.cs$",
+    rf"^src/RestaurantManagement\.Modules\.{PASCAL}/({MODULE_FOLDERS})/{PASCAL}/{PASCAL}\.cs$",
     rf"^src/RestaurantManagement\.Modules\.{PASCAL}/Templates/[a-z0-9-]+\.html$",
     rf"^src/RestaurantManagement\.Modules\.{PASCAL}/Migrations/\d{{14}}_{PASCAL}(\.Designer)?\.cs$",
     rf"^src/RestaurantManagement\.Modules\.{PASCAL}/Migrations/{PASCAL}ModelSnapshot\.cs$",
@@ -84,23 +84,25 @@ def main() -> None:
     if not exists and not any(re.search(p, rel) for p in ALLOWED_NEW_FILES):
         block(
             f"{rel} is not an allowed location or name for a new file. "
-            "Module code goes in Controllers/, Services/ (or Services/<Feature>/), Data/, Entities/ "
-            "or Models/ with a PascalCase file name; email templates in Templates/; tests in "
+            "Module code goes in Controllers/, Services/, Data/, Entities/ or Models/ (or a "
+            "<Feature>/ subfolder of one) with a PascalCase file name; email templates in "
+            "Templates/; tests in "
             "tests/<Project>.Tests/. Check the architecture skill. "
             "If this file is really needed, stop and report it as [Blocking]."
         )
 
-    # 1b. A new service file goes in a feature subfolder once Services/ is grouped or full
-    flat_service = re.match(rf"^(src/RestaurantManagement\.Modules\.{PASCAL}/Services)/{PASCAL}\.cs$", rel)
-    if not exists and flat_service:
-        services_dir = os.path.join(root, flat_service.group(1))
-        entries = os.listdir(services_dir) if os.path.isdir(services_dir) else []
-        grouped = any(os.path.isdir(os.path.join(services_dir, e)) for e in entries)
-        if grouped or sum(e.endswith(".cs") for e in entries) >= FLAT_SERVICES_LIMIT:
+    # 1b. A new file goes in a feature subfolder once its folder is grouped or full
+    parent = os.path.dirname(rel)
+    in_project_folder = parent.startswith("src/") and parent.count("/") >= 2
+    if not exists and rel.endswith(".cs") and in_project_folder and "/Migrations" not in parent:
+        folder = os.path.join(root, parent)
+        entries = os.listdir(folder) if os.path.isdir(folder) else []
+        grouped = any(os.path.isdir(os.path.join(folder, e)) and e not in ("bin", "obj") for e in entries)
+        if grouped or sum(e.endswith(".cs") for e in entries) >= FLAT_FOLDER_LIMIT:
             block(
-                f"{rel} would add a loose file to {flat_service.group(1)}/, which is grouped by "
-                f"feature (or already holds {FLAT_SERVICES_LIMIT} files). Put it in the feature's "
-                "subfolder, Services/<Feature>/, with the namespace matching the folder "
+                f"{rel} would add a loose file to {parent}/, which is grouped by feature (or "
+                f"already holds {FLAT_FOLDER_LIMIT} files). Put it in the feature's subfolder, "
+                f"{parent}/<Feature>/, with the namespace matching the folder "
                 "(architecture skill, section 4)."
             )
 
