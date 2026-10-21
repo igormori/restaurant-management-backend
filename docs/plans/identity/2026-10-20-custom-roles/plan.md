@@ -41,12 +41,12 @@ Endpoints (all signed in, all in `src/RestaurantManagement.Modules.Identity/Cont
 No new integration, no new library, no backfill. No public endpoint, and no change to the token or to existing roles' rules.
 
 ## Overall Definition of Done
-- [ ] All tasks done, tests passing
-- [ ] All spec Outcomes met
-- [ ] Full test suite green after the last batch
-- [ ] No out-of-scope changes; findings in the backlog
-- [ ] `python3 .claude/scripts/check-security-matrices.py` passes (identity and shared matrices)
-- [ ] Spec Backlog Impact kept: the deletion of `backlog/features/2026-10-15-custom-roles.md` stays uncommitted for the user
+- [x] All tasks done, tests passing
+- [x] All spec Outcomes met
+- [x] Full test suite green after the last batch
+- [x] No out-of-scope changes; findings in the backlog
+- [x] `python3 .claude/scripts/check-security-matrices.py` passes (identity and shared matrices)
+- [ ] Spec Backlog Impact kept: the deletion of `backlog/features/2026-10-15-custom-roles.md` stays uncommitted for the user (not met: the deletion was already committed in c9628ac, before this batch)
 
 ## Checklist
 - [x] T1 — Audit actions and messages for roles
