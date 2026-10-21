@@ -21,6 +21,7 @@ public class AuthApiFactory : WebApplicationFactory<Program>
     private static readonly Dictionary<string, string?> HighLimitSettings = new()
     {
         ["VerificationCode:HashKey"] = TestVerificationCodeHashKey,
+        ["Invitation:AcceptPageUrl"] = "https://app.cantinadanonna.com.br/aceitar-convite",
         ["AuthRateLimit:Login:PermitLimit"] = HighLimit,
         ["AuthRateLimit:Register:PermitLimit"] = HighLimit,
         ["AuthRateLimit:ResendVerification:PermitLimit"] = HighLimit,

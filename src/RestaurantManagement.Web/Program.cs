@@ -157,6 +157,10 @@ builder.Services.AddOptions<VerificationCodeOptions>()
     .Bind(builder.Configuration.GetSection("VerificationCode"))
     .ValidateOnStart();
 builder.Services.AddSingleton<IValidateOptions<VerificationCodeOptions>, VerificationCodeOptionsValidator>();
+builder.Services.AddOptions<RestaurantManagement.Modules.Identity.Services.InvitationOptions>()
+    .Bind(builder.Configuration.GetSection(RestaurantManagement.Modules.Identity.Services.InvitationOptions.SectionName))
+    .ValidateOnStart();
+builder.Services.AddSingleton<IValidateOptions<RestaurantManagement.Modules.Identity.Services.InvitationOptions>, RestaurantManagement.Modules.Identity.Services.InvitationOptionsValidator>();
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<CorsOptions>(builder.Configuration.GetSection("Cors"));
 builder.Services.AddAuthRateLimiting(builder.Configuration);
@@ -283,6 +287,9 @@ builder.Services.AddScoped<IOrganizationLookup, RestaurantManagement.Modules.Org
 builder.Services.AddScoped<IMemberAccessLookup, RestaurantManagement.Modules.Identity.Services.MemberAccessLookup>();
 builder.Services.AddScoped<IOrganizationAccessSetup, RestaurantManagement.Modules.Identity.Services.OrganizationAccessSetup>();
 builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.IMemberAccessService, RestaurantManagement.Modules.Identity.Services.MemberAccessService>();
+builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.IMemberGridBuilder, RestaurantManagement.Modules.Identity.Services.MemberGridBuilder>();
+builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.IMemberDelegationRules, RestaurantManagement.Modules.Identity.Services.MemberDelegationRules>();
+builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.IInvitationService, RestaurantManagement.Modules.Identity.Services.InvitationService>();
 builder.Services.AddScoped<IAccessGuard, AccessGuard>();
 
 // ---------------------------------------------

@@ -24,4 +24,4 @@ Roles are stored per organization with default levels (per-location access grid 
 - [ ] Another organization's roles are never visible or editable
 
 ## Related
-backlog/features/2026-10-19-invite-member-and-edit-access-grid.md
+docs/specs/shared/2026-10-20-invite-member-and-edit-access-grid.md

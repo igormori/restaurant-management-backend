@@ -22,6 +22,8 @@ namespace RestaurantManagement.Modules.Identity.Services
         private readonly IAuditLog _auditLog;
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly ILogger<MemberAccessService> _logger;
+        private readonly IMemberDelegationRules _rules;
+        private readonly IMemberGridBuilder _gridBuilder;
 
         public MemberAccessService(
             IdentityDbContext db,
@@ -29,7 +31,9 @@ namespace RestaurantManagement.Modules.Identity.Services
             ITenantContext tenantContext,
             IAuditLog auditLog,
             IStringLocalizer<SharedResource> localizer,
-            ILogger<MemberAccessService> logger)
+            ILogger<MemberAccessService> logger,
+            IMemberDelegationRules rules,
+            IMemberGridBuilder gridBuilder)
         {
             _db = db;
             _organizationLookup = organizationLookup;
@@ -37,9 +41,18 @@ namespace RestaurantManagement.Modules.Identity.Services
             _auditLog = auditLog;
             _localizer = localizer;
             _logger = logger;
+            _rules = rules;
+            _gridBuilder = gridBuilder;
         }
 
-        public async Task SetAccessAsync(
+        public Task<MemberLocationAccessResponse> SetAccessAsync(
+            Guid userId,
+            Guid locationId,
+            IReadOnlyCollection<string> roleNames,
+            Dictionary<string, string> levelNames)
+            => SetAccessAsync(userId, locationId, roleNames, InvitationGrids.ParseLevels(levelNames, _localizer));
+
+        public async Task<MemberLocationAccessResponse> SetAccessAsync(
             Guid userId,
             Guid locationId,
             IReadOnlyCollection<string> roleNames,
@@ -50,14 +63,18 @@ namespace RestaurantManagement.Modules.Identity.Services
             await RequireLocationAsync(locationId, organizationId);
             var roles = await RequireRolesAsync(roleNames, organizationId);
 
-            var before = await LoadStateAsync(userId, locationId, organizationId);
             var finalLevels = await MergeLevelsAsync(roles, changedLevels, organizationId);
+            await _rules.RequireAsync(userId, new[] { new LocationGrant(locationId, finalLevels) });
+
+            var before = await LoadStateAsync(userId, locationId, organizationId);
             await StoreLevelsAsync(userId, locationId, organizationId, finalLevels);
             await StoreLabelsAsync(userId, locationId, organizationId, roles);
             await _db.SaveChangesAsync();
 
             var after = await LoadStateAsync(userId, locationId, organizationId);
             await RecordChangeAsync(userId, locationId, before, after);
+            return (await GetAccessAsync(userId)).FirstOrDefault(a => a.LocationId == locationId)
+                ?? new MemberLocationAccessResponse { LocationId = locationId };
         }
 
         public async Task<List<MemberLocationAccessResponse>> GetAccessAsync(Guid userId)

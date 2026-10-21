@@ -27,4 +27,4 @@ Every member sees every location in lists. Lists should show only the locations 
 - [ ] Owner still sees everything
 
 ## Related
-backlog/features/2026-10-19-invite-member-and-edit-access-grid.md
+docs/specs/shared/2026-10-20-invite-member-and-edit-access-grid.md

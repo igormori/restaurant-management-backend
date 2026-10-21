@@ -133,7 +133,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
         public static MemberAccessService CreateService(
             IdentityTestDatabase database, IAuditLog? auditLog = null, ILogger<MemberAccessService>? logger = null)
             => new(database.CreateContext(), Locations(), Tenant(CantinaId), auditLog ?? Substitute.For<IAuditLog>(),
-                TestLocalizer.Create(), logger ?? Substitute.For<ILogger<MemberAccessService>>());
+                TestLocalizer.Create(), logger ?? Substitute.For<ILogger<MemberAccessService>>(),
+                Substitute.For<IMemberDelegationRules>(), Substitute.For<IMemberGridBuilder>());
 
         /// <summary>Every stored cell of a member in an organization, read through a fresh context.</summary>
         public static List<(Guid LocationId, AccessModule Module, AccessLevel Level)> StoredCells(IdentityTestDatabase database, Guid userId, Guid organizationId)

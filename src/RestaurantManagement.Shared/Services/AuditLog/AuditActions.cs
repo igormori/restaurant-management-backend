@@ -7,6 +7,8 @@ namespace RestaurantManagement.Shared.Services.AuditLog
     {
         public const string MemberRoleChanged = "member.role_changed";
         public const string MemberAccessChanged = "member.access_changed";
+        public const string MemberInvited = "member.invited";
+        public const string MemberInvitationCancelled = "member.invitation_cancelled";
         public const string SettingsChanged = "settings.changed";
         public const string LocationStatusChanged = "location.status_changed";
 
@@ -15,7 +17,7 @@ namespace RestaurantManagement.Shared.Services.AuditLog
 
         public static readonly IReadOnlySet<string> All = new HashSet<string>
         {
-            MemberRoleChanged, MemberAccessChanged, SettingsChanged, LocationStatusChanged, PasswordReset, PasswordChanged
+            MemberRoleChanged, MemberAccessChanged, MemberInvited, MemberInvitationCancelled, SettingsChanged, LocationStatusChanged, PasswordReset, PasswordChanged
         };
     }
 }

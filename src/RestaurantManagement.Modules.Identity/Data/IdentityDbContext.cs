@@ -10,6 +10,9 @@ namespace RestaurantManagement.Modules.Identity.Data
         public const string UniqueMemberLevelIndexName = "ix_member_location_levels_cell";
         public const string UniqueMemberRoleIndexName = "ix_member_location_roles_label";
         private const int AccessCellMaxLength = 20;
+        private const int InvitationEmailMaxLength = 320;
+        private const int InvitationLanguageMaxLength = 5;
+        public const string OpenInvitationIndexName = "ix_organization_invitations_open_email";
         public const string UniqueMemberIndexName = "ix_organization_members_user_id_organization_id";
 
         public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
@@ -25,6 +28,9 @@ namespace RestaurantManagement.Modules.Identity.Data
         public DbSet<OrganizationRoleLevel> OrganizationRoleLevels { get; set; }
         public DbSet<MemberLocationLevel> MemberLocationLevels { get; set; }
         public DbSet<MemberLocationRole> MemberLocationRoles { get; set; }
+        public DbSet<OrganizationInvitation> OrganizationInvitations { get; set; }
+        public DbSet<OrganizationInvitationRole> OrganizationInvitationRoles { get; set; }
+        public DbSet<OrganizationInvitationLevel> OrganizationInvitationLevels { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -120,6 +126,8 @@ namespace RestaurantManagement.Modules.Identity.Data
                     .HasDatabaseName(UniqueMemberRoleIndexName);
             });
 
+            ConfigureInvitations(modelBuilder);
+
             // Codes are owned by the user and useless without them, so they go with the user.
             modelBuilder.Entity<UserVerificationCode>()
                 .HasOne(c => c.User)
@@ -164,6 +172,45 @@ namespace RestaurantManagement.Modules.Identity.Data
             });
 
             base.OnModelCreating(modelBuilder);
+        }
+
+        // The token is stored only as a fingerprint. At most one open invitation exists per organization
+        // and email; the email is always stored in lower case.
+        private static void ConfigureInvitations(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<OrganizationInvitation>(entity =>
+            {
+                entity.ToTable("organization_invitations");
+                entity.Property(i => i.Email).IsRequired().HasMaxLength(InvitationEmailMaxLength);
+                entity.Property(i => i.Language).IsRequired().HasMaxLength(InvitationLanguageMaxLength);
+                entity.Property(i => i.TokenHash).IsRequired();
+                entity.HasIndex(i => i.TokenHash).IsUnique();
+                // The index filter below is raw SQL, so the column names are fixed to match it in every provider.
+                entity.Property(i => i.UsedAt).HasColumnName("used_at");
+                entity.Property(i => i.CancelledAt).HasColumnName("cancelled_at");
+                entity.Property(i => i.ReplacedAt).HasColumnName("replaced_at");
+                entity.HasIndex(i => new { i.OrganizationId, i.Email })
+                    .IsUnique()
+                    .HasDatabaseName(OpenInvitationIndexName)
+                    .HasFilter("used_at IS NULL AND cancelled_at IS NULL AND replaced_at IS NULL");
+            });
+
+            modelBuilder.Entity<OrganizationInvitationRole>(entity =>
+            {
+                entity.ToTable("organization_invitation_roles");
+                entity.HasOne<OrganizationInvitation>().WithMany().HasForeignKey(r => r.InvitationId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne<OrganizationRole>().WithMany().HasForeignKey(r => r.RoleId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(r => new { r.InvitationId, r.LocationId, r.RoleId }).IsUnique();
+            });
+
+            modelBuilder.Entity<OrganizationInvitationLevel>(entity =>
+            {
+                entity.ToTable("organization_invitation_levels");
+                entity.Property(l => l.Module).HasConversion<string>().HasMaxLength(AccessCellMaxLength);
+                entity.Property(l => l.Level).HasConversion<string>().HasMaxLength(AccessCellMaxLength);
+                entity.HasOne<OrganizationInvitation>().WithMany().HasForeignKey(l => l.InvitationId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(l => new { l.InvitationId, l.LocationId, l.Module }).IsUnique();
+            });
         }
     }
 }

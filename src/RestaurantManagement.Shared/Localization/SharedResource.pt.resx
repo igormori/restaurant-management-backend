@@ -147,6 +147,27 @@
   <data name="RoleNotFound" xml:space="preserve">
     <value>Perfil não encontrado.</value>
   </data>
+  <data name="AlreadyMemberOfOrganization" xml:space="preserve">
+    <value>Esta pessoa já é membro da organização.</value>
+  </data>
+  <data name="InvitationLinkInvalid" xml:space="preserve">
+    <value>Este link de convite é inválido, expirou ou já foi usado.</value>
+  </data>
+  <data name="InvitationNotFound" xml:space="preserve">
+    <value>Convite não encontrado.</value>
+  </data>
+  <data name="CannotChangeOwnAccess" xml:space="preserve">
+    <value>Você não pode alterar o seu próprio acesso.</value>
+  </data>
+  <data name="CannotGrantAboveOwnLevel" xml:space="preserve">
+    <value>Você não pode conceder um nível acima do seu.</value>
+  </data>
+  <data name="InvitationForAnotherAccount" xml:space="preserve">
+    <value>Este convite foi enviado para outra conta.</value>
+  </data>
+  <data name="InvitationAccountExistsSignIn" xml:space="preserve">
+    <value>Já existe uma conta com este e-mail. Entre para aceitar o convite.</value>
+  </data>
   <data name="PhoneAttribute_ValidationError" xml:space="preserve">
     <value>O campo {0} não é um número de telefone válido.</value>
   </data>

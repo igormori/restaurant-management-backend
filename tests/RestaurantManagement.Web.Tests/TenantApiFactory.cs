@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using NSubstitute;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Menu.Data;
@@ -13,6 +15,7 @@ using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Services.Email;
 
 namespace RestaurantManagement.Web.Tests;
 
@@ -29,6 +32,9 @@ public sealed class TenantApiFactory : AuthApiFactory
     private static readonly DateTime CreationTime = new(2026, 10, 15, 18, 30, 0, DateTimeKind.Utc);
 
     private readonly string _connectionString;
+
+    /// <summary>Every email the app sends in this host is captured here (invitation links are read from it).</summary>
+    public IEmailService EmailService { get; } = Substitute.For<IEmailService>();
 
     private TenantApiFactory(string connectionString) => _connectionString = connectionString;
 
@@ -47,6 +53,11 @@ public sealed class TenantApiFactory : AuthApiFactory
     {
         base.ConfigureWebHost(builder);
         builder.UseSetting("ConnectionStrings:DefaultConnection", _connectionString);
+        builder.ConfigureServices(services =>
+        {
+            services.RemoveAll<IEmailService>();
+            services.AddSingleton(EmailService);
+        });
         // Keep test output readable: SQL and startup logs are not what these tests check.
         builder.ConfigureLogging(logging => logging.ClearProviders());
     }
