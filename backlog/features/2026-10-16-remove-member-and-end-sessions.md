@@ -35,4 +35,4 @@ user on 2026-10-16:
 ## Related
 - backlog/improvements/session-redesign.md (the access token still works up to 15 min; ship close together so removal is immediate)
 - backlog/features/2026-10-16-member-role-change.md (same permission and Owner protection)
-- backlog/features/2026-10-15-custom-roles.md
+- docs/specs/identity/2026-10-20-custom-roles.md
