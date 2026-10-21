@@ -5,7 +5,7 @@ using NSubstitute;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
-using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Modules.Identity.Services.Sessions;
 using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Services.Organization;

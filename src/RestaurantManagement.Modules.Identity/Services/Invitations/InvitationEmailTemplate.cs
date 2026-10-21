@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Reflection;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Invitations
 {
     /// <summary>
     /// The invitation email in English or Portuguese. Every value is HTML-encoded; the email shows
@@ -59,7 +59,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         private static string Load(string fileName)
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = $"RestaurantManagement.Modules.Identity.Services.{fileName}";
+            var resourceName = $"RestaurantManagement.Modules.Identity.Templates.{fileName}";
             using var stream = assembly.GetManifestResourceStream(resourceName)
                 ?? throw new InvalidOperationException($"Embedded resource '{resourceName}' was not found in assembly '{assembly.FullName}'.");
             using var reader = new StreamReader(stream);

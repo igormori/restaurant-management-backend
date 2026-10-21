@@ -7,7 +7,7 @@ using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Shared.Options;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Sessions
 {
     public class RefreshTokenService : IRefreshTokenService
     {

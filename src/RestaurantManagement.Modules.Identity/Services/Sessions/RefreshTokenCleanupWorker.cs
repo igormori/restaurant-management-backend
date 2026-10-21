@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Sessions
 {
     /// <summary>
     /// Runs the refresh token cleanup once at startup and then once a day.

@@ -1,6 +1,6 @@
 using RestaurantManagement.Modules.Identity.Models;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Registration
 {
     public interface IVerificationService
     {

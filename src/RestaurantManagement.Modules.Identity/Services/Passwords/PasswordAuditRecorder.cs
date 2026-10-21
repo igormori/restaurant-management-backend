@@ -3,7 +3,7 @@ using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.AuditLog;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Passwords
 {
     public class PasswordAuditRecorder : IPasswordAuditRecorder
     {

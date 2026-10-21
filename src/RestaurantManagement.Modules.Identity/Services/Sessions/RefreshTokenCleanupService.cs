@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Modules.Identity.Data;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Sessions
 {
     public class RefreshTokenCleanupService : IRefreshTokenCleanupService
     {

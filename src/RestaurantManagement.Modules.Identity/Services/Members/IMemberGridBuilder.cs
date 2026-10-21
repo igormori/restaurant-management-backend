@@ -1,7 +1,7 @@
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Shared.Auth;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Members
 {
     /// <summary>The roles chosen and the final levels of one location (None is never stored, so never listed).</summary>
     public record BuiltGrid(IReadOnlyList<OrganizationRole> Roles, IReadOnlyDictionary<AccessModule, AccessLevel> Levels);

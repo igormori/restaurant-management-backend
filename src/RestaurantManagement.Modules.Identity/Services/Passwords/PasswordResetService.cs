@@ -9,8 +9,10 @@ using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Utils.Exceptions;
+using RestaurantManagement.Modules.Identity.Services.Registration;
+using RestaurantManagement.Modules.Identity.Services.Sessions;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Passwords
 {
     public class PasswordResetService : IPasswordResetService
     {

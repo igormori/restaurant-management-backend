@@ -6,8 +6,9 @@ using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Services.Email;
+using RestaurantManagement.Modules.Identity.Services.Registration;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Passwords
 {
     public class PasswordResetEmailProcessor : IPasswordResetEmailProcessor
     {

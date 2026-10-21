@@ -20,7 +20,7 @@ user on 2026-10-16:
 
 ## Evidence
 - `src/RestaurantManagement.Shared/Services/Identity/IOrganizationAccessSetup.cs` — sets up and removes a new organization's access only; no "remove member" operation or endpoint
-- `src/RestaurantManagement.Modules.Identity/Services/RefreshTokenService.cs:83` — `RevokeAllForUserAsync` ends every session of a user, in every organization; nothing ends only one organization's
+- `src/RestaurantManagement.Modules.Identity/Services/Sessions/RefreshTokenService.cs:83` — `RevokeAllForUserAsync` ends every session of a user, in every organization; nothing ends only one organization's
 - `docs/security/identity-matrix.md` — O5 (logout-all) covers only the caller's own sessions
 
 ## Acceptance criteria

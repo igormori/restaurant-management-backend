@@ -6,7 +6,7 @@ using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Options;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Sessions
 {
     // Builds the signed access token: the user and the organization, never a role claim.
     internal class AccessTokenFactory

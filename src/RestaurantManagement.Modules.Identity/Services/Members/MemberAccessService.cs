@@ -11,8 +11,9 @@ using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Exceptions;
+using RestaurantManagement.Modules.Identity.Services.Invitations;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Members
 {
     public class MemberAccessService : IMemberAccessService
     {

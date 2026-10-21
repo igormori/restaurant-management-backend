@@ -3,7 +3,7 @@ using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Shared.Services.Identity;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Members
 {
     public class OrganizationAccessSetup : IOrganizationAccessSetup
     {

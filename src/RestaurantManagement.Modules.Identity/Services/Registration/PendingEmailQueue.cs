@@ -1,4 +1,4 @@
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Registration
 {
     // Queue-wide limits shared by both email processors.
     public static class PendingEmailQueue

@@ -1,4 +1,4 @@
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Registration
 {
     public interface IVerificationCodeHasher
     {

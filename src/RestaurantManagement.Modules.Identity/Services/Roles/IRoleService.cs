@@ -1,6 +1,6 @@
 using RestaurantManagement.Modules.Identity.Models;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Roles
 {
     /// <summary>
     /// Lists, reads, creates, edits and renames the roles of the token organization. Names are trimmed and

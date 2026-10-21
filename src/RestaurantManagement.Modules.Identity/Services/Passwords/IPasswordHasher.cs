@@ -1,4 +1,4 @@
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Passwords
 {
     /// <summary>The only way the Identity module hashes or checks a password.</summary>
     public interface IPasswordHasher

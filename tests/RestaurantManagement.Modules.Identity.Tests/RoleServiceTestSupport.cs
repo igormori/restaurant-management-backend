@@ -1,7 +1,8 @@
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Modules.Identity.Entities;
-using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Modules.Identity.Services.Roles;
 using RestaurantManagement.Shared.Services.AuditLog;
 using static RestaurantManagement.Modules.Identity.Tests.MemberAccessTestSupport;
 
@@ -18,7 +19,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         public static RoleService CreateRoleService(
             IdentityTestDatabase database, IRoleManagementRules? rules = null, IAuditLog? auditLog = null)
-            => new(database.CreateContext(), Tenant(CantinaId), rules ?? Substitute.For<IRoleManagementRules>(),
+            => new(database.CreateContext(), Tenant(CantinaId), Substitute.For<IAccessGuard>(), rules ?? Substitute.For<IRoleManagementRules>(),
                 auditLog ?? Substitute.For<IAuditLog>(), TestLocalizer.Create(), Substitute.For<ILogger<RoleService>>());
 
         public static Guid RoleIdOf(IdentityTestDatabase database, Guid organizationId, string name)

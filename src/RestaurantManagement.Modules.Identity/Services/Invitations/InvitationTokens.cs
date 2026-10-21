@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Invitations
 {
     /// <summary>The one-time invitation token: random bytes for the link, only a SHA-256 fingerprint stored.</summary>
     public static class InvitationTokens

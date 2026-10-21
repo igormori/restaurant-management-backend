@@ -4,7 +4,7 @@ using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Shared.Services.Organization;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Sessions
 {
     // Membership and active-organization checks, read from the user's organization memberships.
     internal class OrganizationMembership

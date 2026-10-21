@@ -12,7 +12,7 @@ are not kept; invitations have no such cleanup.
 
 ## Evidence
 - `docs/plans/shared/2026-10-20-invite-member-and-edit-access-grid/batches/B4.md` — T5 stores the invitation with its email and adds no cleanup
-- `src/RestaurantManagement.Modules.Identity/Services/PendingEmailQueue.cs` — `FailedRetention` of 7 days for the queue
+- `src/RestaurantManagement.Modules.Identity/Services/Registration/PendingEmailQueue.cs` — `FailedRetention` of 7 days for the queue
 
 ## Acceptance criteria
 - [ ] Invitations that expired, were used, replaced or cancelled more than a set time ago are removed by a background pass

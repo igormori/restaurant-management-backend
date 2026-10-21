@@ -11,8 +11,9 @@ using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using RestaurantManagement.Shared.Services.Email;
 using RestaurantManagement.Shared;
+using RestaurantManagement.Modules.Identity.Services.Passwords;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Registration
 {
     public class RegistrationService : IRegistrationService
     {

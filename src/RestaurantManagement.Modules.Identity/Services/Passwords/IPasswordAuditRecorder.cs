@@ -1,4 +1,4 @@
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Passwords
 {
     /// <summary>Records a password audit entry in every organization the user holds a role in (task T5).</summary>
     public interface IPasswordAuditRecorder

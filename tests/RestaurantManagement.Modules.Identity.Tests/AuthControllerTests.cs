@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Controllers;
 using RestaurantManagement.Modules.Identity.Models;
-using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Modules.Identity.Services.Invitations;
+using RestaurantManagement.Modules.Identity.Services.Registration;
+using RestaurantManagement.Modules.Identity.Services.Sessions;
 using Xunit;
 
 namespace RestaurantManagement.Modules.Identity.Tests

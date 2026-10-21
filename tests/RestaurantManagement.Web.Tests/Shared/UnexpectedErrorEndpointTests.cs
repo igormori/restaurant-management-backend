@@ -1,7 +1,6 @@
 using System.Net;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Models;
-using RestaurantManagement.Modules.Identity.Services;
 using Shouldly;
 using static RestaurantManagement.Web.Tests.LocalizedResponses;
 

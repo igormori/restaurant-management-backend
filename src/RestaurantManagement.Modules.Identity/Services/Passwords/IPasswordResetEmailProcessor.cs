@@ -1,4 +1,4 @@
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Passwords
 {
     public interface IPasswordResetEmailProcessor
     {

@@ -11,8 +11,9 @@ using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Utils.Exceptions;
+using RestaurantManagement.Modules.Identity.Services.Invitations;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Roles
 {
     public class RoleService : IRoleService
     {
@@ -20,6 +21,7 @@ namespace RestaurantManagement.Modules.Identity.Services
 
         private readonly IdentityDbContext _db;
         private readonly ITenantContext _tenantContext;
+        private readonly IAccessGuard _accessGuard;
         private readonly IRoleManagementRules _rules;
         private readonly IAuditLog _auditLog;
         private readonly IStringLocalizer<SharedResource> _localizer;
@@ -28,6 +30,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         public RoleService(
             IdentityDbContext db,
             ITenantContext tenantContext,
+            IAccessGuard accessGuard,
             IRoleManagementRules rules,
             IAuditLog auditLog,
             IStringLocalizer<SharedResource> localizer,
@@ -35,6 +38,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         {
             _db = db;
             _tenantContext = tenantContext;
+            _accessGuard = accessGuard;
             _rules = rules;
             _auditLog = auditLog;
             _localizer = localizer;
@@ -44,6 +48,7 @@ namespace RestaurantManagement.Modules.Identity.Services
         public async Task<List<RoleResponse>> ListAsync()
         {
             var organizationId = RequireOrganizationId();
+            await _accessGuard.RequireAnyAccessAsync();
             var roles = await _db.OrganizationRoles.Where(r => r.OrganizationId == organizationId).OrderBy(r => r.Name).ToListAsync();
             var levels = await _db.OrganizationRoleLevels.Where(l => l.OrganizationId == organizationId).ToListAsync();
 
@@ -52,7 +57,9 @@ namespace RestaurantManagement.Modules.Identity.Services
 
         public async Task<RoleResponse> GetAsync(Guid roleId)
         {
-            var (role, levels) = await LoadRoleAsync(roleId, RequireOrganizationId());
+            var organizationId = RequireOrganizationId();
+            await _accessGuard.RequireAnyAccessAsync();
+            var (role, levels) = await LoadRoleAsync(roleId, organizationId);
             return MapToResponse(role, levels);
         }
 

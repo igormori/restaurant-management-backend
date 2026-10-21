@@ -5,7 +5,7 @@ using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Invitations
 {
     // Accepting an invitation: the token carries no organization, so the invitation is found by its
     // fingerprint alone (Identity has no query filter) and the rows are written under its tenant scope.

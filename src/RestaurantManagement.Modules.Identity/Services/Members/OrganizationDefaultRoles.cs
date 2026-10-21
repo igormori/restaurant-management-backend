@@ -1,7 +1,7 @@
 using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Auth;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Members
 {
     /// <summary>
     /// The roles every new organization starts with and their default levels (spec table "Default

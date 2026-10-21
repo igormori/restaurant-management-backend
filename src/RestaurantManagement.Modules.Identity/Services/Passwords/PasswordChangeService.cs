@@ -8,8 +8,9 @@ using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Utils.Exceptions;
+using RestaurantManagement.Modules.Identity.Services.Sessions;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Passwords
 {
     public class PasswordChangeService : IPasswordChangeService
     {

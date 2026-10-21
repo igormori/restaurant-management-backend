@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using NSubstitute;
 using Microsoft.Extensions.Options;
-using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Modules.Identity.Services.Invitations;
 using RestaurantManagement.Shared.Services.Email;
 using Shouldly;
 using static RestaurantManagement.Modules.Identity.Tests.InvitationHarness;

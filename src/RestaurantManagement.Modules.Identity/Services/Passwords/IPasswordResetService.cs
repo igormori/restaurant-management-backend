@@ -1,6 +1,6 @@
 using RestaurantManagement.Modules.Identity.Models;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Passwords
 {
     public interface IPasswordResetService
     {

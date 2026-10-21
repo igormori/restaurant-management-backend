@@ -5,7 +5,7 @@ using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Members
 {
     public class MemberGridBuilder : IMemberGridBuilder
     {

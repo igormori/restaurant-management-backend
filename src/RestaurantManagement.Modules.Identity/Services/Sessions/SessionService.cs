@@ -9,8 +9,9 @@ using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Exceptions;
+using RestaurantManagement.Modules.Identity.Services.Passwords;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Sessions
 {
     public class SessionService : ISessionService
     {

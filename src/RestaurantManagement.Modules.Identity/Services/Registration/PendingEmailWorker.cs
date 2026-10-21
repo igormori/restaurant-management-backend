@@ -1,8 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using RestaurantManagement.Modules.Identity.Services.Passwords;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Registration
 {
     // Safe on several instances at once: the processor claims each row with a conditional update.
     public class PendingEmailWorker : BackgroundService

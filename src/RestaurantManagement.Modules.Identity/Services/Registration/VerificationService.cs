@@ -9,7 +9,7 @@ using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Registration
 {
     public class VerificationService : IVerificationService
     {

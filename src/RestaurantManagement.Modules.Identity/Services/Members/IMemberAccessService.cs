@@ -1,7 +1,7 @@
 using RestaurantManagement.Modules.Identity.Models;
 using RestaurantManagement.Shared.Auth;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Members
 {
     /// <summary>
     /// Sets and reads a member's access in the token organization. Setting runs the delegation

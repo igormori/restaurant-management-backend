@@ -3,7 +3,7 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using RestaurantManagement.Shared.Options;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Registration
 {
     public class VerificationCodeHasher : IVerificationCodeHasher
     {

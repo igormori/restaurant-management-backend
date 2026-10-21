@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
-using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Modules.Identity.Services.Members;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Data;

@@ -6,8 +6,9 @@ using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Services.Email;
+using RestaurantManagement.Modules.Identity.Services.Passwords;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Registration
 {
     // Same flow as PasswordResetEmailProcessor, for queued "resend verification" requests: the request
     // only queues, and this processor alone decides who gets a code, so the answer never reveals the account.

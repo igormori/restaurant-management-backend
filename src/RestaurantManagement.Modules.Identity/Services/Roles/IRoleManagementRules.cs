@@ -1,6 +1,6 @@
 using RestaurantManagement.Shared.Auth;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Roles
 {
     /// <summary>
     /// Who may create, edit or rename a role. Runs before any write and refuses with 403: no organization

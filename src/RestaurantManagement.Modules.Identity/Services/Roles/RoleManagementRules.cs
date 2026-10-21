@@ -8,7 +8,7 @@ using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Roles
 {
     public class RoleManagementRules : IRoleManagementRules
     {

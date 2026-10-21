@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Invitations
 {
     /// <summary>Settings of invitations (section "Invitation").</summary>
     public class InvitationOptions

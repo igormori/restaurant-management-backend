@@ -5,8 +5,9 @@ using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Utils.Exceptions;
+using RestaurantManagement.Modules.Identity.Services.Members;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Invitations
 {
     /// <summary>The location an invitation covers, its display name and the grid built for it.</summary>
     public record LocationGridPlan(Guid LocationId, string LocationName, BuiltGrid Grid);

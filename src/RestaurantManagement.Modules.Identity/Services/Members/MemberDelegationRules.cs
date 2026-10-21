@@ -6,7 +6,7 @@ using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Members
 {
     public class MemberDelegationRules : IMemberDelegationRules
     {

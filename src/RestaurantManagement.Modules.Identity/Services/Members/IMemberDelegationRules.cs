@@ -1,6 +1,6 @@
 using RestaurantManagement.Shared.Auth;
 
-namespace RestaurantManagement.Modules.Identity.Services
+namespace RestaurantManagement.Modules.Identity.Services.Members
 {
     /// <summary>The final levels one location is given (None cells are not listed).</summary>
     public record LocationGrant(Guid LocationId, IReadOnlyDictionary<AccessModule, AccessLevel> Levels);
