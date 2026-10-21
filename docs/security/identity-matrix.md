@@ -330,6 +330,8 @@ accented or non-Latin characters may not fit (R6, T7; bcrypt limit, ASVS V6.2.9)
 | T129 | Editing the levels of, or renaming, a role that does not exist in the own organization | 404 | ✅ | `RoleEditEndpointTests.EditRole_UnknownRoleInTheOwnOrganization_ReturnsNotFound` |
 | T130 | An Admin with Members = Manage everywhere creates a role within her levels (endpoint, rules read from the database) | 200; the role is saved | ✅ | `RoleEndpointTests.CreateRole_AdminWithMembersManageEverywhereCreatesARoleWithinHerLevels_ReturnsOkAndStoresIt` |
 | T131 | An unknown module or level name when editing a role's levels | 400; the levels are unchanged | ✅ | `RoleServiceEditTests.UpdateLevelsAsync_UnknownModuleOrLevelName_Refuses400AndKeepsTheLevels` |
+| T132 | A member with no access anywhere (all-None grid) lists the roles | 403 | ✅ | `RoleReadAccessEndpointTests.ListRoles_MemberWithNoAccessAnywhere_ReturnsForbidden` |
+| T133 | A member with no access anywhere (all-None grid) reads one role | 403 | ✅ | `RoleReadAccessEndpointTests.GetRole_MemberWithNoAccessAnywhere_ReturnsForbidden` |
 
 ## 11. Schema, migration and wiring tests
 These protect the database and the app setup rather than a rule users meet. They are listed so

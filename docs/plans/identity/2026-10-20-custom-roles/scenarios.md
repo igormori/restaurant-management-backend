@@ -1,7 +1,7 @@
 # Scenarios: Custom roles per organization
 
 **Plan:** docs/plans/identity/2026-10-20-custom-roles/plan.md
-**Coverage:** 44 scenarios — 16 happy · 7 edge · 9 failure · 10 security · 2 guard
+**Coverage:** 46 scenarios — 16 happy · 7 edge · 9 failure · 12 security · 2 guard
 
 Terms: DoD (Definition of Done: the checks a task must pass to count as finished) · cap (the caller's level in a module at every non-closed location; an Admin may not set a role's default above it).
 
@@ -51,6 +51,8 @@ Terms: DoD (Definition of Done: the checks a task must pass to count as finished
 | 42 | T5 | Security | An Admin raising a role's default above her own level through the edit endpoint gets 403 and the levels are unchanged | `UpdateLevels_AdminWithoutCashierRaisesWaiterToCashierManage_ReturnsForbiddenAndLeavesItUnchanged` | `tests/RestaurantManagement.Web.Tests/Identity/RoleEditEndpointTests.cs` |
 | 43 | T5 | Failure | Editing the levels of, or renaming, a role that does not exist returns not found | `EditRole_UnknownRoleInTheOwnOrganization_ReturnsNotFound` | `tests/RestaurantManagement.Web.Tests/Identity/RoleEditEndpointTests.cs` |
 | 44 | T5 | Failure | An unknown module or level name when editing a role's levels is refused with 400 and the levels are kept | `UpdateLevelsAsync_UnknownModuleOrLevelName_Refuses400AndKeepsTheLevels` | `tests/RestaurantManagement.Modules.Identity.Tests/RoleServiceEditTests.cs` |
+| 45 | T4 | Security | A member with no access anywhere (all-None grid) listing the roles gets 403 | `ListRoles_MemberWithNoAccessAnywhere_ReturnsForbidden` | `tests/RestaurantManagement.Web.Tests/Identity/RoleReadAccessEndpointTests.cs` |
+| 46 | T4 | Security | A member with no access anywhere (all-None grid) reading one role gets 403 | `GetRole_MemberWithNoAccessAnywhere_ReturnsForbidden` | `tests/RestaurantManagement.Web.Tests/Identity/RoleReadAccessEndpointTests.cs` |
 
 ## Spec Outcome coverage
 | Outcome | Scenarios |
