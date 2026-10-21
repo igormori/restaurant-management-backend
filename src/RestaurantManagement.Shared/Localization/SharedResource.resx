@@ -225,6 +225,12 @@
   <data name="PasswordChangeSucceeded" xml:space="preserve">
     <value>Password changed. Sign in again on your devices.</value>
   </data>
+  <data name="RoleNameAlreadyUsed" xml:space="preserve">
+    <value>A role with this name already exists.</value>
+  </data>
+  <data name="RoleNameInvalid" xml:space="preserve">
+    <value>The role name must not be empty, longer than 100 characters, or "Owner".</value>
+  </data>
 </root>
 
 

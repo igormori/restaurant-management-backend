@@ -1,6 +1,6 @@
 # Plan: Custom roles per organization
 
-**Spec:** docs/specs/identity/2026-10-20-custom-roles.md   **Date:** 2026-10-20   **Status:** Draft
+**Spec:** docs/specs/identity/2026-10-20-custom-roles.md   **Date:** 2026-10-20   **Status:** In progress
 **Risk:** High — new signed-in endpoints with a new authorization rule (who may manage roles, capped at the caller's own levels), a schema change to the role name unique index (no data, pre-launch) and new Shared audit actions
 
 ## Summary
@@ -49,7 +49,7 @@ No new integration, no new library, no backfill. No public endpoint, and no chan
 - [ ] Spec Backlog Impact kept: the deletion of `backlog/features/2026-10-15-custom-roles.md` stays uncommitted for the user
 
 ## Checklist
-- [ ] T1 — Audit actions and messages for roles
+- [x] T1 — Audit actions and messages for roles
 - [ ] T2 — Role names unique ignoring letter case
 - [ ] T3 — Who may manage roles, and the cap
 - [ ] T4 — List, read and create roles

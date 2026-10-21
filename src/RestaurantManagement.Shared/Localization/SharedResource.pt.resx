@@ -225,4 +225,10 @@
   <data name="PasswordChangeSucceeded" xml:space="preserve">
     <value>Senha alterada. Entre novamente nos seus dispositivos.</value>
   </data>
+  <data name="RoleNameAlreadyUsed" xml:space="preserve">
+    <value>Já existe um cargo com este nome.</value>
+  </data>
+  <data name="RoleNameInvalid" xml:space="preserve">
+    <value>O nome do cargo não pode ser vazio, ter mais de 100 caracteres nem ser "Owner".</value>
+  </data>
 </root>
