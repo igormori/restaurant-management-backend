@@ -75,9 +75,64 @@ namespace RestaurantManagement.Modules.Identity.Services
             return MapToResponse(role, await _db.OrganizationRoleLevels.Where(l => l.RoleId == role.Id && l.OrganizationId == organizationId).ToListAsync());
         }
 
-        public Task<RoleResponse> UpdateLevelsAsync(Guid roleId, UpdateRoleLevelsRequest request) => throw new NotImplementedException();
+        public async Task<RoleResponse> UpdateLevelsAsync(Guid roleId, UpdateRoleLevelsRequest request)
+        {
+            var organizationId = RequireOrganizationId();
+            var (role, stored) = await LoadRoleAsync(roleId, organizationId);
+            var proposed = InvitationGrids.ParseLevels(request.Levels, _localizer);
+            var current = stored.ToDictionary(l => l.Module, l => l.Level);
+            await _rules.RequireAsync(current, proposed);
 
-        public Task<RoleResponse> RenameAsync(Guid roleId, RenameRoleRequest request) => throw new NotImplementedException();
+            var before = DescribeLevels(current);
+            StoreLevels(role.Id, organizationId, stored, proposed);
+            await SaveRoleAsync();
+
+            var after = DescribeLevels(proposed);
+            if (!before.SequenceEqual(after))
+                await RecordChangeAsync(AuditActions.RoleLevelsChanged, role.Id,
+                    JsonSerializer.Serialize(new { role.Name, Levels = before }),
+                    JsonSerializer.Serialize(new { role.Name, Levels = after }));
+            return MapToResponse(role, await _db.OrganizationRoleLevels.Where(l => l.RoleId == role.Id && l.OrganizationId == organizationId).ToListAsync());
+        }
+
+        public async Task<RoleResponse> RenameAsync(Guid roleId, RenameRoleRequest request)
+        {
+            var organizationId = RequireOrganizationId();
+            var (role, levels) = await LoadRoleAsync(roleId, organizationId);
+            var name = RequireValidName(request.Name);
+            await RequireNameFreeAsync(name, organizationId, role.Id);
+            await _rules.RequireAsync(levels.ToDictionary(l => l.Module, l => l.Level), new Dictionary<AccessModule, AccessLevel>());
+
+            var oldName = role.Name;
+            if (oldName == name)
+                return MapToResponse(role, levels);
+
+            role.Name = name;
+            role.UpdatedAt = DateTime.UtcNow;
+            await SaveRoleAsync();
+            await RecordChangeAsync(AuditActions.RoleRenamed, role.Id,
+                JsonSerializer.Serialize(new { Name = oldName }), JsonSerializer.Serialize(new { Name = name }));
+            return MapToResponse(role, levels);
+        }
+
+        // Rows are updated in place: deleting and re-adding the same cell in one save would hit the unique index.
+        private void StoreLevels(
+            Guid roleId, Guid organizationId, List<OrganizationRoleLevel> stored, IReadOnlyDictionary<AccessModule, AccessLevel> proposed)
+        {
+            _db.OrganizationRoleLevels.RemoveRange(
+                stored.Where(l => proposed.GetValueOrDefault(l.Module, AccessLevel.None) == AccessLevel.None));
+            foreach (var (module, level) in proposed.Where(p => p.Value != AccessLevel.None))
+            {
+                var cell = stored.FirstOrDefault(l => l.Module == module);
+                if (cell is null)
+                    _db.OrganizationRoleLevels.Add(NewLevel(roleId, organizationId, module, level));
+                else if (cell.Level != level)
+                {
+                    cell.Level = level;
+                    cell.UpdatedAt = DateTime.UtcNow;
+                }
+            }
+        }
 
         private Guid RequireOrganizationId()
         {

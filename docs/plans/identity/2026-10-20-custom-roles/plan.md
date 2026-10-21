@@ -53,4 +53,4 @@ No new integration, no new library, no backfill. No public endpoint, and no chan
 - [x] T2 — Role names unique ignoring letter case
 - [x] T3 — Who may manage roles, and the cap
 - [x] T4 — List, read and create roles
-- [ ] T5 — Edit a role's levels and rename it
+- [x] T5 — Edit a role's levels and rename it
