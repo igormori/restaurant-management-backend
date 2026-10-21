@@ -76,7 +76,9 @@ namespace RestaurantManagement.Modules.Identity.Data
             {
                 entity.ToTable("organization_roles");
                 entity.Property(r => r.Name).IsRequired().HasMaxLength(OrganizationRole.NameMaxLength);
-                entity.HasIndex(r => new { r.OrganizationId, r.Name })
+                entity.Property<string>("NameNormalized")
+                    .HasComputedColumnSql("lower(name)", stored: true);
+                entity.HasIndex("OrganizationId", "NameNormalized")
                     .IsUnique()
                     .HasDatabaseName(UniqueRoleNameIndexName);
             });

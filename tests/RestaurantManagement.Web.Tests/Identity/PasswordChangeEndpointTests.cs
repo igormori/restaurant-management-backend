@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
-using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Modules.Identity.Services.Sessions;
 using RestaurantManagement.Shared;
 using Shouldly;
 using Xunit;

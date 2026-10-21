@@ -4,7 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NSubstitute;
-using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Modules.Identity.Services.Registration;
+using RestaurantManagement.Modules.Identity.Services.Sessions;
 
 namespace RestaurantManagement.Web.Tests;
 

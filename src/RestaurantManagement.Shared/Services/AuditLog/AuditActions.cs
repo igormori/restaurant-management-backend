@@ -12,12 +12,16 @@ namespace RestaurantManagement.Shared.Services.AuditLog
         public const string SettingsChanged = "settings.changed";
         public const string LocationStatusChanged = "location.status_changed";
 
+        public const string RoleCreated = "role.created";
+        public const string RoleLevelsChanged = "role.levels_changed";
+        public const string RoleRenamed = "role.renamed";
+
         public const string PasswordReset = "password.reset";
         public const string PasswordChanged = "password.changed";
 
         public static readonly IReadOnlySet<string> All = new HashSet<string>
         {
-            MemberRoleChanged, MemberAccessChanged, MemberInvited, MemberInvitationCancelled, SettingsChanged, LocationStatusChanged, PasswordReset, PasswordChanged
+            MemberRoleChanged, MemberAccessChanged, MemberInvited, MemberInvitationCancelled, SettingsChanged, LocationStatusChanged, RoleCreated, RoleLevelsChanged, RoleRenamed, PasswordReset, PasswordChanged
         };
     }
 }

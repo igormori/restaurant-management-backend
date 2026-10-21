@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Models;
-using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Modules.Identity.Services.Passwords;
+using RestaurantManagement.Modules.Identity.Services.Registration;
 using RestaurantManagement.Shared.Options;
 
 namespace RestaurantManagement.Modules.Identity.Tests

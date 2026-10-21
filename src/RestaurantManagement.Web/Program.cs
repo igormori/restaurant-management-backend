@@ -25,7 +25,9 @@ using RestaurantManagement.Web.RateLimiting;
 
 // Modules
 using RestaurantManagement.Modules.Identity.Data;
-using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Modules.Identity.Services.Passwords;
+using RestaurantManagement.Modules.Identity.Services.Registration;
+using RestaurantManagement.Modules.Identity.Services.Sessions;
 using RestaurantManagement.Modules.Menu.Data;
 using RestaurantManagement.Modules.Menu.Services;
 using RestaurantManagement.Modules.Organization.Data;
@@ -157,10 +159,10 @@ builder.Services.AddOptions<VerificationCodeOptions>()
     .Bind(builder.Configuration.GetSection("VerificationCode"))
     .ValidateOnStart();
 builder.Services.AddSingleton<IValidateOptions<VerificationCodeOptions>, VerificationCodeOptionsValidator>();
-builder.Services.AddOptions<RestaurantManagement.Modules.Identity.Services.InvitationOptions>()
-    .Bind(builder.Configuration.GetSection(RestaurantManagement.Modules.Identity.Services.InvitationOptions.SectionName))
+builder.Services.AddOptions<RestaurantManagement.Modules.Identity.Services.Invitations.InvitationOptions>()
+    .Bind(builder.Configuration.GetSection(RestaurantManagement.Modules.Identity.Services.Invitations.InvitationOptions.SectionName))
     .ValidateOnStart();
-builder.Services.AddSingleton<IValidateOptions<RestaurantManagement.Modules.Identity.Services.InvitationOptions>, RestaurantManagement.Modules.Identity.Services.InvitationOptionsValidator>();
+builder.Services.AddSingleton<IValidateOptions<RestaurantManagement.Modules.Identity.Services.Invitations.InvitationOptions>, RestaurantManagement.Modules.Identity.Services.Invitations.InvitationOptionsValidator>();
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<CorsOptions>(builder.Configuration.GetSection("Cors"));
 builder.Services.AddAuthRateLimiting(builder.Configuration);
@@ -284,12 +286,14 @@ builder.Services.AddScoped<RestaurantManagement.Modules.Menu.Services.IMenuCateg
 
 // Cross-Module Contracts (Shared interface, implemented by the owning module)
 builder.Services.AddScoped<IOrganizationLookup, RestaurantManagement.Modules.Organization.Services.OrganizationLookup>();
-builder.Services.AddScoped<IMemberAccessLookup, RestaurantManagement.Modules.Identity.Services.MemberAccessLookup>();
-builder.Services.AddScoped<IOrganizationAccessSetup, RestaurantManagement.Modules.Identity.Services.OrganizationAccessSetup>();
-builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.IMemberAccessService, RestaurantManagement.Modules.Identity.Services.MemberAccessService>();
-builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.IMemberGridBuilder, RestaurantManagement.Modules.Identity.Services.MemberGridBuilder>();
-builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.IMemberDelegationRules, RestaurantManagement.Modules.Identity.Services.MemberDelegationRules>();
-builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.IInvitationService, RestaurantManagement.Modules.Identity.Services.InvitationService>();
+builder.Services.AddScoped<IMemberAccessLookup, RestaurantManagement.Modules.Identity.Services.Members.MemberAccessLookup>();
+builder.Services.AddScoped<IOrganizationAccessSetup, RestaurantManagement.Modules.Identity.Services.Members.OrganizationAccessSetup>();
+builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.Members.IMemberAccessService, RestaurantManagement.Modules.Identity.Services.Members.MemberAccessService>();
+builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.Members.IMemberGridBuilder, RestaurantManagement.Modules.Identity.Services.Members.MemberGridBuilder>();
+builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.Members.IMemberDelegationRules, RestaurantManagement.Modules.Identity.Services.Members.MemberDelegationRules>();
+builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.Roles.IRoleManagementRules, RestaurantManagement.Modules.Identity.Services.Roles.RoleManagementRules>();
+builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.Roles.IRoleService, RestaurantManagement.Modules.Identity.Services.Roles.RoleService>();
+builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.Invitations.IInvitationService, RestaurantManagement.Modules.Identity.Services.Invitations.InvitationService>();
 builder.Services.AddScoped<IAccessGuard, AccessGuard>();
 
 // ---------------------------------------------

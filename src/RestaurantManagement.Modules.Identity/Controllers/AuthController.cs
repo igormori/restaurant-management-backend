@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using RestaurantManagement.Modules.Identity.Models;
-using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Modules.Identity.Services.Invitations;
+using RestaurantManagement.Modules.Identity.Services.Passwords;
+using RestaurantManagement.Modules.Identity.Services.Registration;
+using RestaurantManagement.Modules.Identity.Services.Sessions;
 using RestaurantManagement.Shared.RateLimiting;
 
 namespace RestaurantManagement.Modules.Identity.Controllers

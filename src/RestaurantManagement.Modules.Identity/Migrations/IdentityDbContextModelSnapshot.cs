@@ -394,6 +394,12 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("name");
 
+                    b.Property<string>("NameNormalized")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("text")
+                        .HasColumnName("name_normalized")
+                        .HasComputedColumnSql("lower(name)", true);
+
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("uuid")
                         .HasColumnName("organization_id");
@@ -409,7 +415,7 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                     b.HasKey("Id")
                         .HasName("pk_organization_roles");
 
-                    b.HasIndex("OrganizationId", "Name")
+                    b.HasIndex("OrganizationId", "NameNormalized")
                         .IsUnique()
                         .HasDatabaseName("ix_organization_roles_organization_id_name");
 

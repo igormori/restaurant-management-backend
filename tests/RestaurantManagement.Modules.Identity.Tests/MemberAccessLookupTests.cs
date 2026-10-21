@@ -1,5 +1,5 @@
 using RestaurantManagement.Modules.Identity.Entities;
-using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Modules.Identity.Services.Members;
 using RestaurantManagement.Shared.Auth;
 using Shouldly;
 using static RestaurantManagement.Modules.Identity.Tests.MemberAccessTestSupport;

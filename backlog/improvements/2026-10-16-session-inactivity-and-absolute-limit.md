@@ -13,7 +13,7 @@ is detected. Approved by the user on 2026-10-16:
 - **Absolute:** every session ends 30 days after its login, even on a device used every day.
 
 ## Evidence
-- `src/RestaurantManagement.Modules.Identity/Services/RefreshTokenService.cs:145` — every new token, including a rotation, expires `now + RefreshTokenExpireDays`
+- `src/RestaurantManagement.Modules.Identity/Services/Sessions/RefreshTokenService.cs:145` — every new token, including a rotation, expires `now + RefreshTokenExpireDays`
 - `src/RestaurantManagement.Web/appsettings.json:40` — `RefreshTokenExpireDays: 30`
 - `docs/security/identity-matrix.md:110` — F1 says "expiry renewed" on refresh
 

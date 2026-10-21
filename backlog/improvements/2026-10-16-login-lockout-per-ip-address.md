@@ -18,7 +18,7 @@ Approved by the user on 2026-10-16 (no CAPTCHA for now):
    If it wasn't you, reset your password." Password reset already clears the lock (P10).
 
 ## Evidence
-- `src/RestaurantManagement.Modules.Identity/Services/SessionService.cs:175-180` — one counter per user; reaching it locks the account for everyone
+- `src/RestaurantManagement.Modules.Identity/Services/Sessions/SessionService.cs:175-180` — one counter per user; reaching it locks the account for everyone
 - `src/RestaurantManagement.Web/appsettings.json:46-47` — `MaxFailedLoginAttempts: 5`, `LockoutDurationMinutes: 15`
 - `docs/security/identity-matrix.md` — L7–L11 describe the account-wide lock
 

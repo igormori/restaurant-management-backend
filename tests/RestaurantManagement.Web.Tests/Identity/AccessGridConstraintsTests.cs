@@ -57,6 +57,42 @@ public class AccessGridConstraintsTests : IClassFixture<PostgresDatabaseFixture>
     }
 
     [Fact]
+    [Trait("Rule", "T30")]
+    public async Task SaveRole_SameNameInAnotherLetterCaseInOneOrganization_IsRejectedByTheCaseInsensitiveUniqueIndex()
+    {
+        // Arrange
+        await using var context = await CreateMigratedContextWithMariaAsync();
+        context.Set<OrganizationRole>().Add(new OrganizationRole { OrganizationId = CantinaId, Name = "Waiter" });
+        await context.SaveChangesAsync();
+        context.Set<OrganizationRole>().Add(new OrganizationRole { OrganizationId = CantinaId, Name = "waiter" });
+
+        // Act
+        var exception = await Should.ThrowAsync<DbUpdateException>(() => context.SaveChangesAsync());
+
+        // Assert
+        var postgres = exception.InnerException as PostgresException;
+        postgres?.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation, "a role name is used once in an organization, whatever its letter case");
+        postgres?.ConstraintName.ShouldBe(IdentityDbContext.UniqueRoleNameIndexName, "the index keeps the fixed name the services catch");
+    }
+
+    [Fact]
+    [Trait("Rule", "T127")]
+    public async Task SaveRole_SameNameInAnotherOrganization_IsAllowed()
+    {
+        // Arrange
+        await using var context = await CreateMigratedContextWithMariaAsync();
+        var trattoriaId = Guid.Parse("c2c2c2c2-0000-4000-8000-000000000002");
+        context.Set<OrganizationRole>().Add(new OrganizationRole { OrganizationId = CantinaId, Name = "Waiter" });
+        context.Set<OrganizationRole>().Add(new OrganizationRole { OrganizationId = trattoriaId, Name = "waiter" });
+
+        // Act
+        var act = () => context.SaveChangesAsync();
+
+        // Assert
+        await Should.NotThrowAsync(act, "another organization may use the same name");
+    }
+
+    [Fact]
     [Trait("Rule", "T31")]
     public async Task SaveLevel_SameCellTwice_IsRejectedByUniqueIndex()
     {

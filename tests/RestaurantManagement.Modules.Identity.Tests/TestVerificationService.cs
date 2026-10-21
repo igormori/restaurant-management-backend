@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Data;
-using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Modules.Identity.Services.Registration;
 using RestaurantManagement.Shared.Options;
 
 namespace RestaurantManagement.Modules.Identity.Tests

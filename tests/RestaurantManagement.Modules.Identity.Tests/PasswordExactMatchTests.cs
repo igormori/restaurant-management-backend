@@ -1,4 +1,4 @@
-using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Modules.Identity.Services.Passwords;
 using Shouldly;
 using Xunit;
 

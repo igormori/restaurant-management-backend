@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using Npgsql;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities;
-using RestaurantManagement.Modules.Identity.Services;
+using RestaurantManagement.Modules.Identity.Services.Sessions;
 using RestaurantManagement.Shared.Options;
 using Shouldly;
 using Xunit;

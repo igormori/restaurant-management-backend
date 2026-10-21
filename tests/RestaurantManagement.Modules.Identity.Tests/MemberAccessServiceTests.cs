@@ -189,7 +189,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             using var database = await CreateDatabaseAsync(Roles);
             var auditLog = Substitute.For<IAuditLog>();
             auditLog.RecordAsync(Arg.Any<AuditEntryDto>(), Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException("Audit log unavailable"));
-            var logger = Substitute.For<ILogger<RestaurantManagement.Modules.Identity.Services.MemberAccessService>>();
+            var logger = Substitute.For<ILogger<RestaurantManagement.Modules.Identity.Services.Members.MemberAccessService>>();
             var sut = CreateService(database, auditLog, logger);
 
             // Act

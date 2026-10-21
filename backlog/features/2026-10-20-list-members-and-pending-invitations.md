@@ -12,7 +12,7 @@ pending invitations. A screen cannot show what it is about to edit, or find the 
 cancel, without them.
 
 ## Evidence
-- `src/RestaurantManagement.Modules.Identity/Services/IMemberAccessService.cs` — `GetAccessAsync` reads a member's grid, but no endpoint exposes it
+- `src/RestaurantManagement.Modules.Identity/Services/Members/IMemberAccessService.cs` — `GetAccessAsync` reads a member's grid, but no endpoint exposes it
 - `docs/specs/shared/2026-10-20-invite-member-and-edit-access-grid.md` — Outcomes cover invite, accept, edit and cancel only; nothing lists members or invitations
 
 ## Acceptance criteria
