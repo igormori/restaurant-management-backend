@@ -1,4 +1,4 @@
-using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Modules.Identity.Entities.Invitations;
 using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Utils.Exceptions;

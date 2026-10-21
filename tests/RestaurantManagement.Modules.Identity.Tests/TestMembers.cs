@@ -1,4 +1,4 @@
-using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Modules.Identity.Entities.Members;
 
 namespace RestaurantManagement.Modules.Identity.Tests
 {

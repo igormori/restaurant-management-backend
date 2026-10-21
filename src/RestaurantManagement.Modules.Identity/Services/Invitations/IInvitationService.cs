@@ -1,4 +1,4 @@
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Invitations;
 
 namespace RestaurantManagement.Modules.Identity.Services.Invitations
 {

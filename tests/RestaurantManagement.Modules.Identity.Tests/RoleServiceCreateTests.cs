@@ -1,5 +1,5 @@
 using NSubstitute;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Roles;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Shouldly;
 using static RestaurantManagement.Modules.Identity.Tests.MemberAccessTestSupport;

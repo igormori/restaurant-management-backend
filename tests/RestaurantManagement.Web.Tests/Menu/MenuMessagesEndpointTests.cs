@@ -1,5 +1,4 @@
 using System.Net;
-using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Shared;
 using Shouldly;
 using static RestaurantManagement.Web.Tests.LocalizedResponses;

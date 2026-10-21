@@ -11,7 +11,8 @@ using Sentry;
 // Shared
 using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.AuditLog;
+using RestaurantManagement.Shared.Data.Tenancy;
 using RestaurantManagement.Shared.Middleware;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Services.AuditLog;

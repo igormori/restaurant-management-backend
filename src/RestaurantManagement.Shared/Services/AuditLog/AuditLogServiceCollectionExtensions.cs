@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.AuditLog;
 
 namespace RestaurantManagement.Shared.Services.AuditLog
 {

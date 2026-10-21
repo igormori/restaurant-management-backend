@@ -8,7 +8,7 @@ using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Modules.Organization.Services;
 using RestaurantManagement.Shared;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.Tenancy;
 using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Services.Identity;
 using RestaurantManagement.Shared.Utils.Exceptions;

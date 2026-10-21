@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
-using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Modules.Identity.Entities.Registration;
 using RestaurantManagement.Modules.Identity.Services.Passwords;
 using RestaurantManagement.Modules.Identity.Services.Registration;
 using RestaurantManagement.Shared.Services.Email;

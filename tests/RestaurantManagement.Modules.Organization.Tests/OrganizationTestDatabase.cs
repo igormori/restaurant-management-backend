@@ -2,7 +2,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using RestaurantManagement.Modules.Organization.Data;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.Tenancy;
 
 namespace RestaurantManagement.Modules.Organization.Tests
 {

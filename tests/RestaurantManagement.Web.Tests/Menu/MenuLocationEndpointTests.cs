@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
-using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Modules.Menu.Data;
 using RestaurantManagement.Modules.Menu.Entities;
 using RestaurantManagement.Shared;

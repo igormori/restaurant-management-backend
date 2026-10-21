@@ -1,4 +1,4 @@
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Roles;
 
 namespace RestaurantManagement.Modules.Identity.Services.Roles
 {

@@ -1,5 +1,5 @@
 using NSubstitute;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.Tenancy;
 
 namespace RestaurantManagement.Modules.Menu.Tests
 {

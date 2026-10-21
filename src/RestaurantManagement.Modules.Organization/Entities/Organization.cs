@@ -1,4 +1,4 @@
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.Entities;
 using RestaurantManagement.Modules.Organization.Entities;
 
 namespace RestaurantManagement.Modules.Organization.Entities

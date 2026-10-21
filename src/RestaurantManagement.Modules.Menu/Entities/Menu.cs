@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.Entities;
 
 namespace RestaurantManagement.Modules.Menu.Entities
 {

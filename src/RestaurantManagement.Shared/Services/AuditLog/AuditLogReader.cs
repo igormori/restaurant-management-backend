@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.AuditLog;
 using RestaurantManagement.Shared.Models;
 using RestaurantManagement.Shared.Utils.Exceptions;
 

@@ -1,4 +1,5 @@
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Common;
+using RestaurantManagement.Modules.Identity.Models.Passwords;
 
 namespace RestaurantManagement.Modules.Identity.Services.Passwords
 {

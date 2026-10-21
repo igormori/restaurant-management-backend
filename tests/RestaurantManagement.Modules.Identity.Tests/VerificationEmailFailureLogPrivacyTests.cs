@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Shouldly;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Registration;
 using RestaurantManagement.Modules.Identity.Services.Registration;
 using RestaurantManagement.Shared.Services.Email;
 using Xunit;

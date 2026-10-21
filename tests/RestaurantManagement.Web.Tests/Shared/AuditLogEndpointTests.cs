@@ -1,8 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
-using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Shared.Data.AuditLog;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.AuditLog;
 using Shouldly;
 using Currency = RestaurantManagement.Modules.Organization.Entities.Currency;

@@ -1,6 +1,6 @@
 using NSubstitute;
-using RestaurantManagement.Modules.Identity.Entities;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Entities.Members;
+using RestaurantManagement.Modules.Identity.Models.Roles;
 using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Utils.Exceptions;

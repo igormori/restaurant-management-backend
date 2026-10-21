@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
-using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Modules.Identity.Entities.Members;
+using RestaurantManagement.Modules.Identity.Entities.Roles;
+using RestaurantManagement.Modules.Identity.Entities.Users;
 using RestaurantManagement.Modules.Identity.Services.Members;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.AuditLog;
+using RestaurantManagement.Shared.Data.Tenancy;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Shouldly;
 using static RestaurantManagement.Modules.Identity.Tests.MemberAccessTestSupport;

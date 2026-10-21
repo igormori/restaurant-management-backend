@@ -4,8 +4,10 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestaurantManagement.Modules.Identity.Data;
-using RestaurantManagement.Modules.Identity.Entities;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Entities.Registration;
+using RestaurantManagement.Modules.Identity.Entities.Users;
+using RestaurantManagement.Modules.Identity.Models.Common;
+using RestaurantManagement.Modules.Identity.Models.Registration;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Utils.Exceptions;
 

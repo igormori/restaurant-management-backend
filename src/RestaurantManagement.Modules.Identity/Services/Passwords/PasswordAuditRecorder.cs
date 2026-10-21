@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Modules.Identity.Data;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.Tenancy;
 using RestaurantManagement.Shared.Services.AuditLog;
 
 namespace RestaurantManagement.Modules.Identity.Services.Passwords

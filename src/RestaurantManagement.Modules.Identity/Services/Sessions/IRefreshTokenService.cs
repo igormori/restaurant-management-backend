@@ -1,5 +1,5 @@
-using RestaurantManagement.Modules.Identity.Entities;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Entities.Sessions;
+using RestaurantManagement.Modules.Identity.Models.Sessions;
 
 namespace RestaurantManagement.Modules.Identity.Services.Sessions
 {

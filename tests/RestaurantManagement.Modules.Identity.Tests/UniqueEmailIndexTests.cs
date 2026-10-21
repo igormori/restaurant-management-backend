@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Registration;
 using RestaurantManagement.Modules.Identity.Services.Registration;
 using RestaurantManagement.Shared.Services.Email;
 using RestaurantManagement.Shared.Utils.Exceptions;

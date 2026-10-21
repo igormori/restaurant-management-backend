@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.AuditLog;
 using RestaurantManagement.Shared.Services.AuditLog;
 using Shouldly;
 

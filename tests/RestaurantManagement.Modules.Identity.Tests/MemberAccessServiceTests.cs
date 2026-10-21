@@ -1,7 +1,8 @@
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Modules.Identity.Entities.Members;
+using RestaurantManagement.Modules.Identity.Entities.Roles;
 using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Utils.Exceptions;

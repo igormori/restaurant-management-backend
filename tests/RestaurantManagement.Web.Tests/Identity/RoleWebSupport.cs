@@ -2,7 +2,7 @@ using System.Net.Http.Json;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Modules.Identity.Data;
-using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Modules.Identity.Entities.Roles;
 using RestaurantManagement.Shared.Auth;
 using static RestaurantManagement.Web.Tests.InvitationWebSupport;
 

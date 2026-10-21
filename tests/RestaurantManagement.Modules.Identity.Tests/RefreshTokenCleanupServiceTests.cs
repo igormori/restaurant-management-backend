@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Modules.Identity.Entities.Sessions;
+using RestaurantManagement.Modules.Identity.Entities.Users;
 using RestaurantManagement.Modules.Identity.Services.Sessions;
 using Shouldly;
 using Xunit;

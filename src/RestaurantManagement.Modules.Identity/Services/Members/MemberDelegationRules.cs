@@ -3,7 +3,7 @@ using Microsoft.Extensions.Localization;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.Tenancy;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
 namespace RestaurantManagement.Modules.Identity.Services.Members

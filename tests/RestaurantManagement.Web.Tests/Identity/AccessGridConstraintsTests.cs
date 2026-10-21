@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using RestaurantManagement.Modules.Identity.Data;
-using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Modules.Identity.Entities.Members;
+using RestaurantManagement.Modules.Identity.Entities.Roles;
 using RestaurantManagement.Shared.Auth;
 using Shouldly;
 using Xunit;

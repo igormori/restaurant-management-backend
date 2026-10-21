@@ -1,12 +1,13 @@
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using RestaurantManagement.Modules.Identity.Entities;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Entities.Invitations;
+using RestaurantManagement.Modules.Identity.Entities.Members;
+using RestaurantManagement.Modules.Identity.Models.Invitations;
+using RestaurantManagement.Shared.Data.Tenancy;
 using RestaurantManagement.Modules.Identity.Services.Invitations;
 using RestaurantManagement.Modules.Identity.Services.Members;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Options;
 using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Services.Email;

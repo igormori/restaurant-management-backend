@@ -4,7 +4,9 @@ using Microsoft.Extensions.Localization;
 using NSubstitute;
 using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.AuditLog;
+using RestaurantManagement.Shared.Data.Entities;
+using RestaurantManagement.Shared.Data.Tenancy;
 
 namespace RestaurantManagement.Shared.Tests;
 

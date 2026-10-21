@@ -5,7 +5,8 @@ using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Menu.Data;
 using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.AuditLog;
+using RestaurantManagement.Shared.Data.Tenancy;
 using RestaurantManagement.Web.Auth;
 using Shouldly;
 

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Http;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.AuditLog;
 
 namespace RestaurantManagement.Shared.Services.AuditLog
 {

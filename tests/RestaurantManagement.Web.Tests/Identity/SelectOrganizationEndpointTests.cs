@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Sessions;
 using Shouldly;
 
 namespace RestaurantManagement.Web.Tests;

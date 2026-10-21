@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using RestaurantManagement.Modules.Identity.Data;
-using RestaurantManagement.Modules.Identity.Entities;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Entities.Invitations;
+using RestaurantManagement.Modules.Identity.Entities.Members;
+using RestaurantManagement.Modules.Identity.Entities.Users;
+using RestaurantManagement.Modules.Identity.Models.Invitations;
 using RestaurantManagement.Shared.Utils.Exceptions;
 
 namespace RestaurantManagement.Modules.Identity.Services.Invitations

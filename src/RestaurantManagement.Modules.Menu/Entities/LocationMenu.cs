@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.Entities;
 
 namespace RestaurantManagement.Modules.Menu.Entities
 {

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
 using RestaurantManagement.Modules.Identity.Data;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Sessions;
 using RestaurantManagement.Modules.Identity.Services.Passwords;
 using RestaurantManagement.Modules.Identity.Services.Registration;
 using RestaurantManagement.Shared.Options;
