@@ -290,6 +290,7 @@ builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.IMembe
 builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.IMemberGridBuilder, RestaurantManagement.Modules.Identity.Services.MemberGridBuilder>();
 builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.IMemberDelegationRules, RestaurantManagement.Modules.Identity.Services.MemberDelegationRules>();
 builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.IRoleManagementRules, RestaurantManagement.Modules.Identity.Services.RoleManagementRules>();
+builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.IRoleService, RestaurantManagement.Modules.Identity.Services.RoleService>();
 builder.Services.AddScoped<RestaurantManagement.Modules.Identity.Services.IInvitationService, RestaurantManagement.Modules.Identity.Services.InvitationService>();
 builder.Services.AddScoped<IAccessGuard, AccessGuard>();
 
