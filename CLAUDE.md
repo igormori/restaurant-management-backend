@@ -29,11 +29,14 @@ which organization's data), never technical rules.
 
 ## Commands
 - Build: `dotnet build RestaurantManagement.sln`
-- Test: `dotnet test`
+- Test: `.claude/scripts/test-summary.sh affected` (only what the branch's changes can break;
+  the full suite when Shared, Web or build files changed). One test class:
+  `.claude/scripts/test-summary.sh <test-project> "FullyQualifiedName~<ClassName>"`
 - Format: `dotnet format`
 - Run: `dotnet run --project src/RestaurantManagement.Web` (Swagger at /swagger)
 - Vulnerable packages: `dotnet list package --vulnerable`
-- Build and tests must pass before a task is done
+- Build and the affected tests must pass before a task is done. The full suite runs in CI
+  (Continuous Integration) on every pull request; merge only when CI is green
 - Never commit secrets (connection strings, JWT (JSON Web Token) key)
 
 ## Commits
@@ -54,9 +57,11 @@ Scenarios: 1–3
 - Summary: lowercase, imperative, no trailing period, 72 characters max for the whole line;
   says what changed and its effect, e.g.
   `fix(identity): return a generic 401 for locked accounts`
-- New branches start from the current branch (`git switch -c ...`), and pull requests always
-  target `development`, never `main`
+- New branches start from the latest development: `git fetch origin`, then
+  `git switch -c <branch> origin/development`. Never from the current branch or a local
+  `development` or `main`. Pull requests always target `development`, never `main`
 - Never push to `development` or `main`: `.githooks/pre-push` rejects it
+- Never amend a commit
 - Body only when the why isn't obvious. Scenario numbers and ticket IDs (`Refs: ABC-123`) go
   in the body, never in the summary
 
@@ -67,6 +72,8 @@ Scenarios: 1–3
 - Small slices: one spec is one behaviour, reviewable in about 5 minutes. Split when a plan has
   more than 10 files or more than 3 open decisions. Ship shared infrastructure and data
   backfills as their own slices, before the features that use them
+- A denied command means stop and report. Never reach the same result with another command,
+  and never discard, reset or delete work to get out of a problem
 
 ## Security matrices
 Each module's rules (who may do what, with which organization's data, limits, refusals) and the
@@ -117,6 +124,8 @@ stop the flow when something is wrong.
 - `/spec <requirement>` runs step 1. `/plan <module>/<spec-name>` runs step 2 and stops at Gate 1.
 - `/test <module>/<spec-name>` runs step 3 and stops at Gate 2.
 - `/implement <module>/<spec-name> [branch or ticket]` runs steps 4–5 and stops at Gate 3.
+- `/small <change>`: one small, low-risk change (docs-only: just the commit).
+  `/small-batch <item; item; …>`: several small, independent items, one commit each.
 - Other commands: `/review`, `/fixbug`.
 
 1. Spec: spec-writer writes `docs/specs/<module>/<YYYY-MM-DD>-<feature>.md` (`shared/` when it
@@ -134,12 +143,13 @@ stop the flow when something is wrong.
    ⏸ Gate 2: the user approves `scenarios.md` (test coverage).
 4. Implement: implementer commits the baseline (spec, plan, stubs, tests), then one task per
    commit, following each task's Implementation guide. Only tests of tasks not built yet may
-   fail; the full suite is green after the last task. After each
+   fail; the affected tests are green after the last task. After each
    task it writes the task's Delivered note in its batch file and ticks the task in the
    `plan.md` Checklist. Batches run in order; a batch starts only when every task it depends
    on is ticked.
-5. Review: pr-reviewer reviews the branch.
-   ⏸ Gate 3: the user reads the summary and review, then pushes and merges.
+5. Review: pr-reviewer reviews the branch (build only; the full suite runs in CI).
+   ⏸ Gate 3: the user reads the summary and review, then pushes, and merges only when CI is
+   green.
 
 High risk (flagged in `plan.md`; the solution architect decides what to do at Gate 1):
 new Shared contract, auth or role changes, new module, migration on a table that has data or

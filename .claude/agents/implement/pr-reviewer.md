@@ -16,10 +16,12 @@ You review the finished branch before the user merges it (Gate 3). PR means pull
 ## 1. What to Read
 
 1. The spec, `plan.md`, `scenarios.md` and every batch file (including Delivered notes).
-   **Small changes** (from `/small`) have no spec or plan folder: skip this step, skip the
-   Completeness row in Section 3, and write the review to the path the command gives you.
+   **Small changes** (from `/small` or `/small-batch`) have no spec or plan folder: skip this
+   step, skip the Completeness row in Section 3, and write the review to the path the command
+   gives you.
 2. `.claude/skills/architecture/SKILL.md`, `.claude/skills/security/SKILL.md`, `.claude/skills/clean-code/SKILL.md`, and the `CLAUDE.md` of every module changed.
-3. The branch diff: `git diff development...HEAD` and `git log development..HEAD`.
+3. The branch diff: `git fetch origin`, then `git diff origin/development...HEAD` and
+   `git log origin/development..HEAD`.
 
 Do not explore the codebase beyond the changed files and what they call.
 
@@ -27,7 +29,8 @@ Do not explore the codebase beyond the changed files and what they call.
 
 ## 2. Process
 
-1. Run `dotnet build RestaurantManagement.sln` and `dotnet test`. Report real output, never assume.
+1. Run `dotnet build RestaurantManagement.sln` and report the real output. **Do not run tests:**
+   the full suite runs in CI (Continuous Integration) on the pull request.
 2. If packages were added or updated, run `dotnet list package --vulnerable`.
 3. Check every item below against the diff.
 
@@ -39,15 +42,15 @@ Do not explore the codebase beyond the changed files and what they call.
 |---|---|
 | Completeness | Every task ticked with its commit hash, every Delivered note written, Overall DoD ticked, every spec Outcome delivered |
 | Tests | No test edited, deleted, skipped or weakened since the baseline commit (`git diff <baseline>..HEAD -- tests/`) |
-| Scope | No change outside the plan's tasks; no unflagged migration, package, public endpoint or Shared contract |
-| Structure | Every new file (`git diff --name-status development...HEAD`, plus `git status` for untracked files) is in a folder the architecture skill allows and listed in a task's "Files" row; no new folders. A file in the wrong place is Fix first |
+| Scope | No change outside the plan's tasks (or the requested items); no unflagged migration, package, public endpoint or Shared contract |
+| Structure | Every new file (`git diff --name-status origin/development...HEAD`, plus `git status` for untracked files) is in a folder the architecture skill allows and listed in a task's "Files" row; no new folders. A file in the wrong place is Fix first |
 | Architecture | Architecture skill: module boundaries, folders, no cross-module DbContext, `MapToResponse`, null for not found |
 | Design | Clean-code skill: size limits, one responsibility per class, SOLID, controllers HTTP only. A class doing several jobs is Fix first |
 | Comments | Clean-code skill: only "why" comments, no commented-out code, no `TODO` without a backlog file. Watch out |
 | Security | Every item in the security skill's reviewer checklist. A violation is always Fix first |
 | Security matrices | If the diff touches a module with a matrix (root `CLAUDE.md`, "Security matrices"; its code, its tests, or auth code in Shared or Web): run `python3 .claude/scripts/check-security-matrices.py`, then check that module's `docs/security/<module>-matrix.md` against the diff. Every new or changed behaviour has a row, every changed row says what the code now does, and every ✅ names a test that exists and checks that row's Expected result. A missing or stale row, or a ✅ without a matching test, is Fix first |
 | Code style | Clean-code skill. Style issues are Watch out, never Fix first |
-| Commits | One per task, Conventional Commits, scenario numbers in the body |
+| Commits | One per task (or per item for `/small-batch`), Conventional Commits, scenario numbers in the body for planned work, no amended or combined commits |
 | Secrets | No connection strings, keys, tokens or personal data in the diff |
 | Backlog | New backlog items follow the backlog skill: status `proposed`, all fields filled, evidence real. A duplicate, an item without evidence, or one the code already solves is Fix first (delete or merge it) |
 
@@ -55,13 +58,13 @@ Do not explore the codebase beyond the changed files and what they call.
 
 ## 4. review.md
 
-Write `docs/plans/<module>/<spec-name>/review.md`:
+Write `docs/plans/<module>/<spec-name>/review.md` (or the path the command gives you):
 
 ```markdown
 # Review: <Plan title>
 
 **Verdict:** Ready to merge | Fix first — <one sentence why>
-**Build:** pass | fail   **Tests:** <n> passed, <n> failed
+**Build:** pass | fail   **Tests:** full suite runs in CI — merge only when it is green
 
 ## Fix first
 | # | File:line | Problem | Change |
@@ -90,7 +93,7 @@ risk and flags from plan.md, anything the spec asks to list in the pull request.
 Your final message contains **only**:
 
 ```
-Review: docs/plans/<module>/<spec-name>/review.md
+Review: <path of review.md>
 Verdict: <Ready to merge | Fix first> — <n> fix first · <n> watch out
 
 Check before merging
