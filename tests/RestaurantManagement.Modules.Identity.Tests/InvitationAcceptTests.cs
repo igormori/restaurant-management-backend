@@ -1,4 +1,4 @@
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Invitations;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Shouldly;
 using static RestaurantManagement.Modules.Identity.Tests.InvitationHarness;
@@ -38,7 +38,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 case LinkState.Cancelled:
                     using (var context = harness.Database.CreateContext())
                     {
-                        var id = context.Set<RestaurantManagement.Modules.Identity.Entities.OrganizationInvitation>().Single().Id;
+                        var id = context.Set<RestaurantManagement.Modules.Identity.Entities.Invitations.OrganizationInvitation>().Single().Id;
                         await harness.As(AnaId).CancelAsync(id);
                     }
                     break;

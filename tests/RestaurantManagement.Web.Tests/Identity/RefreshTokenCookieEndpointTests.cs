@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Net.Http.Headers;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Sessions;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Shouldly;
 

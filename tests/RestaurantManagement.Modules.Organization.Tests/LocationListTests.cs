@@ -3,7 +3,6 @@ using NSubstitute;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Services;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Utils.Exceptions;
 using Shouldly;

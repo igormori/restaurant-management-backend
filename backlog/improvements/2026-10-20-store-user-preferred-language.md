@@ -11,8 +11,8 @@ user's language is stored anywhere, so it is never known: invitations always use
 the inviter's request. Verification and reset emails have no language choice at all.
 
 ## Evidence
-- `src/RestaurantManagement.Modules.Identity/Entities/User.cs` — no language field
-- `src/RestaurantManagement.Shared/Utils/Localization.cs` — the language comes only from the request's `Accept-Language` header
+- `src/RestaurantManagement.Modules.Identity/Entities/Users/User.cs` — no language field
+- `src/RestaurantManagement.Shared/Utils/Localization/Localization.cs` — the language comes only from the request's `Accept-Language` header
 - `docs/specs/shared/2026-10-20-invite-member-and-edit-access-grid.md` — "Invitation email", Language row
 
 ## Acceptance criteria

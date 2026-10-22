@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
 using NSubstitute;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Sessions;
 using RestaurantManagement.Shared;
 using Shouldly;
 

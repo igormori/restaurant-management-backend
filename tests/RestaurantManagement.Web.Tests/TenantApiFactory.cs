@@ -7,14 +7,16 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Data;
-using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Modules.Identity.Entities.Members;
+using RestaurantManagement.Modules.Identity.Entities.Users;
+using RestaurantManagement.Shared.Data.AuditLog;
+using RestaurantManagement.Shared.Data.Tenancy;
 using RestaurantManagement.Modules.Menu.Data;
 using RestaurantManagement.Modules.Menu.Entities;
 using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.Email;
 
 namespace RestaurantManagement.Web.Tests;

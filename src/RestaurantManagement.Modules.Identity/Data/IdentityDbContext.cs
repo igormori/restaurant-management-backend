@@ -1,5 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Modules.Identity.Entities.Invitations;
+using RestaurantManagement.Modules.Identity.Entities.Members;
+using RestaurantManagement.Modules.Identity.Entities.Passwords;
+using RestaurantManagement.Modules.Identity.Entities.Registration;
+using RestaurantManagement.Modules.Identity.Entities.Roles;
+using RestaurantManagement.Modules.Identity.Entities.Sessions;
+using RestaurantManagement.Modules.Identity.Entities.Users;
 
 namespace RestaurantManagement.Modules.Identity.Data
 {

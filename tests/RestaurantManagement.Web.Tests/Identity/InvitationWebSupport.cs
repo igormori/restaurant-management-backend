@@ -3,11 +3,13 @@ using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Data;
-using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Modules.Identity.Entities.Invitations;
+using RestaurantManagement.Modules.Identity.Entities.Members;
+using RestaurantManagement.Modules.Identity.Entities.Roles;
+using RestaurantManagement.Shared.Data.AuditLog;
 using RestaurantManagement.Modules.Identity.Services.Members;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.Email;
 
 namespace RestaurantManagement.Web.Tests;

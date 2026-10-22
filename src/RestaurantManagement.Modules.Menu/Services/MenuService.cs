@@ -11,7 +11,7 @@ using RestaurantManagement.Modules.Menu.Models;
 using RestaurantManagement.Shared.Services.Organization;
 using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Utils.Exceptions;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.Tenancy;
 
 namespace RestaurantManagement.Modules.Menu.Services
 {

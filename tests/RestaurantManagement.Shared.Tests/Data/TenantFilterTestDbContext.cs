@@ -2,7 +2,8 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.Entities;
+using RestaurantManagement.Shared.Data.Tenancy;
 
 namespace RestaurantManagement.Shared.Tests.Data;
 

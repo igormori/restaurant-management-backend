@@ -1,4 +1,5 @@
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Common;
+using RestaurantManagement.Modules.Identity.Models.Registration;
 
 namespace RestaurantManagement.Modules.Identity.Services.Registration
 {

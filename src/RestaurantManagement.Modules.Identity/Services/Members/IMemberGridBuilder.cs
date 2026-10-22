@@ -1,4 +1,4 @@
-using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Modules.Identity.Entities.Roles;
 using RestaurantManagement.Shared.Auth;
 
 namespace RestaurantManagement.Modules.Identity.Services.Members

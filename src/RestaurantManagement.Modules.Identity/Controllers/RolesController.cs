@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Roles;
 using RestaurantManagement.Modules.Identity.Services.Roles;
 
 namespace RestaurantManagement.Modules.Identity.Controllers

@@ -3,8 +3,8 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using RestaurantManagement.Modules.Identity.Data;
-using RestaurantManagement.Modules.Identity.Entities;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Entities.Sessions;
+using RestaurantManagement.Modules.Identity.Models.Sessions;
 using RestaurantManagement.Shared.Options;
 
 namespace RestaurantManagement.Modules.Identity.Services.Sessions

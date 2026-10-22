@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using RestaurantManagement.Modules.Identity.Data;
-using RestaurantManagement.Shared.Data;
 using RestaurantManagement.Shared.Services.AuditLog;
 using Shouldly;
 using static RestaurantManagement.Web.Tests.InvitationWebSupport;

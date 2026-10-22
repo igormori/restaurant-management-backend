@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Data;
-using RestaurantManagement.Modules.Identity.Entities;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Entities.Sessions;
+using RestaurantManagement.Modules.Identity.Entities.Users;
+using RestaurantManagement.Modules.Identity.Models.Common;
+using RestaurantManagement.Modules.Identity.Models.Passwords;
 using RestaurantManagement.Modules.Identity.Services.Passwords;
 using RestaurantManagement.Modules.Identity.Services.Sessions;
 using RestaurantManagement.Shared.Services.AuditLog;

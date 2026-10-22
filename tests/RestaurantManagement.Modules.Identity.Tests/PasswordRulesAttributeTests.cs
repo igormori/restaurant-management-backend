@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Passwords;
 using Shouldly;
 using Xunit;
 

@@ -1,6 +1,6 @@
 using NSubstitute;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.Tenancy;
 using Shouldly;
 
 namespace RestaurantManagement.Shared.Tests.Data;

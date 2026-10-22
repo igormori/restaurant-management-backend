@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Sessions;
 using RestaurantManagement.Modules.Menu.Models;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Shared;
@@ -72,7 +72,8 @@ public class MessageCatalogCompletenessTests
         var catalogKeys = ReadCatalog("SharedResource.resx").Keys.ToHashSet();
         var requestModels = ModuleAssemblies
             .SelectMany(assembly => assembly.GetTypes())
-            .Where(type => type.IsClass && type.Name.EndsWith("Request") && type.Namespace?.EndsWith(".Models") == true);
+            .Where(type => type.IsClass && type.Name.EndsWith("Request")
+                && (type.Namespace?.EndsWith(".Models") == true || type.Namespace?.Contains(".Models.") == true));
 
         // Act
         var offenders = requestModels

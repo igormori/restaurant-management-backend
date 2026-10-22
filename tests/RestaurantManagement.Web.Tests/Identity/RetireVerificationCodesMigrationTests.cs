@@ -5,7 +5,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Data;
-using RestaurantManagement.Modules.Identity.Models;
+using RestaurantManagement.Modules.Identity.Models.Registration;
 using RestaurantManagement.Modules.Identity.Services.Registration;
 using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Options;

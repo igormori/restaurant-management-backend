@@ -1,5 +1,5 @@
 using Shouldly;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.Tenancy;
 
 namespace RestaurantManagement.Shared.Tests;
 

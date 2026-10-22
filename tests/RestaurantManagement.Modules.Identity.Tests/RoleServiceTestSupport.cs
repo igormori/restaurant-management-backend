@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using RestaurantManagement.Shared.Auth;
-using RestaurantManagement.Modules.Identity.Entities;
+using RestaurantManagement.Modules.Identity.Entities.Roles;
 using RestaurantManagement.Modules.Identity.Services.Roles;
 using RestaurantManagement.Shared.Services.AuditLog;
 using static RestaurantManagement.Modules.Identity.Tests.MemberAccessTestSupport;

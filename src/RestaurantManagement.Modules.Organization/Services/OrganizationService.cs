@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using RestaurantManagement.Modules.Organization.Data;
 using RestaurantManagement.Modules.Organization.Entities;
 using RestaurantManagement.Modules.Organization.Models;
-using RestaurantManagement.Shared.Data;
+using RestaurantManagement.Shared.Data.Tenancy;
 using RestaurantManagement.Shared.Services.AuditLog;
 using RestaurantManagement.Shared.Auth;
 using RestaurantManagement.Shared.Services.Identity;

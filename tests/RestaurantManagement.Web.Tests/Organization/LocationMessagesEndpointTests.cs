@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json.Nodes;
-using RestaurantManagement.Modules.Identity.Entities;
 using RestaurantManagement.Shared;
 using Shouldly;
 using static RestaurantManagement.Web.Tests.LocalizedResponses;
