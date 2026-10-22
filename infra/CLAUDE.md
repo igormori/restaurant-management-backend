@@ -44,6 +44,8 @@ Connect from the host (IDE, `dotnet ef`, `dotnet run`):
   required; `migrate` and `api` refuse to start without it). Outside Docker use user-secrets
   (`VerificationCode:HashKey`); deployed, the Key Vault secret `VerificationCode--HashKey`.
   Codes are stored only as fingerprints, so they cannot be read from the database
+- Invitation accept page: `INVITATION_ACCEPT_PAGE_URL` (absolute address; defaults to
+  `http://localhost:3000/accept-invitation`). The api refuses to start without one
 - App settings come from `appsettings.json` baked into the image; override any key with an
   environment variable using `__` for nesting, e.g. `Jwt__Key`, `Sentry__Dsn`
 - Never commit real secrets (connection strings, JWT key, Sentry DSN) to these files

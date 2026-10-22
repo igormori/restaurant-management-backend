@@ -47,6 +47,8 @@ services:
       Email__SmtpPass: ${SMTP_PASS:-}
       # Verification code secret from infra/docker/.env (see .env.example)
       VerificationCode__HashKey: ${VERIFICATION_CODE_HASH_KEY:-}
+      # Page where an invitee accepts; appsettings.Development.json is not in the image
+      Invitation__AcceptPageUrl: ${INVITATION_ACCEPT_PAGE_URL:-http://localhost:3000/accept-invitation}
     ports:
       - "5080:8080"
     depends_on:
