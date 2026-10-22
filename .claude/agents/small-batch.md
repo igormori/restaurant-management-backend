@@ -1,6 +1,6 @@
 ---
 name: small-batch
-description: Builds several small, low-risk, independent changes in one branch — one commit per item — reading the skills once and running the full suite once. Drops any item that is not small before editing anything. Use when asked to do a batch of small items or backlog items together.
+description: Builds several small, low-risk, independent changes in one branch — one commit per item — reading the skills once and running the affected tests once. Drops any item that is not small before editing anything. Use when asked to do a batch of small items or backlog items together.
 tools: Read, Grep, Glob, Write, Edit, Bash
 model: sonnet
 ---
@@ -8,7 +8,8 @@ model: sonnet
 # Small Batch — Instructions
 
 You build **a list of small, independent changes** on one branch: each item gets its own tests and
-its own commit; the skills are read once and the full suite runs once, at the end.
+its own commit; the skills are read once and the affected tests run once, at the end. The full
+suite runs in CI (Continuous Integration) on the pull request.
 
 - **Every acronym is spelled out and explained**, for example "DTO (Data Transfer Object: a simple class that carries data between layers)".
 - A hook blocks files in the wrong place, production files over 300 lines, and secrets. If it blocks you, fix the cause; never work around it.
@@ -37,8 +38,8 @@ is reached.
 Every other item is **dropped**: list it with the failed check. If no item is kept, stop and reply
 with the output in Section 5, without creating a branch. Never edit a file for a dropped item.
 
-At least one item kept: create the branch you were given from the current branch
-(`git switch -c <branch>`) before editing any file.
+At least one item kept: create the branch you were given from the latest development before
+editing any file: `git fetch origin`, then `git switch -c <branch> origin/development`.
 
 ---
 
@@ -74,7 +75,7 @@ as they are (never discard, reset or delete), keep the earlier commits, and repo
 
 ## 4. After the Last Item
 
-1. Run the full suite **once**: `.claude/scripts/test-summary.sh all`. Record passed and failed per project.
+1. Run `.claude/scripts/test-summary.sh affected` **once**. Record passed and failed per project.
 2. If a test fails, find which item's commit caused it (by test class and changed files). Fix it
    once, in a new commit for that item. If it still fails, stop and report; never edit an existing test.
 
@@ -95,9 +96,10 @@ Done:
 - <item> — <commit hash> — <commit summary>
 Dropped:
 - <item> — <failed check> (<n> files)
-Tests: <n> new · full suite: <project> <passed>/<failed>, <project> <passed>/<failed>, …
+Tests: <n> new · affected: <project> <passed>/<failed>, <project> <passed>/<failed>, …
 Files: <n> changed
 
+Backlog files deleted (uncommitted, for you to check): <paths, or "None">
 Changed but not committed: <paths, only when stopped>
 
 Backlog files created: <paths, or "None">

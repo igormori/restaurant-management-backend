@@ -121,48 +121,13 @@ High level only: what to change, where, in which order, and which pattern to fol
 
 1. Run tests **only** through the summary script; never call `dotnet test` directly:
    `.claude/scripts/test-summary.sh <test-project> "FullyQualifiedName~<ClassName>"` for your new classes,
-   and `.claude/scripts/test-summary.sh all` **once**, at the end.
-   **Run limit:** at most 6 runs of your new classes, **plus** the one final full-suite run, which
+   and `.claude/scripts/test-summary.sh affected` **once**, at the end. It runs only the test
+   projects your changes can break (the full suite by itself when your stubs touch Shared or Web);
+   CI (Continuous Integration) runs the full suite on the pull request.
+   **Run limit:** at most 6 runs of your new classes, **plus** the one final affected run, which
    is always allowed and always required. If tests still do not fail for the right reason after
    6 runs, stop and report which ones under [Blocking]. Never loop.
-2. Every new test, except guards, must **fail for the right reason** (`NotImplementedException`, a failed assertion, or a 500 for an integration test), never a compile error or a broken fixture. Guards and existing tests must pass, with one exception: implementation always comes after the tests, so an existing test you rewrite for this plan (new behaviour or a new data model) may fail until its task is built, like a new test. List each one under "Tests to make pass" of the task that turns it green, and report the count. Every other existing test must still pass.
+2. Every new test, except guards, must **fail for the right reason** (`NotImplementedException`, a failed assertion, or a 500 for an integration test), never a compile error or a broken fixture. Guards and existing tests must pass, with one exception: implementation always comes after the tests, so an existing test you rewrite for this plan (new behaviour or a new data model) may fail until its task is built, like a new test. List each one under "Tests to make pass" of the task that turns it green, and report the count. Every other existing test in the affected run must still pass.
 3. Out-of-scope findings: read `.claude/skills/backlog/SKILL.md` first, then write the backlog file yourself following it.
 
-You always receive the test-reviewer's report, whatever its verdict. On "Fix first", fix the findings **once**, then finish. On "Ready", finish without changes. In both cases, copy its "Read closely before approving" section into your terminal output.
-
----
-
-## 7. Terminal Output
-
-The files are what gets reviewed. Your final message contains **only**:
-
-```
-Scenarios: docs/plans/<module>/<spec-name>/scenarios.md — <N> scenarios (<n> happy · <n> edge · <n> failure · <n> security)
-Tests: <n> new — <n> failing for the right reason · <n> guards passing · existing suite green (or: <n> rewritten existing tests failing until T<n>, T<n>)
-Backlog files created: <paths, or "None">
-
-Read closely before approving (from the test-reviewer)
-- Scenario #<n> — <why it carries the most risk>
-
-[Blocking]
-1. <question> — Options: <A / B> — Recommended: <A, because …>
-
-[Assumed]
-- <assumption> — <reason>
-```
-
-Paths relative to the repository root. Omit empty sections. Each [Blocking] question 3 lines max; [Assumed] max 5 items. End with "Ready for Gate 2 review." only when there are no [Blocking] questions.
-
----
-
-## 8. Final Check
-
-- [ ] Every task and spec Outcome has scenarios; every scenario has exactly one test
-- [ ] Scenario count within budget (S 12 · M 25 · L 40); variants parameterized; one level per behaviour
-- [ ] Happy, edge, failure and security cases covered where they apply
-- [ ] Tests in the right project, named `Method_Scenario_ExpectedResult`, Arrange/Act/Assert, realistic values
-- [ ] Stubs compile and contain no logic
-- [ ] Every new test fails for the right reason, except guards; guards and existing tests pass
-- [ ] No change in `src/` except stubs
-- [ ] Implementation guide added to every task; no other batch-file field changed
-- [ ] Terminal output follows Section 7
+You always receive the test-reviewer's report, whatever its verdict. On "Fix first", fix the findings **once**, then finish. On "Ready", finish without changes. In both cases, copy its "Read closely before approving" section
