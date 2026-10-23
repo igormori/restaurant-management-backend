@@ -21,10 +21,10 @@
 | T3 | — | — | — |
 
 ## Overall Definition of Done
-- [ ] All tasks done, tests passing
-- [ ] All spec Outcomes met
-- [ ] Full test suite green after the last batch
-- [ ] No out-of-scope changes; findings in the backlog
+- [x] All tasks done, tests passing
+- [x] All spec Outcomes met
+- [x] Full test suite green after the last batch
+- [x] No out-of-scope changes; findings in the backlog
 
 ## Checklist
 - [x] T1 — Per-address and whole-account login lock
