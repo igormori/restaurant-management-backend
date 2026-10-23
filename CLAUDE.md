@@ -60,7 +60,7 @@ Scenarios: 1–3
 - New branches start from the latest development: `git fetch origin`, then
   `git switch -c <branch> origin/development`. Never from the current branch or a local
   `development` or `main`. Pull requests always target `development`, never `main`
-- Never push to `development` or `main`: `.githooks/pre-push` rejects it
+- Never push to `main`: `.githooks/pre-push` rejects it
 - Never amend a commit
 - Body only when the why isn't obvious. Scenario numbers and ticket IDs (`Refs: ABC-123`) go
   in the body, never in the summary
