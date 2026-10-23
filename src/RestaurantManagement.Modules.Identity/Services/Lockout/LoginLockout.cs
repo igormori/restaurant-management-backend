@@ -17,6 +17,8 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
     // Per-address and whole-account login lock, decided from one stored row per counted wrong password.
     public class LoginLockout
     {
+        private static readonly TimeSpan LockEmailInterval = TimeSpan.FromHours(24);
+
         private readonly IdentityDbContext _db;
         private readonly SecurityOptions _options;
         private readonly TimeProvider _time;
@@ -121,11 +123,11 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
             return true;
         }
 
-        // At most one email per account per 24 hours; the stored time is the guard, not the queue row,
+        // At most one email per account per LockEmailInterval; the stored time is the guard, not the queue row,
         // because the row is deleted once the email is sent. Only the lock winner reaches this.
         private async Task QueueLockedEmailAsync(Guid userId, DateTime now)
         {
-            var emailCutoff = now.AddHours(-24);
+            var emailCutoff = now - LockEmailInterval;
             var email = await _db.Users
                 .Where(u => u.Id == userId && (u.AccountLockedEmailAt == null || u.AccountLockedEmailAt <= emailCutoff))
                 .Select(u => u.Email)
