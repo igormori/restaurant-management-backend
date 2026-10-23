@@ -1,7 +1,6 @@
 namespace RestaurantManagement.Modules.Identity.Entities.Lockout
 {
-    // Stub (tester): one counted wrong password for an account, from one IP address (task T1).
-    // Not yet part of the EF model: the implementer registers it with the migration.
+    // One counted wrong password for an account, from one IP (Internet Protocol) address.
     public class LoginFailure
     {
         public const int IpAddressMaxLength = 45;

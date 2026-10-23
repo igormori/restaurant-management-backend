@@ -13,7 +13,6 @@ namespace RestaurantManagement.Modules.Identity.Entities.Users
 
 
         // Security tracking
-        public int FailedAttempts { get; set; } = 0;
         public DateTime? LockedUntil { get; set; }
         public int VerificationFailedAttempts { get; set; } = 0;
         public DateTime? VerificationLockedUntil { get; set; }

@@ -1,6 +1,6 @@
 # Plan: Login lockout per IP address
 
-**Spec:** docs/specs/identity/2026-10-23-login-lockout-per-ip-address.md   **Date:** 2026-10-23   **Status:** Draft
+**Spec:** docs/specs/identity/2026-10-23-login-lockout-per-ip-address.md   **Date:** 2026-10-23   **Status:** In progress
 **Risk:** High — new `login_failures` table and a dropped `users.failed_attempts` column (schema), and changed lockout rules on the public login endpoint (security)
 
 ## Summary
@@ -27,6 +27,6 @@
 - [ ] No out-of-scope changes; findings in the backlog
 
 ## Checklist
-- [ ] T1 — Per-address and whole-account login lock
+- [x] T1 — Per-address and whole-account login lock
 - [ ] T2 — Account-locked email
 - [ ] T3 — Identity security notes describe the new limits
