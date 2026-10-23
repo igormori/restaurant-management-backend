@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using RestaurantManagement.Shared.Utils.Exceptions;
 using RestaurantManagement.Modules.Organization.Models;
 using RestaurantManagement.Modules.Organization.Services;
 
@@ -28,12 +29,7 @@ namespace RestaurantManagement.Modules.Organization.Controllers
         [Authorize]
         public async Task<ActionResult<OrganizationResponse>> Create([FromBody] CreateOrganizationRequest request)
         {
-            var subject = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (!Guid.TryParse(subject, out var userId))
-            {
-                return Unauthorized();
-            }
+            var userId = GetCurrentUserId();
 
             var response = await _organizationService.CreateOrganizationAsync(userId, request);
             return Ok(response);
@@ -44,12 +40,7 @@ namespace RestaurantManagement.Modules.Organization.Controllers
         [Authorize]
         public async Task<ActionResult<OrganizationResponse>> Edit([FromBody] EditOrganizationRequest request)
         {
-            var subject = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (!Guid.TryParse(subject, out var userId))
-            {
-                return Unauthorized();
-            }
+            var userId = GetCurrentUserId();
 
             var response = await _organizationService.EditOrganizationAsync(userId, request);
             return Ok(response);
@@ -60,14 +51,20 @@ namespace RestaurantManagement.Modules.Organization.Controllers
         [Authorize]
         public async Task<ActionResult<List<OrganizationResponse>>> GetAll()
         {
-            var subject = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(subject, out var userId))
-            {
-                return Unauthorized();
-            }
+            var userId = GetCurrentUserId();
 
             var response = await _organizationService.GetOrganizationsAsync(userId);
             return Ok(response);
+        }
+
+        private Guid GetCurrentUserId()
+        {
+            var subject = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+            if (Guid.TryParse(subject, out var userId))
+            {
+                return userId;
+            }
+            throw new BusinessException(_localizer["UnauthorizedMessage"].Value, 401);
         }
     }
 }
