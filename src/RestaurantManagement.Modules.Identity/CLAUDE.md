@@ -13,7 +13,8 @@ Login collapses unknown email, wrong password, locked account, and unverified ac
 one generic 401; verify collapses unknown email, wrong code and a verification-locked account
 into one generic 401; resend only queues the email and always returns the same acknowledgement, whatever the account state.
 Login hashes against a fixed dummy password when no user row exists, so an unregistered
-email does the same work as a wrong password for a real one. Don't remove it as dead code.
+email does the same work as a wrong password for a real one, and LoginLockout.SimulateFailureAsync runs the same
+database commands without storing anything. Don't remove either as dead code.
 Verification has its own lockout (VerificationFailedAttempts/VerificationLockedUntil,
 SecurityOptions.MaxVerificationAttempts/VerificationLockoutDurationMinutes), separate
 from login's lock.

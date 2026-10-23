@@ -18,6 +18,7 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
     public class LoginLockout
     {
         private static readonly TimeSpan LockEmailInterval = TimeSpan.FromHours(24);
+        private static readonly Guid NoUserId = Guid.Empty;
 
         private readonly IdentityDbContext _db;
         private readonly SecurityOptions _options;
@@ -37,10 +38,28 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
             if (user.LockedUntil.HasValue && user.LockedUntil > now)
                 return true;
 
-            var address = Normalize(ipAddress);
-            return await _db.LoginFailures.AnyAsync(f =>
-                f.UserId == user.Id && f.IpAddress == address && f.AddressLockedUntil > now);
+            return await IsAddressLockedAsync(user.Id, Normalize(ipAddress), now);
         }
+
+        // Runs the same database commands as a wrong password for a real account, on a user ID that matches
+        // no row and so changes nothing. An unknown email then takes as long as a known one.
+        public async Task SimulateFailureAsync(string? ipAddress)
+        {
+            var now = Now();
+            var address = Normalize(ipAddress);
+
+            await IsAddressLockedAsync(NoUserId, address, now);
+            await DeleteExpiredAsync(now);
+            await _db.LoginFailures
+                .Where(f => f.UserId == NoUserId)
+                .ExecuteUpdateAsync(s => s.SetProperty(f => f.CountsForAddress, true));
+            await LockAddressWhenLimitReachedAsync(NoUserId, address, now);
+            await LockAccountWhenLimitReachedAsync(NoUserId, now);
+        }
+
+        private Task<bool> IsAddressLockedAsync(Guid userId, string address, DateTime now)
+            => _db.LoginFailures.AnyAsync(f =>
+                f.UserId == userId && f.IpAddress == address && f.AddressLockedUntil > now);
 
         // Stores one counted wrong password and reports which lock, if any, this request set.
         public async Task<LockOutcome> RecordFailureAsync(User user, string? ipAddress)
@@ -61,7 +80,7 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
             await _db.SaveChangesAsync();
 
             var addressLocked = await LockAddressWhenLimitReachedAsync(user.Id, address, now);
-            if (await LockAccountWhenLimitReachedAsync(user, now))
+            if (await LockAccountWhenLimitReachedAsync(user.Id, now))
                 return LockOutcome.AccountLocked;
 
             return addressLocked ? LockOutcome.AddressLocked : LockOutcome.None;
@@ -92,11 +111,11 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
         }
 
         // Each address adds at most MaxFailedLoginAttempts, so one address alone can never lock the account.
-        private async Task<bool> LockAccountWhenLimitReachedAsync(User user, DateTime now)
+        private async Task<bool> LockAccountWhenLimitReachedAsync(Guid userId, DateTime now)
         {
             var since = now.AddMinutes(-_options.AccountFailedLoginWindowMinutes);
             var perAddress = await _db.LoginFailures
-                .Where(f => f.UserId == user.Id && f.CountsForAccount && f.FailedAt >= since)
+                .Where(f => f.UserId == userId && f.CountsForAccount && f.FailedAt >= since)
                 .GroupBy(f => f.IpAddress)
                 .Select(g => g.Count())
                 .ToListAsync();
@@ -110,15 +129,15 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
             // Only one concurrent request wins the update, so only one reports the lock.
             var lockEnd = now.AddMinutes(_options.LockoutDurationMinutes);
             var claimed = await _db.Users
-                .Where(u => u.Id == user.Id && (u.LockedUntil == null || u.LockedUntil <= now))
+                .Where(u => u.Id == userId && (u.LockedUntil == null || u.LockedUntil <= now))
                 .ExecuteUpdateAsync(s => s.SetProperty(u => u.LockedUntil, lockEnd));
             if (claimed == 0)
                 return false;
 
             await _db.LoginFailures
-                .Where(f => f.UserId == user.Id && f.CountsForAccount)
+                .Where(f => f.UserId == userId && f.CountsForAccount)
                 .ExecuteUpdateAsync(s => s.SetProperty(f => f.CountsForAccount, false));
-            await QueueLockedEmailAsync(user.Id, now);
+            await QueueLockedEmailAsync(userId, now);
             await transaction.CommitAsync();
             return true;
         }

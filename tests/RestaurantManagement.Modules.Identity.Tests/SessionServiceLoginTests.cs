@@ -373,6 +373,55 @@ namespace RestaurantManagement.Modules.Identity.Tests
         }
 
         [Fact]
+        [Trait("Rule", "L6")]
+        public async Task LoginAsync_UnknownEmail_RunsAsManyDatabaseCommandsAsAWrongPasswordForARealAccount()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            seedContext.Users.Add(new User
+            {
+                Email = "maria@cantinadanonna.com.br",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "Maria",
+                LastName = "Souza",
+                IsVerified = true
+            });
+            await seedContext.SaveChangesAsync();
+
+            var knownCommands = new QueryCommandRecorder();
+            var unknownCommands = new QueryCommandRecorder();
+            using var knownContext = database.CreateContext(knownCommands);
+            using var unknownContext = database.CreateContext(unknownCommands);
+
+            // Act
+            var knownAct = () => CreateSut(knownContext).LoginAsync(new LoginRequest { Email = "maria@cantinadanonna.com.br", Password = "Wrong-Password9" }, TestClients.KitchenTablet, null);
+            await knownAct.Should().ThrowAsync<BusinessException>();
+            var unknownAct = () => CreateSut(unknownContext).LoginAsync(new LoginRequest { Email = "nobody@cantinadanonna.com.br", Password = "Wrong-Password9" }, TestClients.KitchenTablet, null);
+            await unknownAct.Should().ThrowAsync<BusinessException>();
+
+            // Assert
+            unknownCommands.Commands.Count.ShouldBe(knownCommands.Commands.Count, "an unknown email costs as many database round trips as a wrong password, so response time does not reveal which emails have an account");
+        }
+
+        [Fact]
+        [Trait("Rule", "L6")]
+        public async Task LoginAsync_UnknownEmail_StoresNoLoginFailure()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var context = database.CreateContext();
+            var sut = CreateSut(context);
+
+            // Act
+            var act = () => sut.LoginAsync(new LoginRequest { Email = "nobody@cantinadanonna.com.br", Password = "Wrong-Password9" }, TestClients.KitchenTablet, null);
+            await act.Should().ThrowAsync<BusinessException>();
+
+            // Assert
+            (await context.LoginFailures.CountAsync()).ShouldBe(0, "the matching database work for an unknown email must not store anything");
+        }
+
+        [Fact]
         [Trait("Rule", "L11")]
         [Trait("Rule", "L4")]
         public async Task LoginAsync_LockExpiredCorrectPassword_IssuesTokensAndClearsLock()

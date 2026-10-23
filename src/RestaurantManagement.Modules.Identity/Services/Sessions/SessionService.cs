@@ -88,6 +88,10 @@ namespace RestaurantManagement.Modules.Identity.Services.Sessions
             if (user != null && !isLocked && !isPasswordValid)
                 await RecordFailedAttemptAsync(user, client.IpAddress);
 
+            // 🔑 An unknown email runs the same database commands, so response time doesn't reveal it.
+            if (user == null)
+                await _lockout.SimulateFailureAsync(client.IpAddress);
+
             // Unknown email, wrong password, locked, unverified and deactivated accounts all collapse into the
             // same response so none of them can be told apart from the outside.
             if (user == null || isLocked || !isPasswordValid || !user.IsVerified || !user.IsActive)
