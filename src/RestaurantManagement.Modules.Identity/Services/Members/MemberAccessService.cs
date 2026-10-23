@@ -63,14 +63,13 @@ namespace RestaurantManagement.Modules.Identity.Services.Members
             var organizationId = RequireOrganizationId();
             await RequireEditableMemberAsync(userId, organizationId);
             await RequireLocationAsync(locationId, organizationId);
-            var roles = await RequireRolesAsync(roleNames, organizationId);
-
-            var finalLevels = await MergeLevelsAsync(roles, changedLevels, organizationId);
+            var grid = await _gridBuilder.BuildAsync(organizationId, roleNames, changedLevels);
+            var finalLevels = grid.Levels;
             await _rules.RequireAsync(userId, new[] { new LocationGrant(locationId, finalLevels) });
 
             var before = await LoadStateAsync(userId, locationId, organizationId);
             await StoreLevelsAsync(userId, locationId, organizationId, finalLevels);
-            await StoreLabelsAsync(userId, locationId, organizationId, roles);
+            await StoreLabelsAsync(userId, locationId, organizationId, grid.Roles);
             await _db.SaveChangesAsync();
 
             var after = await LoadStateAsync(userId, locationId, organizationId);
@@ -124,38 +123,9 @@ namespace RestaurantManagement.Modules.Identity.Services.Members
                 throw new BusinessException(_localizer["LocationNotFound"].Value, 404);
         }
 
-        private async Task<List<OrganizationRole>> RequireRolesAsync(IReadOnlyCollection<string> roleNames, Guid organizationId)
-        {
-            var names = roleNames.Distinct().ToList();
-            var roles = await _db.OrganizationRoles
-                .Where(r => r.OrganizationId == organizationId && names.Contains(r.Name))
-                .ToListAsync();
-            if (roles.Count != names.Count)
-                throw new BusinessException(_localizer["RoleNotFound"].Value, 404);
-
-            return roles;
-        }
-
-        private async Task<Dictionary<AccessModule, AccessLevel>> MergeLevelsAsync(
-            List<OrganizationRole> roles, IReadOnlyDictionary<AccessModule, AccessLevel> changedLevels, Guid organizationId)
-        {
-            var roleIds = roles.Select(r => r.Id).ToList();
-            var defaults = await _db.OrganizationRoleLevels
-                .Where(l => l.OrganizationId == organizationId && roleIds.Contains(l.RoleId))
-                .ToListAsync();
-
-            var merged = defaults
-                .GroupBy(l => l.Module)
-                .ToDictionary(g => g.Key, g => g.Max(l => l.Level));
-            foreach (var (module, level) in changedLevels)
-                merged[module] = level;
-
-            return merged.Where(m => m.Value != AccessLevel.None).ToDictionary(m => m.Key, m => m.Value);
-        }
-
         // Rows are updated in place: deleting and re-adding the same cell in one save would hit the unique index.
         private async Task StoreLevelsAsync(
-            Guid userId, Guid locationId, Guid organizationId, Dictionary<AccessModule, AccessLevel> finalLevels)
+            Guid userId, Guid locationId, Guid organizationId, IReadOnlyDictionary<AccessModule, AccessLevel> finalLevels)
         {
             var stored = await _db.MemberLocationLevels
                 .Where(l => l.UserId == userId && l.LocationId == locationId && l.OrganizationId == organizationId)
@@ -175,7 +145,7 @@ namespace RestaurantManagement.Modules.Identity.Services.Members
             }
         }
 
-        private async Task StoreLabelsAsync(Guid userId, Guid locationId, Guid organizationId, List<OrganizationRole> roles)
+        private async Task StoreLabelsAsync(Guid userId, Guid locationId, Guid organizationId, IReadOnlyList<OrganizationRole> roles)
         {
             var stored = await _db.MemberLocationRoles
                 .Where(l => l.UserId == userId && l.LocationId == locationId && l.OrganizationId == organizationId)
