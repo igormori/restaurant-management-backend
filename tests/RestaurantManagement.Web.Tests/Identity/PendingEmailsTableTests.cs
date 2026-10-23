@@ -71,7 +71,7 @@ public class PendingEmailsTableTests : IClassFixture<PostgresDatabaseFixture>
         var foreignKeys = await ReadScalarAsync(context, ForeignKeysSql);
 
         // Assert
-        columns.ShouldBe("attempts,claimed_until,code_issued_at,created_at,email,failed_at,id,next_attempt_at,purpose", "a queued request holds the email as typed, its purpose, attempts, claim, code-issued mark, failure and next attempt time");
+        columns.ShouldBe("attempts,claimed_until,code_issued_at,created_at,email,failed_at,id,next_attempt_at,purpose,send_started_at", "a queued request holds the email as typed, its purpose, attempts, claim, code-issued mark, failure and next attempt time");
         indexes.ShouldBe("ix_pending_emails_failed_at,ix_pending_emails_next_attempt_at,pk_pending_emails", "finding the due requests and the old failed ones must be indexed");
         foreignKeys.ShouldBe("0", "a queued request has no user, so the table must not link to users");
     }

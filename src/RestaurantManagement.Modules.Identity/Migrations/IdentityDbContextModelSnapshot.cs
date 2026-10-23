@@ -495,6 +495,10 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("purpose");
 
+                    b.Property<DateTime?>("SendStartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("send_started_at");
+
                     b.HasKey("Id")
                         .HasName("pk_pending_emails");
 

@@ -15,5 +15,8 @@ namespace RestaurantManagement.Modules.Identity.Entities.Registration
         // Set together with the new code and cleared when a send fails; still set on a claimed row
         // means a pass crashed after storing the code, so whether the email went out is unknown.
         public DateTime? CodeIssuedAt { get; set; }
+        // For emails without a code (account locked): set just before the send and cleared when it fails;
+        // still set on a claimed row means a pass crashed mid-send, so the email is dropped, not sent twice.
+        public DateTime? SendStartedAt { get; set; }
     }
 }

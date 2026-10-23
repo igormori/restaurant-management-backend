@@ -84,9 +84,9 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
 
         private async Task HandleAsync(PendingEmail request, DateTime utcNow, CancellationToken ct)
         {
-            // CodeIssuedAt marks "send started": still set on a claimed row means a pass crashed mid-send,
+            // SendStartedAt is set just before the send: still set on a claimed row means a pass crashed mid-send,
             // and at most once wins over a possible second email.
-            if (request.CodeIssuedAt != null)
+            if (request.SendStartedAt != null)
             {
                 _logger.LogWarning("Account-locked request {RequestId} was interrupted during sending; dropped without sending again", request.Id);
                 await DeleteAsync(request.Id, ct);
@@ -102,7 +102,7 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
 
             await _db.PendingEmails
                 .Where(r => r.Id == request.Id)
-                .ExecuteUpdateAsync(s => s.SetProperty(r => r.CodeIssuedAt, DateTime.UtcNow), ct);
+                .ExecuteUpdateAsync(s => s.SetProperty(r => r.SendStartedAt, DateTime.UtcNow), ct);
 
             try
             {
@@ -132,7 +132,7 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
                     .SetProperty(r => r.Attempts, attempts)
                     .SetProperty(r => r.NextAttemptAt, nextAttemptAt)
                     .SetProperty(r => r.ClaimedUntil, (DateTime?)null)
-                    .SetProperty(r => r.CodeIssuedAt, (DateTime?)null)
+                    .SetProperty(r => r.SendStartedAt, (DateTime?)null)
                     .SetProperty(r => r.FailedAt, failedAt), ct);
 
             // Neither the email address nor the exception message may reach the logs.
