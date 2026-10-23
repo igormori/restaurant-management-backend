@@ -27,6 +27,7 @@ Test files: unit tests (`tests/RestaurantManagement.Modules.Identity.Tests/`, on
 | 17 | T1 | Edge | Deleting a user deletes that user's stored login failures | `Migrate_CleanDatabase_LoginFailuresGoWithTheirUser` | `LoginFailuresTableTests.cs` |
 | 18 | T1 | Edge | The old per-account failed-attempt column is gone from users | `Migrate_CleanDatabase_UsersHasNoFailedAttemptsColumn` | `LoginFailuresTableTests.cs` |
 | 34 | T1 | Security | One address repeating 5 wrong passwords after each of its locks expires (20 in an hour) never locks the whole account; each address adds at most 5 | `LoginAsync_OneAddressRepeatsFiveWrongPasswordsAfterEachLockExpires_NeverLocksTheAccount` | `SessionServiceLockoutTests.cs` |
+| 36 | T1 | Edge | The database has an index on login failures by failed-at alone, for the cleanup of expired rows | `Migrate_CleanDatabase_CreatesAnIndexOnLoginFailuresFailedAt` | `LoginFailuresFailedAtIndexTests.cs` |
 
 ## T2 — Account-locked email
 | # | Task | Type | Scenario (plain words) | Test name | Test file |

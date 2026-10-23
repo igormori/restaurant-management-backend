@@ -246,6 +246,9 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                     b.HasKey("Id")
                         .HasName("pk_login_failures");
 
+                    b.HasIndex("FailedAt")
+                        .HasDatabaseName("ix_login_failures_failed_at");
+
                     b.HasIndex("UserId", "FailedAt")
                         .HasDatabaseName("ix_login_failures_user_id_failed_at");
 

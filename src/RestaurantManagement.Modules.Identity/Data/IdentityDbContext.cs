@@ -189,6 +189,8 @@ namespace RestaurantManagement.Modules.Identity.Data
                     .HasForeignKey(f => f.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
                 entity.HasIndex(f => new { f.UserId, f.FailedAt });
+                // The cleanup of expired rows runs on every wrong password and filters by time across all users.
+                entity.HasIndex(f => f.FailedAt);
                 entity.Property(f => f.IpAddress).IsRequired().HasMaxLength(LoginFailure.IpAddressMaxLength);
             });
 
