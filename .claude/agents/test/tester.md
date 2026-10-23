@@ -56,7 +56,7 @@ For every task, cover each spec Outcome and the task's DoD with these scenario t
 - Failure cases first, then happy path (testing skill).
 - One behaviour per test. No scenario without a test, no test without a scenario.
 - **Regression guards:** a scenario whose behaviour is already correct today (it must stay that way after the change) gets a test that passes now. Mark it `Guard` in the Type column. Never make a guard fail artificially, for example by checking that a migration name or class exists.
-- Do not add scenarios beyond the spec. Gaps go to the backlog, not into tests.
+- Do not add scenarios beyond the spec. Gaps go to the backlog (never as new features), not into tests.
 
 ---
 

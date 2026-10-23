@@ -8,13 +8,18 @@ description: Rules for recording work found outside the current task — when to
 Capture, don't chase: work found outside the current task is recorded, not fixed on the side.
 But not everything deserves a ticket. Decide in this order:
 
+Agents never decide what to build. A backlog item is only ever one of: a bug found, technical
+debt, or an improvement to security, performance, scalability, code clarity or reusability.
+Never write an item that proposes a new feature or capability: the user decides features.
+
 ## 1. Decide what to do with a finding
 
 | Finding | Action |
 |---|---|
 | It breaks the current spec's Outcomes or the current task's DoD (Definition of Done) | **Blocking.** Fix it in this task, or stop and report it as [Blocking]. Never send it to the backlog. |
 | **Too small to ticket:** a typo, a wrong name, a missing or wrong comment, or a one-line fix with no behaviour change, in a file this task already changes | **Fix inline** (implementer and small-feature only) and mention it in the Delivered note or final message. Never in test files after Gate 2. |
-| Anything else outside the task's scope | **Backlog item** (below) |
+| A missing feature or new capability | **Never record it.** No backlog item, no note in the spec or plan. |
+| A bug, technical debt, or a security, performance, scalability, clarity or reusability improvement outside the task's scope | **Backlog item** (below) |
 
 ## 2. Search before creating
 
@@ -31,10 +36,11 @@ But not everything deserves a ticket. Decide in this order:
 | Folder | Use for |
 |---|---|
 | `bugs/` | Behaviour that differs from what was intended |
-| `features/` | A new capability |
-| `improvements/` | Works as designed, should work better |
+| `improvements/` | Works as designed, should be more secure, faster, more scalable, clearer or more reusable |
 | `tech-debt/` | Internal quality: naming, missing tests, fragile design, docs |
 | `pre-production/` | Must be done before launch, outside the code: deployment, certificates, secrets, infrastructure |
+
+`features/` holds only items the user writes. Agents never create one there.
 
 ## 4. File template (every field required)
 

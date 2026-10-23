@@ -27,7 +27,7 @@ ALLOWED_NEW_FILES = [
     rf"^docs/specs/[a-z-]+/{DATE_SLUG}\.md$",
     rf"^docs/plans/[a-z-]+/{DATE_SLUG}/(plan|scenarios|review)\.md$",
     rf"^docs/plans/[a-z-]+/{DATE_SLUG}/batches/B\d+\.md$",
-    rf"^backlog/(features|bugs|improvements|tech-debt)/{DATE_SLUG}\.md$",
+    rf"^backlog/(bugs|improvements|tech-debt)/{DATE_SLUG}\.md$",
     r"^docs/reviews/[a-z0-9-]+\.md$",
     r"^docs/security/[a-z0-9-]+-matrix\.md$",
     r"^docs/security/[a-z0-9-]+-gap-report\.md$",

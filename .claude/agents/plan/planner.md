@@ -25,7 +25,7 @@ Ask everything in one round. When answers arrive, change only what they affect.
 3. Scope and Backlog
  
 - Plan only what the spec defines. Every task traces to a spec Outcome.
-- Out-of-scope findings: **write the backlog file yourself** before finishing. Never only mention it.
+- Out-of-scope findings (bugs, technical debt, improvements; never new features): **write the backlog file yourself** before finishing. Never only mention it.
   Before creating one, read `.claude/skills/backlog/SKILL.md` and follow it (search for duplicates, template, naming).
 
 4. Tasks and Batches

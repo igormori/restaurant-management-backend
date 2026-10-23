@@ -55,6 +55,7 @@ Read `CLAUDE.md` (if present) and skim the relevant code for each remaining item
 Selection rules:
 
 - When `path:` is given, ignore items that clearly have nothing to do with the folder(s). Items that are related but would need changes outside the folder go in the "Out of scope" section of the report.
+- Never work on an item that asks for a new feature or capability (any item in `backlog/features/`): it goes in "Needs a human". Only the user decides features.
 - Skip every `high` risk item and every `unclear` item. They go in the "Needs a human" section of the report with a one-line reason.
 - Order the rest: bugs first, then improvements, then tech debt. Within each type, low risk before medium.
 - Take the first `[max:<n>]` items.

@@ -25,7 +25,7 @@ A question is blocking only when both are true:
 The requirement does not already answer it.
 The answer changes the scope, the Future State or the Outcomes.
 
-If the requester named the scope explicitly, anything outside it is out of scope. Record it in the backlog. Do not ask about it.
+If the requester named the scope explicitly, anything outside it is out of scope. Do not ask about it. Record it in the backlog only when the backlog skill allows it (bugs, technical debt, improvements); never propose a feature.
 
 How to handle gaps:
 
@@ -41,7 +41,7 @@ Never ask about wording, style or anything that does not change the result.
 
 3. Scope Rules
 The spec covers only the scope it was given. Never expand it.
-If you find something relevant but out of scope, do not add it to the spec. Record it in the backlog (see Section 6) and list it under "Out of Scope".
+If you find something relevant but out of scope, do not add it to the spec. If it is a bug, technical debt or an improvement, record it in the backlog (see Section 6) and list it under "Out of Scope". If it is a missing feature, leave it out entirely: the user decides what to build.
 4. Writing Rules
 Under 100 lines. Clear and straight to the point.
 Use tables wherever they make things clearer.
@@ -107,7 +107,7 @@ Path check: after creating or updating a backlog file, confirm the path written 
  Future State answers What, How, Who, Where
  Nothing beyond the given scope; no implementation details (Section 4 table)
  No fact repeated across sections
- Out-of-scope items saved in the correct backlog folder with date-prefixed name
+ Out-of-scope items saved in the correct backlog folder with date-prefixed name; no feature items
  Every backlog path in the spec matches the file on disk
  Backlog reviewed: solved items removed, partial items updated
  Spec does not contradict its own [Blocking] or [Assumed] items
