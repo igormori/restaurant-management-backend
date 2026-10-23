@@ -39,8 +39,12 @@ public class ShippedLimitsTests
         var security = Bind<SecurityOptions>("Security");
 
         // Assert
-        security.MaxFailedLoginAttempts.ShouldBe(5, "the fifth wrong password locks login");
-        security.LockoutDurationMinutes.ShouldBe(15, "a login lock lasts 15 minutes");
+        security.MaxFailedLoginAttempts.ShouldBe(5, "the fifth wrong password from one address locks that address");
+        security.LockoutDurationMinutes.ShouldBe(15, "an address lock and an account lock each last 15 minutes");
+        Shipped["Security:AccountMaxFailedLoginAttempts"].ShouldBe("20", "the shipped file sets the account limit itself: 20 wrong passwords lock the whole account");
+        Shipped["Security:AccountFailedLoginWindowMinutes"].ShouldBe("60", "the shipped file sets the account window itself: 60 minutes");
+        security.AccountMaxFailedLoginAttempts.ShouldBe(20, "20 wrong passwords from any mix of addresses lock the whole account");
+        security.AccountFailedLoginWindowMinutes.ShouldBe(60, "the account limit counts wrong passwords within 60 minutes");
         security.MaxVerificationAttempts.ShouldBe(5, "the fifth wrong code locks verification and reset");
         security.VerificationLockoutDurationMinutes.ShouldBe(15, "a verification or reset lock lasts 15 minutes");
         security.VerificationCodeExpiryMinutes.ShouldBe(10, "emailed codes expire after 10 minutes");

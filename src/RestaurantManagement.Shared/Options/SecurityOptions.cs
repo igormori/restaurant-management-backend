@@ -3,6 +3,8 @@ namespace RestaurantManagement.Shared.Options
     public class SecurityOptions
     {
         public int MaxFailedLoginAttempts { get; set; } = 5;
+        public int AccountMaxFailedLoginAttempts { get; set; } = 20;
+        public int AccountFailedLoginWindowMinutes { get; set; } = 60;
         public int LockoutDurationMinutes { get; set; } = 15;
         public int VerificationCodeExpiryMinutes { get; set; } = 10;
         public int ResendCooldownSeconds { get; set; } = 60;

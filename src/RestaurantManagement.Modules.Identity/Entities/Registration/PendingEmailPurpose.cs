@@ -4,6 +4,7 @@ namespace RestaurantManagement.Modules.Identity.Entities.Registration
     public enum PendingEmailPurpose
     {
         PasswordReset = 1,
-        Verification = 2
+        Verification = 2,
+        AccountLocked = 3
     }
 }
