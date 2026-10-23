@@ -1,6 +1,6 @@
 # Plan: Login lockout per IP address
 
-**Spec:** docs/specs/identity/2026-10-23-login-lockout-per-ip-address.md   **Date:** 2026-10-23   **Status:** In progress
+**Spec:** docs/specs/identity/2026-10-23-login-lockout-per-ip-address.md   **Date:** 2026-10-23   **Status:** Done
 **Risk:** High — new `login_failures` table and a dropped `users.failed_attempts` column (schema), and changed lockout rules on the public login endpoint (security)
 
 ## Summary
