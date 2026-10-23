@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using RestaurantManagement.Shared.Utils.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -29,11 +30,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         [HttpPost("menu-categories")]
         public async Task<ActionResult<MenuCategoryResponse>> CreateCategory([FromBody] CreateMenuCategoryRequest request)
         {
-            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdStr, out var userId))
-            {
-                return Unauthorized();
-            }
+            var userId = GetCurrentUserId();
 
             var category = await _categoryService.CreateAsync(userId, request);
             return CreatedAtAction(nameof(GetCategoryById), new { id = category.Id }, category);
@@ -45,11 +42,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         [HttpGet("menu-categories/{id}")]
         public async Task<ActionResult<MenuCategoryResponse>> GetCategoryById(Guid id)
         {
-            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdStr, out var userId))
-            {
-                return Unauthorized();
-            }
+            var userId = GetCurrentUserId();
 
             var category = await _categoryService.GetByIdAsync(userId, id);
             if (category == null)
@@ -64,11 +57,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         [HttpGet("menus/{menuId}/categories")]
         public async Task<ActionResult<IEnumerable<MenuCategoryResponse>>> GetCategoriesByMenu(Guid menuId)
         {
-            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdStr, out var userId))
-            {
-                return Unauthorized();
-            }
+            var userId = GetCurrentUserId();
 
             var categories = await _categoryService.GetByMenuIdAsync(userId, menuId);
             return Ok(categories);
@@ -80,11 +69,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         [HttpGet("menu-categories")]
         public async Task<ActionResult<IEnumerable<MenuCategoryResponse>>> GetCategories()
         {
-            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdStr, out var userId))
-            {
-                return Unauthorized();
-            }
+            var userId = GetCurrentUserId();
 
             var categories = await _categoryService.GetAllAsync(userId);
             return Ok(categories);
@@ -96,11 +81,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         [HttpGet("locations/{locationId}/menu-categories")]
         public async Task<ActionResult<IEnumerable<MenuCategoryResponse>>> GetCategoriesByLocation(Guid locationId)
         {
-            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdStr, out var userId))
-            {
-                return Unauthorized();
-            }
+            var userId = GetCurrentUserId();
 
             var categories = await _categoryService.GetByLocationIdAsync(userId, locationId);
             return Ok(categories);
@@ -112,11 +93,7 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         [HttpPut("menu-categories/{id}")]
         public async Task<ActionResult<MenuCategoryResponse>> UpdateCategory(Guid id, [FromBody] UpdateMenuCategoryRequest request)
         {
-            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdStr, out var userId))
-            {
-                return Unauthorized();
-            }
+            var userId = GetCurrentUserId();
 
             var category = await _categoryService.UpdateAsync(userId, id, request);
             if (category == null)
@@ -131,17 +108,23 @@ namespace RestaurantManagement.Modules.Menu.Controllers
         [HttpDelete("menu-categories/{id}")]
         public async Task<ActionResult> DeleteCategory(Guid id)
         {
-            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdStr, out var userId))
-            {
-                return Unauthorized();
-            }
+            var userId = GetCurrentUserId();
 
             var result = await _categoryService.DeleteAsync(userId, id);
             if (!result)
                 return NotFound(new { message = _localizer["MenuCategoryNotFound"].Value });
 
             return NoContent();
+        }
+
+        private Guid GetCurrentUserId()
+        {
+            var subject = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+            if (Guid.TryParse(subject, out var userId))
+            {
+                return userId;
+            }
+            throw new BusinessException(_localizer["UnauthorizedMessage"].Value, 401);
         }
     }
 }

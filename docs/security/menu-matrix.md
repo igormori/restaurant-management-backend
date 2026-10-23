@@ -37,6 +37,7 @@ endpoint and database tests in `tests/RestaurantManagement.Web.Tests/Menu/`.
 | M41 | The same writes with Manage missing at one involved location (Read there, or no level) | 403; nothing stored, changed or removed | ✅ | `MenuGridAccessTests.MenuAndCategoryWrites_ManageMissingAtAnInvolvedLocation_ThrowsForbiddenAndChangesNothing` |
 | M42 | Reads with the Menus level at every involved location | Allowed: a location's menus or categories need Read there; the full menu list, all categories, a menu's categories and a category without a location need Read at every non-closed location | ✅ | `MenuGridAccessTests.MenuAndCategoryReads_MenusReadAtEveryInvolvedLocation_Succeeds` |
 | M43 | The same reads with the Menus level missing at one involved location | 403 | ✅ | `MenuGridAccessTests.MenuAndCategoryReads_MenusReadMissingAtAnInvolvedLocation_ThrowsForbidden` |
+| M44 | Token whose user identifier is not a user ID, on any menu or menu category endpoint | 401 with the translated message | ✅ | `MenuUserIdentifierEndpointTests.MenuEndpoints_UserIdentifierNotAUserId_ReturnsUnauthorizedWithLocalizedMessage`, `MenuUserIdentifierEndpointTests.MenuCategoryEndpoints_UserIdentifierNotAUserId_ReturnsUnauthorizedWithLocalizedMessage` |
 
 ## 2. Other organizations' data
 | ID | Case | Expected | Status | Test |
