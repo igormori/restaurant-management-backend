@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities.Lockout;
+using RestaurantManagement.Modules.Identity.Entities.Registration;
 using RestaurantManagement.Modules.Identity.Entities.Users;
 using RestaurantManagement.Shared.Options;
 
@@ -111,7 +112,30 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
             await _db.LoginFailures
                 .Where(f => f.UserId == user.Id && f.CountsForAccount)
                 .ExecuteUpdateAsync(s => s.SetProperty(f => f.CountsForAccount, false));
+            await QueueLockedEmailAsync(user.Id, now);
             return true;
+        }
+
+        // At most one email per account per 24 hours; the stored time is the guard, not the queue row,
+        // because the row is deleted once the email is sent. Only the lock winner reaches this.
+        private async Task QueueLockedEmailAsync(Guid userId, DateTime now)
+        {
+            var emailCutoff = now.AddHours(-24);
+            var email = await _db.Users
+                .Where(u => u.Id == userId && (u.AccountLockedEmailAt == null || u.AccountLockedEmailAt <= emailCutoff))
+                .Select(u => u.Email)
+                .FirstOrDefaultAsync();
+            if (email == null)
+                return;
+
+            var marked = await _db.Users
+                .Where(u => u.Id == userId && (u.AccountLockedEmailAt == null || u.AccountLockedEmailAt <= emailCutoff))
+                .ExecuteUpdateAsync(s => s.SetProperty(u => u.AccountLockedEmailAt, now));
+            if (marked == 0)
+                return;
+
+            _db.PendingEmails.Add(new PendingEmail { Purpose = PendingEmailPurpose.AccountLocked, Email = email, CreatedAt = now, NextAttemptAt = now });
+            await _db.SaveChangesAsync();
         }
 
         private Task<int> DeleteExpiredAsync(DateTime now)

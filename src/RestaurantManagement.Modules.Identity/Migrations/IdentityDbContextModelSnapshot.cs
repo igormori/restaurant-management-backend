@@ -720,6 +720,10 @@ namespace RestaurantManagement.Modules.Identity.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<DateTime?>("AccountLockedEmailAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("account_locked_email_at");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");

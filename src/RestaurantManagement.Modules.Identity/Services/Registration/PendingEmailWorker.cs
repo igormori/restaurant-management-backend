@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using RestaurantManagement.Modules.Identity.Services.Lockout;
 using RestaurantManagement.Modules.Identity.Services.Passwords;
 
 namespace RestaurantManagement.Modules.Identity.Services.Registration
@@ -34,6 +35,8 @@ namespace RestaurantManagement.Modules.Identity.Services.Registration
                 (processor, ct) => processor.ProcessDueAsync(DateTime.UtcNow, ct), "Password reset", stoppingToken);
             await RunPassAsync<IVerificationEmailProcessor>(
                 (processor, ct) => processor.ProcessDueAsync(DateTime.UtcNow, ct), "Verification", stoppingToken);
+            await RunPassAsync<IAccountLockedEmailProcessor>(
+                (processor, ct) => processor.ProcessDueAsync(DateTime.UtcNow, ct), "Account locked", stoppingToken);
         }
 
         private async Task RunPassAsync<TProcessor>(
