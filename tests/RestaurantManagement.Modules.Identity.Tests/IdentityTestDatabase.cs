@@ -55,13 +55,17 @@ namespace RestaurantManagement.Modules.Identity.Tests
             int maxFailedLoginAttempts = 5,
             int lockoutDurationMinutes = 15,
             int maxVerificationAttempts = 5,
-            int verificationLockoutDurationMinutes = 15)
+            int verificationLockoutDurationMinutes = 15,
+            int accountMaxFailedLoginAttempts = 20,
+            int accountFailedLoginWindowMinutes = 60)
         {
             return Options.Create(new SecurityOptions
             {
                 VerificationCodeExpiryMinutes = verificationCodeExpiryMinutes,
                 ResendCooldownSeconds = resendCooldownSeconds,
                 MaxFailedLoginAttempts = maxFailedLoginAttempts,
+                AccountMaxFailedLoginAttempts = accountMaxFailedLoginAttempts,
+                AccountFailedLoginWindowMinutes = accountFailedLoginWindowMinutes,
                 LockoutDurationMinutes = lockoutDurationMinutes,
                 MaxVerificationAttempts = maxVerificationAttempts,
                 VerificationLockoutDurationMinutes = verificationLockoutDurationMinutes

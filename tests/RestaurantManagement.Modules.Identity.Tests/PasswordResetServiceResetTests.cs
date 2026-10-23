@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Data;
+using RestaurantManagement.Modules.Identity.Entities.Lockout;
 using RestaurantManagement.Modules.Identity.Entities.Passwords;
 using RestaurantManagement.Modules.Identity.Entities.Sessions;
 using RestaurantManagement.Modules.Identity.Entities.Users;
@@ -282,15 +283,17 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         [Fact]
         [Trait("Rule", "P10")]
-        public async Task ResetPasswordAsync_ValidCodeOnLockedAccount_ClearsLoginLockAndFailedAttempts()
+        public async Task ResetPasswordAsync_ValidCodeOnLockedAccount_ClearsAccountLockAndStoredLoginFailures()
         {
             // Arrange
             using var database = await CreateDatabaseAsync();
             using (var context = database.CreateContext())
             {
                 var maria = await context.Users.SingleAsync(u => u.Id == MariaId);
-                maria.FailedAttempts = 3;
                 maria.LockedUntil = DateTime.UtcNow.AddMinutes(10);
+                context.Set<LoginFailure>().AddRange(
+                    new LoginFailure { UserId = MariaId, IpAddress = "203.0.113.10", FailedAt = DateTime.UtcNow.AddMinutes(-5), CountsForAddress = true, CountsForAccount = true, AddressLockedUntil = DateTime.UtcNow.AddMinutes(10) },
+                    new LoginFailure { UserId = MariaId, IpAddress = "198.51.100.24", FailedAt = DateTime.UtcNow.AddMinutes(-3), CountsForAddress = true, CountsForAccount = true });
                 await context.SaveChangesAsync();
             }
             var code = await RequestCodeAsync(database);
@@ -300,8 +303,9 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var after = await ReadMariaAsync(database);
-            after.FailedAttempts.ShouldBe(0, "a successful reset clears the failed login attempts");
-            after.LockedUntil.ShouldBeNull("a successful reset lifts the login lock");
+            using var readContext = database.CreateContext();
+            (await readContext.Set<LoginFailure>().CountAsync(f => f.UserId == MariaId)).ShouldBe(0, "a successful reset deletes the stored failures, which lifts every address lock");
+            after.LockedUntil.ShouldBeNull("a successful reset lifts the whole-account lock");
         }
 
         [Fact]

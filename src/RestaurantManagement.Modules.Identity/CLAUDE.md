@@ -16,7 +16,12 @@ Login hashes against a fixed dummy password when no user row exists, so an unreg
 email does the same work as a wrong password for a real one. Don't remove it as dead code.
 Verification has its own lockout (VerificationFailedAttempts/VerificationLockedUntil,
 SecurityOptions.MaxVerificationAttempts/VerificationLockoutDurationMinutes), separate
-from login's FailedAttempts/LockedUntil.
+from login's lock.
+Login lock: each counted wrong password is a `login_failures` row (account, IP address, time). 5 per account
+and address lock that address for 15 min; 20 per account within 60 min (one address adds at most 5) set
+`LockedUntil` for the whole account for 15 min and queue one account-locked email (at most one per account per
+24 h, kept in `AccountLockedEmailAt`). Attempts during a lock are not counted; a password reset clears both
+locks. Limits: SecurityOptions.MaxFailedLoginAttempts/AccountMaxFailedLoginAttempts/AccountFailedLoginWindowMinutes/LockoutDurationMinutes.
 Email uniqueness is enforced in the database via a computed, lowercased shadow column
 and unique index (IdentityDbContext.UniqueEmailIndexName); RegistrationService catches
 the Postgres unique-violation as the real guard, the AnyAsync check is just a fast path.

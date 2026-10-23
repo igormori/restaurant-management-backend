@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Sentry;
 using RestaurantManagement.Modules.Identity.Data;
 using RestaurantManagement.Modules.Identity.Entities.Users;
+using RestaurantManagement.Modules.Identity.Services.Lockout;
 using RestaurantManagement.Modules.Identity.Models.Sessions;
 using RestaurantManagement.Shared;
 using RestaurantManagement.Shared.Options;
@@ -32,6 +33,7 @@ namespace RestaurantManagement.Modules.Identity.Services.Sessions
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly IHub _hub;
         private readonly OrganizationMembership _organizations;
+        private readonly LoginLockout _lockout;
         private readonly IRefreshTokenService _refreshTokens;
         private readonly AccessTokenFactory _accessTokens;
         private readonly IPasswordHasher _passwordHasher;
@@ -51,6 +53,7 @@ namespace RestaurantManagement.Modules.Identity.Services.Sessions
             _localizer = localizer;
             _hub = hub;
             _organizations = new OrganizationMembership(db, organizationLookup);
+            _lockout = new LoginLockout(db, _securityOptions);
             _refreshTokens = refreshTokenService;
             _accessTokens = new AccessTokenFactory(jwtOptions.Value);
             _passwordHasher = passwordHasher;
@@ -79,21 +82,22 @@ namespace RestaurantManagement.Modules.Identity.Services.Sessions
             var passwordHash = user?.PasswordHash ?? DummyPasswordHash;
             var isPasswordValid = _passwordHasher.Verify(request.Password, passwordHash);
 
-            // A locked account is not told it is locked, and attempts while locked do not extend the lock.
-            var isLocked = user != null && user.LockedUntil.HasValue && user.LockedUntil > DateTime.UtcNow;
+            // A locked account or address is not told it is locked, and attempts while locked are not counted.
+            var isLocked = user != null && await _lockout.IsLockedAsync(user, client.IpAddress);
 
             if (user != null && !isLocked && !isPasswordValid)
-                await RecordFailedAttemptAsync(user);
+                await RecordFailedAttemptAsync(user, client.IpAddress);
 
             // Unknown email, wrong password, locked, unverified and deactivated accounts all collapse into the
             // same response so none of them can be told apart from the outside.
             if (user == null || isLocked || !isPasswordValid || !user.IsVerified || !user.IsActive)
                 throw new BusinessException(_localizer["InvalidEmailOrPassword"].Value, 401);
 
-            // ✅ Success → reset counters
-            user.FailedAttempts = 0;
-            user.LockedUntil = null;
+            // A correct password restarts this address's count; the account's count ages out of its window.
+            await _lockout.ClearAddressAsync(user, client.IpAddress);
 
+            // The lock has expired (a live one refused the login above), so the stale end time goes.
+            user.LockedUntil = null;
             user.LastLoginAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();
@@ -173,19 +177,10 @@ namespace RestaurantManagement.Modules.Identity.Services.Sessions
         private BusinessException InvalidSession()
             => new(_localizer[InvalidSessionKey].Value, UnauthorizedStatusCode);
 
-        private async Task RecordFailedAttemptAsync(User user)
+        private async Task RecordFailedAttemptAsync(User user, string? ipAddress)
         {
-            user.FailedAttempts++;
-
-            if (user.FailedAttempts >= _securityOptions.MaxFailedLoginAttempts)
-            {
-                user.LockedUntil = DateTime.UtcNow.AddMinutes(_securityOptions.LockoutDurationMinutes);
-                user.FailedAttempts = 0;
-
+            if (await _lockout.RecordFailureAsync(user, ipAddress) != LockOutcome.None)
                 ReportLockout(user);
-            }
-
-            await _db.SaveChangesAsync();
         }
 
         // The user ID, never the email, so personal data stays out of Sentry.

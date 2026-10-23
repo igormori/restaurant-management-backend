@@ -13,8 +13,9 @@ namespace RestaurantManagement.Modules.Identity.Entities.Users
 
 
         // Security tracking
-        public int FailedAttempts { get; set; } = 0;
         public DateTime? LockedUntil { get; set; }
+        // When the last account-locked email was queued; kept here so the 24-hour limit outlives the queue row.
+        public DateTime? AccountLockedEmailAt { get; set; }
         public int VerificationFailedAttempts { get; set; } = 0;
         public DateTime? VerificationLockedUntil { get; set; }
         public int PasswordResetFailedAttempts { get; set; } = 0;

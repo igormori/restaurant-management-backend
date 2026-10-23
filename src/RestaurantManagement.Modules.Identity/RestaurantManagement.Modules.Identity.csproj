@@ -22,5 +22,6 @@
   <ItemGroup>
     <EmbeddedResource Include="Templates\invitation-email-en.html" />
     <EmbeddedResource Include="Templates\invitation-email-pt.html" />
+    <EmbeddedResource Include="Templates\account-locked-email-en.html" />
   </ItemGroup>
 </Project>

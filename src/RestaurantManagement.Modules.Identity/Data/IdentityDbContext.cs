@@ -5,6 +5,7 @@ using RestaurantManagement.Modules.Identity.Entities.Passwords;
 using RestaurantManagement.Modules.Identity.Entities.Registration;
 using RestaurantManagement.Modules.Identity.Entities.Roles;
 using RestaurantManagement.Modules.Identity.Entities.Sessions;
+using RestaurantManagement.Modules.Identity.Entities.Lockout;
 using RestaurantManagement.Modules.Identity.Entities.Users;
 
 namespace RestaurantManagement.Modules.Identity.Data
@@ -28,6 +29,7 @@ namespace RestaurantManagement.Modules.Identity.Data
         public DbSet<OrganizationMember> OrganizationMembers { get; set; }
         public DbSet<UserVerificationCode> UserVerificationCodes { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<LoginFailure> LoginFailures { get; set; }
         public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
         public DbSet<PendingEmail> PendingEmails { get; set; }
         public DbSet<OrganizationRole> OrganizationRoles { get; set; }
@@ -177,6 +179,19 @@ namespace RestaurantManagement.Modules.Identity.Data
                 entity.HasIndex(t => t.FamilyId);
                 entity.Property(t => t.DeviceDescription).HasMaxLength(RefreshToken.DeviceDescriptionMaxLength);
                 entity.Property(t => t.IpAddress).HasMaxLength(RefreshToken.IpAddressMaxLength);
+            });
+
+            modelBuilder.Entity<LoginFailure>(entity =>
+            {
+                entity.ToTable("login_failures");
+                entity.HasOne<User>()
+                    .WithMany()
+                    .HasForeignKey(f => f.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(f => new { f.UserId, f.FailedAt });
+                // The cleanup of expired rows runs on every wrong password and filters by time across all users.
+                entity.HasIndex(f => f.FailedAt);
+                entity.Property(f => f.IpAddress).IsRequired().HasMaxLength(LoginFailure.IpAddressMaxLength);
             });
 
             base.OnModelCreating(modelBuilder);

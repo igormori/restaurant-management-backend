@@ -35,8 +35,8 @@ public class OrganizationMemberConstraintsTests : IClassFixture<PostgresDatabase
         var context = new IdentityDbContext(options);
         await context.Database.MigrateAsync();
         await context.Database.ExecuteSqlAsync($"""
-            INSERT INTO users (id, email, first_name, last_name, password_hash, failed_attempts, is_active, is_verified, verification_failed_attempts, created_at, updated_at)
-            VALUES ({MariaId}, 'maria.souza@cantina.com.br', 'Maria', 'Souza', 'hash-placeholder', 0, true, true, 0, {CreationTime}, {CreationTime})
+            INSERT INTO users (id, email, first_name, last_name, password_hash, is_active, is_verified, verification_failed_attempts, created_at, updated_at)
+            VALUES ({MariaId}, 'maria.souza@cantina.com.br', 'Maria', 'Souza', 'hash-placeholder', true, true, 0, {CreationTime}, {CreationTime})
             """);
         return context;
     }

@@ -81,6 +81,13 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
 
     private static async Task InsertUserAsync(DbContext context, Guid id, string email, string firstName, bool isActive)
         => await context.Database.ExecuteSqlAsync($"""
+            INSERT INTO users (id, email, first_name, last_name, password_hash, is_active, is_verified, verification_failed_attempts, created_at, updated_at)
+            VALUES ({id}, {email}, {firstName}, 'Souza', 'hash-placeholder', {isActive}, true, 0, {CreationTime}, {CreationTime})
+            """);
+
+    // Before the login failures migration the users table still has the NOT NULL failed_attempts column.
+    private static async Task InsertUserBeforeLoginFailuresAsync(DbContext context, Guid id, string email, string firstName, bool isActive)
+        => await context.Database.ExecuteSqlAsync($"""
             INSERT INTO users (id, email, first_name, last_name, password_hash, failed_attempts, is_active, is_verified, verification_failed_attempts, created_at, updated_at)
             VALUES ({id}, {email}, {firstName}, 'Souza', 'hash-placeholder', 0, {isActive}, true, 0, {CreationTime}, {CreationTime})
             """);
@@ -228,8 +235,8 @@ public class IdentityDeleteRulesTests : IClassFixture<PostgresDatabaseFixture>
         await using var context = new IdentityDbContext(await CreateOptionsAsync());
         var restrictMigration = FindMigration(context, RestrictMigrationSuffix);
         await context.GetService<IMigrator>().MigrateAsync(FindMigration(context, AuditMigrationSuffix));
-        await InsertUserAsync(context, MariaId, "maria.souza@cantina.com.br", "Maria", isActive: true);
-        await InsertUserAsync(context, JoaoId, "joao.lima@cantina.com.br", "João", isActive: false);
+        await InsertUserBeforeLoginFailuresAsync(context, MariaId, "maria.souza@cantina.com.br", "Maria", isActive: true);
+        await InsertUserBeforeLoginFailuresAsync(context, JoaoId, "joao.lima@cantina.com.br", "João", isActive: false);
         await InsertRoleAsync(context, MariaOwnerRoleId, MariaId, "Owner");
         await InsertRoleAsync(context, JoaoStaffRoleId, JoaoId, "Staff");
         await InsertReadableCodeAsync(context, MariaFirstCodeId, MariaId, "482913", isUsed: true);

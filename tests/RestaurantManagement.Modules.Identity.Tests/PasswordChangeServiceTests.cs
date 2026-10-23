@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Data;
+using RestaurantManagement.Modules.Identity.Entities.Lockout;
 using RestaurantManagement.Modules.Identity.Entities.Sessions;
 using RestaurantManagement.Modules.Identity.Entities.Users;
 using RestaurantManagement.Modules.Identity.Models.Common;
@@ -190,7 +191,8 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             // Assert
             var maria = await ReadUserAsync(database, MariaId);
-            maria.FailedAttempts.ShouldBe(0, "a wrong current password on change-password must not count toward the login lock");
+            using var readContext = database.CreateContext();
+            (await readContext.Set<LoginFailure>().CountAsync()).ShouldBe(0, "a wrong current password on change-password must not count toward the login lock");
             maria.LockedUntil.ShouldBeNull("repeated wrong current passwords on change-password must never lock the login");
         }
     }

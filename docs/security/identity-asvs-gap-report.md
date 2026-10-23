@@ -25,7 +25,7 @@ proof of something the code already does.
 | 4 | High | V6.2.4 | Missing | New passwords are not checked against a list of common passwords (top 3000) | R6–R9 |
 | 5 | Medium | V16.3.1 | Missing | Logins are not logged, successful or failed. Only the lockout is reported (Sentry), so credential stuffing spread across accounts goes unseen | L18, L16 |
 | 6 | Medium | V7.4.1, V7.4.2 | Partial | Logout, logout-all, password change and reset revoke refresh tokens only. The access token keeps working for up to 15 min, as do the roles it carries after a role is removed. No row states this window | O2, O5, C5, P6, F4 |
-| 7 | Medium | V6.1.1 | Partial | Anyone who knows an email can lock that login with 5 wrong passwords, and repeat it every 15 min. Nothing documents how malicious lockout is prevented | L8, L16 |
+| 7 | Medium | V6.1.1 | Covered | Proven by matrix rows L22–L26: wrong passwords lock only the address they came from; 20 across addresses within 60 min (one address adds at most 5) lock the account for 15 min and email the owner once per 24 h | L22–L26, L28, L36 |
 | 8 | Medium | V6.5.5 | Partial | Verification and reset codes live 15 min. ASVS allows at most 10 min for out-of-band codes | T16 |
 | 9 | Medium | V16.3.2 | Missing | Refused access (403s, select-organization by a non-member) is not logged | S3, W3 |
 | 10 | Medium | V7.4.5 | Missing | An Owner or Admin cannot end another user's sessions (for example, a fired waiter's tablet) | O5 |
@@ -56,7 +56,7 @@ It is fixed (commit 9b7bcbc).
 
 | ASVS | L | Requirement (short) | Status | Evidence or gap |
 |---|---|---|---|---|
-| V6.1.1 | 1 | Document anti-brute-force controls and how malicious lockout is prevented | Partial | Limits are documented in the matrix header and proven (L7–L11, L16, T16, T18). Nothing prevents or documents an attacker locking a victim out (summary #7) |
+| V6.1.1 | 1 | Document anti-brute-force controls and how malicious lockout is prevented | Covered | Limits are documented in the matrix header and proven (L7–L11, L16, T16, T18). One address can lock only itself; locking the whole account takes 20 wrong passwords from several addresses (L22–L26), and the owner is emailed once (L28, L36) |
 | V6.1.2 | 2 | Document context-specific words banned from passwords | Missing | Summary #20 |
 | V6.1.3 | 2 | Document every authentication pathway | Covered | Matrix sections 4–9 list every way to get or renew a session (login, refresh, select organization, reset, change); T3 makes undeclared endpoints private |
 | V6.2.1 | 1 | Passwords at least 8 characters | Covered | R6, R9 |
@@ -177,7 +177,6 @@ It is fixed (commit 9b7bcbc).
 | 3, 4, 20 | Check breached passwords (register, reset, change) and product words | `backlog/improvements/breached-passwords.md` |
 | 5, 9, 13 | Log logins, refused access and lockouts | `backlog/features/audit-log.md` |
 | 6 | Access tokens revocable before expiry | `backlog/improvements/session-redesign.md` |
-| 7 | Lock per IP address; higher account-wide limit; email on lock; no CAPTCHA | `backlog/improvements/2026-10-16-login-lockout-per-ip-address.md` |
 | 8 | Emailed codes expire after 10 minutes | `backlog/improvements/2026-10-16-email-codes-expire-in-10-minutes.md` |
 | 10 | Owner or Admin removes a member or signs them out, per organization | `backlog/features/2026-10-16-remove-member-and-end-sessions.md` |
 | 11, 12, 16 | Accepted deviations: no session list, composition rules kept, 72-byte limit | Identity matrix header |

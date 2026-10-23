@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NSubstitute;
 using RestaurantManagement.Modules.Identity.Data;
+using RestaurantManagement.Modules.Identity.Entities.Lockout;
 using RestaurantManagement.Modules.Identity.Entities.Members;
 using RestaurantManagement.Modules.Identity.Services.Registration;
 using RestaurantManagement.Shared.Services.Email;
@@ -98,7 +99,8 @@ public class RegisterEndpointTests : IClassFixture<PostgresDatabaseFixture>
         user.Id.ShouldNotBe(forgedId, "the caller cannot choose the user ID");
         user.IsVerified.ShouldBeFalse("a caller cannot register an already verified account");
         user.IsActive.ShouldBeTrue("a caller cannot register a deactivated account");
-        user.FailedAttempts.ShouldBe(0, "a caller cannot set the login failure counter");
+        (await db.Set<LoginFailure>().CountAsync(f => f.UserId == user.Id)).ShouldBe(0, "a caller cannot plant login failures");
+        user.LockedUntil.ShouldBeNull("a caller cannot register an already locked account");
         (await db.Set<OrganizationMember>().IgnoreQueryFilters().AnyAsync(m => m.UserId == user.Id)).ShouldBeFalse("registering never makes the user a member of an organization");
     }
 }

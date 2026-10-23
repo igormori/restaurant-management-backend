@@ -110,8 +110,8 @@ namespace RestaurantManagement.Modules.Identity.Services.Passwords
             user.UpdatedAt = DateTime.UtcNow;
             user.PasswordResetFailedAttempts = 0;
             user.PasswordResetLockedUntil = null;
-            user.FailedAttempts = 0;
             user.LockedUntil = null;
+            await _db.LoginFailures.Where(f => f.UserId == user.Id).ExecuteDeleteAsync();
             resetCode.IsUsed = true;
             await _db.SaveChangesAsync();
             await _refreshTokenService.RevokeAllForUserAsync(user.Id, RefreshToken.ReasonPasswordChanged);

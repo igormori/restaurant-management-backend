@@ -69,6 +69,13 @@ public class RefreshTokensTableTests : IClassFixture<PostgresDatabaseFixture>
 
     private static async Task InsertUserAsync(DbContext context, Guid id, string email, string firstName)
         => await context.Database.ExecuteSqlAsync($"""
+            INSERT INTO users (id, email, first_name, last_name, password_hash, is_active, is_verified, verification_failed_attempts, created_at, updated_at)
+            VALUES ({id}, {email}, {firstName}, 'Souza', 'hash-placeholder', true, true, 0, {CreationTime}, {CreationTime})
+            """);
+
+    // Before the login failures migration the users table still has the NOT NULL failed_attempts column.
+    private static async Task InsertUserBeforeLoginFailuresAsync(DbContext context, Guid id, string email, string firstName)
+        => await context.Database.ExecuteSqlAsync($"""
             INSERT INTO users (id, email, first_name, last_name, password_hash, failed_attempts, is_active, is_verified, verification_failed_attempts, created_at, updated_at)
             VALUES ({id}, {email}, {firstName}, 'Souza', 'hash-placeholder', 0, true, true, 0, {CreationTime}, {CreationTime})
             """);
@@ -163,8 +170,8 @@ public class RefreshTokensTableTests : IClassFixture<PostgresDatabaseFixture>
         await using var context = new IdentityDbContext(await CreateOptionsAsync());
         var refreshTokensMigration = FindMigration(context, RefreshTokensMigrationSuffix);
         await context.GetService<IMigrator>().MigrateAsync(FindMigration(context, RetireMigrationSuffix));
-        await InsertUserAsync(context, MariaId, "maria.souza@cantina.com.br", "Maria");
-        await InsertUserAsync(context, JoaoId, "joao.lima@trattoria.com.br", "João");
+        await InsertUserBeforeLoginFailuresAsync(context, MariaId, "maria.souza@cantina.com.br", "Maria");
+        await InsertUserBeforeLoginFailuresAsync(context, JoaoId, "joao.lima@trattoria.com.br", "João");
         var usersBefore = await ReadScalarAsync(context, UserRowsSql);
 
         // Act

@@ -6,6 +6,7 @@ using Sentry;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using RestaurantManagement.Modules.Identity.Data;
+using RestaurantManagement.Modules.Identity.Entities.Lockout;
 using RestaurantManagement.Modules.Identity.Entities.Users;
 using RestaurantManagement.Modules.Identity.Models.Sessions;
 using RestaurantManagement.Modules.Identity.Services.Passwords;
@@ -199,7 +200,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 FirstName = "A",
                 LastName = "B",
                 IsVerified = true,
-                FailedAttempts = 0,
                 LockedUntil = lockedUntil
             });
             await seedContext.SaveChangesAsync();
@@ -216,7 +216,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
             using var assertContext = database.CreateContext();
             var user = await assertContext.Users.SingleAsync(u => u.Email == "locked@test.com");
-            user.FailedAttempts.Should().Be(0, "a wrong password while locked is not counted");
+            (await assertContext.Set<LoginFailure>().CountAsync()).Should().Be(0, "a wrong password while locked is not counted");
             user.LockedUntil.Should().BeCloseTo(lockedUntil, TimeSpan.FromSeconds(1), "a wrong password while locked does not extend the lock");
         }
 
@@ -252,6 +252,7 @@ namespace RestaurantManagement.Modules.Identity.Tests
             var lockoutMessage = CapturedEvents(hub).Should().ContainSingle().Subject.Message?.Formatted;
             lockoutMessage.Should().Contain(user.Id.ToString(), "the lockout alert identifies the user by ID");
             lockoutMessage.Should().NotContain("marina.souza@test.com", "the lockout alert must never contain the user's email");
+            lockoutMessage.Should().NotContain(TestClients.KitchenTablet.IpAddress!, "the lockout alert must never contain the IP address");
         }
 
         // Scenario 13
@@ -386,7 +387,6 @@ namespace RestaurantManagement.Modules.Identity.Tests
                 FirstName = "Maria",
                 LastName = "Souza",
                 IsVerified = true,
-                FailedAttempts = 0,
                 LockedUntil = DateTime.UtcNow.AddMinutes(-1)
             });
             await seedContext.SaveChangesAsync();
@@ -407,32 +407,23 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         [Fact]
         [Trait("Rule", "L4")]
-        public async Task LoginAsync_CorrectPasswordAfterFailures_ResetsCounterAndRecordsLoginTime()
+        public async Task LoginAsync_CorrectPasswordAfterFailures_ClearsAddressCountAndRecordsLoginTime()
         {
             // Arrange
-            using var database = new IdentityTestDatabase();
-            using var seedContext = database.CreateContext();
-            seedContext.Users.Add(new User
-            {
-                Email = "marina@cantinadanonna.com.br",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
-                FirstName = "Marina",
-                LastName = "Souza",
-                IsVerified = true,
-                FailedAttempts = 3
-            });
-            await seedContext.SaveChangesAsync();
+            var (database, email) = await SeedMarinaAsync();
+            using var _ = database;
+            await FailLoginsAsync(database, email, 3);
 
             using var context = database.CreateContext();
             var sut = CreateSut(context);
 
             // Act
-            await sut.LoginAsync(new LoginRequest { Email = "marina@cantinadanonna.com.br", Password = Password }, TestClients.KitchenTablet, null);
+            await sut.LoginAsync(new LoginRequest { Email = email, Password = Password }, TestClients.KitchenTablet, null);
 
             // Assert
             using var readContext = database.CreateContext();
             var marina = await readContext.Users.SingleAsync();
-            marina.FailedAttempts.ShouldBe(0, "a successful login resets the failed-attempt counter");
+            (await readContext.Set<LoginFailure>().CountAsync(f => f.CountsForAddress)).ShouldBe(0, "a successful login stops that address's earlier failures counting");
             marina.LockedUntil.ShouldBeNull("a successful login leaves no lock");
             marina.LastLoginAt.ShouldNotBeNull("a successful login records the last login time");
             marina.LastLoginAt.Value.ShouldBe(DateTime.UtcNow, TimeSpan.FromMinutes(1));
@@ -507,13 +498,14 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             using var readContext = database.CreateContext();
             var marina = await readContext.Users.SingleAsync();
-            marina.FailedAttempts.ShouldBe(4, "each of the first four wrong passwords adds one failed attempt");
-            marina.LockedUntil.ShouldBeNull("four wrong passwords do not lock the account yet");
+            (await readContext.Set<LoginFailure>().CountAsync(f => f.CountsForAddress)).ShouldBe(4, "each of the first four wrong passwords from one address is counted");
+            marina.LockedUntil.ShouldBeNull("four wrong passwords do not lock the account");
+            (await readContext.Set<LoginFailure>().CountAsync(f => f.AddressLockedUntil != null)).ShouldBe(0, "four wrong passwords do not lock the address yet");
         }
 
         [Fact]
         [Trait("Rule", "L8")]
-        public async Task LoginAsync_FifthWrongPassword_LocksFor15MinutesAndResetsCounter()
+        public async Task LoginAsync_FifthWrongPassword_LocksThatAddressFor15MinutesAndNotTheAccount()
         {
             // Arrange
             var (database, email) = await SeedMarinaAsync();
@@ -525,9 +517,12 @@ namespace RestaurantManagement.Modules.Identity.Tests
             // Assert
             using var readContext = database.CreateContext();
             var marina = await readContext.Users.SingleAsync();
-            marina.LockedUntil.ShouldNotBeNull("the fifth wrong password locks the account");
-            marina.LockedUntil.Value.ShouldBe(DateTime.UtcNow.AddMinutes(15), TimeSpan.FromMinutes(1), "the fifth wrong password locks the account for 15 minutes");
-            marina.FailedAttempts.ShouldBe(0, "the failed-attempt counter goes back to 0 when the lock starts");
+            var addressLockEnd = (await readContext.Set<LoginFailure>().ToListAsync()).Max(f => f.AddressLockedUntil);
+            addressLockEnd.ShouldNotBeNull("the fifth wrong password from one address locks that address");
+            addressLockEnd.Value.ShouldBe(DateTime.UtcNow.AddMinutes(15), TimeSpan.FromMinutes(1), "the address lock lasts 15 minutes");
+            marina.LockedUntil.ShouldBeNull("an address lock never locks the whole account");
+            var correctFromLockedAddress = () => CreateSut(readContext).LoginAsync(new LoginRequest { Email = email, Password = Password }, TestClients.KitchenTablet, null);
+            await correctFromLockedAddress.ShouldThrowAsync<BusinessException>("a correct password from the locked address is refused during the lock");
         }
     }
 }
