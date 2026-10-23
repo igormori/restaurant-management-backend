@@ -14,9 +14,8 @@ namespace RestaurantManagement.Modules.Identity.Services.Passwords
 {
     public class PasswordResetEmailProcessor : IPasswordResetEmailProcessor
     {
-
         private readonly IdentityDbContext _db;
-        private readonly PendingEmailStore _queue;
+        private readonly PendingEmailQueue _queue;
         private readonly SecurityOptions _securityOptions;
         private readonly IEmailService _emailService;
         private readonly IVerificationCodeHasher _hasher;
@@ -30,7 +29,7 @@ namespace RestaurantManagement.Modules.Identity.Services.Passwords
             ILogger<PasswordResetEmailProcessor> logger)
         {
             _db = db;
-            _queue = new PendingEmailStore(db, PendingEmailPurpose.PasswordReset);
+            _queue = new PendingEmailQueue(db, PendingEmailPurpose.PasswordReset);
             _securityOptions = securityOptions.Value;
             _emailService = emailService;
             _hasher = hasher;

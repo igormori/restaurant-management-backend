@@ -12,9 +12,8 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
     // Sends the queued account-locked emails outside the login request, so login timing never depends on them.
     public class AccountLockedEmailProcessor : IAccountLockedEmailProcessor
     {
-
         private readonly IdentityDbContext _db;
-        private readonly PendingEmailStore _queue;
+        private readonly PendingEmailQueue _queue;
         private readonly SecurityOptions _securityOptions;
         private readonly IEmailService _emailService;
         private readonly ILogger<AccountLockedEmailProcessor> _logger;
@@ -26,7 +25,7 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
             ILogger<AccountLockedEmailProcessor> logger)
         {
             _db = db;
-            _queue = new PendingEmailStore(db, PendingEmailPurpose.AccountLocked);
+            _queue = new PendingEmailQueue(db, PendingEmailPurpose.AccountLocked);
             _securityOptions = securityOptions.Value;
             _emailService = emailService;
             _logger = logger;

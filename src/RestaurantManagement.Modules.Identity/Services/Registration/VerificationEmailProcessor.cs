@@ -15,9 +15,8 @@ namespace RestaurantManagement.Modules.Identity.Services.Registration
     // only queues, and this processor alone decides who gets a code, so the answer never reveals the account.
     public class VerificationEmailProcessor : IVerificationEmailProcessor
     {
-
         private readonly IdentityDbContext _db;
-        private readonly PendingEmailStore _queue;
+        private readonly PendingEmailQueue _queue;
         private readonly SecurityOptions _securityOptions;
         private readonly IEmailService _emailService;
         private readonly IVerificationCodeHasher _hasher;
@@ -31,7 +30,7 @@ namespace RestaurantManagement.Modules.Identity.Services.Registration
             ILogger<VerificationEmailProcessor> logger)
         {
             _db = db;
-            _queue = new PendingEmailStore(db, PendingEmailPurpose.Verification);
+            _queue = new PendingEmailQueue(db, PendingEmailPurpose.Verification);
             _securityOptions = securityOptions.Value;
             _emailService = emailService;
             _hasher = hasher;
