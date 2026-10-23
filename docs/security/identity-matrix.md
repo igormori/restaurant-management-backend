@@ -31,7 +31,7 @@ Web.Tests outside that folder: `PrivateByDefaultTests`, `StartupConfigurationTes
 `RequiredIdFieldEndpointTests` (they cover several modules).
 
 **Limits in force (`appsettings.json`, guarded by T16–T18 so changing a number fails a test;
-environment variables set at deployment can still override them):** 5 wrong logins per account and address lock that address for 15 min · 20 per account within 60 min (one address adds at most 5) lock the account for 15 min, with at most one lock email per account per 24 h · 5 wrong codes
+environment variables set at deployment can still override them):** 5 wrong logins per account and address lock that address for 15 min · 20 per account within 60 min (one address adds at most 5) lock the account for 15 min, with at most one lock email per account per 24 h; attempts during a lock are not counted and a password reset clears both locks · 5 wrong codes
 lock verification, or reset, for 15 min · codes are 6 digits and expire after 10 min · 60 s
 between resends · access token 15 min · refresh token 30 days · rate limits per IP address:
 login 10/min, register 5/h, verify 10/10 min, resend 3/10 min, refresh and logout 30/min,

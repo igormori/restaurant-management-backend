@@ -29,4 +29,4 @@
 ## Checklist
 - [x] T1 — Per-address and whole-account login lock
 - [x] T2 — Account-locked email
-- [ ] T3 — Identity security notes describe the new limits
+- [x] T3 — Identity security notes describe the new limits
