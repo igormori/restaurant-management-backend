@@ -101,6 +101,10 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
             if (perAddress.Sum(count => Math.Min(count, _options.MaxFailedLoginAttempts)) < _options.AccountMaxFailedLoginAttempts)
                 return false;
 
+            // The lock, the counter reset, the email mark and the queue row commit together: a failure
+            // in between must not leave the account locked and marked as emailed with no email queued.
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+
             // Only one concurrent request wins the update, so only one reports the lock.
             var lockEnd = now.AddMinutes(_options.LockoutDurationMinutes);
             var claimed = await _db.Users
@@ -113,6 +117,7 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
                 .Where(f => f.UserId == user.Id && f.CountsForAccount)
                 .ExecuteUpdateAsync(s => s.SetProperty(f => f.CountsForAccount, false));
             await QueueLockedEmailAsync(user.Id, now);
+            await transaction.CommitAsync();
             return true;
         }
 
