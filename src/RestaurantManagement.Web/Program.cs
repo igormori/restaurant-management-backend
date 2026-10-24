@@ -306,6 +306,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(corsOptions.AllowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
+              .WithExposedHeaders("Retry-After")
               .AllowCredentials();
     });
 });
