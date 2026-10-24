@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace RestaurantManagement.Shared.Utils.Localization
 {
-    public class CustomPortugueseCultureProvider : RequestCultureProvider
+    public class RegionalCultureProvider : RequestCultureProvider
     {
         public override Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
         {
@@ -13,10 +13,11 @@ namespace RestaurantManagement.Shared.Utils.Localization
             {
                 var lang = langs.ToString().ToLowerInvariant();
 
-                if (lang.StartsWith("pt"))
+                // Always map any pt-* or fr-* variant to its base language, the only one with a catalog
+                foreach (var baseLanguage in new[] { "pt", "fr" })
                 {
-                    // Always map any pt-* variant to "pt"
-                    return Task.FromResult<ProviderCultureResult?>(new ProviderCultureResult("pt", "pt"));
+                    if (lang.StartsWith(baseLanguage))
+                        return Task.FromResult<ProviderCultureResult?>(new ProviderCultureResult(baseLanguage, baseLanguage));
                 }
             }
 

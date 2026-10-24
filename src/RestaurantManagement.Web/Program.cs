@@ -55,7 +55,9 @@ var supportedCultures = new[]
     new CultureInfo("en"),
     new CultureInfo("pt"),
     new CultureInfo("pt-BR"),
-    new CultureInfo("pt-PT")
+    new CultureInfo("pt-PT"),
+    new CultureInfo("fr"),
+    new CultureInfo("fr-CA")
 };
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
@@ -63,7 +65,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.DefaultRequestCulture = new RequestCulture("en");
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
-    options.RequestCultureProviders.Insert(0, new CustomPortugueseCultureProvider());
+    options.RequestCultureProviders.Insert(0, new RegionalCultureProvider());
 });
 
 // ---------------------------------------------
