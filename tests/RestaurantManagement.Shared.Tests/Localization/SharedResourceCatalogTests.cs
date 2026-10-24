@@ -7,7 +7,7 @@ namespace RestaurantManagement.Shared.Tests.Localization;
 
 /// <summary>
 /// The shared message catalog read through the same localizer the app uses (resource files under
-/// Localization/). Every new message must read as real text in English (en) and Portuguese (pt).
+/// Localization/). Every new message must read as real text in English (en), Portuguese (pt) and French (fr).
 /// </summary>
 public class SharedResourceCatalogTests : IDisposable
 {
@@ -55,6 +55,10 @@ public class SharedResourceCatalogTests : IDisposable
     [InlineData("pt", "UserNotFound", "Usuário não encontrado.")]
     [InlineData("pt", "InvalidToken", "Token inválido.")]
     [InlineData("pt", "TooManyRequests", "Muitas solicitações. Tente novamente mais tarde.")]
+    [InlineData("fr", "EmailAlreadyRegistered", "Ce courriel est déjà enregistré.")]
+    [InlineData("fr", "RequiredAttribute_ValidationError", "Le champ {0} est obligatoire.")]
+    [InlineData("fr", "MaxLengthAttribute_ValidationError", "Le champ {0} doit contenir au plus {1} caractères.")]
+    [InlineData("fr", "UnexpectedError", "Une erreur inattendue s'est produite.")]
     [Trait("Rule", "SH19")]
     public void Localizer_NewMessageKey_ReturnsExpectedTextInEachLanguage(string culture, string key, string expected)
     {
@@ -73,9 +77,10 @@ public class SharedResourceCatalogTests : IDisposable
     // Scenario 2
     [Theory]
     [InlineData("pt-BR", "Menu não encontrado.")]
-    [InlineData("fr", "Menu not found.")]
+    [InlineData("fr-CA", "Menu introuvable.")]
+    [InlineData("de", "Menu not found.")]
     [Trait("Rule", "SH19")]
-    public void Localizer_RegionalOrUnsupportedCulture_ReturnsPortugueseOrEnglishFallback(string culture, string expected)
+    public void Localizer_RegionalOrUnsupportedCulture_ReturnsBaseLanguageOrEnglishFallback(string culture, string expected)
     {
         // Arrange
         var localizer = CreateLocalizer();
@@ -85,7 +90,7 @@ public class SharedResourceCatalogTests : IDisposable
         var message = localizer["MenuNotFound"];
 
         // Assert
-        message.Value.ShouldBe(expected, "a regional or unsupported language falls back to Portuguese or English");
+        message.Value.ShouldBe(expected, "a regional language falls back to its base language and an unsupported one to English");
     }
 
     // Scenario 3

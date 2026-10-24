@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value>
+  </resheader>
+  <data name="OrganizationCreated" xml:space="preserve">
+    <value>L'organisation a été créée avec succès.</value>
+  </data>
+  <data name="ValidationFailed" xml:space="preserve">
+    <value>Échec de la validation. Veuillez vérifier les champs saisis.</value>
+  </data>
+  <data name="TrialExpired" xml:space="preserve">
+    <value>Votre période d'essai est terminée. Veuillez mettre à niveau votre forfait.</value>
+  </data>
+  <data name="MaxLocationsTrial" xml:space="preserve">
+    <value>Le forfait d'essai permet un seul établissement.</value>
+  </data>
+  <data name="RequiredAttribute_ValidationError" xml:space="preserve">
+    <value>Le champ {0} est obligatoire.</value>
+  </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>Le champ {0} doit contenir au plus {1} caractères.</value>
+  </data>
+  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+    <value>Le champ {0} doit contenir au moins {1} caractères.</value>
+  </data>
+  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
+    <value>Le champ {0} n'est pas une adresse courriel valide.</value>
+  </data>
+  <data name="PasswordComplexity_ValidationError" xml:space="preserve">
+    <value>Le mot de passe doit contenir au moins une lettre majuscule, un chiffre et un caractère spécial.</value>
+  </data>
+  <data name="PasswordTooManyBytes_ValidationError" xml:space="preserve">
+    <value>Le champ {0} doit contenir au plus {1} octets. Les caractères spéciaux et les émojis occupent plus d'un octet; utilisez-en moins.</value>
+  </data>
+  <data name="EmailAlreadyRegistered" xml:space="preserve">
+    <value>Ce courriel est déjà enregistré.</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Utilisateur introuvable.</value>
+  </data>
+  <data name="UnauthorizedMessage" xml:space="preserve">
+    <value>Utilisateur non autorisé.</value>
+  </data>
+  <data name="InvalidToken" xml:space="preserve">
+    <value>Jeton invalide.</value>
+  </data>
+  <data name="TrialOrganizationsCannotCreateNew" xml:space="preserve">
+    <value>Les organisations au forfait d'essai ne peuvent pas en créer de nouvelles. Veuillez mettre à niveau votre forfait pour en ajouter.</value>
+  </data>
+  <data name="InvalidPassword" xml:space="preserve">
+    <value>Mot de passe invalide. Veuillez vérifier vos identifiants.</value>
+  </data>
+  <data name="UserNotVerified" xml:space="preserve">
+    <value>Votre compte n'est pas vérifié. Veuillez vérifier votre courriel avant de vous connecter.</value>
+  </data>
+  <data name="AccountLocked" xml:space="preserve">
+    <value>Votre compte a été verrouillé après plusieurs tentatives de connexion infructueuses.</value>
+  </data>
+  <data name="InvalidOrExpiredToken" xml:space="preserve">
+    <value>Le jeton est invalide ou a expiré. Veuillez vous reconnecter.</value>
+  </data>
+  <data name="InvalidRefreshToken" xml:space="preserve">
+    <value>Le jeton d'actualisation est invalide ou a expiré. Veuillez demander une nouvelle session de connexion.</value>
+  </data>
+  <data name="UserVerified" xml:space="preserve">
+    <value>Votre compte a été vérifié avec succès.</value>
+  </data>
+  <data name="InvalidOrExpiredCode" xml:space="preserve">
+    <value>Le code de vérification est invalide ou a expiré.</value>
+  </data>
+  <data name="UserAlreadyVerified" xml:space="preserve">
+    <value>Votre compte est déjà vérifié.</value>
+  </data>
+  <data name="VerificationCodeRecentlySent" xml:space="preserve">
+    <value>Un code de vérification a été envoyé récemment. Veuillez patienter un moment avant d'en demander un autre.</value>
+  </data>
+  <data name="InvalidEmailOrPassword" xml:space="preserve">
+    <value>Courriel ou mot de passe invalide.</value>
+  </data>
+  <data name="InvalidEmailOrCode" xml:space="preserve">
+    <value>Courriel ou code de vérification invalide.</value>
+  </data>
+  <data name="VerificationResendAcknowledged" xml:space="preserve">
+    <value>Si un compte existe et doit être vérifié, un nouveau code a été envoyé.</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Vous n'avez pas la permission d'accéder à cette ressource. Communiquez avec votre administrateur si vous pensez qu'il s'agit d'une erreur.</value>
+  </data>
+  <data name="OrganizationNotFound" xml:space="preserve">
+    <value>Organisation introuvable.</value>
+  </data>
+  <data name="OrganizationSettingsNotFound" xml:space="preserve">
+    <value>Paramètres de l'organisation introuvables.</value>
+  </data>
+  <data name="UserNotAdminOrOwner" xml:space="preserve">
+    <value>L'utilisateur n'a pas les permissions d'administrateur ou de propriétaire.</value>
+  </data>
+  <data name="LocationNotFound" xml:space="preserve">
+    <value>Établissement introuvable.</value>
+  </data>
+  <data name="LocationCodeAlreadyUsed" xml:space="preserve">
+    <value>Un autre établissement de cette organisation utilise déjà ce code.</value>
+  </data>
+  <data name="UserNotMemberOfOrganization" xml:space="preserve">
+    <value>L'utilisateur n'est pas membre de cette organisation.</value>
+  </data>
+  <data name="MenuDeletedSuccessfully" xml:space="preserve">
+    <value>Menu supprimé avec succès.</value>
+  </data>
+  <data name="MenuAttachedSuccessfully" xml:space="preserve">
+    <value>Menu associé à l'établissement avec succès.</value>
+  </data>
+  <data name="MenuDetachedSuccessfully" xml:space="preserve">
+    <value>Menu dissocié de l'établissement avec succès.</value>
+  </data>
+  <data name="TooManyRequests" xml:space="preserve">
+    <value>Trop de requêtes. Veuillez réessayer plus tard.</value>
+  </data>
+  <data name="TenantMismatch" xml:space="preserve">
+    <value>L'enregistrement appartient à une autre organisation.</value>
+  </data>
+  <data name="OrganizationRequired" xml:space="preserve">
+    <value>Une organisation est requise pour enregistrer cet élément.</value>
+  </data>
+  <data name="InvalidLocationId" xml:space="preserve">
+    <value>L'établissement sélectionné n'est pas valide.</value>
+  </data>
+  <data name="LocationAccessDenied" xml:space="preserve">
+    <value>Vous n'avez pas accès à l'établissement sélectionné.</value>
+  </data>
+  <data name="MenuNotFound" xml:space="preserve">
+    <value>Menu introuvable.</value>
+  </data>
+  <data name="MenuCategoryNotFound" xml:space="preserve">
+    <value>Catégorie de menu introuvable.</value>
+  </data>
+  <data name="RoleNotFound" xml:space="preserve">
+    <value>Rôle introuvable.</value>
+  </data>
+  <data name="AlreadyMemberOfOrganization" xml:space="preserve">
+    <value>Cette personne est déjà membre de l'organisation.</value>
+  </data>
+  <data name="InvitationLinkInvalid" xml:space="preserve">
+    <value>Ce lien d'invitation est invalide, expiré ou déjà utilisé.</value>
+  </data>
+  <data name="InvitationNotFound" xml:space="preserve">
+    <value>Invitation introuvable.</value>
+  </data>
+  <data name="CannotChangeOwnAccess" xml:space="preserve">
+    <value>Vous ne pouvez pas modifier votre propre accès.</value>
+  </data>
+  <data name="CannotGrantAboveOwnLevel" xml:space="preserve">
+    <value>Vous ne pouvez pas accorder un niveau supérieur au vôtre.</value>
+  </data>
+  <data name="InvitationForAnotherAccount" xml:space="preserve">
+    <value>Cette invitation a été envoyée à un autre compte.</value>
+  </data>
+  <data name="InvitationAccountExistsSignIn" xml:space="preserve">
+    <value>Un compte existe déjà avec ce courriel. Connectez-vous pour accepter l'invitation.</value>
+  </data>
+  <data name="PhoneAttribute_ValidationError" xml:space="preserve">
+    <value>Le champ {0} n'est pas un numéro de téléphone valide.</value>
+  </data>
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>Une erreur inattendue s'est produite.</value>
+  </data>
+  <data name="HexColor_ValidationError" xml:space="preserve">
+    <value>Le champ {0} doit être au format hexadécimal (#RRGGBB).</value>
+  </data>
+  <data name="Currency_ValidationError" xml:space="preserve">
+    <value>Le champ {0} doit être BRL, USD ou CAD.</value>
+  </data>
+  <data name="RangeAttribute_ValidationError" xml:space="preserve">
+    <value>Le champ {0} doit être compris entre {1} et {2}.</value>
+  </data>
+  <data name="TwoDecimals_ValidationError" xml:space="preserve">
+    <value>Le champ {0} accepte au plus 2 décimales.</value>
+  </data>
+  <data name="TimeFormat_ValidationError" xml:space="preserve">
+    <value>Le champ {0} doit être au format HH:mm.</value>
+  </data>
+  <data name="LocationType_ValidationError" xml:space="preserve">
+    <value>Le champ {0} doit être Store ou CentralKitchen.</value>
+  </data>
+  <data name="LettersAndDigits_ValidationError" xml:space="preserve">
+    <value>Le champ {0} accepte uniquement des lettres et des chiffres.</value>
+  </data>
+  <data name="IanaTimeZone_ValidationError" xml:space="preserve">
+    <value>Le champ {0} doit être un fuseau horaire IANA valide.</value>
+  </data>
+  <data name="UrlAttribute_ValidationError" xml:space="preserve">
+    <value>Le champ {0} n'est pas une URL valide.</value>
+  </data>
+  <data name="AuditLogInvalidDateRange" xml:space="preserve">
+    <value>La date de début ne doit pas être postérieure à la date de fin.</value>
+  </data>
+  <data name="AuditLogUnknownAction" xml:space="preserve">
+    <value>Cette action n'est pas une action connue du journal d'audit.</value>
+  </data>
+  <data name="PasswordResetAcknowledged" xml:space="preserve">
+    <value>Si un compte existe pour ce courriel, un code de réinitialisation a été envoyé.</value>
+  </data>
+  <data name="InvalidEmailOrResetCode" xml:space="preserve">
+    <value>Courriel ou code de réinitialisation invalide.</value>
+  </data>
+  <data name="PasswordResetSucceeded" xml:space="preserve">
+    <value>Mot de passe réinitialisé. Connectez-vous avec votre nouveau mot de passe.</value>
+  </data>
+  <data name="CurrentPasswordIncorrect" xml:space="preserve">
+    <value>Le mot de passe actuel est incorrect.</value>
+  </data>
+  <data name="NewPasswordSameAsCurrent" xml:space="preserve">
+    <value>Le nouveau mot de passe doit être différent du mot de passe actuel.</value>
+  </data>
+  <data name="PasswordChangeSucceeded" xml:space="preserve">
+    <value>Mot de passe modifié. Reconnectez-vous sur vos appareils.</value>
+  </data>
+  <data name="RoleNameAlreadyUsed" xml:space="preserve">
+    <value>Un rôle portant ce nom existe déjà.</value>
+  </data>
+  <data name="RoleNameInvalid" xml:space="preserve">
+    <value>Le nom du rôle ne doit pas être vide, dépasser 100 caractères ni être « Owner ».</value>
+  </data>
+</root>

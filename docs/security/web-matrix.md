@@ -59,7 +59,7 @@ for one module (rate limits on sign-in endpoints, the refresh cookie) are in tha
 ## 5. Answers to callers
 | ID | Case | Expected | Status | Test |
 |---|---|---|---|---|
-| W22 | Invalid request | 400 with a translated title; status and field errors kept | ✅ | `ValidationTitleEndpointTests.Register_InvalidRequest_ReturnsLocalizedValidationTitle`, `ValidationTitleEndpointTests.Register_InvalidRequest_KeepsStatusAndFieldErrorsInBody` |
+| W22 | Invalid request | 400 with a title translated to English, Portuguese or French (fr-CA); status and field errors kept | ✅ | `ValidationTitleEndpointTests.Register_InvalidRequest_ReturnsLocalizedValidationTitle`, `ValidationTitleEndpointTests.Register_InvalidRequest_KeepsStatusAndFieldErrorsInBody` |
 | W23 | Browser request from an allowed origin | May send credentials (cookies) | ✅ | `RefreshTokenCookieEndpointTests.Cors_PreflightFromAllowedOrigin_AllowsCredentials` |
 | W24 | Browser request from any other origin | Gets no cross-origin permission | ✅ | `CorsUnknownOriginTests.Cors_PreflightFromUnknownOrigin_GetsNoCrossOriginPermission` |
 

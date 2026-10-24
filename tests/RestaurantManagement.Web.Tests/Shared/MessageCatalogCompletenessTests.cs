@@ -11,7 +11,7 @@ using Shouldly;
 namespace RestaurantManagement.Web.Tests;
 
 /// <summary>
-/// Every message the API can send exists in English (en) and Portuguese (pt) (spec Outcome #9).
+/// Every message the API can send exists in English (en), Portuguese (pt) and French (fr) (spec Outcome #9).
 /// Reads the catalog files and the source code from the repository; no database needed.
 /// Each check lists every offending key or field, so one run shows all the gaps.
 /// </summary>
@@ -58,6 +58,24 @@ public class MessageCatalogCompletenessTests
         var emptyEnglish = english.Where(entry => string.IsNullOrWhiteSpace(entry.Value)).Select(entry => $"{entry.Key} (empty in en)");
         var emptyPortuguese = portuguese.Where(entry => string.IsNullOrWhiteSpace(entry.Value)).Select(entry => $"{entry.Key} (empty in pt)");
         var problems = onlyInEnglish.Concat(onlyInPortuguese).Concat(emptyEnglish).Concat(emptyPortuguese).ToList();
+
+        // Assert
+        problems.ShouldBeEmpty();
+    }
+
+    [Fact]
+    [Trait("Rule", "SH19")]
+    public void Catalog_French_HoldsSameKeysAsEnglishWithText()
+    {
+        // Arrange
+        var english = ReadCatalog("SharedResource.resx");
+        var french = ReadCatalog("SharedResource.fr.resx");
+
+        // Act
+        var problems = english.Keys.Except(french.Keys).Select(key => $"{key} (missing in fr)")
+            .Concat(french.Keys.Except(english.Keys).Select(key => $"{key} (missing in en)"))
+            .Concat(french.Where(entry => string.IsNullOrWhiteSpace(entry.Value)).Select(entry => $"{entry.Key} (empty in fr)"))
+            .ToList();
 
         // Assert
         problems.ShouldBeEmpty();

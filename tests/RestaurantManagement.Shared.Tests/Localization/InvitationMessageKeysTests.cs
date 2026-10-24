@@ -5,7 +5,7 @@ using Shouldly;
 
 namespace RestaurantManagement.Shared.Tests.Localization;
 
-/// <summary>Every message the invitation and delegation rules refuse with reads as real text in English and Portuguese.</summary>
+/// <summary>Every message the invitation and delegation rules refuse with reads as real text in English, Portuguese and French.</summary>
 public class InvitationMessageKeysTests : IDisposable
 {
     private readonly CultureInfo _originalUiCulture = CultureInfo.CurrentUICulture;
@@ -15,18 +15,25 @@ public class InvitationMessageKeysTests : IDisposable
     [Theory]
     [InlineData("en", "AlreadyMemberOfOrganization")]
     [InlineData("pt", "AlreadyMemberOfOrganization")]
+    [InlineData("fr", "AlreadyMemberOfOrganization")]
     [InlineData("en", "InvitationLinkInvalid")]
     [InlineData("pt", "InvitationLinkInvalid")]
+    [InlineData("fr", "InvitationLinkInvalid")]
     [InlineData("en", "InvitationNotFound")]
     [InlineData("pt", "InvitationNotFound")]
+    [InlineData("fr", "InvitationNotFound")]
     [InlineData("en", "CannotChangeOwnAccess")]
     [InlineData("pt", "CannotChangeOwnAccess")]
+    [InlineData("fr", "CannotChangeOwnAccess")]
     [InlineData("en", "CannotGrantAboveOwnLevel")]
     [InlineData("pt", "CannotGrantAboveOwnLevel")]
+    [InlineData("fr", "CannotGrantAboveOwnLevel")]
     [InlineData("en", "InvitationForAnotherAccount")]
     [InlineData("pt", "InvitationForAnotherAccount")]
+    [InlineData("fr", "InvitationForAnotherAccount")]
     [InlineData("en", "InvitationAccountExistsSignIn")]
     [InlineData("pt", "InvitationAccountExistsSignIn")]
+    [InlineData("fr", "InvitationAccountExistsSignIn")]
     [Trait("Rule", "SH44")]
     public void Localizer_InvitationMessageKey_ReturnsRealTextInEachLanguage(string culture, string key)
     {

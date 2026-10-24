@@ -26,6 +26,8 @@ public class ValidationTitleEndpointTests : IDisposable
 
     [Theory]
     [InlineData("pt", "Falha na validação. Verifique os campos informados.")]
+    [InlineData("fr-CA", "Échec de la validation. Veuillez vérifier les champs saisis.")]
+    [InlineData("fr", "Échec de la validation. Veuillez vérifier les champs saisis.")]
     [InlineData("en", "Validation failed. Please check the input fields.")]
     [Trait("Rule", "W22")]
     public async Task Register_InvalidRequest_ReturnsLocalizedValidationTitle(string culture, string expected)

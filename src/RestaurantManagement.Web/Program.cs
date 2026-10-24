@@ -50,20 +50,14 @@ builder.UseHttpsOnlyOutsideDevelopment();
 // ---------------------------------------------
 builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
 
-var supportedCultures = new[]
-{
-    new CultureInfo("en"),
-    new CultureInfo("pt"),
-    new CultureInfo("pt-BR"),
-    new CultureInfo("pt-PT")
-};
+var supportedCultures = RegionalCultureProvider.SupportedCultures;
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
     options.DefaultRequestCulture = new RequestCulture("en");
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
-    options.RequestCultureProviders.Insert(0, new CustomPortugueseCultureProvider());
+    options.RequestCultureProviders.Insert(0, new RegionalCultureProvider());
 });
 
 // ---------------------------------------------
