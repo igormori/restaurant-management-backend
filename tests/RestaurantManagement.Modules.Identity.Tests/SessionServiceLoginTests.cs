@@ -406,6 +406,76 @@ namespace RestaurantManagement.Modules.Identity.Tests
 
         [Fact]
         [Trait("Rule", "L6")]
+        public async Task LoginAsync_AccountLocked_RunsAsManyDatabaseCommandsAsAnUnknownEmail()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            var user = new User
+            {
+                Email = "maria@cantinadanonna.com.br",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "Maria",
+                LastName = "Souza",
+                IsVerified = true,
+                LockedUntil = DateTime.UtcNow.AddMinutes(10)
+            };
+            seedContext.Users.Add(user);
+            await seedContext.SaveChangesAsync();
+
+            var lockedCommands = new QueryCommandRecorder();
+            var unknownCommands = new QueryCommandRecorder();
+            using var lockedContext = database.CreateContext(lockedCommands);
+            using var unknownContext = database.CreateContext(unknownCommands);
+
+            // Act
+            var lockedAct = () => CreateSut(lockedContext).LoginAsync(new LoginRequest { Email = "maria@cantinadanonna.com.br", Password = "Wrong-Password9" }, TestClients.KitchenTablet, null);
+            await lockedAct.Should().ThrowAsync<BusinessException>();
+            var unknownAct = () => CreateSut(unknownContext).LoginAsync(new LoginRequest { Email = "nobody@cantinadanonna.com.br", Password = "Wrong-Password9" }, TestClients.KitchenTablet, null);
+            await unknownAct.Should().ThrowAsync<BusinessException>();
+
+            // Assert
+            lockedCommands.Commands.Count.ShouldBe(unknownCommands.Commands.Count, "a locked login costs as many database round trips as an unknown email, so a lock does not show that the account exists");
+        }
+
+        [Fact]
+        [Trait("Rule", "L6")]
+        public async Task LoginAsync_AddressLocked_RunsAsManyDatabaseCommandsAsAnUnknownEmail()
+        {
+            // Arrange
+            using var database = new IdentityTestDatabase();
+            using var seedContext = database.CreateContext();
+            var user = new User
+            {
+                Email = "maria@cantinadanonna.com.br",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FirstName = "Maria",
+                LastName = "Souza",
+                IsVerified = true,
+                LockedUntil = null
+            };
+            seedContext.Users.Add(user);
+            await seedContext.SaveChangesAsync();
+            seedContext.LoginFailures.Add(new LoginFailure { UserId = user.Id, IpAddress = TestClients.KitchenTablet.IpAddress!, FailedAt = DateTime.UtcNow, AddressLockedUntil = DateTime.UtcNow.AddMinutes(10) });
+            await seedContext.SaveChangesAsync();
+
+            var lockedCommands = new QueryCommandRecorder();
+            var unknownCommands = new QueryCommandRecorder();
+            using var lockedContext = database.CreateContext(lockedCommands);
+            using var unknownContext = database.CreateContext(unknownCommands);
+
+            // Act
+            var lockedAct = () => CreateSut(lockedContext).LoginAsync(new LoginRequest { Email = "maria@cantinadanonna.com.br", Password = "Wrong-Password9" }, TestClients.KitchenTablet, null);
+            await lockedAct.Should().ThrowAsync<BusinessException>();
+            var unknownAct = () => CreateSut(unknownContext).LoginAsync(new LoginRequest { Email = "nobody@cantinadanonna.com.br", Password = "Wrong-Password9" }, TestClients.KitchenTablet, null);
+            await unknownAct.Should().ThrowAsync<BusinessException>();
+
+            // Assert
+            lockedCommands.Commands.Count.ShouldBe(unknownCommands.Commands.Count, "a locked login costs as many database round trips as an unknown email, so a lock does not show that the account exists");
+        }
+
+        [Fact]
+        [Trait("Rule", "L6")]
         public async Task LoginAsync_UnknownEmail_StoresNoLoginFailure()
         {
             // Arrange

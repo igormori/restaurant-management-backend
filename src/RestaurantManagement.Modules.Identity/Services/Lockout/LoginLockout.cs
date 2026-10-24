@@ -35,20 +35,24 @@ namespace RestaurantManagement.Modules.Identity.Services.Lockout
         public async Task<bool> IsLockedAsync(User user, string? ipAddress)
         {
             var now = Now();
-            if (user.LockedUntil.HasValue && user.LockedUntil > now)
-                return true;
+            var accountLocked = user.LockedUntil.HasValue && user.LockedUntil > now;
 
-            return await IsAddressLockedAsync(user.Id, Normalize(ipAddress), now);
+            // Always asked, even for a locked account, so both kinds of lock cost the same commands.
+            var addressLocked = await IsAddressLockedAsync(user.Id, Normalize(ipAddress), now);
+            return accountLocked || addressLocked;
         }
 
-        // Runs the same database commands as a wrong password for a real account, on a user ID that matches
+        // The lock check of a login whose email has no account.
+        public async Task SimulateLockCheckAsync(string? ipAddress)
+            => await IsAddressLockedAsync(NoUserId, Normalize(ipAddress), Now());
+
+        // Runs the same database commands as recording a wrong password for a real account, on a user ID that matches
         // no row and so changes nothing. An unknown email then takes as long as a known one.
         public async Task SimulateFailureAsync(string? ipAddress)
         {
             var now = Now();
             var address = Normalize(ipAddress);
 
-            await IsAddressLockedAsync(NoUserId, address, now);
             await DeleteExpiredAsync(now);
             await _db.LoginFailures
                 .Where(f => f.UserId == NoUserId)
