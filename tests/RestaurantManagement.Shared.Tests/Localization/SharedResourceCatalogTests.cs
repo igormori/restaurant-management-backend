@@ -80,7 +80,7 @@ public class SharedResourceCatalogTests : IDisposable
     [InlineData("fr-CA", "Menu introuvable.")]
     [InlineData("de", "Menu not found.")]
     [Trait("Rule", "SH19")]
-    public void Localizer_RegionalOrUnsupportedCulture_ReturnsPortugueseOrEnglishFallback(string culture, string expected)
+    public void Localizer_RegionalOrUnsupportedCulture_ReturnsBaseLanguageOrEnglishFallback(string culture, string expected)
     {
         // Arrange
         var localizer = CreateLocalizer();

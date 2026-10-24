@@ -7,6 +7,8 @@ namespace RestaurantManagement.Shared.Utils.Localization
 {
     public class RegionalCultureProvider : RequestCultureProvider
     {
+        private static readonly string[] LanguagesWithCatalog = ["pt", "fr"];
+
         public override Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
         {
             if (httpContext.Request.Headers.TryGetValue("Accept-Language", out StringValues langs))
@@ -14,9 +16,9 @@ namespace RestaurantManagement.Shared.Utils.Localization
                 var lang = langs.ToString().ToLowerInvariant();
 
                 // Always map any pt-* or fr-* variant to its base language, the only one with a catalog
-                foreach (var baseLanguage in new[] { "pt", "fr" })
+                foreach (var baseLanguage in LanguagesWithCatalog)
                 {
-                    if (lang.StartsWith(baseLanguage))
+                    if (lang.StartsWith(baseLanguage, StringComparison.Ordinal))
                         return Task.FromResult<ProviderCultureResult?>(new ProviderCultureResult(baseLanguage, baseLanguage));
                 }
             }

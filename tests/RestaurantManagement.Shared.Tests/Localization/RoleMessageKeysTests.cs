@@ -5,7 +5,7 @@ using Shouldly;
 
 namespace RestaurantManagement.Shared.Tests.Localization;
 
-/// <summary>The two messages a refused role name answers with read as real text in English and Portuguese.</summary>
+/// <summary>The two messages a refused role name answers with read as real text in English, Portuguese and French.</summary>
 public class RoleMessageKeysTests : IDisposable
 {
     private readonly CultureInfo _originalUiCulture = CultureInfo.CurrentUICulture;
@@ -15,8 +15,10 @@ public class RoleMessageKeysTests : IDisposable
     [Theory]
     [InlineData("en", "RoleNameAlreadyUsed")]
     [InlineData("pt", "RoleNameAlreadyUsed")]
+    [InlineData("fr", "RoleNameAlreadyUsed")]
     [InlineData("en", "RoleNameInvalid")]
     [InlineData("pt", "RoleNameInvalid")]
+    [InlineData("fr", "RoleNameInvalid")]
     [Trait("Rule", "SH46")]
     public void Localizer_RoleNameMessageKey_ReturnsRealTextInEachLanguage(string culture, string key)
     {

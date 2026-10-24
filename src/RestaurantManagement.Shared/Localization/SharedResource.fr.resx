@@ -22,7 +22,7 @@
     <value>Votre période d'essai est terminée. Veuillez mettre à niveau votre forfait.</value>
   </data>
   <data name="MaxLocationsTrial" xml:space="preserve">
-    <value>Le forfait d'essai permet un seul emplacement.</value>
+    <value>Le forfait d'essai permet un seul établissement.</value>
   </data>
   <data name="RequiredAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} est obligatoire.</value>
@@ -106,10 +106,10 @@
     <value>L'utilisateur n'a pas les permissions d'administrateur ou de propriétaire.</value>
   </data>
   <data name="LocationNotFound" xml:space="preserve">
-    <value>Emplacement introuvable.</value>
+    <value>Établissement introuvable.</value>
   </data>
   <data name="LocationCodeAlreadyUsed" xml:space="preserve">
-    <value>Un autre emplacement de cette organisation utilise déjà ce code.</value>
+    <value>Un autre établissement de cette organisation utilise déjà ce code.</value>
   </data>
   <data name="UserNotMemberOfOrganization" xml:space="preserve">
     <value>L'utilisateur n'est pas membre de cette organisation.</value>
@@ -118,10 +118,10 @@
     <value>Menu supprimé avec succès.</value>
   </data>
   <data name="MenuAttachedSuccessfully" xml:space="preserve">
-    <value>Menu associé à l'emplacement avec succès.</value>
+    <value>Menu associé à l'établissement avec succès.</value>
   </data>
   <data name="MenuDetachedSuccessfully" xml:space="preserve">
-    <value>Menu dissocié de l'emplacement avec succès.</value>
+    <value>Menu dissocié de l'établissement avec succès.</value>
   </data>
   <data name="TooManyRequests" xml:space="preserve">
     <value>Trop de requêtes. Veuillez réessayer plus tard.</value>
@@ -130,13 +130,13 @@
     <value>L'enregistrement appartient à une autre organisation.</value>
   </data>
   <data name="OrganizationRequired" xml:space="preserve">
-    <value>Une organisation est nécessaire pour enregistrer cet enregistrement.</value>
+    <value>Une organisation est requise pour enregistrer cet élément.</value>
   </data>
   <data name="InvalidLocationId" xml:space="preserve">
-    <value>L'emplacement sélectionné n'est pas valide.</value>
+    <value>L'établissement sélectionné n'est pas valide.</value>
   </data>
   <data name="LocationAccessDenied" xml:space="preserve">
-    <value>Vous n'avez pas accès à l'emplacement sélectionné.</value>
+    <value>Vous n'avez pas accès à l'établissement sélectionné.</value>
   </data>
   <data name="MenuNotFound" xml:space="preserve">
     <value>Menu introuvable.</value>
