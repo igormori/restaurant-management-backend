@@ -7,7 +7,21 @@ namespace RestaurantManagement.Shared.Utils.Localization
 {
     public class RegionalCultureProvider : RequestCultureProvider
     {
-        private static readonly string[] LanguagesWithCatalog = ["pt", "fr"];
+        public static readonly CultureInfo[] SupportedCultures =
+        [
+            new("en"),
+            new("pt"),
+            new("pt-BR"),
+            new("pt-PT"),
+            new("fr"),
+            new("fr-CA")
+        ];
+
+        // Every supported language other than the default has its own catalog file
+        private static readonly string[] LanguagesWithCatalog = SupportedCultures
+            .Where(culture => culture.Name != "en" && !culture.Name.Contains('-'))
+            .Select(culture => culture.Name)
+            .ToArray();
 
         public override Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
         {

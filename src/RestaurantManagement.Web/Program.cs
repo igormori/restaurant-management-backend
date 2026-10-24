@@ -50,15 +50,7 @@ builder.UseHttpsOnlyOutsideDevelopment();
 // ---------------------------------------------
 builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
 
-var supportedCultures = new[]
-{
-    new CultureInfo("en"),
-    new CultureInfo("pt"),
-    new CultureInfo("pt-BR"),
-    new CultureInfo("pt-PT"),
-    new CultureInfo("fr"),
-    new CultureInfo("fr-CA")
-};
+var supportedCultures = RegionalCultureProvider.SupportedCultures;
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
